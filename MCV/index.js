@@ -856,15 +856,18 @@
 	async function exigencebasededonnée()
 	{		
 		var postgresConnection = postgres("postgres://default:QHiOur92EwzF@ep-patient-darkness-72544749.us-east-1.postgres.vercel-storage.com:5432/verceldb"+ "?sslmode=require");
-		if(postgresConnection == undefined)
-		{		
-			console.log("Database Connection not successful");	
-			reject(postgresConnection);
-		}
-		else 
-		{
-			resolve(postgresConnection);
-		}
+		
+		return new Promise ((resolve,reject) => {
+			if(postgresConnection == undefined)
+			{		
+				console.log("Database Connection not successful");	
+				reject(postgresConnection);
+			}
+			else 
+			{
+				resolve(postgresConnection);
+			}
+		});
 	}
 
 	async function faire_un_simple_query (querydemysql)
