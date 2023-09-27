@@ -9,10 +9,10 @@
   },
   "dependencies":
   {
+	"node" : "v18.14.2",
     "url": "0.11.3",
 	"postgres": "3.3.5",
-	"formidable" : "3.5.1",
-	"node" : "20.7.0"
+	"formidable" : "3.5.1"
   },
 
   "author": "Mamadou Massaly",
