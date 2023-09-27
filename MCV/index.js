@@ -870,7 +870,7 @@
 		});
 	}
 
-	async function faire_un_simple_query (querydemysql)
+	async function faire_un_simple_query (query)
 	{
 			try
 			{
