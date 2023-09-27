@@ -1,0 +1,15 @@
+{
+  "name": "entriesexitsbasecontrolleratmsa",
+  "version": "1.0.0",
+  "description": "testing @vercel/postgres deployment with vercel",
+  "main": "index.js",
+  "scripts": {
+    "test": "node index.js",
+    "start": "node index.js"
+  },
+  "engines": {
+    "node": "18.14.2"
+  },
+  "author": "Mamadou",
+  "license": "ISC"
+}
