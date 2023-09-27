@@ -874,10 +874,10 @@
 	{
 			try
 			{
-				let connectionavecmysql = await exigencebasededonnée();					
+				let connectionavecmysql = await exigencebasededonnée();			
+				console.log(query);
 				let results = await connectionavecmysql`${query}`;
 				return new Promise ((resolve,reject) => {
-					connectionavecmysql.close();
 					console.log(results);
 					if(results == undefined)
 					{
