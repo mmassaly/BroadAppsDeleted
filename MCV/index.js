@@ -1211,6 +1211,7 @@
 				let result = await faire_un_simple_query(query);
 				if(result.second == false ) 
 				{
+					console.log(result);
 					dummyResponse(response);
 					return false;
 				}
