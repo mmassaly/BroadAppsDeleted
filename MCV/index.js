@@ -878,13 +878,14 @@
 				let results = await connectionavecmysql`${query}`;
 				return new Promise ((resolve,reject) => {
 					connectionavecmysql.close();
+					console.log(results);
 					if(results == undefined)
 					{
-						resolve({first:err,second:false});
+						resolve({first:results,second:false});
 					}
 					else
 					{
-						resolve({first:result,second:fields});
+						resolve({first:Object.keys(results),second:Object.values(results)});
 					}
 				});
 			}
