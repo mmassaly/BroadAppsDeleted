@@ -888,6 +888,7 @@
 			catch(ex)
 			{
 				console.log("Exception caught");
+				console.log(ex);
 				return new Promise((resolve,reject)=>{resolve({first:ex,second:false});});
 			}
 	}
