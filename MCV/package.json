@@ -12,7 +12,6 @@
 	"postgres": "3.3.5",
 	"formidable" : "3.5.1"
   },
-
   "author": "Mamadou Massaly",
   "license": "ISC"
 }
