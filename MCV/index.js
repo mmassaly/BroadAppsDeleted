@@ -2,6 +2,7 @@
 	var url = require("url");
 	var postgres = require('postgres');
 	var formidable = require('formidable');
+	var fs = require('fs');
 	
 	let connection = undefined;
 	let precedentDate = new Date(Date.now());
@@ -22,10 +23,10 @@
 	[
 		{command:'update employee',path:'../Project Timing/my-app/src/assets/images/'}
 	];
-
+	
 	let d = new Date(Date.now());
 	console.log(d.getHours()+" "+d.getMinutes()+" "+d.getSeconds());
-
+	
 	
 	function getCommandGivenID(ID)
 	{
