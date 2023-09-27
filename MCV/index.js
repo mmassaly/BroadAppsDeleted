@@ -285,11 +285,11 @@
 								}
 
 								console.log("Trying to authenticate");
-								forced_authentification_query(schema,userAuthentification,undefined).
+								forced_authentification_query(userAuthentification,undefined).
 								then(
 								(tempResult)=> 
 								{
-									check_super_admin(schema,userAuthentification,undefined,undefined).then(
+									check_super_admin(userAuthentification,undefined,undefined).then(
 									(othertempResult)=>
 									{
 										urlObject.date = new Date(urlObject.date);
@@ -311,10 +311,10 @@
 							}
 							if(command === "login")
 							{	
-								forced_authentification_query_login(schema,urlObject.userAuthentification,res).then(
+								forced_authentification_query_login(urlObject.userAuthentification,res).then(
 								(ares)=>
 								{
-									check_super_admin(schema,urlObject.userAuthentification,undefined,undefined).then(
+									check_super_admin(urlObject.userAuthentification,undefined,undefined).then(
 									(othertempResult)=>
 									{
 										console.log(othertempResult);
@@ -424,12 +424,12 @@
 								{
 									let sqlConnection = connection;
 									console.log("Trying to authenticate");
-									forced_authentification_query(schema,userAuthentification,undefined).then((tempResult)=> {
+									forced_authentification_query(userAuthentification,undefined).then((tempResult)=> {
 										console.log("Result is "+tempResult);
 										if(tempResult)
 										{
 											console.log("This guy is authenticated");
-											check_super_admin(schema,userAuthentification,sqlConnection,undefined).then(
+											check_super_admin(userAuthentification,sqlConnection,undefined).then(
 											(othertempResult)=>
 											{		
 												console.log(othertempResult);
@@ -741,7 +741,7 @@
 					}
 	
 					let tempuserAuthentification = {ID:urlObject.authID,Prenom:urlObject.authPrenom,Nom:urlObject.authNom,genre:urlObject.authgenre,naissance:urlObject.authnaissance,pass:urlObject.authpass};
-					let tempResult = await forced_authentification_query(schema,tempuserAuthentification,undefined);
+					let tempResult = await forced_authentification_query(tempuserAuthentification,undefined);
 					console.log(tempuserAuthentification);
 					console.log(tempResult);
 					console.log(querySQL);
@@ -853,9 +853,9 @@
 			
 	}
 
-	async function exigencebasededonnée(databaseName)
+	async function exigencebasededonnée()
 	{		
-		var postgresConnection = postgres("postgres://default:QHiOur92EwzF@ep-patient-darkness-72544749.us-east-1.postgres.vercel-storage.com:5432/verceldb");
+		var postgresConnection = postgres("postgres://default:QHiOur92EwzF@ep-patient-darkness-72544749.us-east-1.postgres.vercel-storage.com:5432/verceldb"+ "?sslmode=require");
 		if(postgresConnection == undefined)
 		{		
 			console.log("Database Connection not successful");	
@@ -871,7 +871,7 @@
 	{
 			try
 			{
-				let connectionavecmysql = await exigencebasededonnée("");					
+				let connectionavecmysql = await exigencebasededonnée();					
 				let results = await connectionavecmysql`${query}`;
 				return new Promise ((resolve,reject) => {
 					connectionavecmysql.close();
@@ -941,7 +941,7 @@
 				
 			}
 			
-			async function forced_authentification_query(schema,userAuthentification,res)
+			async function forced_authentification_query(userAuthentification,res)
 			{
 					let query = "SELECT  * FROM individu inner join login on individu.ID = login.IDIndividu;"; 
 					let tempResult = await faire_un_simple_query(query);
@@ -1040,7 +1040,7 @@
 
 			}
 			
-			async function check_super_admin(schema,userAuthentification,aconnection,res)
+			async function check_super_admin(userAuthentification,aconnection,res)
 			{
 				let query = "SELECT IDIndividu,SuperAdmin, Admin, \"User\",Password FROM login inner join ";
 				query+= "individu ON individu.ID = login.IDIndividu;"; 
