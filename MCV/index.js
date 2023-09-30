@@ -1,6 +1,6 @@
 	var http = require("http");
 	var url = require("url");
-	var postgres = require('postgres');
+	var postgres = require('pg');
 	var formidable = require('formidable');
 	var fs = require('fs');
 	
@@ -619,7 +619,7 @@
 			return;
 		}
 				
-		query = "insert into \""+nomdelaTable+"\" values ('"
+		query = "insert into \"$$"+nomdelaTable+"$$\" values ('"
 		+ ID+"','"+datereversed+"','"+startTime+"',"+((endTime == undefined)?null:"'"+endTime+"'")+")"
 		+" ON DUPLICATE KEY UPDATE \""+nomdelaTable+"\".Sorties="+((endTime == undefined)?null:"'"+endTime+"'")+";\n";
 		results  = await faire_un_simple_query(query);
@@ -696,20 +696,20 @@
 					let yearParam = undefined;
 					let monthParam = undefined;
 					let dayParam = undefined;
-
+					
 					if (commandArg === "offices" || (dealingWithArray && commandArg[0] === "offices"))
 					{
 						tablename = "\"location du bureau\"";
 						if(!dealingWithArray)
 						{
-							querySQL =  "insert into "+tablename+" values ('"+fields.ID+ "','" + fields.officeName+"','";
-							querySQL += fields.address +"','"+fields.region+"','"+fields.latittude+"','"+fields.longitude;
+							querySQL =  "insert into "+tablename+" values ('"+fields.ID+ "',$$" + fields.officeName+"$$,$$";
+							querySQL += fields.address +"$$,$$"+fields.region+"$$,'"+fields.latittude+"','"+fields.longitude;
 							querySQL += "');";
-						}
+							}
 						else
 						{
-							querySQL =  "insert into "+tablename+" values ('"+fields.ID[0]+ "','" +  fields.officeName[0]+"','";
-							querySQL += fields.address[0] +"','"+fields.region[0]+"','"+fields.latittude[0]+"','"+fields.longitude[0];
+							querySQL =  "insert into "+tablename+" values ('"+fields.ID[0]+ "',$$" +  fields.officeName[0]+"$$,$$";
+							querySQL += fields.address[0] +"$$,$$"+fields.region[0]+"$$,'"+fields.latittude[0]+"','"+fields.longitude[0];
 							querySQL += "');";
 						}
 						console.log(fields);
@@ -719,27 +719,27 @@
 						if(dealingWithArray)
 						{
 							tablename = "individu";
-							querySQL = "insert into "+tablename+" values ('"+fields.imagename[0]+"','"+fields.ID[0]+"','"+fields.first[0]+"','";
-							querySQL += fields.second[0] +"','"+fields.gender[0]+"','"+fields.birthdate[0]+"','"+fields.function[0]+"','";
+							querySQL = "insert into "+tablename+" values ($$"+fields.imagename[0]+"$$,$$"+fields.ID[0]+"$$,$$"+fields.first[0]+"$$,$$";
+							querySQL += fields.second[0] +"$$,'"+fields.gender[0]+"','"+fields.birthdate[0]+"',$$"+fields.function[0]+"$$,'";
 							querySQL += fields.start[0]+"','"+fields.end[0]+"');";
 							tablename = "appartenance";
-							doubleQuerySQL = "\ninsert into "+ tablename+" values ('"+fields.ID[0]+"',"+fields.officeID[0]+");";
+							doubleQuerySQL = "insert into "+ tablename+" values ('"+fields.ID[0]+"',"+fields.officeID[0]+");";
 							tablename = "login";
-							thirdQuerySQL += "insert into "+tablename+" values ('"+fields.ID[0]+"','"+fields.password[0]+"',"+((fields.type[0] == 1)?1:0)+","+((fields.type[0] == 2)?1:0)+","+((fields.type[0] == 3)?1:0)+","+((fields.type[0] == 4)?1:0)+");";
+							thirdQuerySQL += "insert into "+tablename+" values ('"+fields.ID[0]+"',$$"+fields.password[0]+"$$,"+((fields.type[0] == 1)?true:false)+","+((fields.type[0] == 2)?true:false)+","+((fields.type[0] == 3)?true:false)+","+((fields.type[0] == 4)?true:false)+");";
 						}
 						else
 						{
 							tablename = "individu";
-							querySQL = "insert into "+tablename+" values ('"+fields.imagename+"','"+fields.ID+"','"+fields.first+"','";
-							querySQL += fields.second +"','"+fields.gender+"','"+fields.birthdate+"','";
-							querySQL += fields["function"]+"','"+fields.start+"','"+fields.end+"');";
+							querySQL = "insert into "+tablename+" values ($$"+fields.imagename+"$$,'"+fields.ID+"',$$"+fields.first+"$$,'";
+							querySQL += fields.second +"','"+fields.gender+"','"+fields.birthdate+"',$$";
+							querySQL += fields["function"]+"$$,'"+fields.start+"','"+fields.end+"');";
 							tablename = "appartenance";
 							doubleQuerySQL = "\ninsert into "+ tablename+" values ('"+fields.ID+"',"+fields.officeID+");";
 							tablename = "login";
-							thirdQuerySQL += "insert into "+tablename+" values ('"+fields.ID+"','"+fields.password+"',"+((fields.type == 1)?1:0)+","+((fields.type == 2)?1:0)+","+((fields.type == 3)?1:0)+","+((fields.type == 4)?1:0)+");";
-						}
+							thirdQuerySQL += "insert into "+tablename+" values ('"+fields.ID+"',$$"+fields.password+"$$,"+((fields.type == 1)?true:false)+","+((fields.type == 2)?true:false)+","+((fields.type == 3)?true:false)+","+((fields.type == 4)?true:false)+");";
+						} 
 					}
-	
+					
 					let tempuserAuthentification = {ID:urlObject.authID,Prenom:urlObject.authPrenom,Nom:urlObject.authNom,genre:urlObject.authgenre,naissance:urlObject.authnaissance,pass:urlObject.authpass};
 					let tempResult = await forced_authentification_query(tempuserAuthentification,undefined);
 					console.log(tempuserAuthentification);
@@ -761,7 +761,7 @@
 								if (commandArg === "offices" || (dealingWithArray && commandArg[0] === "offices"))
 								{
 									userOfficeObject = urlObject;
-									let okresult = await  getDataForAdmin(undefined,userOfficeObject,undefined,undefined,undefined,undefined,undefined);
+									let okresult = await getDataForAdmin(undefined,userOfficeObject,undefined,undefined,undefined,undefined,undefined);
 									console.log("after offices getDataForAdmin");
 									console.log("res writable ended is " +res.writableEnded);
 									console.log(primaryObject.container);
@@ -852,51 +852,81 @@
 			
 			
 	}
-
-	async function exigencebasededonnée()
-	{		
-		var postgresConnection = postgres("postgres://default:QHiOur92EwzF@ep-patient-darkness-72544749.us-east-1.postgres.vercel-storage.com:5432/verceldb"+ "?sslmode=require");
 		
-		return new Promise ((resolve,reject) => {
-			if(postgresConnection == undefined)
-			{		
-				console.log("Database Connection not successful");	
-				reject(postgresConnection);
-			}
-			else 
+	async function exigencebasededonnée()
+	{	
+		try 
+		{	
+			var postgresConnection = new postgres.Client("postgres://default:QHiOur92EwzF@ep-patient-darkness-72544749.us-east-1.postgres.vercel-storage.com:5432/verceldb"+ "?sslmode=require");
+			await postgresConnection.connect();
+			return new Promise ((resolve,reject) => 
 			{
-				resolve(postgresConnection);
-			}
-		});
+				console.log("Database connection successfull.");
+				resolve(postgresConnection);	
+			});
+		}
+		catch(ex)
+		{
+			return new Promise ((resolve,reject) => 
+			{
+				console.log("Database Connection not successful.");	
+				reject(postgresConnection);
+			});
+		}
+		//console.log(postgresConnection);
+
 	}
 
-	async function faire_un_simple_query (query)
+	async function faire_un_simple_query(queryString)
 	{
+		let sql = await exigencebasededonnée();	
+		console.log(queryString);
+		
+		try
+		{
+			
+			let result = await sql.query(queryString);
+			
 			try
 			{
-				let connectionavecmysql = await exigencebasededonnée();			
-				console.log(query);
-				let results = await connectionavecmysql`${query}`;
-				return new Promise ((resolve,reject) => {
-					console.log(results);
-					if(results == undefined)
-					{
-						resolve({first:results,second:false});
-					}
-					else
-					{
-						resolve({first:Object.keys(results),second:Object.values(results)});
-					}
-				});
+				await sql.end();
 			}
-			catch(ex)
-			{
-				console.log("Exception caught");
-				console.log(ex);
-				return new Promise((resolve,reject)=>{resolve({first:ex,second:false});});
-			}
-	}
+			catch(ex){}
 			
+			return new Promise ((resolve,reject) => 
+			{
+						
+				if(result == undefined)
+				{
+					reject({first:result,second:false});
+				}
+				else
+				{
+					let firstArray = [];
+					let secondArray = [];
+								
+					resolve({first:result.rows,second:result.fields});
+				}
+						
+			});
+		}
+		catch(ex)
+		{
+			try
+			{
+				await sql.end();
+			}
+			catch(e)
+			{
+				
+			}
+			console.log("Exception caught");
+			return new Promise((resolve,reject)=>{reject({first:ex,second:false});});
+		}		
+	}
+	
+	
+	
 			async function forced_authentification_query_login(userAuthentification,res)
 			{
 					let query = "SELECT  * FROM individu inner join login on individu.ID = login.IDIndividu inner join "
@@ -1199,7 +1229,7 @@
 				}
 				else if(empObj != undefined)
 				{
-					query = "Select * from \"location du bureau\" where \"location du bureau\".ID = "+empObj.officeID+";";			
+					query = "Select * from \"location du bureau\" where \"location du bureau\".ID = "+empObj.officeID+";";
 				}
 
 				let checkfornewCommand = false;
@@ -1262,17 +1292,19 @@
 				console.log("new date today is "+ dateToday.toLocaleString());
 				
 				console.log("Date today is "+dateToday);
+				console.log("Info about response for officeInfo");
+				console.log(result.second);
 				
 				for(let i = 0; i < result.first.length; ++i)
 				{
 					
 
-					let officeID = result.first[i]["ID"];
-					let officeName = result.first[i]["Nom du Bureau"];
-					let officeAddresse = result.first[i]["Addresse"];
-					let officeRegion = result.first[i]["Région"];
-					let officeLatitude = result.first[i]["Latitude"];
-					let officeLongitude = result.first[i]["Longitude"];
+					let officeID = result.first[i][result.second[0].name];
+					let officeName = result.first[i][result.second[1].name];
+					let officeAddresse = result.first[i][result.second[2].name];
+					let officeRegion = result.first[i][result.second[3].name];
+					let officeLatitude = result.first[i][result.second[4].name];
+					let officeLongitude = result.first[i][result.second[5].name];
 					let passed = true;
 					
 					var unitLocation = 
@@ -1313,7 +1345,7 @@
 
 					let locationvalue = "";
 					query = "Select * from \"manuel des tables d'entrées et de sorties\";";
-
+					
 					if( !(paramyear === undefined  )) 
 					{
 						query = "Select * from \"manuel des tables d'entrées et de sorties\" where \"Année\" = "+paramyear+";";
@@ -1343,9 +1375,9 @@
 
 					for (let l = 0; l < result_.first.length; ++l)
 					{
-						let year = result_.first[l]["Année"];
-						let table = result_.first[l]["Nom"];
-						let state = result_.first[l]["Etat de l'individu"];
+						let year = result_.first[l][result_.second[0].name];
+						let state = result_.first[l][result_.second[1].name];
+						let table = result_.first[l][result_.second[2].name];
 						
 						let currentDateOfYear =  new Date(year,monthCounts,(paramday == undefined)?(empHoursObj != undefined? empHoursObj.date.getDate():1):paramday);
 								
@@ -1412,13 +1444,15 @@
 						let going_yearly_count = (parammonth == undefined)? 12: parammonth + 1;
 						if(empHoursObj != undefined)
 							going_yearly_count = empHoursObj.date.getMonth()+1;
-
+						console.log("Test count "+testCount+" year_count "+going_yearly_count);
 						while( testCount < going_yearly_count )
 						{
 							let astart = false;
 							let startDateOfMonth = new Date(year,monthCounts,1);
+							console.log(year);
+							console.log(startDateOfMonth);
 							currentDateOfYear = new Date(year,monthCounts,(paramday == undefined)?(empHoursObj != undefined? empHoursObj.date.getDate():1):paramday);
-							
+							console.log(currentDateOfYear);
 							if(paramyear != undefined && parammonth != undefined && paramday != undefined)
 							{
 								console.log("Current year "+ year+" current month "+monthCounts);
@@ -1697,10 +1731,20 @@
 								query += " ON appartenance.IDIndividu =  individu.ID";
 								query += " inner join \"location du bureau\" ON  appartenance.IDBureau =";
 								query += " \"location du bureau\".ID  where \"location du bureau\".ID = ";
-								query += officeID+" AND DATE_FORMAT(individu.Début,\"%YYYY\") <= ";
-								query += year+" AND DATE_FORMAT(individu.Fin,\"%YYYY\") >="+year+((empObj == undefined)?";":" AND individu.ID = '"+empObj.ID+"';");
+								query += officeID+" AND EXTRACT(YEAR FROM individu.Début) <= ";
+								query += year + " AND EXTRACT(YEAR FROM individu.Fin) >="+year+((empObj == undefined)?";":" AND individu.ID = '"+empObj.ID+"';");
+								
+								if(empObj == undefined)
+								{
+									postgresqueryArg = [officeID,year,year];
+								}
+								else
+								{
+									postgresqueryArg = [officeID,year,year,empObj.ID];
+								}
 								
 								let resultTwo = await faire_un_simple_query(query);
+								
 								if(resultTwo.second == false ) 
 								{
 									dummyResponse(response);
@@ -1711,11 +1755,15 @@
 								{
 									for( let m = 0; m < resultTwo.first.length; ++m)
 									{
-										let IDIndividu = resultTwo.first[m]["IDIndividu"];
-										let debut = resultTwo.first[m]["Début"];
-										let end = resultTwo.first[m]["Fin"];
-										let profession = resultTwo.first[m]["Profession"];
+										let IDIndividu = resultTwo.first[m][resultTwo.second[9].name];
+										let debut = resultTwo.first[m][resultTwo.second[7].name];
+										let end = resultTwo.first[m][resultTwo.second[8].name];
+										let profession = resultTwo.first[m][resultTwo.second[6].name];
 										console.log("Inside m which is "+m);
+										console.log(IDIndividu);
+										console.log(debut);
+										console.log(end);
+										console.log(profession);
 										
 										let employeeContentModel = getEmployeeContentModel(yearContentModel.months[monthIndex].weeks[weekIndex].days[weekDayIndex],IDIndividu);
 										let employeeDescribed = undefined;
@@ -1783,18 +1831,18 @@
 
 											if(empModeldefined)
 											{
-												employeeContentModel.strings.push(resultTwo.first[m].IDIndividu);
-												employeeContentModel.strings.push(resultTwo.first[m]["Prénom"]);
-												employeeContentModel.strings.push(resultTwo.first[m].Nom);
-												employeeContentModel.strings.push(resultTwo.first[m].Genre);
-												employeeContentModel.strings.push(resultTwo.first[m].Addresse);
+												employeeContentModel.strings.push(resultTwo.first[m][resultTwo.second[9].name]);
+												employeeContentModel.strings.push(resultTwo.first[m][resultTwo.second[2].name]);
+												employeeContentModel.strings.push(resultTwo.first[m][resultTwo.second[3].name]);
+												employeeContentModel.strings.push(resultTwo.first[m][resultTwo.second[4].name]);
+												employeeContentModel.strings.push(resultTwo.first[m][resultTwo.second[13].name]);
 											}
 
-											employeeDescribed.strings.push(resultTwo.first[m].IDIndividu);
-											employeeDescribed.strings.push(resultTwo.first[m]["Prénom"]);
-											employeeDescribed.strings.push(resultTwo.first[m].Nom);
-											employeeDescribed.strings.push(resultTwo.first[m].Genre);
-											employeeDescribed.strings.push(resultTwo.first[m].Addresse);
+											employeeDescribed.strings.push(resultTwo.first[m][resultTwo.second[9].name]);
+											employeeDescribed.strings.push(resultTwo.first[m][resultTwo.second[2].name]);
+											employeeDescribed.strings.push(resultTwo.first[m][resultTwo.second[3].name]);
+											employeeDescribed.strings.push(resultTwo.first[m][resultTwo.second[4].name]);
+											employeeDescribed.strings.push(resultTwo.first[m][resultTwo.second[13].name]);
 											
 											let existing_element = false;
 											for(let i = 0; i < yearContentModel.employees.length && !existing_element;++i)
@@ -1828,11 +1876,12 @@
 												yearContentModel.employeesCount++;
 											}
 											
-										
-										query = "Select IF(MIN(A.Entrées) > '10:00:00',1,0),IF(MIN(A.Entrées) > '8:30:00',1,0),MIN(A.Entrées) FROM";
-										query += " \""+table+"\" as A";
-										query +=" where A.IDIndividu ='"+IDIndividu+"' AND A.Date = '"+queryDate+"';\n";
-																															
+										query = "Select Case WHEN MIN(\""+table+"\".Entrées) > '10:00:00' then 1 "; 
+										query += "WHEN MIN(\""+table+"\".Entrées) <= '10:00:00' then 0 END,";
+										query += "Case WHEN MIN(\""+table+"\".Entrées) > '8:30:00' then 1 ";
+										query += "WHEN MIN(\""+table+"\".Entrées) <= '8:30:00' then 0 END,";
+										query += "MIN(\""+table+"\".Entrées)  FROM \""+table+"\" where \""+table+"\".IDIndividu ='"+IDIndividu+"' AND \""+table+"\".Date = '"+queryDate+"';"
+																					
 										let aresult = await faire_un_simple_query(query);
 										if(aresult.second == false ) 
 										{
@@ -2828,7 +2877,7 @@
 					tempValue.splice(tempValue.indexOf(employeeContentModel),1);
 			}
 		}
-														l
+														
 	}
 
 	function calculatePresence(unitLocation,year,offset,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex)

@@ -7,12 +7,10 @@
     "test": "node index.js",
     "start": "node index.js"
   },
-  "dependencies":
-  {
-	"postgres": "3.3.5",
-	"formidable" : "3.5.1"
+  "dependencies": {
+    "formidable": "3.5.1",
+    "pg": "^8.2.1"
   },
   "author": "Mamadou Massaly",
   "license": "ISC"
 }
-
