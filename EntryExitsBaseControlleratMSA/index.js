@@ -12,7 +12,9 @@ var connection = http.createServer(function(req,res)
 	},(error)=>
 	{
 		res.write("<h1>"+"Hello!"+"</h1>"+"<br>");
-		res.write("<p>"+error+"</p>");
+		res.write("<h2 style=\"color:red\">");
+		res.write(error);
+		res.write("</h2>");
 		res.end();
 	});
 });
