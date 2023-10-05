@@ -176,6 +176,7 @@
 			}
 			else
 			{
+				console.log("Down here");
 				fs.readFile("SelfDescription.htm",function(err,data)
 				{
 					if(data != undefined)
