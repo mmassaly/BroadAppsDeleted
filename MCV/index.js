@@ -190,6 +190,7 @@
 						else
 						{
 							res.writeHeader(200,{"Content-Type":"text/html"});
+							console.log(err);
 							res.write(err);
 							res.end();
 						}
