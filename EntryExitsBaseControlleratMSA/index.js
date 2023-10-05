@@ -1,13 +1,13 @@
 const http = require("http");
 var postgres = require('pg');
-
+let connectionCount = 0;
 var connection = http.createServer(function(req,res)
 {
-	
+	++connectionCount;
 	res.writeHead(200,{"Content-Type": "text/html","Access-Control-Allow-Origin":"*"
 				,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false});
 	faire_un_simple_query("Select * from individu").then((results)=>{
-		res.write("<h1>"+"Hello Mr "+results.first[0].prenom+" "+results.first[0].nom+" "+"</h1>");
+		res.write("<h1>"+"Hello Mr "+results.first[0].prenom+" "+results.first[0].nom+" "+"</h1><br>Connection Count is "+connectionCount);
 		res.end();
 	},(error)=>
 	{
