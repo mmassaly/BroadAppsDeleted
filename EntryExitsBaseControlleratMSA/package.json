@@ -8,7 +8,9 @@
     "start": "node index.js"
   },
   "engines": {
-    "node": "18.14.2"
+    "node": "18.14.2",
+	"formidable": "3.5.1",
+    "pg": "^8.2.1"
   },
   "author": "Mamadou",
   "license": "ISC",
