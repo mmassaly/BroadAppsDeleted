@@ -6,8 +6,8 @@ var connection = http.createServer(function(req,res)
 	
 	res.writeHead(200,{"Content-Type": "text/html","Access-Control-Allow-Origin":"*"
 				,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false});
-	faire_un_simple_query("Select prenom,nom from individu").then((results)=>{
-		res.write("<h1>"+"Hello "+results.first[results.second[0].name]+" "+results.first[results.second[1].name]+"</h1>");
+	faire_un_simple_query("Select * from individu").then((results)=>{
+		res.write("<h1>"+"Hello "+results.second[0].name+" "+results.second[1].name+" "+results.second[2].name+" "+results.first[results.second[0].name]+" "+results.first[results.second[1].name]+" "+results.first[results.second[2].name]+"</h1>");
 		res.end();
 	},(error)=>
 	{
