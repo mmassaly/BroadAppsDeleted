@@ -3,11 +3,17 @@ var postgres = require('pg');
 
 var connection = http.createServer(function(req,res)
 {
+	
 	res.writeHead(200,{"Content-Type": "text/html","Access-Control-Allow-Origin":"*"
 				,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false});
-	res.write("<p>"+"Hello!"+"</p>");
-	res.end();
-	
+	faire_un_simple_query("Select prenom,nom from * individu").then((results)=>{
+		res.write("<h1>"+"Hello "+results.first.prenom+" "+results.first.nom+"</h1>");
+		res.end();
+	},(error)=>
+	{
+		res.write("<h1>"+"Hello!"+"</h1>"+"<br>"+"<p>"+error+"</p>");
+		res.end();
+	});
 });
 
 connection.listen(process.env.PORT || 3035);
