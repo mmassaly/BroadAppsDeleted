@@ -185,7 +185,11 @@
 						res.end();
 					}
 					else
+					{
+						res.writeHeader(200,{"Content-Type":"text/html"});
+						res.write(err);
 						res.end();
+					}
 				});
 			}
 		}

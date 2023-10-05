@@ -5,7 +5,7 @@ var app = express();
 
 app.get('/(|([a-zA-z]|[0-9]|[éçèàêîÂ])*)', function(req,res)
 {
-			/*console.log("Inside request method "+req.method);
+			console.log("Inside request method "+req.method);
 			console.log(req.url);
 			console.log(req.method);
 			
@@ -49,14 +49,14 @@ app.get('/(|([a-zA-z]|[0-9]|[éçèàêîÂ])*)', function(req,res)
 				});
 			}
 			else
-			{*/
-				/*fs.readFile("SelfDescription.htm",function(err,data)
+			{
+				fs.readFile("SelfDescription.htm",function(err,data)
 				{
 					console.log(data);
 					if(err != undefined)
 					{
 						res.set('Content-Type','text/html');
-						res.status(200).send("<h1>"+err+"</h1>");
+						res.status(200).send("<h1>"+err.first+"</h1>");
 						res.end();
 					}
 					else
@@ -68,11 +68,12 @@ app.get('/(|([a-zA-z]|[0-9]|[éçèàêîÂ])*)', function(req,res)
 					}
 					else
 						res.end();
-				});*/
-			//}
+				});
+			}
 			res.set('Content-Type','text/html');
 			res.status(200).send("<h1>Hello World</h1>");
 			res.end();
 } );
 
 app.listen(3033);
+
