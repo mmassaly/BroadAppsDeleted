@@ -190,10 +190,11 @@
 							res.write(data);
 							res.end();
 						}
-						else
+						else if(err != undefined)
 						{
+							console.log("Inside error");
 							res.writeHeader(200,{"Content-Type":"text/html"});
-							res.write(err);
+							res.write();
 							res.end();
 						}
 					});
