@@ -182,8 +182,7 @@
 					console.log("Before MCV file");
 					fs.readFile("SelfDescription.htm",function(err,data)
 					{
-						console.log(err);
-						console.log(data);
+						
 						if(data != undefined)
 						{
 							res.writeHeader(200,{"Content-Type":"text/html"});
@@ -192,9 +191,8 @@
 						}
 						else if(err != undefined)
 						{
-							console.log("Inside error");
+							console.log(err);
 							res.writeHeader(200,{"Content-Type":"text/html"});
-							res.write();
 							res.end();
 						}
 					});
