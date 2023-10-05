@@ -74,6 +74,7 @@
 	
 	function caller()
 	{
+		
 		precedentDate = todaysDate;
 		todaysDate = new Date(Date.now());
 			
@@ -317,29 +318,45 @@
 									check_super_admin(urlObject.userAuthentification,undefined,undefined).then(
 									(othertempResult)=>
 									{
-										console.log(othertempResult);
+										//console.log(othertempResult);
 										if(ares.first == true || ares.second == true || ares.third == true)
 										{
+											console.log("Inside setting");
+											
 											if(othertempResult.first)
 											{
 												ares.element.superadmin = true;
 												ares.element.admin = false;
 												ares.element.user = false; 
+												ares.element.keyadmin = false;
 											}
 											else if(othertempResult.second)
 											{
 												ares.element.superadmin = false;
 												ares.element.admin = true;
 												ares.element.user = false;
+												ares.element.keyadmin = false;
 											}
 											else if(othertempResult.third)
 											{
 												ares.element.superadmin = false;
 												ares.element.admin = false;
 												ares.element.user = true;
+												ares.element.keyadmin = false;
+											}
+											else if (othertempResult.fourth)
+											{
+												ares.element.superadmin = false;
+												ares.element.admin = false;
+												ares.element.user = false; 
+												ares.element.keyadmin = true;
 											}
 										}
-										
+										else
+										{
+											console.log(ares);
+											console.log("Not inside setting");
+										}
 										if(ares.first)
 										{
 											res.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
@@ -347,7 +364,7 @@
 											,"Access-Control-Max-Age":'86400'
 											,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
 											});
-											
+											console.log("Sending response");
 											res.write(JSON.stringify(ares));
 											res.end();
 
@@ -365,9 +382,14 @@
 											res.end();
 											
 										}
+										else
+										{
+											
+										}
 
 									},(otherError)=>
 									{
+										console.log(otherError);
 										dummyResponse(res,otherError);
 										return;
 									});
@@ -409,6 +431,7 @@
 									|| userAuthentification.Nom == undefined || userAuthentification.genre == undefined
 									|| userAuthentification.naissance == undefined || userAuthentification.pass == undefined)
 									{
+										console.log(userAuthentification);
 										console.log("undefined credentials");
 										dummyResponse(res);
 										return;
@@ -579,7 +602,7 @@
 			server.listen(3034)
 			try
 			{
-
+				add_all_users();
 				console.log(startingTag);
 				//'fr-FR',
 				baseInit = true;
@@ -619,11 +642,11 @@
 			return;
 		}
 				
-		query = "insert into \"$$"+nomdelaTable+"$$\" values ('"
+		query = "insert into \""+nomdelaTable+"\" values ('"
 		+ ID+"','"+datereversed+"','"+startTime+"',"+((endTime == undefined)?null:"'"+endTime+"'")+")"
-		+" ON DUPLICATE KEY UPDATE \""+nomdelaTable+"\".Sorties="+((endTime == undefined)?null:"'"+endTime+"'")+";\n";
+		+" ON DUPLICATE KEY UPDATE SET \""+nomdelaTable+"\".Sorties="+((endTime == undefined)?null:"'"+endTime+"'")+";\n";
 		results  = await faire_un_simple_query(query);
-				
+		
 		if(results.second == false)
 		{
 			dummyResponse(res);
@@ -645,8 +668,8 @@
 								,"Access-Control-Max-Age":'86400'
 								,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
 								});
-						res.write(JSON.stringify("OK"));
-						res.end();
+		res.write(JSON.stringify("OK"));
+		res.end();
  	}
 	
 	async function formidableFileUpload(req,path,res)
@@ -705,7 +728,7 @@
 							querySQL =  "insert into "+tablename+" values ('"+fields.ID+ "',$$" + fields.officeName+"$$,$$";
 							querySQL += fields.address +"$$,$$"+fields.region+"$$,'"+fields.latittude+"','"+fields.longitude;
 							querySQL += "');";
-							}
+						}
 						else
 						{
 							querySQL =  "insert into "+tablename+" values ('"+fields.ID[0]+ "',$$" +  fields.officeName[0]+"$$,$$";
@@ -719,7 +742,7 @@
 						if(dealingWithArray)
 						{
 							tablename = "individu";
-							querySQL = "insert into "+tablename+" values ($$"+fields.imagename[0]+"$$,$$"+fields.ID[0]+"$$,$$"+fields.first[0]+"$$,$$";
+							querySQL = "insert into "+tablename+" values ("+fields.imagename[0]+",$$"+fields.ID[0]+"$$,$$"+fields.first[0]+"$$,$$";
 							querySQL += fields.second[0] +"$$,'"+fields.gender[0]+"','"+fields.birthdate[0]+"',$$"+fields.function[0]+"$$,'";
 							querySQL += fields.start[0]+"','"+fields.end[0]+"');";
 							tablename = "appartenance";
@@ -730,7 +753,7 @@
 						else
 						{
 							tablename = "individu";
-							querySQL = "insert into "+tablename+" values ($$"+fields.imagename+"$$,'"+fields.ID+"',$$"+fields.first+"$$,'";
+							querySQL = "insert into "+tablename+" values ("+fields.imagename+",'"+fields.ID+"',$$"+fields.first+"$$,'";
 							querySQL += fields.second +"','"+fields.gender+"','"+fields.birthdate+"',$$";
 							querySQL += fields["function"]+"$$,'"+fields.start+"','"+fields.end+"');";
 							tablename = "appartenance";
@@ -742,6 +765,7 @@
 					
 					let tempuserAuthentification = {ID:urlObject.authID,Prenom:urlObject.authPrenom,Nom:urlObject.authNom,genre:urlObject.authgenre,naissance:urlObject.authnaissance,pass:urlObject.authpass};
 					let tempResult = await forced_authentification_query(tempuserAuthentification,undefined);
+					
 					console.log(tempuserAuthentification);
 					console.log(tempResult);
 					console.log(querySQL);
@@ -874,7 +898,6 @@
 			});
 		}
 		//console.log(postgresConnection);
-
 	}
 
 	async function faire_un_simple_query(queryString)
@@ -902,9 +925,17 @@
 				}
 				else
 				{
-					let firstArray = [];
-					let secondArray = [];
-								
+					if(result.rows == undefined)
+					{
+						let tempfirst = [];
+						result.forEach((element)=>
+						{
+							tempfirst.push({first: element.rows,second:element.fields});
+						});
+						
+						resolve(tempfirst);
+					}
+					else
 					resolve({first:result.rows,second:result.fields});
 				}
 						
@@ -925,18 +956,44 @@
 		}		
 	}
 	
+	async function add_all_users()
+	{
+		let query = "SELECT  * FROM individu inner join login on individu.ID = login.IDIndividu inner join "
+		query += "appartenance on individu.ID = appartenance.IDIndividu inner join \"location du bureau\" as A on A.ID = ";
+		query += "appartenance.IDBureau;"; 
+		let tempResult = await faire_un_simple_query(query);
+		
+		for(let i = 0; i < tempResult.first.length; ++i)
+		{
+				let addResult = addUser(tempResult.first[i].idindividu,tempResult.first[i]["prenom"],tempResult.first[i].nom,
+								tempResult.first[i].genre,tempResult.first[i]['Date de naissance'].toLocaleString(undefined,{day:'numeric',month:'numeric',year:'numeric'}),tempResult.first[i]["début"],tempResult.first[i].fin
+								,tempResult.first[i].password,tempResult.first[i].idbureau,tempResult.first[i]['Nom du Bureau'],
+								tempResult.first[i].latitude,tempResult.first[i].longitude,tempResult.first[i].admin
+								,tempResult.first[i].superadmin,tempResult.first[i].User,tempResult.first[i]["key admin"]);
+									
+				return {first:true,second:undefined,element:addResult.userAuthentification};
+		}
+	}
 	
-	
-			async function forced_authentification_query_login(userAuthentification,res)
-			{
-					let query = "SELECT  * FROM individu inner join login on individu.ID = login.IDIndividu inner join "
-					query += "appartenance on individu.ID = appartenance.IDIndividu inner join \"location du bureau\" as A on A.ID = ";
-					query += "appartenance.IDBureau;"; 
-					let tempResult = await faire_un_simple_query(query);
+	async function forced_authentification_query_login(userAuthentification,res)
+	{
+		
+		let returnValue = findUserShort(userAuthentification.ID,userAuthentification.pass);
+		
+		if( returnValue.found )
+		{
+			return {first:true,second:undefined,element:returnValue.element.userAuthentification};
+		}
+		
+		
+		let query = "SELECT  * FROM individu inner join login on individu.ID = login.IDIndividu inner join "
+		query += "appartenance on individu.ID = appartenance.IDIndividu inner join \"location du bureau\" as A on A.ID = ";
+		query += "appartenance.IDBureau;"; 
 					
-					if(!(tempResult.second == false))
-					{	
-						
+		let tempResult = await faire_un_simple_query(query);
+				
+		if(!(tempResult.second == false))
+		{	
 						if(tempResult.first.length == 0)
 						{
 							if(res != undefined)
@@ -948,16 +1005,16 @@
 							for(let i = 0; i < tempResult.first.length; ++i)
 							{
 								
-								if( tempResult.first[i].IDIndividu == userAuthentification.ID && tempResult.first[i].Password == userAuthentification.pass) 
+								if( tempResult.first[i].idindividu == userAuthentification.ID && tempResult.first[i].password == userAuthentification.pass) 
 								{
 									console.log("This guy is logged in.");
-									console.log(tempResult.first[i]);
-									let addResult = addUser(tempResult.first[i].IDIndividu,tempResult.first[i]["Prénom"],tempResult.first[i].Nom,
-											tempResult.first[i].Genre,tempResult.first[i]['Date de naissance'].toLocaleString(undefined,{day:'numeric',month:'numeric',year:'numeric'}),tempResult.first[i]["Début"],tempResult.first[i].Fin
-											,tempResult.first[i].Password,tempResult.first[i].IDBureau,tempResult.first[i]['Nom du Bureau'],tempResult.first[i].Admin
-											,tempResult.first[i].SuperAdmin,tempResult.first[i].User);
-										console.log(connectedguys); 
-									return {first:true,second:undefined,latitude:tempResult.first[i].Latitude,longitude:tempResult.first[i].Longitude,element:addResult.userAuthentification};
+									let addResult = addUser(tempResult.first[i].idindividu,tempResult.first[i]["prenom"],tempResult.first[i].nom,
+										tempResult.first[i].genre,tempResult.first[i]['Date de naissance'].toLocaleString(undefined,{day:'numeric',month:'numeric',year:'numeric'}),tempResult.first[i]["début"],tempResult.first[i].fin
+										,tempResult.first[i].password,tempResult.first[i].idbureau,tempResult.first[i]['Nom du Bureau'],
+										tempResult.first[i].latitude,tempResult.first[i].longitude,tempResult.first[i].admin
+										,tempResult.first[i].superadmin,tempResult.first[i].User,tempResult.first[i]["Key Admin"]);
+									
+									return {first:true,second:undefined,element:addResult.userAuthentification};
 								}
 
 							}
@@ -973,17 +1030,21 @@
 						dummyResponse(res);
 						return {first:false,second:undefined,third:true};
 					}
-				
-			}
+	}
 			
 			async function forced_authentification_query(userAuthentification,res)
 			{
+					let returnValue = findUserShort(userAuthentification.ID,userAuthentification.pass);
+					if( returnValue.found )
+					{
+						return true;
+					}
+					
 					let query = "SELECT  * FROM individu inner join login on individu.ID = login.IDIndividu;"; 
 					let tempResult = await faire_un_simple_query(query);
 					
 					if(!(tempResult.second == false))
-					{	
-						
+					{		
 						if(tempResult.first.length == 0)
 						{
 							if(res != undefined)
@@ -994,13 +1055,15 @@
 						{
 							for(let i = 0; i < tempResult.first.length; ++i)
 							{
-								console.log("ID "+tempResult.first[i].ID +" Password"+tempResult.first[i].Password);
-								console.log("ID"+userAuthentification.ID+" Password "+userAuthentification.pass);
-								if( tempResult.first[i].ID == userAuthentification.ID && tempResult.first[i].Password == userAuthentification.pass) 
+								console.log("ID "+tempResult.first[i].id +" Password "+tempResult.first[i].password);
+								console.log("ID "+userAuthentification.ID+" Password "+userAuthentification.pass);
+								
+								if( tempResult.first[i].id == userAuthentification.ID && tempResult.first[i].password == userAuthentification.pass) 
 								{
 									console.log("This guy is logged in.");
 									return true;
 								}
+								
 							}
 							console.log("This guy is not logged in");
 							if(res != undefined)
@@ -1014,10 +1077,40 @@
 						dummyResponse(res);
 						return false;
 					}
-				
 			}
 			
-			function findUser(ID,first,second,gender,birthdate,begin,end,pwd,locID,locName,admin,superadmin,user)
+			function findTypeofAdminShort(ID,password)
+			{
+				for(let loginGuysCount = 0; loginGuysCount < connectedguys.length;++loginGuysCount)
+				{
+					if(connectedguys[loginGuysCount].ID == ID  )
+					{
+						if( connectedguys[loginGuysCount].admin )
+							return {found:true,index:loginGuysCount,admin:true,element:connectedguys[loginGuysCount]};
+						if( connectedguys[loginGuysCount].superadmin )
+							return {found:true,index:loginGuysCount,superadmin:true,element:connectedguys[loginGuysCount]};
+						if( connectedguys[loginGuysCount].user )
+							return {found:true,index:loginGuysCount,user:true,element:connectedguys[loginGuysCount]};
+						if( connectedguys[loginGuysCount]["key admin"]  )
+							return {found:true,index:loginGuysCount,"key admin":true,element:connectedguys[loginGuysCount]};
+					}
+				}
+				return {found:false,index:-1};
+			}
+			
+			function findUserShort(ID,password)
+			{
+				for(let loginGuysCount = 0; loginGuysCount < connectedguys.length;++loginGuysCount)
+				{
+					if(connectedguys[loginGuysCount].ID == ID && connectedguys[loginGuysCount].pwd == password)
+					{
+						return {found:true,index:loginGuysCount,element:connectedguys[loginGuysCount]};
+					}
+				}
+				return {found:false,index:-1};
+			}
+			
+			function findUser(ID,first,second,gender,birthdate,begin,end,pwd,locID,locName,admin,superadmin,user,keyadmin)
 			{
 				for(let loginGuysCount = 0; loginGuysCount < connectedguys.length;++loginGuysCount)
 				{
@@ -1027,7 +1120,7 @@
 						&& connectedguys[loginGuysCount].locationID == locID && connectedguys[loginGuysCount].locationName == locName
 						&& connectedguys[loginGuysCount].end == end && connectedguys[loginGuysCount].pwd == pwd
 						&& connectedguys[loginGuysCount].admin == admin && connectedguys[loginGuysCount].superadmin == superadmin
-						&& connectedguys[loginGuysCount].user == user)
+						&& connectedguys[loginGuysCount].user == user && connectedguys[loginGuysCount].keyadmin == keyadmin )
 					{
 						return {found:true,index:loginGuysCount,element:connectedguys[loginGuysCount]};
 					}
@@ -1048,22 +1141,24 @@
 			}
 
 			function addUser (IDparam,firstparam,secondparam,genderparam,
-				birthdateparam,beginparam,endparam,pwdparam,IDLoc,NameLoc,
-				adminparam,superadminparam,userparam)
+				birthdateparam,beginparam,endparam,pwdparam,
+				IDLoc,NameLoc,latitude,longitude,
+				adminparam,superadminparam,userparam,keyadminparam)
 			{
 				
 				let aconnecedGuy = 
 				{ 
 					ID: IDparam,first:firstparam,second:secondparam,gender:genderparam,
 					birthdate:birthdateparam,begin:beginparam,end:endparam,pwd:pwdparam,
-					locationID:IDLoc,locationName:NameLoc,admin:adminparam,superadmin:superadminparam,user:userparam,
+					locationID:IDLoc,locationName:NameLoc,lati:latitude,longi:longitude,
+					admin:adminparam,superadmin:superadminparam,user:userparam,"key admin":keyadminparam,
 					userAuthentification: {ID:IDparam,Prenom:firstparam,Nom:secondparam,genre:genderparam,naissance:birthdateparam,pass:pwdparam,
-					locationID:IDLoc,locationName:NameLoc,superadmin:false,admin:false,user:false}
+					locationID:IDLoc,locationName:NameLoc,lati:latitude,longi:longitude,superadmin:superadminparam,admin:adminparam,user:userparam,"key admin":keyadminparam}
 					,commands:[]
 				};
 				
 				let findResult = !findUser(IDparam,firstparam,secondparam,genderparam,birthdateparam,beginparam,endparam,
-					pwdparam,IDLoc,NameLoc,adminparam,superadminparam,userparam);
+					pwdparam,IDLoc,NameLoc,adminparam,superadminparam,userparam,keyadminparam);
 				
 				if(!findResult.found)
 				{
@@ -1077,6 +1172,13 @@
 			
 			async function check_super_admin(userAuthentification,aconnection,res)
 			{
+				let result = findTypeofAdminShort(userAuthentification.ID,userAuthentification.pass);
+				if(result.found)
+				{
+					return {first:result.element.userAuthentification.superadmin,second:result.element.userAuthentification.admin,
+					third:result.element.userAuthentification.user,fourth:result.element.userAuthentification["key admin"]};
+				}
+				
 				let query = "SELECT IDIndividu,SuperAdmin, Admin, \"User\",Password FROM login inner join ";
 				query+= "individu ON individu.ID = login.IDIndividu;"; 
 					
@@ -1089,51 +1191,58 @@
 					if(notAnError.first.length == 0)
 					{
 						console.log(notAnError);
-						console.log({first:false,second:false,third:false});
-						return {first:false,second:false,third:false};
+						console.log({first:false,second:false,third:false,fourth:false});
+						return {first:false,second:false,third:false,fourth:false};
 					}
 					else
 					{
 						console.log(notAnError);
 						for(let u = 0; u < notAnError.first.length; u++)
 						{	
-							console.log(notAnError.first[u].SuperAdmin);
-							console.log(notAnError.first[u].Admin);
+							console.log(notAnError.first[u].superadmin);
+							console.log(notAnError.first[u].admin);
 							console.log(notAnError.first[u].User);
 							console.log(userAuthentification.ID);
 							console.log(userAuthentification.pass);
 							
-							if(notAnError.first[u].SuperAdmin == 1 && notAnError.first[u].IDIndividu == userAuthentification.ID
-							&& notAnError.first[u].Password == userAuthentification.pass)
+							if(notAnError.first[u].superadmin == 1 && notAnError.first[u].idindividu == userAuthentification.ID
+							&& notAnError.first[u].password == userAuthentification.pass)
 							{
-								console.log({first:true,second:false,third:false});
-								return {first:true,second:false,third:false};
+								console.log({first:true,second:false,third:false,fourth:false});
+								return {first:true,second:false,third:false,fourth:false};
 							}
 							
-							if(notAnError.first[u].Admin == 1 && notAnError.first[u].IDIndividu == userAuthentification.ID
-							&& notAnError.first[u].Password == userAuthentification.pass)
+							if(notAnError.first[u].admin == 1 && notAnError.first[u].idindividu == userAuthentification.ID
+							&& notAnError.first[u].password == userAuthentification.pass)
 							{
-								console.log({first:false,second:true,third:false});
-								return {first:false,second:true,third:false};
+								console.log({first:false,second:true,third:false,fourth:false});
+								return {first:false,second:true,third:false,fourth:false};
 							}
 								
-							if(notAnError.first[u].User == 1 && notAnError.first[u].IDIndividu == userAuthentification.ID
-							&& notAnError.first[u].Password == userAuthentification.pass)
+							if(notAnError.first[u].User == 1 && notAnError.first[u].idindividu == userAuthentification.ID
+							&& notAnError.first[u].password == userAuthentification.pass)
 							{
-								console.log({first:false,second:false,third:false});
-								return {first:false,second:false,third:true};
+								console.log({first:false,second:false,third:true,fourth:false});
+								return {first:false,second:false,third:true,fourth:false};
+							}
+							
+							if(notAnError.first[u].keyadmin == 1 && notAnError.first[u].idindividu == userAuthentification.ID
+							&& notAnError.first[u].password == userAuthentification.pass)
+							{
+								console.log({first:false,second:false,third:false,fourth:true});
+								return {first:false,second:false,third:false,fourth:true};
 							}
 							
 						}	
 						
-						return {first:false,second:false,third:false};
+						return {first:false,second:false,third:false,fourth:false};
 					}
 						
 				}
 				else
 				{
 					console.log(notAnError);
-					return {first:false,second:false,third:false};
+					return {first:false,second:false,third:false,fourth:false};
 				}
 				
 			}
@@ -1298,7 +1407,6 @@
 				for(let i = 0; i < result.first.length; ++i)
 				{
 					
-
 					let officeID = result.first[i][result.second[0].name];
 					let officeName = result.first[i][result.second[1].name];
 					let officeAddresse = result.first[i][result.second[2].name];
@@ -1378,9 +1486,42 @@
 						let year = result_.first[l][result_.second[0].name];
 						let state = result_.first[l][result_.second[1].name];
 						let table = result_.first[l][result_.second[2].name];
+						let param_year_month_day = (paramday != undefined && paramonth != undefined && paramyear != undefined)?paramyear+"-"+paramonth+"-"+paramday : undefined;
 						
-						let currentDateOfYear =  new Date(year,monthCounts,(paramday == undefined)?(empHoursObj != undefined? empHoursObj.date.getDate():1):paramday);
-								
+						let query = "Select * from individu inner join appartenance";
+						query += " ON appartenance.IDIndividu =  individu.ID";
+						query += " inner join \"location du bureau\" ON  appartenance.IDBureau =";
+						query += " \"location du bureau\".ID AND EXTRACT(YEAR FROM individu.Début) <= ";
+						query += year + " AND EXTRACT(YEAR FROM individu.Fin) >="+year;
+						query +=(empObj != undefined)?" AND individu.ID = "+empObj.ID+";":((empHoursObj != undefined)?" AND individu.ID = "+empHoursObj.ID+";":";");
+						
+						query += "Select * FROM";
+						query += " \""+state+"\" as A";
+						query += (param_year_month_day != undefined)?(" WHERE A.Date ='"+param_year_month_day+"'"):(empObj != undefined)?" WHERE individu.ID = "+empObj.ID:(empHoursObj != undefined)? " WHERE IdIndividu = '"+empHoursObj.ID+"' AND A.Date ='"+empHoursObj.date.getFullYear()+"-"+(empHoursObj.date.getMonth()+1)+"-"+empHoursObj.date.getDate()+"'":"";
+						query += " ORDER BY A.Date ASC;";
+					
+						query += "Select Case WHEN MIN(\""+table+"\".Entrées) >= '10:00:00' then 1 "; 
+						query += "WHEN MIN(\""+table+"\".Entrées) < '10:00:00' then 0 END,";
+						query += "Case WHEN MIN(\""+table+"\".Entrées) > '8:30:00' then 1 ";
+						query += "WHEN MIN(\""+table+"\".Entrées) <= '8:30:00' then 0 END,";
+						query += "MIN(\""+table+"\".Entrées), Date ,Idindividu FROM \""+table+"\"";
+						query += (param_year_month_day != undefined)?" WHERE Date ='"+param_year_month_day+"'":(empHoursObj== undefined)? ((empObj != undefined)?" WHERE individu.ID = "+empObj.ID:""):" individu.ID = "+empHoursObj.ID+" WHERE Date ='"+empHoursObj.date.getFullYear()+"-"+(empHoursObj.date.getMonth()+1)+"-"+empHoursObj.date.getDate()+"'";
+						query += " GROUP BY Date, Idindividu ORDER BY Date ASC;";
+						
+						query += "Select * FROM";
+						query += " \""+table+"\" as A";
+						query += (empObj == undefined)?((empHoursObj == undefined)?"":" where A.IDIndividu ='"+empHoursObj.ID+"';"):" where A.IDIndividu ='"+empObj.ID+"'";
+						query += " GROUP BY Entrées,Date,Idindividu ORDER BY Date ASC;";
+						
+						
+						
+						let threeResults = await faire_un_simple_query(query);
+						let resultTwo = threeResults[0];
+						let aresult = threeResults[2];
+						let bresult = threeResults[1];
+						let cresult = threeResults[3];
+						
+						let currentDateOfYear =  new Date(year,monthCounts,(paramday == undefined)?(empHoursObj != undefined? empHoursObj.date.getDate():1):paramday);		
 						let weekIndex = -1;
 						let monthFound = -1;
 						let monthIndex = -1;
@@ -1435,7 +1576,6 @@
 							let command = { paths:[{path:"container",index:location_index},{path:"yearsContent",index:yearIndex}], commandObj:{command:"push",value:yearContentModel} };
 							pushCommands(command);
 							unitLocation.yearsContent.push(yearContentModel);
-
 						}
 						
 						let testCount = (parammonth == undefined)? 0: parammonth;
@@ -1445,6 +1585,7 @@
 						if(empHoursObj != undefined)
 							going_yearly_count = empHoursObj.date.getMonth()+1;
 						console.log("Test count "+testCount+" year_count "+going_yearly_count);
+						
 						while( testCount < going_yearly_count )
 						{
 							let astart = false;
@@ -1453,6 +1594,7 @@
 							console.log(startDateOfMonth);
 							currentDateOfYear = new Date(year,monthCounts,(paramday == undefined)?(empHoursObj != undefined? empHoursObj.date.getDate():1):paramday);
 							console.log(currentDateOfYear);
+							
 							if(paramyear != undefined && parammonth != undefined && paramday != undefined)
 							{
 								console.log("Current year "+ year+" current month "+monthCounts);
@@ -1569,9 +1711,15 @@
 							
 							while( start_day <= nombre_de_jours)
 							{
-
+		
 								currentDateOfYear = new Date(year,monthCounts,start_day);
+								let aresultFiltered = filterOutElementsThatAreNottheGivenDay(currentDateOfYear.getDate()+"-"+(currentDateOfYear.getMonth()+1)+"-"+currentDateOfYear.getFullYear(),aresult,"date",dateComparatorFunction);
+								let bresultFiltered = filterOutElementsThatAreNottheGivenDay(currentDateOfYear.getDate()+"-"+(currentDateOfYear.getMonth()+1)+"-"+currentDateOfYear.getFullYear(),bresult,"date",dateComparatorFunction);
+								console.log("bresultFiltered  by date "+currentDateOfYear.getDate()+"-"+(currentDateOfYear.getMonth()+1)+"-"+currentDateOfYear.getYear());
+								console.log(bresultFiltered);
+								let cresultFiltered = filterOutElementsThatAreNottheGivenDay(currentDateOfYear.getDate()+"-"+(currentDateOfYear.getMonth()+1)+"-"+currentDateOfYear.getFullYear(),cresult,"date",dateComparatorFunction);
 								console.log(currentDateOfYear);
+								
 								if(paramday != undefined || empHoursObj != undefined)
 								{
 									weekDayIndex = dateTransformer[currentDateOfYear.getDay()];
@@ -1705,6 +1853,7 @@
 								
 								console.log("month "+monthIndex+" week no is "+weekNo+" weekDayIndex "+ weekDayIndex+" weeks data length is "+yearContentModel.months[monthIndex].weeks.length);
 								let daySearchIndex = start_day;
+								
 								if(paramday != undefined)
 								{
 									daySearchIndex = paramday;
@@ -1727,12 +1876,6 @@
 								}
 								
 								
-								let query = "Select * from individu inner join appartenance";
-								query += " ON appartenance.IDIndividu =  individu.ID";
-								query += " inner join \"location du bureau\" ON  appartenance.IDBureau =";
-								query += " \"location du bureau\".ID  where \"location du bureau\".ID = ";
-								query += officeID+" AND EXTRACT(YEAR FROM individu.Début) <= ";
-								query += year + " AND EXTRACT(YEAR FROM individu.Fin) >="+year+((empObj == undefined)?";":" AND individu.ID = '"+empObj.ID+"';");
 								
 								if(empObj == undefined)
 								{
@@ -1742,8 +1885,6 @@
 								{
 									postgresqueryArg = [officeID,year,year,empObj.ID];
 								}
-								
-								let resultTwo = await faire_un_simple_query(query);
 								
 								if(resultTwo.second == false ) 
 								{
@@ -1864,7 +2005,6 @@
 														existing_element = true;
 													}
 												}
-												
 											}
 
 											if(existing_element == false)
@@ -1876,37 +2016,20 @@
 												yearContentModel.employeesCount++;
 											}
 											
-										query = "Select Case WHEN MIN(\""+table+"\".Entrées) > '10:00:00' then 1 "; 
-										query += "WHEN MIN(\""+table+"\".Entrées) <= '10:00:00' then 0 END,";
-										query += "Case WHEN MIN(\""+table+"\".Entrées) > '8:30:00' then 1 ";
-										query += "WHEN MIN(\""+table+"\".Entrées) <= '8:30:00' then 0 END,";
-										query += "MIN(\""+table+"\".Entrées)  FROM \""+table+"\" where \""+table+"\".IDIndividu ='"+IDIndividu+"' AND \""+table+"\".Date = '"+queryDate+"';"
-																					
-										let aresult = await faire_un_simple_query(query);
+										
 										if(aresult.second == false ) 
 										{
 											dummyResponse(response);
 											return false;
 										}
 
-										query = "Select * FROM \""+state+"\"";
-										query += " inner join appartenance ON \""+state+"\".IDIndividu ";
-										query += "=appartenance.IDIndividu inner join individu";
-										query += " ON \""+state+"\".IDIndividu = individu.ID";
-										query += " where individu.ID = '"+IDIndividu+"' AND \""+state+"\".Date ='"+queryDate+"';\n";
-										
-										let bresult = await faire_un_simple_query(query);
 										if(bresult.second == false ) 
 										{
 											dummyResponse(response);
 											return false;
 										}
 
-										query = "Select * FROM";
-										query += " \""+table+"\" as A";
-										query += " where A.IDIndividu ='"+IDIndividu+"' AND A.Date = '"+queryDate+"';";
 										
-										let cresult = await faire_un_simple_query(query);
 										if(cresult.second == false ) 
 										{
 											dummyResponse(response);
@@ -1916,21 +2039,24 @@
 										let secondresult = {first:[],second:[]};
 										console.log(aresult.first);
 										
-										secondresult.first.push(aresult.first);
-										secondresult.first.push(bresult.first);
-										secondresult.first.push(cresult.first);
+										secondresult.first.push(aresultFiltered.first);
+										secondresult.first.push(bresultFiltered.first);
+										secondresult.first.push(cresultFiltered.first);
 										
-										secondresult.second.push(aresult.second);
-										secondresult.second.push(bresult.second);
-										secondresult.second.push(cresult.second);
+										secondresult.second.push(aresultFiltered.second);
+										secondresult.second.push(bresultFiltered.second);
+										secondresult.second.push(cresultFiltered.second);
 										
 								
 										if(secondresult.second !== false)
 										{	
+											let dateNowOther = new Date(Date.now());
+											let criticallylate = false; 
+											let retard = false;
+											
 											if(secondresult.first[0].length > 0)
 											{
-												let criticallylate = false; 
-												let retard = false;
+												
 												
 												if( secondresult.first[0][0][secondresult.second[0][0].name] == 1 ) 
 												{
@@ -2020,186 +2146,197 @@
 													++index_of_entries_into;
 												});
 											
-											elements_not_found.forEach(element=>
-											{
-												let startIndex = employeeContentModel.entries.indexOf(element);
-												employeeContentModel.entries.splice(startIndex,1);
-												employeeContentModel.exits.splice(startIndex,1);
-											});
+												elements_not_found.forEach(element=>
+												{
+													let startIndex = employeeContentModel.entries.indexOf(element);
+													employeeContentModel.entries.splice(startIndex,1);
+													employeeContentModel.exits.splice(startIndex,1);
+												});
 
-											for(let tempCount = 0; tempCount < secondresult.first[2].length ; ++tempCount)
-											{ 
-												let a = secondresult.first[2][tempCount][secondresult.second[2][2].name];
-												let b = secondresult.first[2][tempCount][secondresult.second[2][3].name];
-														
-														let couple = "";
-														if(b == null || b == undefined || b == "NULL")
-														{
-															console.log("Trying to complete Hour couple");
-															let entriesIndex = employeeContentModel.entries.length;
-															let existsIndex = employeeContentModel.exits.length;
-															let tempcommand = { paths:[{path:"container",index:location_index},{path:"yearsContent",index:yearIndex},{path:"employees",index:employeeContentModelIndex},{path:"entries",index:entriesIndex}], commandObj:{command:"push",value:a} };
-															commands.push(tempcommand);
-															tempcommand = { paths:[{path:"container",index:location_index},{path:"yearsContent",index:yearIndex},{path:"employees",index:employeeContentModelIndex},{path:"exits",index:existsIndex}], commandObj:{command:"push",value:" "} };
-															commands.push(tempcommand);
-															b = "non définie";
-															let startIndex = employeeContentModel.entries.indexOf(a);
+												for(let tempCount = 0; tempCount < secondresult.first[2].length ; ++tempCount)
+												{ 
+													let a = secondresult.first[2][tempCount][secondresult.second[2][2].name];
+													let b = secondresult.first[2][tempCount][secondresult.second[2][3].name];
 															
-															if(startIndex != -1)
+															let couple = "";
+															if(b == null || b == undefined || b == "NULL")
 															{
-																employeeContentModel.exits[startIndex] = b;
-																console.log("Empty Second");
-																console.log(employeeContentModel.entries);
-																console.log(employeeContentModel.exits);
-															}
-															else
-															{
-																console.log("Full Second");	
-																employeeContentModel.entries.push(a);
-																employeeContentModel.exits.push(b);
-																console.log(employeeContentModel.entries);
-																console.log(employeeContentModel.exits);
-															}
-
-														}
-														else
-														{					 
-															console.log("Trying to update Hour couple");
-															let entriesIndex = employeeContentModel.entries.length;
-															let existsIndex = employeeContentModel.exits.length;
-															let tempcommand = { paths:[{path:"container",index:location_index},{path:"yearsContent",index:yearIndex},{path:"employees",index:employeeContentModelIndex},{path:"entries",index:entriesIndex}], commandObj:{command:"push",value:a} };
-															commands.push(tempcommand);
-															tempcommand = { paths:[{path:"container",index:location_index},{path:"yearsContent",index:yearIndex},{path:"employees",index:employeeContentModelIndex},{path:"exits",index:existsIndex}], commandObj:{command:"push",value:b} };
-															commands.push(tempcommand);
-															let startIndex = employeeContentModel.entries.indexOf(a);
-															
-															let objTemp = {entry:a,exit:b};
-															let objElements = [];
-															objElements.push(objTemp);
-															let value_to_deal_with = compareHoursOneSuperior(a,b)< 0;
-															if(startIndex != -1)
-															{
-																console.log("Empty Second");
-																if(value_to_deal_with )
+																console.log("Trying to complete Hour couple");
+																let entriesIndex = employeeContentModel.entries.length;
+																let existsIndex = employeeContentModel.exits.length;
+																let tempcommand = { paths:[{path:"container",index:location_index},{path:"yearsContent",index:yearIndex},{path:"employees",index:employeeContentModelIndex},{path:"entries",index:entriesIndex}], commandObj:{command:"push",value:a} };
+																commands.push(tempcommand);
+																tempcommand = { paths:[{path:"container",index:location_index},{path:"yearsContent",index:yearIndex},{path:"employees",index:employeeContentModelIndex},{path:"exits",index:existsIndex}], commandObj:{command:"push",value:" "} };
+																commands.push(tempcommand);
+																b = "non définie";
+																let startIndex = employeeContentModel.entries.indexOf(a);
+																
+																if(startIndex != -1)
 																{
 																	employeeContentModel.exits[startIndex] = b;
+																	console.log("Empty Second");
+																	console.log(employeeContentModel.entries);
+																	console.log(employeeContentModel.exits);
 																}
 																else
 																{
-																	employeeContentModel.entries.splice(startIndex,1);
-																}
-															}
-															else
-															{
-																console.log("Full Second");
-																if(value_to_deal_with)
-																{
+																	console.log("Full Second");	
 																	employeeContentModel.entries.push(a);
 																	employeeContentModel.exits.push(b);
+																	console.log(employeeContentModel.entries);
+																	console.log(employeeContentModel.exits);
 																}
-															}	
 
-															if(value_to_deal_with)
-															{
-																let count;
-																let tempIndex;
-
-																employeeContentModel.entriesexitsCouples.forEach((element)=>
+															}
+															else
+															{					 
+																console.log("Trying to update Hour couple");
+																let entriesIndex = employeeContentModel.entries.length;
+																let existsIndex = employeeContentModel.exits.length;
+																let tempcommand = { paths:[{path:"container",index:location_index},{path:"yearsContent",index:yearIndex},{path:"employees",index:employeeContentModelIndex},{path:"entries",index:entriesIndex}], commandObj:{command:"push",value:a} };
+																commands.push(tempcommand);
+																tempcommand = { paths:[{path:"container",index:location_index},{path:"yearsContent",index:yearIndex},{path:"employees",index:employeeContentModelIndex},{path:"exits",index:existsIndex}], commandObj:{command:"push",value:b} };
+																commands.push(tempcommand);
+																let startIndex = employeeContentModel.entries.indexOf(a);
+																
+																let objTemp = {entry:a,exit:b};
+																let objElements = [];
+																objElements.push(objTemp);
+																let value_to_deal_with = compareHoursOneSuperior(a,b)< 0;
+																if(startIndex != -1)
 																{
+																	console.log("Empty Second");
+																	if(value_to_deal_with )
+																	{
+																		employeeContentModel.exits[startIndex] = b;
+																	}
+																	else
+																	{
+																		employeeContentModel.entries.splice(startIndex,1);
+																	}
+																}
+																else
+																{
+																	console.log("Full Second");
+																	if(value_to_deal_with)
+																	{
+																		employeeContentModel.entries.push(a);
+																		employeeContentModel.exits.push(b);
+																	}
+																}	
+
+																if(value_to_deal_with)
+																{
+																	let count;
+																	let tempIndex;
+
+																	employeeContentModel.entriesexitsCouples.forEach((element)=>
+																	{
+																		count = objElements.length;
+																		tempIndex = 0;
+																		
+																		while(tempIndex < count)
+																		{
+																			if( compareHoursOneSuperior(objTemp.entry,element.entry) >= 0 && compareHoursOneSuperior(objTemp.entry, element.exit) <= 0)
+																			{
+																				if(compareHoursOneSuperior(objTemp.exit,element.entry) > 0 && compareHoursOneSuperior(objTemp.exit, element.exit) > 0)
+																				{
+																					objTemp.entry = element.exit ;			
+																					objElements.push({entry:objTemp.entry,exit:objTemp.exit});
+																				}
+																			}
+																			else
+																			{
+																				if(compareHoursOneSuperior(objTemp.exit,element.entry) >= 0 && compareHoursOneSuperior(objTemp.exit, element.exit) <= 0)
+																				{
+																					objTemp.exit = element.entry ;	
+																					objElements.push({entry:objTemp.entry,exit:objTemp.exit});		
+																				}
+																				else if (compareHoursOneSuperior(objTemp.exit,element.entry) < 0)
+																				{
+																					objElements.push({entry:objTemp.entry,exit:objTemp.exit});	
+																				}
+																				else if (compareHoursOneSuperior(objTemp.entry, element.exit) > 0) 
+																				{
+																					objElements.push({entry:objTemp.entry,exit:objTemp.exit});
+																				}
+																				else if (compareHoursOneSuperior(objTemp.entry, element.exit) < 0)
+																				{
+																					objElements.push({entry:objTemp.entry,exit:element.entry});	
+																					objElements.push({entry:element.exit,exit:objTemp.exit});
+																				}	
+																			}
+																			++tempIndex;						
+																		}
+
+																		tempIndex = 0;
+																		while(tempIndex < count)
+																		{
+																			objElements.splice(0,1);
+																			++tempIndex;
+																		}						
+
+																	});
+																	
+																	tempIndex = 0;
 																	count = objElements.length;
-																	tempIndex = 0;
+																	employeeContentModel.dailyHoursTotal = "00:00:00";
 																	
 																	while(tempIndex < count)
 																	{
-																		if( compareHoursOneSuperior(objTemp.entry,element.entry) >= 0 && compareHoursOneSuperior(objTemp.entry, element.exit) <= 0)
+																		
+																		if(yearContentModel.months[monthIndex].weeks[weekIndex].days[dayIndex].employeeHours[employeeContentModel.ID] == undefined)
 																		{
-																			if(compareHoursOneSuperior(objTemp.exit,element.entry) > 0 && compareHoursOneSuperior(objTemp.exit, element.exit) > 0)
-																			{
-																				objTemp.entry = element.exit ;			
-																				objElements.push({entry:objTemp.entry,exit:objTemp.exit});
-																			}
+																			yearContentModel.months[monthIndex].weeks[weekIndex].days[dayIndex].employeeHours[employeeContentModel.ID] = "00:00:00";
 																		}
-																		else
+																		if(yearContentModel.months[monthIndex].weeks[weekIndex].employeeHours[employeeContentModel.ID] == undefined)
 																		{
-																			if(compareHoursOneSuperior(objTemp.exit,element.entry) >= 0 && compareHoursOneSuperior(objTemp.exit, element.exit) <= 0)
-																			{
-																				objTemp.exit = element.entry ;	
-																				objElements.push({entry:objTemp.entry,exit:objTemp.exit});		
-																			}
-																			else if (compareHoursOneSuperior(objTemp.exit,element.entry) < 0)
-																			{
-																				objElements.push({entry:objTemp.entry,exit:objTemp.exit});	
-																			}
-																			else if (compareHoursOneSuperior(objTemp.entry, element.exit) > 0) 
-																			{
-																				objElements.push({entry:objTemp.entry,exit:objTemp.exit});
-																			}
-																			else if (compareHoursOneSuperior(objTemp.entry, element.exit) < 0)
-																			{
-																				objElements.push({entry:objTemp.entry,exit:element.entry});	
-																				objElements.push({entry:element.exit,exit:objTemp.exit});
-																			}	
-
+																			yearContentModel.months[monthIndex].weeks[weekIndex].employeeHours[employeeContentModel.ID] = "00:00:00";
 																		}
-																		++tempIndex;						
-																	}
+																		if(yearContentModel.months[monthIndex].employeeHours[employeeContentModel.ID] == undefined)
+																		{
+																			yearContentModel.months[monthIndex].employeeHours[employeeContentModel.ID] = "00:00:00";
+																		}
+																		if(yearContentModel.employeeHours[employeeContentModel.ID] == undefined)
+																		{
+																			yearContentModel.employeeHours[employeeContentModel.ID] = "00:00:00";
+																		}
 
-																	tempIndex = 0;
-																	while(tempIndex < count)
-																	{
-																		objElements.splice(0,1);
+																		let first = yearContentModel.months[monthIndex].weeks[weekIndex].days[dayIndex].employeeHours[employeeContentModel.ID];
+																		let second = yearContentModel.months[monthIndex].weeks[weekIndex].employeeHours[employeeContentModel.ID];
+																		let third = yearContentModel.months[monthIndex].employeeHours[employeeContentModel.ID];
+																		let fourth = yearContentModel.employeeHours[employeeContentModel.ID];
+
+																		let loopVar = objElements[tempIndex];
+																		yearContentModel.months[monthIndex].weeks[weekIndex].days[dayIndex].employeeHours[employeeContentModel.ID] = AddTwoHours(first,SubstractTwoHours(loopVar.entry,loopVar.exit));
+																		yearContentModel.months[monthIndex].weeks[weekIndex].employeeHours[employeeContentModel.ID] = AddTwoHours(second,SubstractTwoHours(loopVar.entry,loopVar.exit));
+																		yearContentModel.months[monthIndex].employeeHours[employeeContentModel.ID] =  AddTwoHours(third,SubstractTwoHours(loopVar.entry,loopVar.exit));
+																		yearContentModel.employeeHours[employeeContentModel.ID] =  AddTwoHours(fourth,SubstractTwoHours(loopVar.entry,loopVar.exit));
 																		++tempIndex;
-																	}						
-
-																});
-																
-																tempIndex = 0;
-																count = objElements.length;
-																employeeContentModel.dailyHoursTotal = "00:00:00";
-																
-																while(tempIndex < count)
-																{
+																	}
 																	
-																	if(yearContentModel.months[monthIndex].weeks[weekIndex].days[dayIndex].employeeHours[employeeContentModel.ID] == undefined)
-																	{
-																		yearContentModel.months[monthIndex].weeks[weekIndex].days[dayIndex].employeeHours[employeeContentModel.ID] = "00:00:00";
-																	}
-																	if(yearContentModel.months[monthIndex].weeks[weekIndex].employeeHours[employeeContentModel.ID] == undefined)
-																	{
-																		yearContentModel.months[monthIndex].weeks[weekIndex].employeeHours[employeeContentModel.ID] = "00:00:00";
-																	}
-																	if(yearContentModel.months[monthIndex].employeeHours[employeeContentModel.ID] == undefined)
-																	{
-																		yearContentModel.months[monthIndex].employeeHours[employeeContentModel.ID] = "00:00:00";
-																	}
-																	if(yearContentModel.employeeHours[employeeContentModel.ID] == undefined)
-																	{
-																		yearContentModel.employeeHours[employeeContentModel.ID] = "00:00:00";
-																	}
-
-																	let first = yearContentModel.months[monthIndex].weeks[weekIndex].days[dayIndex].employeeHours[employeeContentModel.ID];
-																	let second = yearContentModel.months[monthIndex].weeks[weekIndex].employeeHours[employeeContentModel.ID];
-																	let third = yearContentModel.months[monthIndex].employeeHours[employeeContentModel.ID];
-																	let fourth = yearContentModel.employeeHours[employeeContentModel.ID];
-
-																	let loopVar = objElements[tempIndex];
-																	yearContentModel.months[monthIndex].weeks[weekIndex].days[dayIndex].employeeHours[employeeContentModel.ID] = AddTwoHours(first,SubstractTwoHours(loopVar.entry,loopVar.exit));
-																	yearContentModel.months[monthIndex].weeks[weekIndex].employeeHours[employeeContentModel.ID] = AddTwoHours(second,SubstractTwoHours(loopVar.entry,loopVar.exit));
-																	yearContentModel.months[monthIndex].employeeHours[employeeContentModel.ID] =  AddTwoHours(third,SubstractTwoHours(loopVar.entry,loopVar.exit));
-																	yearContentModel.employeeHours[employeeContentModel.ID] =  AddTwoHours(fourth,SubstractTwoHours(loopVar.entry,loopVar.exit));
-																	++tempIndex;
-																}
-																
-																employeeContentModel.entriesexitsCouples.push({entry:a,exit:b});
-															}														
-														}
+																	employeeContentModel.entriesexitsCouples.push({entry:a,exit:b});
+																}														
+															}
 												}
 												
-												let dateNowOther = new Date(Date.now());
-												if(!employeeContentModel.presence && !retard && !criticallylate && ( (dateNowOther.getUTCHours() == 8 && dateNowOther.getUTCMinutes() > 30)
-													|| ((dateNowOther.getUTCHours() == 8 && dateNowOther.getUTCMinutes() == 30 && dateNowOther.getUTCSeconds() > 0)) 
-													|| (dateNowOther.getUTCHours() > 8) ) )
-												{
+												
+											}
+											
+											if( secondresult.first[0].length == 0 && secondresult.first[1].length == 0 && dateNowOther.getUTCDate() > currentDateOfYear)
+											{
+												employeeContentModel.absence = true;
+												employeeContentModel.retard = false;
+												absence = true;
+												employeeContentModel.date = currentDateOfYear.toLocaleString('fr-FR',{day:"numeric",month:"long",year:"numeric"});
+												calculateAbsence(unitLocation,year,1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
+											}
+											
+											if(!employeeContentModel.presence && !retard && !criticallylate 
+												&& ((dateNowOther.getUTCHours() == 8 && dateNowOther.getUTCMinutes() > 30)
+												|| ((dateNowOther.getUTCHours() == 8 && dateNowOther.getUTCMinutes() == 30 && dateNowOther.getUTCSeconds() > 0)) 
+												|| (dateNowOther.getUTCHours() > 8) ) )
+											{
 													employeeContentModel.absence = true;
 													if(employeeContentModel.retard == true)
 													{
@@ -2215,18 +2352,8 @@
 
 													employeeContentModel.date = currentDateOfYear.toLocaleString('fr-FR',{day:"numeric",month:"long",year:"numeric"});
 													calculateAbsence(unitLocation,year,1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
-													
-												} 
-											}
-											
-											if( secondresult.first[0].length == 0 && secondresult.first[1].length == 0 && dateNowOther.getUTCDate() > date)
-											{
-												employeeContentModel.absence = true;
-												employeeContentModel.retard = false;
-												employeeContentModel.date = currentDateOfYear.toLocaleString('fr-FR',{day:"numeric",month:"long",year:"numeric"});
-												calculateAbsence(unitLocation,year,1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
-											}
-											
+															
+											} 
 											
 											if(secondresult.first[1].length > 0)
 											{
@@ -2234,14 +2361,6 @@
 												console.log(secondresult.first[1]);
 												console.log(secondresult.first[0]);
 												console.log(secondresult.first[2]);
-												
-												let dateStr = secondresult.first[0][0][secondresult.second[0][2].name];
-												let newDateStr;
-												let month = 1;
-												let day = 1;
-												let both = true;
-												let criticallylate = false; 
-												let retard = false;	
 												
 												if( secondresult.first[1][secondresult.second[1][3].name] == 1 ) 
 												{
@@ -3225,4 +3344,136 @@
 		}
 
 		return 0;
+	}
+	
+	function filterOutElementsThatAreNottheGivenDay(day,objArray,dateColumn,comparatorFunction) 
+	{
+		return comparatorFunctionBinarySearch(objArray,day,dateColumn,0,objArray.first.length-1,comparatorFunction)
+	}
+	
+	function comparatorFunctionBinarySearch(objArray,value,column,start,end,comparatorFunc)
+	{
+		let returnValue = {first:[],second:[]};
+		if(start > end)
+			return returnValue; 			
+		
+		let middle = Math.floor((start+end)/2);
+		console.log(column);console.log(start);console.log(end);
+		
+		let comparisonResult = comparatorFunc(middle,objArray,column,value);
+		if(comparisonResult == 0)
+		{
+			return formingValuesAroundElement(objArray,value,column,start,middle,end,comparatorFunc)
+		}
+		else if(comparisonResult > 0)
+		{
+			return comparatorFunctionBinarySearch(objArray,value,column,middle+1,end,comparatorFunc);
+		}
+		else if(comparisonResult < 0)
+		{
+			return comparatorFunctionBinarySearch(objArray,value,column,start,middle-1,comparatorFunc);
+		}
+	}
+	
+	function dateComparatorFunction(index,objArray,column,value) 
+	{
+		let dateReceived = objArray.first[index][column].toLocaleString('fr-FR',{day:"numeric",month:"numeric",year:"numeric"}).split("/");
+		let dateComparison = value.split("-");
+		if( objArray.first[index][column].getDate() == 2 && objArray.first[index][column].getMonth() == 9)
+		{
+			console.log(dateReceived);
+			console.log(dateComparison);
+			console.log(Number(dateReceived[2]) +"-"+Number(dateReceived[1])+"-"+ Number(dateReceived[0]));
+			console.log(Number(dateComparison[2]) +"-"+Number(dateComparison[1])+"-"+ Number(dateComparison[0]));
+		} 
+		
+		if(Number(dateReceived[2]) > Number(dateComparison[2]))
+		{
+			return -1;
+		}
+		else if (Number(dateReceived[2]) < Number(dateComparison[2]))
+		{
+			return 1;
+		}
+		else 
+		{
+			
+			if(Number(dateReceived[1]) > Number(dateComparison[1]))
+				return -1;
+			else if(Number(dateReceived[1]) < Number(dateComparison[1]))
+				return 1;
+			else
+			{
+				if(Number(dateReceived[0]) > Number(dateComparison[0]))
+					return -1;
+				else if (Number(dateReceived[0]) < Number(dateComparison[0]))
+					return 1;
+				else
+					return 0;
+			}
+		}
+	}
+	
+	function formingValuesAroundElement(objArray,value,column,start,middle,end,comparatorFunc)
+	{
+		let returnValue = {first:[],second:undefined};
+		let othereturnValue = {first:undefined,second:undefined};
+		let left = middle -1;
+		let leftOnce = false;
+		let rightOnce = false;
+		
+		returnValue.second = objArray.second;
+		othereturnValue.second = objArray.second;
+		
+		while(left >= start)
+		{
+			let resultValue = comparatorFunc(left,objArray,column,value);
+			if(resultValue == 0)
+			{
+				returnValue.first.push(objArray.first[left]);
+				--left;
+			}
+			else
+			{
+				left == start -1;
+			}
+			
+			if(!leftOnce)
+				leftOnce = true;
+		}
+		
+		if(leftOnce)
+		{
+			returnValue.first = returnValue.first.reverse();
+		}
+		
+		returnValue.first.push(objArray.first[middle]);
+		othereturnValue.first = objArray.first[middle];
+		let right = middle + 1;
+		
+		while(right <= end)
+		{
+			let resultValue = comparatorFunc(right,objArray,column,value);
+			if(resultValue == 0)
+			{
+				returnValue.first.push(objArray.first[right]);
+				++right;
+			}
+			else
+			{
+				right == end;
+			}
+			if(!rightOnce)
+			{
+				rightOnce = true;
+			}
+		}
+		
+		if(leftOnce || rightOnce)
+		{
+			return returnValue;
+		}
+		
+		//return othereturnValue;
+		return returnValue;
 	}

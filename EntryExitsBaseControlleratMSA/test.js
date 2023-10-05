@@ -17,7 +17,7 @@ var queryArgs = [];
 	console.log(err);
 }); */
 
-faire_un_simple_query("Select * from individu inner join appartenance ON appartenance.IDIndividu =  individu.ID inner join \"location du bureau\" ON  appartenance.IDBureau = \"location du bureau\".ID  where \"location du bureau\".ID = 1 AND to_date(individu.Début,'YYYY') <= 2023 AND to_date(individu.Fin,'YYYY') >=2023;").then((resa)=>
+faire_un_simple_query("Select * from individu inner join appartenance ON appartenance.IDIndividu =  individu.ID inner join \"location du bureau\" ON  appartenance.IDBureau = \"location du bureau\".ID  where \"location du bureau\".ID = 1;Select * from individu inner join appartenance ON appartenance.IDIndividu =  individu.ID inner join \"location du bureau\" ON  appartenance.IDBureau = \"location du bureau\".ID  where \"location du bureau\".ID = 1").then((resa)=>
 	{
 		console.log(resa);
 	},(erra)=>
@@ -64,7 +64,7 @@ async function faire_un_simple_query(queryString)
 			}
 			else
 			{
-				console.log(results);
+				console.log(results.rows);
 				let firstArray = [];
 				let secondArray = [];
 						
