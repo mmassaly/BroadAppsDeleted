@@ -179,8 +179,11 @@
 				console.log("Down here");
 				if(req.url.endsWith("MCV"))
 				{
+					console.log("Before MCV file");
 					fs.readFile("SelfDescription.htm",function(err,data)
 					{
+						console.log(err);
+						console.log(data);
 						if(data != undefined)
 						{
 							res.writeHeader(200,{"Content-Type":"text/html"});
@@ -190,7 +193,6 @@
 						else
 						{
 							res.writeHeader(200,{"Content-Type":"text/html"});
-							console.log(err);
 							res.write(err);
 							res.end();
 						}
