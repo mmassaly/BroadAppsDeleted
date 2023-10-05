@@ -177,21 +177,53 @@
 			else
 			{
 				console.log("Down here");
-				fs.readFile("SelfDescription.htm",function(err,data)
+				if(req.url.endsWith("MCV"))
 				{
-					if(data != undefined)
+					fs.readFile("SelfDescription.htm",function(err,data)
 					{
-						res.writeHeader(200,{"Content-Type":"text/html"});
-						res.write(data);
-						res.end();
-					}
-					else
+						if(data != undefined)
+						{
+							res.writeHeader(200,{"Content-Type":"text/html"});
+							res.write(data);
+							res.end();
+						}
+						else
+						{
+							res.writeHeader(200,{"Content-Type":"text/html"});
+							res.write(err);
+							res.end();
+						}
+					});
+				}
+				else
+				{
+					var imageUrlReprocessed = "icons/outline_home_black_24dp.png";	
+					fs.exists(imageUrlReprocessed,function(exists)
 					{
-						res.writeHeader(200,{"Content-Type":"text/html"});
-						res.write(err);
-						res.end();
-					}
-				});
+						if(exists)
+						{
+							fs.readFile(imageUrlReprocessed,function(err,data)
+							{
+								if(err)
+								{
+									console.log(err);
+									res.end();
+								}
+								else if(data)
+								{
+									res.writeHeader(200,{"Content-Type":"image/"+imageType});
+									res.write(data);
+									res.end();
+								}
+							});
+						}
+						else
+						{
+							res.end();
+							console.log("Image file does not exist.");
+						}
+					});
+				}
 			}
 		}
 		else if(req.method === 'POST')
