@@ -1474,7 +1474,7 @@
 						dummyResponse(response);
 						return false;
 					}
-
+					console.log(query);
 					let monthCounts = 0;
 					if( (parammonth === undefined) === false)
 					{
