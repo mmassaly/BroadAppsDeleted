@@ -1697,7 +1697,8 @@
 							let monthly =  
 							{
 								month: monthCounts+1,
-								name: dateNow.toLocaleString('fr-FR',{month:"long"}),
+								yearCount: testCount,
+								name: startDateOfMonth.toLocaleString('fr-FR',{month:"long"}),
 								weeks: [],
 								employeeHours: {},
 								missions: 0,
