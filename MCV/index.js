@@ -749,7 +749,8 @@
 			var imageType = filesDup.originalFilename.split(".")[0];
 			const blob = await vercelBlob.put("assets/images/"+filesDup.originalFilename,filesDup,{
 				access: 'public',
-				contentType: 'image/'+imageType
+				contentType: 'image/'+imageType,
+				token: process.env.BLOB_READ_WRITE_TOKEN
 			});
 			
 			let image_url = blob.fileName;
