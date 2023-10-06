@@ -1082,7 +1082,7 @@
 						dummyResponse(res);
 						return {first:false,second:undefined,third:true};
 					}
-	}
+			}
 			
 			async function forced_authentification_query(userAuthentification,res)
 			{
@@ -1454,7 +1454,7 @@
 				
 				console.log("Date today is "+dateToday);
 				console.log("Info about response for officeInfo");
-				console.log(result.second);
+				//console.log(result.second);
 				
 				for(let i = 0; i < result.first.length; ++i)
 				{
