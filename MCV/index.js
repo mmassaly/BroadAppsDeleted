@@ -3,6 +3,7 @@
 	var postgres = require('pg');
 	var formidable = require('formidable');
 	var fs = require('fs');
+	var vercelBlob = require("@vercel/blob");
 	
 	let connection = undefined;
 	let precedentDate = new Date(Date.now());
@@ -182,7 +183,6 @@
 					console.log("Before MCV file");
 					fs.readFile("SelfDescription.htm",function(err,data)
 					{
-						
 						if(data != undefined)
 						{
 							res.writeHeader(200,{"Content-Type":"text/html"});
@@ -191,7 +191,6 @@
 						}
 						else if(err != undefined)
 						{
-							console.log(err);
 							res.writeHeader(200,{"Content-Type":"text/html"});
 							res.end();
 						}
@@ -747,7 +746,18 @@
 				urlObject = fields;
 			}
 			
-
+			var imageType = filesDup.originalFilename.split(".")[0];
+			const blob = await vercelBlob.put("assets/images/"+filesDup.originalFilename,filesDup,{
+				access: 'public',
+				contentType: 'image/'+imageType
+			});
+			
+			let image_url = blob.fileName;
+			/*blob.url;
+			blob.contentDisposition;
+			blob.contentType;
+			*/
+			
 			if(command === "update" || (command instanceof Array && command[0] === "update"))
 			{
 					let dealingWithArray = command instanceof Array;
@@ -781,8 +791,9 @@
 					{
 						if(dealingWithArray)
 						{
+							//in place of image url fields.imagename[0]
 							tablename = "individu";
-							querySQL = "insert into "+tablename+" values ("+fields.imagename[0]+",$$"+fields.ID[0]+"$$,$$"+fields.first[0]+"$$,$$";
+							querySQL = "insert into "+tablename+" values ($$"+image_url+"$$,$$"+fields.ID[0]+"$$,$$"+fields.first[0]+"$$,$$";
 							querySQL += fields.second[0] +"$$,'"+fields.gender[0]+"','"+fields.birthdate[0]+"',$$"+fields.function[0]+"$$,'";
 							querySQL += fields.start[0]+"','"+fields.end[0]+"');";
 							tablename = "appartenance";
@@ -793,7 +804,7 @@
 						else
 						{
 							tablename = "individu";
-							querySQL = "insert into "+tablename+" values ("+fields.imagename+",'"+fields.ID+"',$$"+fields.first+"$$,'";
+							querySQL = "insert into "+tablename+" values ($$"+image_url+"$$,'"+fields.ID+"',$$"+fields.first+"$$,'";
 							querySQL += fields.second +"','"+fields.gender+"','"+fields.birthdate+"',$$";
 							querySQL += fields["function"]+"$$,'"+fields.start+"','"+fields.end+"');";
 							tablename = "appartenance";

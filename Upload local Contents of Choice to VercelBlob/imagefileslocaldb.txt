@@ -1,0 +1,17 @@
+assets/images/computer-desk.ico : https://70gxoz4jnkgivatx.public.blob.vercel-storage.com/assets/images/computer-desk-s7XUbO7Yx06JUay9eqa7HOmj74giQN.ico
+assets/images/ease.png : https://70gxoz4jnkgivatx.public.blob.vercel-storage.com/assets/images/ease-dyFKCWaA2mUClSubqVxm6m0nmjnIcc.png
+assets/images/employee-desk.ico : https://70gxoz4jnkgivatx.public.blob.vercel-storage.com/assets/images/employee-desk-iEe0GYNVdPjgs0fVjy8pkvV5ZW1EbZ.ico
+assets/images/employee-workplace.ico : https://70gxoz4jnkgivatx.public.blob.vercel-storage.com/assets/images/employee-workplace-gRGDzI0fDy0KPiOdCQNVqxIyFm8nAa.ico
+assets/images/employee-workplace.png : https://70gxoz4jnkgivatx.public.blob.vercel-storage.com/assets/images/employee-workplace-9lkpWz3gnBuz7gviLjvZXOYVAKBuoD.png
+assets/images/employee.png : https://70gxoz4jnkgivatx.public.blob.vercel-storage.com/assets/images/employee-zQPBXz8mxpfHCoGsm1XaSYWm5L5PU3.png
+assets/images/fever.ico : https://70gxoz4jnkgivatx.public.blob.vercel-storage.com/assets/images/fever-Oc25cwLBtGkye9igudifcgh88yZpJl.ico
+assets/images/fever.png : https://70gxoz4jnkgivatx.public.blob.vercel-storage.com/assets/images/fever-Mgd5gHOpIWyv78KRWaaUmTQ44x9dWu.png
+assets/images/map-and-location.ico : https://70gxoz4jnkgivatx.public.blob.vercel-storage.com/assets/images/map-and-location-Ytak4VAxQFnBfzA0jW5pos3peKIArN.ico
+assets/images/map-and-location.png : https://70gxoz4jnkgivatx.public.blob.vercel-storage.com/assets/images/map-and-location-ojn1i7ueQqJZrbfO2JdsXVNE75eOCT.png
+assets/images/maps.ico : https://70gxoz4jnkgivatx.public.blob.vercel-storage.com/assets/images/maps-6IafQKM9ZCt4VGh6H7GWgNqSNGCKzM.ico
+assets/images/maps.png : https://70gxoz4jnkgivatx.public.blob.vercel-storage.com/assets/images/maps-N5D5fZXcZN9NHwitXniE3Ua6L7dLIs.png
+assets/images/office.ico : https://70gxoz4jnkgivatx.public.blob.vercel-storage.com/assets/images/office-H9XI7Tf1bUjrWLu4ekdgbfMrjIWKrr.ico
+assets/images/office.png : https://70gxoz4jnkgivatx.public.blob.vercel-storage.com/assets/images/office-arCnJKG2JtMiv9Qzs8udTvQajl9RDz.png
+assets/images/outline_home_black_24dp.png : https://70gxoz4jnkgivatx.public.blob.vercel-storage.com/assets/images/outline_home_black_24dp-DvyyQyxrYlxELAlLby6Px1XggZCRa0.png
+assets/images/working-employee.ico : https://70gxoz4jnkgivatx.public.blob.vercel-storage.com/assets/images/working-employee-SmnZK5opJrXSkjrK2ppckBRFAAWFdU.ico
+assets/images/working-employee.png : https://70gxoz4jnkgivatx.public.blob.vercel-storage.com/assets/images/working-employee-oxIV4VU5egvIl1nCDdPbu520OZsOaI.png
