@@ -14,6 +14,7 @@
 	let current= todaysDate;
 	let addUser_In_use = false; 
 	let commands = [];
+	let callIndex = 0;
 	//"SET @@lc_time_names = 'fr_FR';"
 		
 	var connectedguys =
@@ -136,7 +137,8 @@
 			console.log("Inside request method "+req.method);
 			console.log(req.url);
 			console.log(req.method);
-			
+			callIndex++;
+			console.log("Call index is "+callIndex);
 			var imageType = "";
 			if(req.url.endsWith(".jpeg"))
 				imageType = "jpeg";
@@ -229,6 +231,9 @@
 		}
 		else if(req.method === 'POST')
 		{
+				callIndex++;
+				console.log("Call index is "+callIndex);
+				
 				var reqData = "";
 				if(req.url == "/form")
 				{
