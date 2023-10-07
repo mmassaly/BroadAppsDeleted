@@ -17,6 +17,7 @@
 	let callIndex = 0;
 	//"SET @@lc_time_names = 'fr_FR';"
 	let charging_percentage = 0; 	
+	let base_init_exiting = false;
 	var connectedguys =
 	[	
 	];
@@ -234,6 +235,7 @@
 				callIndex++;
 				console.log("Call index is "+callIndex);
 				console.log("Charging pourcentage "+ charging_percentage+"...");
+				console.log("Base init has "+(base_init_exiting == true)?"exited" :"not exited");
 				var reqData = "";
 				if(req.url == "/form")
 				{
@@ -255,7 +257,7 @@
 							console.log("incomming request but primary object is "+primaryObject);
 							if(primaryObject == undefined)
 							{
-								res.writeHead(500,{"Content-Type":"text"});
+								res.writeHeader(200,{"Content-Type":"text"});
 								res.write("Call index is "+callIndex+"\n"
 								+"Charging pourcentage "+ charging_percentage+"...");
 								res.end();
@@ -1648,8 +1650,12 @@
 						
 						while( testCount < going_yearly_count )
 						{
-							charging_percentage = (testCount+1)*100 / going_yearly_count;
-							console.log("Monthly charging pourcentage "+ charging_percentage);
+							if(locationArgObj == undefined && empObj == undefined && empHoursObj == undefined
+							&& paramyear == undefined && parammonth == undefined && paramday == undefined)
+							{
+								charging_percentage = (testCount+1)*100 / going_yearly_count;
+								console.log("Monthly charging pourcentage "+ charging_percentage);
+							}
 							
 							let astart = false;
 							let startDateOfMonth = new Date(year,monthCounts,1);
@@ -1952,6 +1958,7 @@
 								
 								if(resultTwo.second == false ) 
 								{
+									base_init_exiting = true;
 									dummyResponse(response);
 									return false;
 								}
@@ -2083,12 +2090,14 @@
 										
 										if(aresult.second == false ) 
 										{
+											base_init_exiting = true;
 											dummyResponse(response);
 											return false;
 										}
 
 										if(bresult.second == false ) 
 										{
+											base_init_exiting = true;
 											dummyResponse(response);
 											return false;
 										}
@@ -2096,6 +2105,7 @@
 										
 										if(cresult.second == false ) 
 										{
+											base_init_exiting = true;
 											dummyResponse(response);
 											return false;
 										}
@@ -2512,6 +2522,7 @@
 										else
 										{
 											baseInit = false;
+											base_init_exiting = true;
 											console.log("Quitting");
 											if (!(response === undefined))
 											dummyResponse(response);
@@ -2522,6 +2533,7 @@
 								else
 								{
 									baseInit = false;
+									base_init_exiting = true;
 									console.log("Quitting");
 									if (!(response === undefined))
 									dummyResponse(response);
@@ -2566,7 +2578,7 @@
 				return true;
 	} 
 	
-
+	
 	function notIDDecreaseAll(location,ID)
 	{						
 		for(let yearLength = 0; yearLength < location.yearsContent; ++yearLength)
