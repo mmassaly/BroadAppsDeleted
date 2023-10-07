@@ -16,7 +16,7 @@
 	let commands = [];
 	let callIndex = 0;
 	//"SET @@lc_time_names = 'fr_FR';"
-		
+	let charging_percentage = 0; 	
 	var connectedguys =
 	[	
 	];
@@ -233,7 +233,7 @@
 		{
 				callIndex++;
 				console.log("Call index is "+callIndex);
-				
+				console.log("Charging pourcentage "+ charging_percentage+"...");
 				var reqData = "";
 				if(req.url == "/form")
 				{
@@ -256,7 +256,8 @@
 							if(primaryObject == undefined)
 							{
 								res.writeHead(500,{"Content-Type":"text"});
-								res.write("Call index is "+callIndex);
+								res.write("Call index is "+callIndex+"\n"
+								+"Charging pourcentage "+ charging_percentage+"...");
 								res.end();
 								return;
 							}
@@ -1647,6 +1648,8 @@
 						
 						while( testCount < going_yearly_count )
 						{
+							charging_percentage = (testCount+1)*100 / going_yearly_count;
+							
 							let astart = false;
 							let startDateOfMonth = new Date(year,monthCounts,1);
 							console.log(year);
