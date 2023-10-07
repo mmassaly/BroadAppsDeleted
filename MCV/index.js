@@ -235,7 +235,7 @@
 				callIndex++;
 				console.log("Call index is "+callIndex);
 				console.log("Charging pourcentage "+ charging_percentage+"...");
-				console.log("Base init has "+(base_init_exiting == true)?"exited" :"not exited");
+				console.log("Base init has "+((base_init_exiting == true)?"exited" :"not exited"));
 				var reqData = "";
 				if(req.url == "/form")
 				{
