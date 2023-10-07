@@ -264,7 +264,7 @@
 									,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
 								});
 								res.write(JSON.stringify({first: undefined,res:"Call index is "+callIndex+"\n"
-								+"Charging pourcentage "+ charging_percentage+""}));
+								+"Charging pourcentage "+ charging_percentage+"",third:true}));
 								res.end();
 								return;
 							}
