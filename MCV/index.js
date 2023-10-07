@@ -258,13 +258,13 @@
 							if(primaryObject == undefined)
 							{
 								console.log("Your response should be with the 200 code");
-								res.writeHeader(200,{"Content-Type": "text/","Access-Control-Allow-Origin":"*"
+								res.writeHeader(200,{"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
 									,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
 									,"Access-Control-Max-Age":'86400'
 									,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
 								});
-								res.write("Call index is "+callIndex+"\n"
-								+"Charging pourcentage "+ charging_percentage+"...");
+								res.write(JSON.stringify({res:"Call index is "+callIndex+"\n"
+								+"Charging pourcentage "+ charging_percentage+"..."}));
 								res.end();
 								return;
 							}
