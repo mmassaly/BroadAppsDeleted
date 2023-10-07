@@ -263,8 +263,8 @@
 									,"Access-Control-Max-Age":'86400'
 									,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
 								});
-								res.write(JSON.stringify({res:"Call index is "+callIndex+"\n"
-								+"Charging pourcentage "+ charging_percentage+"..."}));
+								res.write(JSON.stringify({first: undefined,res:"Call index is "+callIndex+"\n"
+								+"Charging pourcentage "+ charging_percentage+""}));
 								res.end();
 								return;
 							}
