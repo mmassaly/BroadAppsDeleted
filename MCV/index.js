@@ -257,6 +257,7 @@
 							console.log("incomming request but primary object is "+primaryObject);
 							if(primaryObject == undefined)
 							{
+								console.log("Your response should be with the 200 code");
 								res.writeHeader(200,{"Content-Type":"text"});
 								res.write("Call index is "+callIndex+"\n"
 								+"Charging pourcentage "+ charging_percentage+"...");
