@@ -1649,7 +1649,7 @@
 						while( testCount < going_yearly_count )
 						{
 							charging_percentage = (testCount+1)*100 / going_yearly_count;
-							console.log("Charging pourcentage "+ charging_percentage);
+							console.log("Monthly charging pourcentage "+ charging_percentage);
 							
 							let astart = false;
 							let startDateOfMonth = new Date(year,monthCounts,1);
