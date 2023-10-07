@@ -1513,11 +1513,11 @@
 					
 					if( !(paramyear === undefined  )) 
 					{
-						query = "Select * from \"manuel des tables d'entrées et de sorties\" where \"Année\" = "+paramyear+";";
+						query = "Select * from \"manuel des tables d'entrées et de sorties\" where Année" = "+paramyear+";";
 					}																																		
 					else if (empHoursObj != undefined)
 					{
-						query = "Select * from \"manuel des tables d'entrées et de sorties\" where \"Année\" = "+empHoursObj.date.getFullYear()+";";
+						query = "Select * from \"manuel des tables d'entrées et de sorties\" where Année" = "+empHoursObj.date.getFullYear()+";";
 					}
 					
 					let result_ = await faire_un_simple_query(query);
