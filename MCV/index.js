@@ -255,6 +255,7 @@
 							console.log("incomming request but primary object is "+primaryObject);
 							if(primaryObject == undefined)
 							{
+								res.write("Call index is "+callIndex);
 								res.end();
 								return;
 							}
