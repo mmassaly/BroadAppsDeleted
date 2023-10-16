@@ -137,7 +137,7 @@
 				var reqData = "";
 				if(req.url == "/form")
 				{
-					console.log("incomming request but primary object is "+primaryObject);
+					//console.log("incomming request but primary object is "+primaryObject);
 					if(primaryObject == undefined)
 					{
 						res.end();
@@ -152,13 +152,13 @@
 							reqData += data;
 						}).on("end",()=>
 						{
-							console.log("incomming request but primary object is "+primaryObject);
+							//console.log("incomming request but primary object is "+primaryObject);
 							if(primaryObject == undefined)
 							{
 								res.end();
 								return;
 							}
-							console.log(reqData);
+							//console.log(reqData);
 							let urlObject = undefined;
 							try
 							{
@@ -166,39 +166,39 @@
 							}
 							catch(ex)
 							{
-								console.log(ex);
+								//console.log(ex);
 								dummyResponse(res);
 								return;
 							}
 
-							console.log(reqData);
-							console.log(urlObject);
-							console.log("Able to continue to step 1");
+							//console.log(reqData);
+							//console.log(urlObject);
+							//console.log("Able to continue to step 1");
 							
 							if(urlObject == undefined)
 							{
-								console.log("Undefined urlObject");
+								//console.log("Undefined urlObject");
 								dummyResponse(res);
 								return;
 							}
 
-							console.log("Able to continue to step 2");
+							//console.log("Able to continue to step 2");
 							
 							let command = urlObject.command;
-							console.log("Command is update "+ command == "update");
+							//console.log("Command is update "+ command == "update");
 							
 							if(command === "update")
 							{
 								let commandArg = urlObject.cmdArg;
 								if(commandArg == undefined)
 								{
-									console.log("undefined commandArg");
+									//console.log("undefined commandArg");
 									dummyResponse(res);
 									return;
 								}
 								else if(commandArg !== "hours")
 								{
-									console.log("undefined commandArg");
+									//console.log("undefined commandArg");
 									dummyResponse(res);
 									return;
 								}
@@ -206,29 +206,29 @@
 								let userAuthentification = urlObject.userAuthentification;
 								if(userAuthentification == undefined) 
 								{
-									console.log("undefined userAuthentification");
+									//console.log("undefined userAuthentification");
 									dummyResponse(res);
 									return;
 								}
 								else
 								{
-									console.log("user authentification request received");
+									//console.log("user authentification request received");
 								}
 								
 								if(userAuthentification.ID == undefined || userAuthentification.Prenom == undefined
 									|| userAuthentification.Nom == undefined || userAuthentification.genre == undefined
 									|| userAuthentification.naissance == undefined || userAuthentification.pass == undefined)
 								{
-									console.log("undefined credentials");
+									//console.log("undefined credentials");
 									dummyResponse(res);
 									return;
 								}
 								else
 								{
-									console.log("all credentials received");
+									//console.log("all credentials received");
 								}
 
-								console.log("Trying to authenticate");
+								//console.log("Trying to authenticate");
 								forced_authentification_query(schema,userAuthentification,undefined).
 								then(
 								(tempResult)=> 
@@ -249,7 +249,7 @@
 								(error)=>
 								{
 									dummyResponse(res);
-									console.log("This guy is not an authenticated admin");
+									//console.log("This guy is not an authenticated admin");
 									return;
 								});
 							}
@@ -261,7 +261,7 @@
 									check_super_admin(schema,urlObject.userAuthentification,undefined,undefined).then(
 									(othertempResult)=>
 									{
-										console.log(othertempResult);
+										//console.log(othertempResult);
 										if(ares.first == true || ares.second == true || ares.third == true)
 										{
 											if(othertempResult.first)
@@ -318,7 +318,7 @@
 								}
 								,(aerror)=>
 								{
-									console.log(aerror);
+									//console.log(aerror);
 									dummyResponse(res,aerror);
 									return;
 								});
@@ -328,38 +328,38 @@
 								let commandArg = urlObject.cmdArg;
 								if(commandArg == undefined)
 								{
-									console.log("undefined commandArg");
+									//console.log("undefined commandArg");
 									dummyResponse(res);
 									return;
 								}
 								else
 								{
-									console.log("pull command received");
+									//console.log("pull command received");
 								}
 								
 								let userAuthentification = urlObject.userAuthentification;
 								if(userAuthentification == undefined) 
 								{
-									console.log("undefined userAuthentification");
+									//console.log("undefined userAuthentification");
 									dummyResponse(res);
 									return;
 								}
 								else
 								{
-									console.log("user authentification request received");
+									//console.log("user authentification request received");
 								}
 								
 								if(userAuthentification.ID == undefined || userAuthentification.Prenom == undefined
 									|| userAuthentification.Nom == undefined || userAuthentification.genre == undefined
 									|| userAuthentification.naissance == undefined || userAuthentification.pass == undefined)
 									{
-										console.log("undefined credentials");
+										//console.log("undefined credentials");
 										dummyResponse(res);
 										return;
 									}
 									else
 									{
-										console.log("all credentials received");
+										//console.log("all credentials received");
 									}
 									
 								let queries = [];
@@ -367,19 +367,19 @@
 								if(commandArg === "all" || commandArg === "update") 
 								{
 									let sqlConnection = connection;
-									console.log("Trying to authenticate");
+									//console.log("Trying to authenticate");
 									forced_authentification_query(schema,userAuthentification,undefined).then((tempResult)=> {
-										console.log("Result is "+tempResult);
+										//console.log("Result is "+tempResult);
 										if(tempResult)
 										{
-											console.log("This guy is authenticated");
+											//console.log("This guy is authenticated");
 											check_super_admin(schema,userAuthentification,sqlConnection,undefined).then(
 											(othertempResult)=>
 											{		
-												console.log(othertempResult);
+												//console.log(othertempResult);
 												if(othertempResult.first)
 												{
-													console.log("This guy is a primary admin");
+													//console.log("This guy is a primary admin");
 													if(primaryObject == undefined)
 													{
 														getDataForAdmin(res,undefined);
@@ -398,7 +398,7 @@
 												}
 												else if(othertempResult.second)
 												{
-													console.log("This guy is a secondary admin");
+													//console.log("This guy is a secondary admin");
 													if(primaryObject == undefined )
 													{
 														getDataForAdmin(res,undefined);
@@ -431,7 +431,7 @@
 															getDataForAdmin(res,undefined);
 														}
 													
-														console.log("This guy is a ternary admin");
+														//console.log("This guy is a ternary admin");
 														
 														let tempLocation = getLocation(primaryObject,userAuthentification.IDBureau);
 														tempLocation = Object.fromEntries(tempLocation.entries());
@@ -465,8 +465,8 @@
 														else
 														{
 															let command = getCommandGivenID(userAuthentification.ID);
-															console.log("-------------------Passed Command----------------------")
-															console.log(command);
+															//console.log("-------------------Passed Command----------------------")
+															//console.log(command);
 															res.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
 															,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
 															,"Access-Control-Max-Age":'86400'
@@ -480,24 +480,24 @@
 												}
 												else
 												{
-													console.log("No answer");
+													//console.log("No answer");
 													dummyResponse(res);
 												}	
 											},
 											(error)=> 
 											{
-												console.log(error);
+												//console.log(error);
 											});
 										}
 										else
 										{
 											dummyResponse(res);
-											console.log("This guy is not an authenticated admin");
+											//console.log("This guy is not an authenticated admin");
 											return;
 										}
 									},(error)=>
 									{
-										console.log(error);
+										//console.log(error);
 									} );
 									
 								}
@@ -524,7 +524,7 @@
 			try
 			{
 
-				console.log(startingTag);
+				//console.log(startingTag);
 				//'fr-FR',
 				baseInit = true;
 				getDataForAdmin(undefined,undefined);
@@ -532,13 +532,13 @@
 			}
 			catch(ex)
 			{
-				console.log(ex);
+				//console.log(ex);
 			}
 			
 		}
 		catch(ex)
 		{
-			console.log(ex);
+			//console.log(ex);
 		}
 	}
 	
@@ -553,8 +553,8 @@
 		
 		if(results.first.length > 0 )
 		{
-			console.log(results.second);
-			console.log(results.first);
+			//console.log(results.second);
+			//console.log(results.first);
 			nomdelaTable = results.first[0][results.second[1].name];
 		}
 		else
@@ -574,15 +574,15 @@
 			return;
 		}
 
-		console.log(empHoursObj);
+		//console.log(empHoursObj);
 		result = await getDataForAdmin(undefined,undefined,undefined,empHoursObj,undefined,undefined,undefined);
 		if(results == false)
 		{
-			console.log("Dummy Response");
+			//console.log("Dummy Response");
 			dummyResponse(res,"ajout impossible");
 			return;
 		}
-		console.log("Basic Response");
+		//console.log("Basic Response");
 
 		res.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
 								,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
@@ -596,20 +596,20 @@
 	async function formidableFileUpload(req,path,res)
 	{
 		var form = new formidable.IncomingForm();
-		console.log("Inside formidable");
+		//console.log("Inside formidable");
     	
 		await form.parse(req, async function (err, fields, files) 
 		{
 			
 			let command = fields.command;
-			console.log(fields);
-			console.log(command);
-			console.log(files);
+			//console.log(fields);
+			//console.log(command);
+			//console.log(files);
 			let filesDup = files;
 
 			if(filesDup.imgfile instanceof Array)
 				filesDup = filesDup.imgfile[0];
-			console.log(filesDup);
+			//console.log(filesDup);
 			
 
 			let mp = new Map();
@@ -656,7 +656,7 @@
 							querySQL += fields.address[0] +"','"+fields.region[0]+"','"+fields.latittude[0]+"','"+fields.longitude[0];
 							querySQL += "');";
 						}
-						console.log(fields);
+						//console.log(fields);
 					}
 					else if(commandArg === "employees" || (dealingWithArray && commandArg[0] === "employees"))
 					{
@@ -686,10 +686,10 @@
 	
 					let tempuserAuthentification = {ID:urlObject.authID,Prenom:urlObject.authPrenom,Nom:urlObject.authNom,genre:urlObject.authgenre,naissance:urlObject.authnaissance,pass:urlObject.authpass};
 					let tempResult = await forced_authentification_query(schema,tempuserAuthentification,undefined);
-					console.log(tempuserAuthentification);
-					console.log(tempResult);
-					console.log(querySQL);
-					console.log("-----------------------Result of authentification----------------------");
+					//console.log(tempuserAuthentification);
+					//console.log(tempResult);
+					//console.log(querySQL);
+					//console.log("-----------------------Result of authentification----------------------");
 					
 					if(tempResult.second != false)
 					{
@@ -706,9 +706,9 @@
 								{
 									userOfficeObject = urlObject;
 									let okresult = await  getDataForAdmin(undefined,userOfficeObject,undefined,undefined,undefined,undefined,undefined);
-									console.log("after offices getDataForAdmin");
-									console.log("res writable ended is " +res.writableEnded);
-									console.log(primaryObject.container);
+									//console.log("after offices getDataForAdmin");
+									//console.log("res writable ended is " +res.writableEnded);
+									//console.log(primaryObject.container);
 									
 									if(okresult)
 									{
@@ -720,13 +720,13 @@
 																,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
 																});
 										res.write(JSON.stringify({customtext:"OK"}));
-										console.log("no problems");
+										//console.log("no problems");
 										res.end();
 									}
 									else
 									{
 										dummyResponse(res,"Error");
-										console.log("errors problems");
+										//console.log("errors problems");
 									}
 								}
 
@@ -748,30 +748,30 @@
 																,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
 																});
 											res.write(JSON.stringify({customtext:"OK"}));
-											console.log("no problems");
+											//console.log("no problems");
 											res.end();
 										}
 										else
 										{
 											dummyResponse(res,"Erreur Interne.");	
-											console.log(cresult.first);	
+											//console.log(cresult.first);	
 										}
 									}
 									else
 									{
 										dummyResponse(res,"IDExistant");
-										console.log(bresult.first);
+										//console.log(bresult.first);
 									}
 								}
 							}
 							else
 							{
-								console.log(aresult.first);
+								//console.log(aresult.first);
 								dummyResponse(res,"IDExistant");
 							}
 						}catch(ex)
 						{
-							console.log(ex);
+							//console.log(ex);
 							dummyResponse(res,"IDExistant");
 						}
 					}
@@ -802,12 +802,12 @@
 		var postgresConnection = postgres("postgres://default:QHiOur92EwzF@ep-patient-darkness-72544749.us-east-1.postgres.vercel-storage.com:5432/verceldb");
 		if(postgresConnection == undefined)
 		{		
-			console.log("Database Connection not successful");	
-			reject(postgresConnection);
+			//console.log("Database Connection not successful");	
+			return new Promise((reject,resolve)=>{reject(postgresConnection);});
 		}
 		else 
 		{
-			resolve(postgresConnection);
+			return new Promise((reject,resolve)=>{resolve(postgresConnection);});
 		}
 	}
 
@@ -816,21 +816,25 @@
 			try
 			{
 				let connectionavecmysql = await exigencebasededonnée("");					
-				return new Promise ((resolve,reject) => {
 				let results = await connectionavecmysql`${query}`;
 				connectionavecmysql.close();
+				
+				return new Promise ((resolve,reject) => {
 				if(results == undefined)
 				{
+					console.log(err);
 					reject({first:err,second:false});
 				}
 				else
 				{
+					console.log(result);
 					resolve({first:result,second:fields});
-				}
+				}});
 			}
 			catch(ex)
 			{
 				console.log("Exception caught");
+				console.log(ex.PostgresError);
 				return new Promise((resolve,reject)=>{resolve({first:ex,second:false});});
 			}
 	}
@@ -858,13 +862,13 @@
 								
 								if( tempResult.first[i].IDIndividu == userAuthentification.ID && tempResult.first[i].Password == userAuthentification.pass) 
 								{
-									console.log("This guy is logged in.");
-									console.log(tempResult.first[i]);
+									//console.log("This guy is logged in.");
+									//console.log(tempResult.first[i]);
 									let addResult = addUser(tempResult.first[i].IDIndividu,tempResult.first[i]["Prénom"],tempResult.first[i].Nom,
 											tempResult.first[i].Genre,tempResult.first[i]['Date de naissance'].toLocaleString(undefined,{day:'numeric',month:'numeric',year:'numeric'}),tempResult.first[i]["Début"],tempResult.first[i].Fin
 											,tempResult.first[i].Password,tempResult.first[i].IDBureau,tempResult.first[i]['Nom du Bureau'],tempResult.first[i].Admin
 											,tempResult.first[i].SuperAdmin,tempResult.first[i].User);
-										console.log(connectedguys); 
+										//console.log(connectedguys); 
 									return {first:true,second:undefined,latitude:tempResult.first[i].Latitude,longitude:tempResult.first[i].Longitude,element:addResult.userAuthentification};
 								}
 
@@ -877,7 +881,7 @@
 					}
 					else 
 					{
-						console.log("Error from query " +error);
+						//console.log("Error from query " +error);
 						dummyResponse(res);
 						return {first:false,second:undefined,third:true};
 					}
@@ -902,15 +906,15 @@
 						{
 							for(let i = 0; i < tempResult.first.length; ++i)
 							{
-								console.log("ID "+tempResult.first[i].ID +" Password"+tempResult.first[i].Password);
-								console.log("ID"+userAuthentification.ID+" Password "+userAuthentification.pass);
+								//console.log("ID "+tempResult.first[i].ID +" Password"+tempResult.first[i].Password);
+								//console.log("ID"+userAuthentification.ID+" Password "+userAuthentification.pass);
 								if( tempResult.first[i].ID == userAuthentification.ID && tempResult.first[i].Password == userAuthentification.pass) 
 								{
-									console.log("This guy is logged in.");
+									//console.log("This guy is logged in.");
 									return true;
 								}
 							}
-							console.log("This guy is not logged in");
+							//console.log("This guy is not logged in");
 							if(res != undefined)
 								dummyResponse(res);
 							return false;
@@ -918,7 +922,7 @@
 					}
 					else 
 					{
-						console.log("Error from query " +error);
+						//console.log("Error from query " +error);
 						dummyResponse(res);
 						return false;
 					}
@@ -996,39 +1000,39 @@
 						
 					if(notAnError.first.length == 0)
 					{
-						console.log(notAnError);
-						console.log({first:false,second:false,third:false});
+						//console.log(notAnError);
+						//console.log({first:false,second:false,third:false});
 						return {first:false,second:false,third:false};
 					}
 					else
 					{
-						console.log(notAnError);
+						//console.log(notAnError);
 						for(let u = 0; u < notAnError.first.length; u++)
 						{	
-							console.log(notAnError.first[u].SuperAdmin);
-							console.log(notAnError.first[u].Admin);
-							console.log(notAnError.first[u].User);
-							console.log(userAuthentification.ID);
-							console.log(userAuthentification.pass);
+							//console.log(notAnError.first[u].SuperAdmin);
+							//console.log(notAnError.first[u].Admin);
+							//console.log(notAnError.first[u].User);
+							//console.log(userAuthentification.ID);
+							//console.log(userAuthentification.pass);
 							
 							if(notAnError.first[u].SuperAdmin == 1 && notAnError.first[u].IDIndividu == userAuthentification.ID
 							&& notAnError.first[u].Password == userAuthentification.pass)
 							{
-								console.log({first:true,second:false,third:false});
+								//console.log({first:true,second:false,third:false});
 								return {first:true,second:false,third:false};
 							}
 							
 							if(notAnError.first[u].Admin == 1 && notAnError.first[u].IDIndividu == userAuthentification.ID
 							&& notAnError.first[u].Password == userAuthentification.pass)
 							{
-								console.log({first:false,second:true,third:false});
+								//console.log({first:false,second:true,third:false});
 								return {first:false,second:true,third:false};
 							}
 								
 							if(notAnError.first[u].User == 1 && notAnError.first[u].IDIndividu == userAuthentification.ID
 							&& notAnError.first[u].Password == userAuthentification.pass)
 							{
-								console.log({first:false,second:false,third:false});
+								//console.log({first:false,second:false,third:false});
 								return {first:false,second:false,third:true};
 							}
 							
@@ -1040,7 +1044,7 @@
 				}
 				else
 				{
-					console.log(notAnError);
+					//console.log(notAnError);
 					return {first:false,second:false,third:false};
 				}
 				
@@ -1126,13 +1130,13 @@
 			
 			async function getDataForAdmin(response,locationArgObj,empObj,empHoursObj,paramyear,parammonth,paramday)
 			{
-				console.log(" paramyear "+paramyear+" other paramday "+paramday+" other parammonth "+parammonth);
-				console.log("Location argument "+locationArgObj+" employee argument "+empObj);
+				//console.log(" paramyear "+paramyear+" other paramday "+paramday+" other parammonth "+parammonth);
+				//console.log("Location argument "+locationArgObj+" employee argument "+empObj);
 				let query = "Select * from \"location du bureau\";";
 				
 				if(locationArgObj != undefined)
 				{
-					console.log(locationArgObj);
+					//console.log(locationArgObj);
 					query = "Select * from \"location du bureau\" where \"location du bureau\".ID = "+locationArgObj.ID+";";
 				}
 				else if(empObj != undefined)
@@ -1161,17 +1165,17 @@
 				if( locationArgObj != undefined )
 				{
 					data = primaryObject;
-					console.log("----------------------");
-					console.log(data);
+					//console.log("----------------------");
+					//console.log(data);
 					let foundValueForLocationTemp = getLocation(data,locationArgObj.ID);
 					foundValueForLocation = foundValueForLocationTemp.first;
 					if(foundValueForLocationTemp.second != undefined)
 						location_index = foundValueForLocationTemp.second;
-					console.log("----------------------");
-					console.log(data.container);
-					console.log(foundValueForLocation);
-					console.log(locationArgObj);
-					console.log("----------------------");
+					//console.log("----------------------");
+					//console.log(data.container);
+					//console.log(foundValueForLocation);
+					//console.log(locationArgObj);
+					//console.log("----------------------");
 				}
 				else if( primaryObject != undefined )
 				{
@@ -1189,16 +1193,16 @@
 				}
 				
 				let dateNow = new Date(Date.now());
-				console.log("Date today is "+dateNow.toLocaleString());
+				//console.log("Date today is "+dateNow.toLocaleString());
 				
 				let day = Number.parseInt(dateNow.toLocaleString().split("/")[0]);
 				let amonth = Number.parseInt(dateNow.toLocaleString().split("/")[1])-1;
 				let ayear = Number.parseInt(dateNow.toLocaleString().split("/")[2]);
 				let dateToday = new Date(ayear,amonth,day);
 				amonth += 1;
-				console.log("new date today is "+ dateToday.toLocaleString());
+				//console.log("new date today is "+ dateToday.toLocaleString());
 				
-				console.log("Date today is "+dateToday);
+				//console.log("Date today is "+dateToday);
 				
 				for(let i = 0; i < result.first.length; ++i)
 				{
@@ -1240,7 +1244,7 @@
 						location_index = data.container.length;
 						data.container.push(unitLocation);
 						commands.push({paths:[{path:"container",index:""}], commandObj:{command:"push",value:unitLocation}});
-						console.log("data now contains new location");
+						//console.log("data now contains new location");
 					}
 					else
 					{
@@ -1296,7 +1300,7 @@
 						{
 							if(currentDateOfYear > dateToday )
 							{
-								console.log("breaking");
+								//console.log("breaking");
 								break;
 							}
 						}
@@ -1358,15 +1362,15 @@
 							
 							if(paramyear != undefined && parammonth != undefined && paramday != undefined)
 							{
-								console.log("Current year "+ year+" current month "+monthCounts);
-								console.log("Year passed ="+paramyear+" month passed "+parammonth+" day passed "+paramday);
+								//console.log("Current year "+ year+" current month "+monthCounts);
+								//console.log("Year passed ="+paramyear+" month passed "+parammonth+" day passed "+paramday);
 							}		
 							
 							if(parammonth == undefined)
 							{
-								console.log("Current month "+ (monthCounts+1));
-								console.log("Count of TestCount "+ testCount++);
-								console.log("Début year loop for month "+(monthCounts+1)+" passing date "+currentDateOfYear+" starting date "+startDateOfMonth);
+								//console.log("Current month "+ (monthCounts+1));
+								//console.log("Count of TestCount "+ testCount++);
+								//console.log("Début year loop for month "+(monthCounts+1)+" passing date "+currentDateOfYear+" starting date "+startDateOfMonth);
 							}
 							else
 							{
@@ -1375,14 +1379,14 @@
 							
 							if(parammonth == undefined && currentDateOfYear > dateToday )
 							{
-								console.log(currentDateOfYear+" > to "+ dateToday);
-								console.log("breaking");
+								//console.log(currentDateOfYear+" > to "+ dateToday);
+								//console.log("breaking");
 								break;
 							}
 							else if(parammonth == undefined)
 							{
-								console.log("Both equal "+ (currentDateOfYear.getMonth() == startDateOfMonth.getMonth())+" Start month "+currentDateOfYear.getMonth()+" end month "+ startDateOfMonth.getMonth());
-								console.log(currentDateOfYear+" not > to "+ dateToday);
+								//console.log("Both equal "+ (currentDateOfYear.getMonth() == startDateOfMonth.getMonth())+" Start month "+currentDateOfYear.getMonth()+" end month "+ startDateOfMonth.getMonth());
+								//console.log(currentDateOfYear+" not > to "+ dateToday);
 							}
 							
 							let k = 0;
@@ -1423,13 +1427,13 @@
 
 							monthFoundAlpha = getMonth(yearContentModel,monthSearchIndex);
 							monthFound = monthFoundAlpha.first;
-							console.log("Month found is?"+monthFound);
+							//console.log("Month found is?"+monthFound);
 
 							if( monthFound == undefined && parammonth != undefined )
 							{
-								console.log(yearContentModel.months);
-								console.log("The value of paramonth is "+parammonth);
-								console.log("The length of months is "+yearContentModel.months.length)
+								//console.log(yearContentModel.months);
+								//console.log("The value of paramonth is "+parammonth);
+								//console.log("The length of months is "+yearContentModel.months.length)
 							}
 							
 							if(parammonth != undefined && monthFound == undefined)
@@ -1464,17 +1468,17 @@
 								nombre_de_jours  = empHoursObj.date.getDate();
 							}
 
-							console.log(" What is the result of the comparison " + value);
+							//console.log(" What is the result of the comparison " + value);
 							let dateTransformer = [6,0,1,2,3,4,5];
 							let offset = dateTransformer[startDateOfMonth.getDay()]-1;
-							console.log(" Day based on offset is "+currentDateOfYear.getDay()+" date is "+currentDateOfYear);
+							//console.log(" Day based on offset is "+currentDateOfYear.getDay()+" date is "+currentDateOfYear);
 							//console.log("Waw! we are corrupted");
 							
 							while( start_day <= nombre_de_jours)
 							{
 
 								currentDateOfYear = new Date(year,monthCounts,start_day);
-								console.log(currentDateOfYear);
+								//console.log(currentDateOfYear);
 								if(paramday != undefined || empHoursObj != undefined)
 								{
 									weekDayIndex = dateTransformer[currentDateOfYear.getDay()];
@@ -1486,8 +1490,8 @@
 
 								if(currentDateOfYear > dateToday )
 								{	
-									console.log(currentDateOfYear+" > to "+ dateToday);
-									console.log("breaking");
+									//console.log(currentDateOfYear+" > to "+ dateToday);
+									//console.log("breaking");
 									break;
 								}
 								
@@ -1496,7 +1500,7 @@
 								
 								queryDate = queryDate.split("/");
 								queryDate = queryDate[2]+"-"+queryDate[1]+"-"+queryDate[0];
-								console.log("Date passing is "+tempdate+" date today is "+dateToday);
+								//console.log("Date passing is "+tempdate+" date today is "+dateToday);
 								
 								let nowDate = undefined;
 								let nowDateStr = "";
@@ -1508,8 +1512,8 @@
 								//console.log("Start day is "+ start_day);
 								if( monthCounts + 1 == 7 || monthCounts == 0)
 								{
-									console.log("This day "+currentDateOfYear+" in week no "+ weekNo +" but the start day is "+start_day);
-									console.log("Offset is "+offset+" weekNo current is calculated "+Math.floor((start_day+offset)/ 7));
+									//console.log("This day "+currentDateOfYear+" in week no "+ weekNo +" but the start day is "+start_day);
+									//console.log("Offset is "+offset+" weekNo current is calculated "+Math.floor((start_day+offset)/ 7));
 								}
 								
 								if( astart == false || weekNo < (Math.floor((start_day + offset)/ 7) + 1))
@@ -1523,7 +1527,7 @@
 									
 									astart = true;
 									weekNo = Math.floor((start_day + offset)/ 7) + 1;
-									console.log("start of day "+start_day+" + offset "+offset+" Updated week no "+ weekNo);
+									//console.log("start of day "+start_day+" + offset "+offset+" Updated week no "+ weekNo);
 									
 									let week = 
 									{
@@ -1544,8 +1548,8 @@
 
 									if(empObj != undefined)
 									{
-										console.log(weekNo);
-										console.log(weekFound);		
+										//console.log(weekNo);
+										//console.log(weekFound);		
 									}
 
 									if( weekFound == undefined )
@@ -1554,28 +1558,28 @@
 										weekIndex = yearContentModel.months[monthIndex].weeks.length;
 										yearContentModel.months[monthIndex].weeks.push(week);
 										let command = { paths:[{path:"container",index:location_index},{path:"yearsContent",index:yearIndex},{path:"months",index:monthIndex},{path:"weeks",index:weekIndex}], commandObj:{command:"push",value:week} };
-										pushCommands(command);console.log("new weekIndex"+weekIndex);
+										pushCommands(command);//console.log("new weekIndex"+weekIndex);
 									
 									}
 									else
 									{
 										weekIndex = weekFoundAlpha.second;
-										console.log("old weekIndex "+weekIndex);
+										//console.log("old weekIndex "+weekIndex);
 									}
 
 								}
 								
 									
-								console.log(currentmonth); console.log(currentday); console.log(currentYear);
-								console.log(amonth); console.log(day); console.log(ayear);
-								console.log(currentDateOfYear);
+								//console.log(currentmonth); console.log(currentday); console.log(currentYear);
+								//console.log(amonth); console.log(day); console.log(ayear);
+								//console.log(currentDateOfYear);
 								
 								if( currentmonth == amonth
 									&& currentday == day && currentYear == year)
 								{	
 									nowDate = currentDateOfYear;
 									nowDateStr = day+"-"+amonth+"-"+ayear;
-									console.log("Current time is current time "+currentDateOfYear.toLocaleString('fr-FR',{day:"numeric",month:"long",year:"numeric"}));
+									//console.log("Current time is current time "+currentDateOfYear.toLocaleString('fr-FR',{day:"numeric",month:"long",year:"numeric"}));
 									unitLocation.now = currentDateOfYear.toLocaleString('fr-FR',{day:"numeric",month:"long",year:"numeric"});
 									unitLocation.nowVisible = true;
 									unitLocation.yearIndex = l;
@@ -1606,7 +1610,7 @@
 									vacationsdates:[]
 								};
 								
-								console.log("month "+monthIndex+" week no is "+weekNo+" weekDayIndex "+ weekDayIndex+" weeks data length is "+yearContentModel.months[monthIndex].weeks.length);
+								//console.log("month "+monthIndex+" week no is "+weekNo+" weekDayIndex "+ weekDayIndex+" weeks data length is "+yearContentModel.months[monthIndex].weeks.length);
 								let daySearchIndex = start_day;
 								if(paramday != undefined)
 								{
@@ -1652,7 +1656,7 @@
 										let debut = resultTwo.first[m]["Début"];
 										let end = resultTwo.first[m]["Fin"];
 										let profession = resultTwo.first[m]["Profession"];
-										console.log("Inside m which is "+m);
+										//console.log("Inside m which is "+m);
 										
 										let employeeContentModel = getEmployeeContentModel(yearContentModel.months[monthIndex].weeks[weekIndex].days[weekDayIndex],IDIndividu);
 										let employeeDescribed = undefined;
@@ -1758,7 +1762,7 @@
 
 											if(existing_element == false)
 											{
-												console.log("New Element added");
+												//console.log("New Element added");
 												let command = { paths:[{path:"container",index:location_index},{path:"yearsContent",index:yearIndex},{path:"employees",index:yearContentModel.employees.length}], commandObj:{command:"push",value:days} };
 												pushCommands(command);
 												yearContentModel.employees.push(employeeDescribed);
@@ -1802,7 +1806,7 @@
 										}
 
 										let secondresult = {first:[],second:[]};
-										console.log(aresult.first);
+										//console.log(aresult.first);
 										
 										secondresult.first.push(aresult.first);
 										secondresult.first.push(bresult.first);
@@ -1923,7 +1927,7 @@
 														let couple = "";
 														if(b == null || b == undefined || b == "NULL")
 														{
-															console.log("Trying to complete Hour couple");
+															//console.log("Trying to complete Hour couple");
 															let entriesIndex = employeeContentModel.entries.length;
 															let existsIndex = employeeContentModel.exits.length;
 															let tempcommand = { paths:[{path:"container",index:location_index},{path:"yearsContent",index:yearIndex},{path:"employees",index:employeeContentModelIndex},{path:"entries",index:entriesIndex}], commandObj:{command:"push",value:a} };
@@ -1936,23 +1940,23 @@
 															if(startIndex != -1)
 															{
 																employeeContentModel.exits[startIndex] = b;
-																console.log("Empty Second");
-																console.log(employeeContentModel.entries);
-																console.log(employeeContentModel.exits);
+																//console.log("Empty Second");
+																//console.log(employeeContentModel.entries);
+																//console.log(employeeContentModel.exits);
 															}
 															else
 															{
-																console.log("Full Second");	
+																//console.log("Full Second");	
 																employeeContentModel.entries.push(a);
 																employeeContentModel.exits.push(b);
-																console.log(employeeContentModel.entries);
-																console.log(employeeContentModel.exits);
+																//console.log(employeeContentModel.entries);
+																//console.log(employeeContentModel.exits);
 															}
 
 														}
 														else
 														{					 
-															console.log("Trying to update Hour couple");
+															//console.log("Trying to update Hour couple");
 															let entriesIndex = employeeContentModel.entries.length;
 															let existsIndex = employeeContentModel.exits.length;
 															let tempcommand = { paths:[{path:"container",index:location_index},{path:"yearsContent",index:yearIndex},{path:"employees",index:employeeContentModelIndex},{path:"entries",index:entriesIndex}], commandObj:{command:"push",value:a} };
@@ -1967,7 +1971,7 @@
 															let value_to_deal_with = compareHoursOneSuperior(a,b)< 0;
 															if(startIndex != -1)
 															{
-																console.log("Empty Second");
+																//console.log("Empty Second");
 																if(value_to_deal_with )
 																{
 																	employeeContentModel.exits[startIndex] = b;
@@ -1979,7 +1983,7 @@
 															}
 															else
 															{
-																console.log("Full Second");
+																//console.log("Full Second");
 																if(value_to_deal_with)
 																{
 																	employeeContentModel.entries.push(a);
@@ -2118,10 +2122,10 @@
 											
 											if(secondresult.first[1].length > 0)
 											{
-												console.log("Getting to know secondresult ");
-												console.log(secondresult.first[1]);
-												console.log(secondresult.first[0]);
-												console.log(secondresult.first[2]);
+												//console.log("Getting to know secondresult ");
+												//console.log(secondresult.first[1]);
+												//console.log(secondresult.first[0]);
+												//console.log(secondresult.first[2]);
 												
 												let dateStr = secondresult.first[0][0][secondresult.second[0][2].name];
 												let newDateStr;
@@ -2217,7 +2221,7 @@
 										else
 										{
 											baseInit = false;
-											console.log("Quitting");
+											//console.log("Quitting");
 											if (!(response === undefined))
 											dummyResponse(response);
 											return false;
@@ -2227,7 +2231,7 @@
 								else
 								{
 									baseInit = false;
-									console.log("Quitting");
+									//console.log("Quitting");
 									if (!(response === undefined))
 									dummyResponse(response);
 									return false;
@@ -2245,7 +2249,7 @@
 								break;	
 						}
 					}
-					console.log("end of the loop month count "+ monthCounts);
+					//console.log("end of the loop month count "+ monthCounts);
 					monthCounts = 0;
 				}
 				
@@ -2515,13 +2519,13 @@
 			
 			elements.forEach((element)=>
 			{
-				console.log(index++);
+				//console.log(index++);
 				for(let i = 0; i < element.length;++i)
 				{
-					console.log("Reaching element ID "+element[i].ID);
+					//console.log("Reaching element ID "+element[i].ID);
 					if(element[i].ID == ID)
 					{
-						console.log("Element with ID "+ID );
+						//console.log("Element with ID "+ID );
 						if(element_found == undefined)
 							element_found = element[i];
 					}
@@ -2529,7 +2533,7 @@
 			});
 		}
 
-		console.log((element_found) == undefined ? "Element with ID "+ID+" not found ":"Element with ID "+ID+" found");
+		//console.log((element_found) == undefined ? "Element with ID "+ID+" not found ":"Element with ID "+ID+" found");
 		return element_found;
 	}
 
@@ -2544,17 +2548,17 @@
 
 	function basicResponse(res)
 	{
-		console.log("Inside basic response");
-		console.log("res writable ended is " +res.writableEnded);
+		//console.log("Inside basic response");
+		//console.log("res writable ended is " +res.writableEnded);
 		if(res.writableEnded)
 			return;
-		console.log("Inside basic response");
+		//console.log("Inside basic response");
 			res.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
 									,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
 									,"Access-Control-Max-Age":'86400'
 									,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
 									});
-			console.log(JSON.stringify({customtext:"OK"}));
+			//console.log(JSON.stringify({customtext:"OK"}));
 			res.write(JSON.stringify({customtext:"OK"}));
 			res.end();
 	}
@@ -2860,13 +2864,13 @@
 		let nodupTemp = nodupTempAlpha.first;
 		let found = false;
 		nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].absencesdates.forEach((element)=>{if(dummyIDComparison(element,employeeContentModel)){found = true;}});
-		console.log("Inside absences...");
+		//console.log("Inside absences...");
 
 		if(monthIndex == 7 && weekDayIndex == 3)
 		{
-			console.log(nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].absencesdates);	
-			console.log(employeeContentModel);
-			console.log("Found is "+found);
+			//console.log(nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].absencesdates);	
+			//console.log(employeeContentModel);
+			//console.log("Found is "+found);
 		}
 
 		if(!found && offset > 0 || found && offset < 0)
@@ -2901,11 +2905,11 @@
 				if(tempValue.indexOf(employeeContentModel) > -1)
 				{
 					tempValue.splice(tempValue.indexOf(employeeContentModel),1);
-					console.log("Element has been deleted");
+					//console.log("Element has been deleted");
 				}
 				else
 				{
-					console.log("Element to be deleted has not been found");
+					//console.log("Element to be deleted has not been found");
 				}
 			}
 		}
@@ -3044,7 +3048,7 @@
 	
 	function dummyIDComparison(aElement,bElement)
 	{
-		console.log("IDOne"+aElement.ID +" = IDTwo "+bElement.ID+" is "+ aElement.ID == bElement.ID );
+		//console.log("IDOne"+aElement.ID +" = IDTwo "+bElement.ID+" is "+ aElement.ID == bElement.ID );
 		return aElement.ID == bElement.ID;
 	}
 
