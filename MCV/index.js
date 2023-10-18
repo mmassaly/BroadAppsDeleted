@@ -1922,7 +1922,7 @@
 									unitLocation.weekIndex = weekNo-1;
 								}
 								
-								if( currentDateOfYear == now )
+								if( currentDateOfYear == dateNow )
 								{
 									nowDate = currentDateOfYear;
 									nowDateStr = day+"-"+amonth+"-"+ayear;
