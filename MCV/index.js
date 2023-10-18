@@ -1458,6 +1458,8 @@
 				}
 				
 				let dateNow = new Date(Date.now());
+				console.log(dateNow.toLocaleString('fr-FR',{day:"numeric",month:"long",year:"numeric"}));
+				console.log(dateNow);
 				//console.log("Date today is "+dateNow.toLocaleString());
 				
 				let day = Number.parseInt(dateNow.toLocaleString().split("/")[0]);
