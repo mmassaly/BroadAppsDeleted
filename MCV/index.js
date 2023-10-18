@@ -1793,7 +1793,7 @@
 								if(monthCounts > dateNow.getMonth())
 								{
 									console.log(currentDateOfYear.toLocaleString('fr-FR',{day:"numeric",month:"long",year:"numeric"}));
-									console.log(year+"-"+monthCounts+"-"+year);
+									console.log(year+"-"+monthCounts+"-"+start_day);
 								}
 								
 								if(currentDateOfYear.getMonth() >= 9)
