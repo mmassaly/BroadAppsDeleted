@@ -1788,8 +1788,11 @@
 							
 							while( start_day <= nombre_de_jours)
 							{
-		
+								
 								currentDateOfYear = new Date(year,monthCounts,start_day);
+								if(monthCounts > dateNow.getMonth())
+									console.log(currentDateOfYear.toLocaleString('fr-FR',{day:"numeric",month:"long",year:"numeric"}));
+								
 								let aresultFiltered = filterOutElementsThatAreNottheGivenDay(currentDateOfYear.getDate()+"-"+(currentDateOfYear.getMonth()+1)+"-"+currentDateOfYear.getFullYear(),aresult,"date",dateComparatorFunction);
 								let bresultFiltered = filterOutElementsThatAreNottheGivenDay(currentDateOfYear.getDate()+"-"+(currentDateOfYear.getMonth()+1)+"-"+currentDateOfYear.getFullYear(),bresult,"date",dateComparatorFunction);
 								//console.log("bresultFiltered  by date "+currentDateOfYear.getDate()+"-"+(currentDateOfYear.getMonth()+1)+"-"+currentDateOfYear.getYear());
