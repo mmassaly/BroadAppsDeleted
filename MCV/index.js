@@ -1913,13 +1913,27 @@
 								{	
 									nowDate = currentDateOfYear;
 									nowDateStr = day+"-"+amonth+"-"+ayear;
-									//console.log("Current time is current time "+currentDateOfYear.toLocaleString('fr-FR',{day:"numeric",month:"long",year:"numeric"}));
+									console.log("Current time is current time "+currentDateOfYear.toLocaleString('fr-FR',{day:"numeric",month:"long",year:"numeric"}));
 									unitLocation.now = currentDateOfYear.toLocaleString('fr-FR',{day:"numeric",month:"long",year:"numeric"});
 									unitLocation.nowVisible = true;
 									unitLocation.yearIndex = l;
 									unitLocation.monthIndex = monthCounts-1;
 									unitLocation.dayIndex = weekDayIndex;
 									unitLocation.weekIndex = weekNo-1;
+								}
+								
+								if( currentDateOfYear == now )
+								{
+									nowDate = currentDateOfYear;
+									nowDateStr = day+"-"+amonth+"-"+ayear;
+									unitLocation.now = currentDateOfYear.toLocaleString('fr-FR',{day:"numeric",month:"long",year:"numeric"});
+									unitLocation.nowVisible = true;
+									unitLocation.yearIndex = l;
+									unitLocation.monthIndex = monthCounts-1;
+									unitLocation.dayIndex = weekDayIndex;
+									unitLocation.weekIndex = weekNo-1;
+									console.log("Today is set");
+									console.log("Current time is current time "+currentDateOfYear.toLocaleString('fr-FR',{day:"numeric",month:"long",year:"numeric"}));
 								}
 								
 								let options = { year: "numeric", month: "long", day: "numeric"};
