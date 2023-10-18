@@ -1465,6 +1465,11 @@
 				let day = Number.parseInt(dateNow.toLocaleString().split("/")[0]);
 				let amonth = Number.parseInt(dateNow.toLocaleString().split("/")[1])-1;
 				let ayear = Number.parseInt(dateNow.toLocaleString().split("/")[2]);
+				//console.log(day+"-"+amonth+"-"+ayear);
+				day = dateNow.getDate();
+				amonth = dateNow.getMonth();
+				ayear = dateNow.getFullYear();
+				//console.log(day+"-"+amonth+"-"+ayear);
 				let dateToday = new Date(ayear,amonth,day);
 				amonth += 1;
 				//console.log("new date today is "+ dateToday.toLocaleString());
@@ -1795,8 +1800,8 @@
 								currentDateOfYear = new Date(year,monthCounts-1,start_day);
 								if(monthCounts-1 > dateNow.getMonth())
 								{
-									console.log(currentDateOfYear.toLocaleString('fr-FR',{day:"numeric",month:"long",year:"numeric"}));
-									console.log(year+"-"+monthCounts+"-"+start_day);
+									//console.log(currentDateOfYear.toLocaleString('fr-FR',{day:"numeric",month:"long",year:"numeric"}));
+									//console.log(year+"-"+monthCounts+"-"+start_day);
 								}
 								
 								if(currentDateOfYear.getMonth() >= 9)
@@ -1908,21 +1913,24 @@
 								//console.log(amonth); console.log(day); console.log(ayear);
 								//console.log(currentDateOfYear);
 								
-								
-								
-								if( !(currentDateOfYear < dateNow) && !(currentDateOfYear > dateNow) )
-								{
+								if( currentmonth == amonth
+									&& currentday == day && currentYear == year)
+								{	
 									nowDate = currentDateOfYear;
-									nowDateStr = currentDateOfYear.getDate()+"-"+currentDateOfYear.getMonth()+"-"+currentDateOfYear.getYear();
+									nowDateStr = day+"-"+amonth+"-"+ayear;
+									console.log("Current time is current time "+currentDateOfYear.toLocaleString('fr-FR',{day:"numeric",month:"long",year:"numeric"}));
+									console.log(nowDateStr);
+									console.log(currentDateOfYear);
+									console.log(dateNow);
 									unitLocation.now = currentDateOfYear.toLocaleString('fr-FR',{day:"numeric",month:"long",year:"numeric"});
 									unitLocation.nowVisible = true;
 									unitLocation.yearIndex = l;
 									unitLocation.monthIndex = monthCounts-1;
 									unitLocation.dayIndex = weekDayIndex;
 									unitLocation.weekIndex = weekNo-1;
-									console.log("Today is set");
-									console.log("Current time is current time "+currentDateOfYear.toLocaleString('fr-FR',{day:"numeric",month:"long",year:"numeric"}));
 								}
+								
+								
 								
 								let options = { year: "numeric", month: "long", day: "numeric"};
 								let days = 
