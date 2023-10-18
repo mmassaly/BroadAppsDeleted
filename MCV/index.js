@@ -1791,7 +1791,16 @@
 								
 								currentDateOfYear = new Date(year,monthCounts,start_day);
 								if(monthCounts > dateNow.getMonth())
+								{
 									console.log(currentDateOfYear.toLocaleString('fr-FR',{day:"numeric",month:"long",year:"numeric"}));
+									console.log(year+"-"+monthCounts+"-"+year);
+								}
+								
+								if(curentDateOfYear.getMontn() >= 9)
+								{
+									console.log(currentDateOfYear.toLocaleString('fr-FR',{day:"numeric",month:"long",year:"numeric"}));
+									console.log(year+"-"+monthCounts+"-"+start_day);
+								}
 								
 								let aresultFiltered = filterOutElementsThatAreNottheGivenDay(currentDateOfYear.getDate()+"-"+(currentDateOfYear.getMonth()+1)+"-"+currentDateOfYear.getFullYear(),aresult,"date",dateComparatorFunction);
 								let bresultFiltered = filterOutElementsThatAreNottheGivenDay(currentDateOfYear.getDate()+"-"+(currentDateOfYear.getMonth()+1)+"-"+currentDateOfYear.getFullYear(),bresult,"date",dateComparatorFunction);
