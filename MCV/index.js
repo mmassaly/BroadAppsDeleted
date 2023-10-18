@@ -1549,9 +1549,10 @@
 					{
 						monthCounts = empHoursObj.date.getMonth();
 					}
-
+					let prevMonthCounts = monthCounts;
 					for (let l = 0; l < result_.first.length; ++l)
 					{
+						monthCounts = prevMonthCounts;
 						let year = result_.first[l][result_.second[0].name];
 						let state = result_.first[l][result_.second[1].name];
 						let table = result_.first[l][result_.second[2].name];
@@ -1657,31 +1658,33 @@
 						
 						while( testCount < going_yearly_count )
 						{
+							++monthCounts;
 							if(locationArgObj == undefined && empObj == undefined && empHoursObj == undefined
 							&& paramyear == undefined && parammonth == undefined && paramday == undefined)
 							{
-								charging_percentage = (testCount+1)*100 / going_yearly_count;
+								charging_percentage = (testCount)*100 / going_yearly_count;
 								//console.log("Monthly charging pourcentage "+ charging_percentage);
 							}
 							
 							let astart = false;
-							let startDateOfMonth = new Date(year,monthCounts,1);
+							let startDateOfMonth = new Date(year,testCount,1);
 							//console.log(year);
 							//console.log(startDateOfMonth);
-							currentDateOfYear = new Date(year,monthCounts,(paramday == undefined)?(empHoursObj != undefined? empHoursObj.date.getDate():1):paramday);
+							currentDateOfYear = new Date(year,monthCounts-1,(paramday == undefined)?(empHoursObj != undefined? empHoursObj.date.getDate():1):paramday);
 							//console.log(currentDateOfYear);
 							
 							if(paramyear != undefined && parammonth != undefined && paramday != undefined)
 							{
-								//console.log("Current year "+ year+" current month "+monthCounts);
+								//console.log("Current year "+ year+" current month "+monthCounts-1);
 								//console.log("Year passed ="+paramyear+" month passed "+parammonth+" day passed "+paramday);
 							}		
 							
 							if(parammonth == undefined)
 							{
-								//console.log("Current month "+ (monthCounts+1));
+								//console.log("Current month "+ (monthCounts));
 								//console.log("Count of TestCount "+ testCount++);
 								//console.log("Début year loop for month "+(monthCounts+1)+" passing date "+currentDateOfYear+" starting date "+startDateOfMonth);
+								++testCount;
 							}
 							else
 							{
@@ -1715,7 +1718,7 @@
 
 							let monthly =  
 							{
-								month: monthCounts+1,
+								month: testCount+1,
 								yearCount: testCount,
 								name: startDateOfMonth.toLocaleString('fr-FR',{month:"long"}),
 								weeks: [],
@@ -1730,7 +1733,7 @@
 							};
 
 							let monthFoundAlpha = undefined;
-							let monthSearchIndex = monthCounts+1;
+							let monthSearchIndex = testCount+1;
 							
 							if(parammonth != undefined)
 							{
@@ -1789,8 +1792,8 @@
 							while( start_day <= nombre_de_jours)
 							{
 								
-								currentDateOfYear = new Date(year,monthCounts,start_day);
-								if(monthCounts > dateNow.getMonth())
+								currentDateOfYear = new Date(year,monthCounts-1,start_day);
+								if(monthCounts-1 > dateNow.getMonth())
 								{
 									console.log(currentDateOfYear.toLocaleString('fr-FR',{day:"numeric",month:"long",year:"numeric"}));
 									console.log(year+"-"+monthCounts+"-"+start_day);
@@ -1836,11 +1839,11 @@
 								let nowDateStr = "";
 								
 								let currentday = start_day;
-								let currentmonth = monthCounts+1;
+								let currentmonth = monthCounts;
 								let currentYear = year;
 								
 								//console.log("Start day is "+ start_day);
-								if( monthCounts + 1 == 7 || monthCounts == 0)
+								if( monthCounts == 7 || monthCounts-1 == 0)
 								{
 									//console.log("This day "+currentDateOfYear+" in week no "+ weekNo +" but the start day is "+start_day);
 									//console.log("Offset is "+offset+" weekNo current is calculated "+Math.floor((start_day+offset)/ 7));
@@ -1873,7 +1876,7 @@
 										retardsCritical: 0
 									};
 									
-									let weekFoundAlpha = getWeek(yearContentModel.months[monthCounts],weekNo);
+									let weekFoundAlpha = getWeek(yearContentModel.months[monthCounts-1],weekNo);
 									let weekFound = weekFoundAlpha.first;
 
 									if(empObj != undefined)
@@ -1914,7 +1917,7 @@
 									unitLocation.now = currentDateOfYear.toLocaleString('fr-FR',{day:"numeric",month:"long",year:"numeric"});
 									unitLocation.nowVisible = true;
 									unitLocation.yearIndex = l;
-									unitLocation.monthIndex = monthCounts;
+									unitLocation.monthIndex = monthCounts-1;
 									unitLocation.dayIndex = weekDayIndex;
 									unitLocation.weekIndex = weekNo-1;
 								}
@@ -2567,13 +2570,13 @@
 								if(empHoursObj != undefined)
 									break;	
 							}	
-							monthCounts++;
+							
 							if(empHoursObj != undefined)
 								break;	
 						}
+						
 					}
-					//console.log("end of the loop month count "+ monthCounts);
-					monthCounts = 0;
+					
 				}
 				
 				if(primaryObject === undefined)
