@@ -1796,7 +1796,7 @@
 									console.log(year+"-"+monthCounts+"-"+year);
 								}
 								
-								if(curentDateOfYear.getMontn() >= 9)
+								if(currentDateOfYear.getMontn() >= 9)
 								{
 									console.log(currentDateOfYear.toLocaleString('fr-FR',{day:"numeric",month:"long",year:"numeric"}));
 									console.log(year+"-"+monthCounts+"-"+start_day);
