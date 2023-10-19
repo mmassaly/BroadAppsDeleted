@@ -1,9 +1,11 @@
+	require('dotenv').config();	
 	var http = require("http");
 	var url = require("url");
 	var postgres = require('pg');
 	var formidable = require('formidable');
 	var fs = require('fs');
 	var vercelBlob = require("@vercel/blob");
+	
 	
 	let connection = undefined;
 	let precedentDate = new Date(Date.now());
@@ -148,19 +150,20 @@
 			if(req.url.endsWith(".jpg"))
 				imageType = "jpg";
 			
-			if(req.url.endsWith(".jpeg") ||req.url.endsWith(".png") || req.url.endsWith(".jpg"))
+			if(req.url.endsWith(".jpeg") ||req.url.endsWith(".png") || req.url.endsWith(".jpg") || req.url.endsWith(".ico"))
 			{
 				var imageUrlReprocessed = req.url.substring(1,req.url.length).replaceAll("%20"," ");
 				//console.log("You bot are making an image request processed to be "+imageUrlReprocessed);
-				fs.exists(imageUrlReprocessed,function(exists)
+				fs.exists(imageUrlReprocessed,async function(exists)
 				{
+					console.log("exists = "+exists);
 					if(exists)
 					{
 						fs.readFile(imageUrlReprocessed,function(err,data)
 						{
 							if(err)
 							{
-								//console.log(err);
+								console.log(err);
 								res.end();
 							}
 							else if(data)
@@ -173,6 +176,19 @@
 					}
 					else
 					{
+						try
+						{
+							const blob = await vercelBlob.head(req.url,{
+								token: process.env.token
+							});
+							console.log(blob);
+							res.writeHeader(200,{"Content-Type":blob.contentType});
+							res.write(blob);
+						}
+						catch(ex)
+						{
+							console.log(ex);
+						}
 						res.end();
 						//console.log("Image file does not exist.");
 					}
@@ -701,15 +717,15 @@
 		+" ON DUPLICATE KEY UPDATE SET \""+nomdelaTable+"\".Sorties="+((endTime == undefined)?null:"'"+endTime+"'")+";\n";
 		results  = await faire_un_simple_query(query);
 		
-		if(results.second == false)
+		if(results.second == false || aresult.second instanceof Array)
 		{
 			dummyResponse(res);
 			return;
 		}
 
 		//console.log(empHoursObj);
-		result = await getDataForAdmin(undefined,undefined,undefined,empHoursObj,undefined,undefined,undefined);
-		if(results == false)
+		let result = await getDataForAdmin(undefined,undefined,undefined,empHoursObj,undefined,undefined,undefined);
+		if(result == false)
 		{
 			//console.log("Dummy Response");
 			dummyResponse(res,"ajout impossible");
@@ -739,10 +755,11 @@
 			//console.log(command);
 			//console.log(files);
 			let filesDup = files;
-
+			//console.log(filesDup);
+			
 			if(filesDup.imgfile instanceof Array)
 				filesDup = filesDup.imgfile[0];
-			//console.log(filesDup);
+			console.log(filesDup);
 			
 
 			let mp = new Map();
@@ -761,14 +778,6 @@
 				urlObject = fields;
 			}
 			
-			var imageType = filesDup.originalFilename.split(".")[0];
-			const blob = await vercelBlob.put("assets/images/"+filesDup.originalFilename,filesDup,{
-				access: 'public',
-				contentType: 'image/'+imageType,
-				token: process.env.BLOB_READ_WRITE_TOKEN
-			});
-			
-			let image_url = blob.fileName;
 			/*blob.url;
 			blob.contentDisposition;
 			blob.contentType;
@@ -778,6 +787,8 @@
 			{
 					let dealingWithArray = command instanceof Array;
 					let commandArg = fields.cmdArg;
+					console.log(commandArg);
+					console.log(fields.cmdArg);
 					let tablename = "";
 					let querySQL = "";
 					let doubleQuerySQL = "";
@@ -801,10 +812,23 @@
 							querySQL += fields.address[0] +"$$,$$"+fields.region[0]+"$$,'"+fields.latittude[0]+"','"+fields.longitude[0];
 							querySQL += "');";
 						}
+						//console.log(querySQL);
 						//console.log(fields);
 					}
 					else if(commandArg === "employees" || (dealingWithArray && commandArg[0] === "employees"))
 					{
+						let image_url = undefined;
+			
+						if(filesDup != undefined && filesDup.imgfile != undefined || ( filesDup.originalFilename != undefined))
+						{
+								console.log(fs.readFileSync(filesDup.filepath));
+								const blob = await vercelBlob.put("assets/images/"+filesDup.originalFilename,fs.readFileSync(filesDup.filepath),{
+									access: 'public',
+									contentType: filesDup.mimetype,
+									token: process.env.token
+								});
+								image_url = blob.url;
+						}
 						if(dealingWithArray)
 						{
 							//in place of image url fields.imagename[0]
@@ -828,6 +852,11 @@
 							tablename = "login";
 							thirdQuerySQL += "insert into "+tablename+" values ('"+fields.ID+"',$$"+fields.password+"$$,"+((fields.type == 1)?true:false)+","+((fields.type == 2)?true:false)+","+((fields.type == 3)?true:false)+","+((fields.type == 4)?true:false)+");";
 						} 
+						
+						console.log(querySQL);	
+						console.log(doubleQuerySQL);
+						console.log(thirdQuerySQL);
+					
 					}
 					
 					let tempuserAuthentification = {ID:urlObject.authID,Prenom:urlObject.authPrenom,Nom:urlObject.authNom,genre:urlObject.authgenre,naissance:urlObject.authnaissance,pass:urlObject.authpass};
@@ -843,12 +872,15 @@
 						try
 						{
 							let aresult = await faire_un_simple_query(querySQL);
-							if(aresult.second != false)
+							console.log("aresult.second "+(aresult.second != false)+" "+aresult.second);
+							if(aresult.second != false || (aresult.second instanceof Array))
 							{
 								let userTimeObject = undefined;
 								let userOfficeObject = undefined;
 								let userAdditionObject = undefined;
-								
+								console.log(commandArg[0]);
+								console.log(commandArg);
+								console.log(dealingWithArray);
 								if (commandArg === "offices" || (dealingWithArray && commandArg[0] === "offices"))
 								{
 									userOfficeObject = urlObject;
@@ -880,15 +912,15 @@
 								if(commandArg === "employees" || (dealingWithArray && commandArg[0] === "employees"))
 								{
 									let bresult = await faire_un_simple_query(doubleQuerySQL);
-									if(bresult.second != false)
+									if(bresult.second != false || bresult.second instanceof Array)
 									{
 										let cresult = await faire_un_simple_query(thirdQuerySQL);
-										if(cresult.second != false)
+										if(cresult.second != false || cresult.second instanceof Array)
 										{
 											userAdditionObject = urlObject;
 											await  getDataForAdmin(undefined,undefined,userAdditionObject,undefined,undefined,undefined,undefined);
-											let fs = require('fs');
-											await fs.rename(filesDup.filepath, path + filesDup.originalFilename,function(err_){});
+											//let fs = require('fs');
+											//await fs.rename(filesDup.filepath, path + filesDup.originalFilename,function(err_){});
 											res.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
 																,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
 																,"Access-Control-Max-Age":'86400'
@@ -1635,6 +1667,7 @@
 								year: year,
 								index: l,
 								employees:[],
+								empDic:{},
 								employeesCount: 0,
 								months: [],
 								employeeHours: {},
@@ -1723,7 +1756,7 @@
 
 							let monthly =  
 							{
-								month: testCount+1,
+								month: testCount,
 								yearCount: testCount,
 								name: startDateOfMonth.toLocaleString('fr-FR',{month:"long"}),
 								weeks: [],
@@ -1937,6 +1970,13 @@
 								{
 									date: currentDateOfYear.toLocaleString('fr-FR',options),
 									day: currentDateOfYear.getDate(),
+									empDicofAbsences:{},
+									empDicofMissions:{},
+									empDicofPresences:{},
+									empDicofSicknesses:{},
+									empDicofCritical:{},
+									empDicofRetards:{},
+									empDicofVacances:{}, 
 									absences: 0,
 									employeeHours: {},
 									absencesdates: [],
@@ -2058,7 +2098,148 @@
 												strings: [],
 												profession: profession,
 												startdate: debut.toLocaleString('fr-FR',{day:"numeric",month:"long",year:"numeric"}),
-												enddate: end.toLocaleString('fr-FR',{day:"numeric",month:"long",year:"numeric"})
+												enddate: end.toLocaleString('fr-FR',{day:"numeric",month:"long",year:"numeric"}),
+												missiondates:{count:0,other:[]},
+												sicknessdates:{count:0,other:[]},
+												vacationdates:{count:0,other:[]},
+												absencedates:{count:0,other:[]},
+												presencedates:{count:0,other:[]},
+												retarddates:{count:0,other:[]},
+												criticalretarddates:{count:0,other:[]},
+												overallretarddates:{count:0,other:[]},
+												months: [
+													{
+														month:"Janvier",
+														missiondates:{count:0,other:[]},
+														presencedates:{count:0,other:[]},
+														vacationdates:{count:0,other:[]},
+														absencedates:{count:0,other:[]},
+														sicknessdates:{count:0,other:[]},
+														retarddates:{count:0,other:[]},
+														criticalretarddates:{count:0,other:[]},
+														overallretarddates:{count:0,other:[]}
+													},
+													{
+														month:"Février",
+														missiondates:{count:0,other:[]},
+														presencedates:{count:0,other:[]},
+														vacationdates:{count:0,other:[]},
+														absencedates:{count:0,other:[]},
+														sicknessdates:{count:0,other:[]},
+														retarddates:{count:0,other:[]},
+														criticalretarddates:{count:0,other:[]},
+														overallretarddates:{count:0,other:[]}
+													},
+													{
+														month:"Mars",
+														missiondates:{count:0,other:[]},
+														presencedates:{count:0,other:[]},
+														vacationdates:{count:0,other:[]},
+														absencedates:{count:0,other:[]},
+														sicknessdates:{count:0,other:[]},
+														retarddates:{count:0,other:[]},
+														criticalretarddates:{count:0,other:[]},
+														overallretarddates:{count:0,other:[]}
+													},
+													{
+														month:"Avril",
+														missiondates:{count:0,other:[]},
+														presencedates:{count:0,other:[]},
+														vacationdates:{count:0,other:[]},
+														absencedates:{count:0,other:[]},
+														sicknessdates:{count:0,other:[]},
+														retarddates:{count:0,other:[]},
+														criticalretarddates:{count:0,other:[]},
+														overallretarddates:{count:0,other:[]}
+													},
+													{
+														month:"Mai",
+														missiondates:{count:0,other:[]},
+														presencedates:{count:0,other:[]},
+														vacationdates:{count:0,other:[]},
+														absencedates:{count:0,other:[]},
+														sicknessdates:{count:0,other:[]},
+														retarddates:{count:0,other:[]},
+														criticalretarddates:{count:0,other:[]},
+														overallretarddates:{count:0,other:[]}
+													},
+													{
+														month:"Juin",
+														missiondates:{count:0,other:[]},
+														presencedates:{count:0,other:[]},
+														vacationdates:{count:0,other:[]},
+														absencedates:{count:0,other:[]},
+														sicknessdates:{count:0,other:[]},
+														retarddates:{count:0,other:[]},
+														criticalretarddates:{count:0,other:[]},
+														overallretarddates:{count:0,other:[]}
+													},
+													{
+														month:"Juillet",
+														missiondates:{count:0,other:[]},
+														presencedates:{count:0,other:[]},
+														vacationdates:{count:0,other:[]},
+														absencedates:{count:0,other:[]},
+														sicknessdates:{count:0,other:[]},
+														retarddates:{count:0,other:[]},
+														criticalretarddates:{count:0,other:[]},
+														overallretarddates:{count:0,other:[]}
+													},
+													{
+														month:"Août",
+														missiondates:{count:0,other:[]},
+														presencedates:{count:0,other:[]},
+														vacationdates:{count:0,other:[]},
+														absencedates:{count:0,other:[]},
+														sicknessdates:{count:0,other:[]},
+														retarddates:{count:0,other:[]},
+														criticalretarddates:{count:0,other:[]},
+														overallretarddates:{count:0,other:[]}
+													},
+													{
+														month:"Septembre",
+														missiondates:{count:0,other:[]},
+														presencedates:{count:0,other:[]},
+														vacationdates:{count:0,other:[]},
+														absencedates:{count:0,other:[]},
+														sicknessdates:{count:0,other:[]},
+														retarddates:{count:0,other:[]},
+														criticalretarddates:{count:0,other:[]},
+														overallretarddates:{count:0,other:[]}
+													},
+													{
+														month:"Octobre",
+														missiondates:{count:0,other:[]},
+														presencedates:{count:0,other:[]},
+														vacationdates:{count:0,other:[]},
+														absencedates:{count:0,other:[]},
+														sicknessdates:{count:0,other:[]},
+														retarddates:{count:0,other:[]},
+														criticalretarddates:{count:0,other:[]},
+														overallretarddates:{count:0,other:[]}
+													},
+													{
+														month:"Novembre",
+														missiondates:{count:0,other:[]},
+														presencedates:{count:0,other:[]},
+														vacationdates:{count:0,other:[]},
+														absencedates:{count:0,other:[]},
+														sicknessdates:{count:0,other:[]},
+														retarddates:{count:0,other:[]},
+														criticalretarddates:{count:0,other:[]},
+														overallretarddates:{count:0,other:[]}
+													},
+													{
+														month:"Décembre",
+														missiondates:{count:0,other:[]},
+														presencedates:{count:0,other:[]},
+														vacationdates:{count:0,other:[]},
+														absencedates:{count:0,other:[]},
+														sicknessdates:{count:0,other:[]},
+														retarddates:{count:0,other:[]},
+														criticalretarddates:{count:0,other:[]},
+														overallretarddates:{count:0,other:[]}
+													}]
 											};
 
 											if(imgsrc == undefined)
@@ -2117,6 +2298,7 @@
 												let command = { paths:[{path:"container",index:location_index},{path:"yearsContent",index:yearIndex},{path:"employees",index:yearContentModel.employees.length}], commandObj:{command:"push",value:days} };
 												pushCommands(command);
 												yearContentModel.employees.push(employeeDescribed);
+												yearContentModel.empDic[employeeDescribed.ID] = employeeDescribed;
 												yearContentModel.employeesCount++;
 											}
 											
@@ -2154,6 +2336,24 @@
 										secondresult.second.push(bresultFiltered.second);
 										secondresult.second.push(cresultFiltered.second);
 										
+										if(yearContentModel.months[monthIndex].weeks[weekIndex].days[dayIndex].employeeHours[employeeContentModel.ID] == undefined)
+										{
+											yearContentModel.months[monthIndex].weeks[weekIndex].days[dayIndex].employeeHours[employeeContentModel.ID] = "00:00:00";
+										}
+										if(yearContentModel.months[monthIndex].weeks[weekIndex].employeeHours[employeeContentModel.ID] == undefined)
+										{
+											yearContentModel.months[monthIndex].weeks[weekIndex].employeeHours[employeeContentModel.ID] = "00:00:00";
+										}
+										if(yearContentModel.months[monthIndex].employeeHours[employeeContentModel.ID] == undefined)
+										{
+											yearContentModel.months[monthIndex].employeeHours[employeeContentModel.ID] = "00:00:00";
+										}
+										if(yearContentModel.employeeHours[employeeContentModel.ID] == undefined)
+										{
+											yearContentModel.employeeHours[employeeContentModel.ID] = "00:00:00";
+										}
+								
+
 								
 										if(secondresult.second !== false)
 										{	
@@ -2163,7 +2363,6 @@
 											
 											if(secondresult.first[0].length > 0)
 											{
-												
 												
 												if( secondresult.first[0][0][secondresult.second[0][0].name] == 1 ) 
 												{
@@ -2392,23 +2591,6 @@
 																	while(tempIndex < count)
 																	{
 																		
-																		if(yearContentModel.months[monthIndex].weeks[weekIndex].days[dayIndex].employeeHours[employeeContentModel.ID] == undefined)
-																		{
-																			yearContentModel.months[monthIndex].weeks[weekIndex].days[dayIndex].employeeHours[employeeContentModel.ID] = "00:00:00";
-																		}
-																		if(yearContentModel.months[monthIndex].weeks[weekIndex].employeeHours[employeeContentModel.ID] == undefined)
-																		{
-																			yearContentModel.months[monthIndex].weeks[weekIndex].employeeHours[employeeContentModel.ID] = "00:00:00";
-																		}
-																		if(yearContentModel.months[monthIndex].employeeHours[employeeContentModel.ID] == undefined)
-																		{
-																			yearContentModel.months[monthIndex].employeeHours[employeeContentModel.ID] = "00:00:00";
-																		}
-																		if(yearContentModel.employeeHours[employeeContentModel.ID] == undefined)
-																		{
-																			yearContentModel.employeeHours[employeeContentModel.ID] = "00:00:00";
-																		}
-
 																		let first = yearContentModel.months[monthIndex].weeks[weekIndex].days[dayIndex].employeeHours[employeeContentModel.ID];
 																		let second = yearContentModel.months[monthIndex].weeks[weekIndex].employeeHours[employeeContentModel.ID];
 																		let third = yearContentModel.months[monthIndex].employeeHours[employeeContentModel.ID];
@@ -3138,6 +3320,9 @@
 			if(!found)
 			{
 				nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].presencedates.push(employeeContentModel);
+				nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].empDicofPresences[employeeContentModel.ID] = employeeContentModel;
+				nodupTemp.empDic[employeeContentModel.ID].presencedates.other.push(employeeContentModel.date);
+				nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].presencedates.other.push(employeeContentModel.date);
 			}
 		}
 		else
@@ -3147,6 +3332,19 @@
 				let tempValue = nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].presencedates;
 				if(tempValue.indexOf(employeeContentModel) > -1)
 					tempValue.splice(tempValue.indexOf(employeeContentModel),1);
+				
+				tempValue = nodupTemp.empDic[employeeContentModel.ID].presencedates.other;
+				let temp_index = tempValue.indexOf(employeeContentModel.date);
+				if(temp_index > -1)
+					tempValue.splice(temp_index,1);
+					
+				tempValue = nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].presencedates.other; 
+				temp_index = tempValue.indexOf(employeeContentModel.date);
+				if(temp_index > -1)
+					tempValue.splice(temp_index,1);
+
+				nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].empDicofPresences[employeeContentModel.ID] = undefined;
+				
 			}
 		}
 			
@@ -3180,15 +3378,32 @@
 		if(offset>0)
 		{
 			if(!found)
-			nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].sicknessesdates.push(employeeContentModel);
+			{
+				nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].sicknessesdates.push(employeeContentModel);
+				nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].empDicofSicknesses[employeeContentModel.ID] = employeeContentModel;
+				nodupTemp.empDic[employeeContentModel.ID].sicknessdates.other.push(employeeContentModel.date);
+				nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].sicknessdates.other.push(employeeContentModel.date);
+			}
 		}
 		else
 		{
 			if(found)
 			{
-				let tempValue = nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].sicknessesdates;
+				let tempValue = nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].sicknessdates;
 				if(tempValue.indexOf(employeeContentModel) > -1)
 					tempValue.splice(tempValue.indexOf(employeeContentModel),1);
+				
+				tempValue = nodupTemp.empDic[employeeContentModel.ID].sicknessdates.other;
+				let temp_index = tempValue.indexOf(employeeContentModel.date);
+				if(temp_index > -1)
+					tempValue.splice(temp_index,1);
+						
+				tempValue = nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].sicknessdates.other; 
+				temp_index = tempValue.indexOf(employeeContentModel.date);
+				if(temp_index > -1)
+					tempValue.splice(temp_index,1);
+				
+				nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].empDicofSicknesses[employeeContentModel.ID] = undefined;
 			}
 		}
 														
@@ -3230,7 +3445,12 @@
 		if(offset > 0)
 		{	
 			if(!found)
-			nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].absencesdates.push(employeeContentModel);
+			{
+				nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].empDicofAbsences[employeeContentModel.ID] = employeeContentModel;
+				nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].absencesdates.push(employeeContentModel);
+				nodupTemp.empDic[employeeContentModel.ID].absencedates.other.push(employeeContentModel.date);
+				nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].absencedates.other.push(employeeContentModel.date);
+			}
 		}
 		else
 		{
@@ -3247,6 +3467,19 @@
 				{
 					//console.log("Element to be deleted has not been found");
 				}
+				
+				tempValue = nodupTemp.empDic[employeeContentModel.ID].absencedates.other;
+				let temp_index = tempValue.indexOf(employeeContentModel.date);
+				if(temp_index > -1)
+					tempValue.splice(temp_index,1);
+						
+				tempValue = nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].absencedates.other; 
+				temp_index = tempValue.indexOf(employeeContentModel.date);
+				if(temp_index > -1)
+					tempValue.splice(temp_index,1);
+
+				nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].empDicofAbsences[employeeContentModel.ID] = undefined;
+				
 			}
 		}
 
@@ -3282,6 +3515,13 @@
 			if(!found)
 			{
 				nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].retardsdates.push(employeeContentModel);
+				nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].empDicofRetards[employeeContentModel.ID] = employeeContentModel;
+	
+				nodupTemp.empDic[employeeContentModel.ID].retarddates.other.push(employeeContentModel.date);
+				nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].retarddates.other.push(employeeContentModel.date);
+				
+				nodupTemp.empDic[employeeContentModel.ID].overallretarddates.other.push(employeeContentModel.date);
+				nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].overallretarddates.other.push(employeeContentModel.date);
 			}
 		}
 		else
@@ -3291,6 +3531,29 @@
 				let tempValue = nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].retardsdates;
 				if(tempValue.indexOf(employeeContentModel) > -1)
 					tempValue.splice(tempValue.indexOf(employeeContentModel),1);
+
+				tempValue = nodupTemp.empDic[employeeContentModel.ID].retarddates.other;
+				let temp_index = tempValue.indexOf(employeeContentModel.date);
+				if(temp_index > -1)
+					tempValue.splice(temp_index,1);
+						
+				tempValue = nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].retarddates.other; 
+				temp_index = tempValue.indexOf(employeeContentModel.date);
+				if(temp_index > -1)
+					tempValue.splice(temp_index,1);
+
+				tempValue = nodupTemp.empDic[employeeContentModel.ID].overallretarddates.other;
+				temp_index = tempValue.indexOf(employeeContentModel.date);
+				if(temp_index > -1)
+					tempValue.splice(temp_index,1);
+						
+				tempValue = nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].overallretarddates.other; 
+				temp_index = tempValue.indexOf(employeeContentModel.date);
+				if(temp_index > -1)
+					tempValue.splice(temp_index,1);
+				
+				nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].empDicofRetards[employeeContentModel.ID] = undefined;
+			
 			}
 		}												
 	}
@@ -3326,6 +3589,12 @@
 			if(!found)
 			{
 				nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].retardsdates.push(employeeContentModel);
+				nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].empDicofRetards[employeeContentModel.ID] = employeeContentModel;
+				nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].retardsdates.push(employeeContentModel);
+				nodupTemp.empDic[employeeContentModel.ID].criticalretarddates.other.push(employeeContentModel.date);
+				nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].criticalretarddates.other.push(employeeContentModel.date);
+				nodupTemp.empDic[employeeContentModel.ID].overallretarddates.other.push(employeeContentModel.date);
+				nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].overallretarddates.other.push(employeeContentModel.date);
 			}
 		}
 		else
@@ -3335,6 +3604,29 @@
 				let tempValue = nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].retardsdates;
 				if(tempValue.indexOf(employeeContentModel) > -1)
 					tempValue.splice(tempValue.indexOf(employeeContentModel),1);
+				
+				tempValue = nodupTemp.empDic[employeeContentModel.ID].criticalretarddates.other;
+				let temp_index = tempValue.indexOf(employeeContentModel.date);
+				if(temp_index > -1)
+					tempValue.splice(temp_index,1);
+						
+				tempValue = nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].criticalretarddates.other; 
+				temp_index = tempValue.indexOf(employeeContentModel.date);
+				if(temp_index > -1)
+					tempValue.splice(temp_index,1);
+
+				tempValue = nodupTemp.empDic[employeeContentModel.ID].overallretarddates.other;
+				temp_index = tempValue.indexOf(employeeContentModel.date);
+				if(temp_index > -1)
+					tempValue.splice(temp_index,1);
+						
+				tempValue = nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].overallretarddates.other; 
+				temp_index = tempValue.indexOf(employeeContentModel.date);
+				if(temp_index > -1)
+					tempValue.splice(temp_index,1);
+
+				nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].empDicofRetards[employeeContentModel.ID] = undefined;
+				
 			}
 		}						
 
@@ -3368,7 +3660,12 @@
 		if(offset > 0)
 		{
 			if(!found)
-			nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].missionsdates.push(employeeContentModel);
+			{
+				nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].empDicofMissions[employeeContentModel.ID]= employeeContentModel;
+				nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].missionsdates.push(employeeContentModel);
+				nodupTemp.empDic[employeeContentModel.ID].missiondates.other.push(employeeContentModel.date);
+				nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].missiondates.other.push(employeeContentModel.date);
+			}
 		}
 		else
 		{
@@ -3377,6 +3674,18 @@
 				let tempValue = nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].missionsdates;
 				if(tempValue.indexOf(employeeContentModel) > -1)
 					tempValue.splice(tempValue.indexOf(employeeContentModel),1);
+
+				tempValue = nodupTemp.empDic[employeeContentModel.ID].missiondates.other;
+				let temp_index = tempValue.indexOf(employeeContentModel.date);
+				if(temp_index > -1)
+					tempValue.splice(temp_index,1);
+						
+				tempValue = nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].missiondates.other; 
+				temp_index = tempValue.indexOf(employeeContentModel.date);
+				if(temp_index > -1)
+					tempValue.splice(temp_index,1);
+
+				nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].empDicofMissions[employeeContentModel.ID]= undefined;
 			}
 		}
 

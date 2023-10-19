@@ -1,7 +1,7 @@
 var vercelBlob = require("@vercel/blob");
 var fs = require('fs');
 require ('dotenv').config();
-var paths = ['C:\\Users\\Mamadou\\Desktop\\WebPages\\Project Timing\\my-app\\src\\assets\\icons'];
+var paths = ['C:\\Users\\Mamadou\\Desktop\\WebPages\\Project Timing\\my-app\\src\\assets\\images'];
 
 async function start(pathsofInterest)
 {
@@ -16,6 +16,8 @@ async function start(pathsofInterest)
 				console.log(pathCount);
 				console.log(pathsofInterest.length);
 				console.log(pathsofInterest);
+				let notGivenPath = pathsofInterest[pathCount];
+				
 				fs.opendir(pathsofInterest[pathCount],async function(err,dirstuff)
 				{
 					if(err)
@@ -32,19 +34,26 @@ async function start(pathsofInterest)
 					{
 						if(element.isFile())
 						{
-							console.log(element.name);
+							console.log(element.name+" element instanceof BLOB is "+(element instanceof Blob));
 							let file_ico = element.name.split(".")[1];
-							console.log(file_ico);
-							const blob = await vercelBlob.put("assets/images/"+element.name,element, {
-										access: 'public',
-										contentType:'image/'+file_ico ,
-										token: process.env.token
-							});
-							console.log(blob);
-							fs.appendFile("imagefileslocaldb.txt","assets/images/"+element.name+" : "+blob.url+"\n",function(err)
+							
+							let element_dup = element;
+							fs.readFile(notGivenPath+"\\"+element_dup.name,async function(err,data)
 							{
-								if (err) throw err;
+								const blob = await vercelBlob.put("assets/images/"+element_dup.name,data, {
+										access: 'public',
+										contentType:'image/'+element_dup.mimetype ,
+										token: process.env.token
+								});
+								console.log(blob);
+								fs.appendFile("imagefileslocaldb.txt","assets/images/"+element_dup.name+" : "+blob.url+"\n",function(err)
+								{
+										if (err) throw err;
+								}); 
 							});
+							
+							
+						
 						}
 						
 						if(element.isDirectory())
