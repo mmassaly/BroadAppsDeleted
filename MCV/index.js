@@ -1570,7 +1570,7 @@
 					}
 					
 					let result_ = await faire_un_simple_query(query);
-					if(result_.second == false ) 
+					if(result_.second == false && !(result_.second instanceof Array)) 
 					{
 						dummyResponse(response);
 						return false;
