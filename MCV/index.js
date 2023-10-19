@@ -1,4 +1,4 @@
-	require('dotenv').config();	
+	//require('dotenv').config();	
 	var http = require("http");
 	var url = require("url");
 	var postgres = require('pg');
@@ -179,7 +179,7 @@
 						try
 						{
 							const blob = await vercelBlob.head(req.url,{
-								token: process.env.token
+								token: process.env.BLOB_READ_WRITE_TOKEN
 							});
 							console.log(blob);
 							res.writeHeader(200,{"Content-Type":blob.contentType});
@@ -825,7 +825,7 @@
 								const blob = await vercelBlob.put("assets/images/"+filesDup.originalFilename,fs.readFileSync(filesDup.filepath),{
 									access: 'public',
 									contentType: filesDup.mimetype,
-									token: process.env.token
+									token: process.env.BLOB_READ_WRITE_TOKEN
 								});
 								image_url = blob.url;
 						}
