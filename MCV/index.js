@@ -156,14 +156,14 @@
 				//console.log("You bot are making an image request processed to be "+imageUrlReprocessed);
 				fs.exists(imageUrlReprocessed,async function(exists)
 				{
-					console.log("exists = "+exists);
+					//console.log("exists = "+exists);
 					if(exists)
 					{
 						fs.readFile(imageUrlReprocessed,function(err,data)
 						{
 							if(err)
 							{
-								console.log(err);
+								//console.log(err);
 								res.end();
 							}
 							else if(data)
@@ -181,13 +181,13 @@
 							const blob = await vercelBlob.head(req.url,{
 								token: process.env.BLOB_READ_WRITE_TOKEN
 							});
-							console.log(blob);
+							//console.log(blob);
 							res.writeHeader(200,{"Content-Type":blob.contentType});
 							res.write(blob);
 						}
 						catch(ex)
 						{
-							console.log(ex);
+							//console.log(ex);
 						}
 						res.end();
 						//console.log("Image file does not exist.");
@@ -759,7 +759,7 @@
 			
 			if(filesDup.imgfile instanceof Array)
 				filesDup = filesDup.imgfile[0];
-			console.log(filesDup);
+			//console.log(filesDup);
 			
 
 			let mp = new Map();
@@ -839,7 +839,7 @@
 							tablename = "appartenance";
 							doubleQuerySQL = "insert into "+ tablename+" values ('"+fields.ID[0]+"',"+fields.officeID[0]+");";
 							tablename = "login";
-							thirdQuerySQL += "insert into "+tablename+" values ('"+fields.ID[0]+"',$$"+fields.password[0]+"$$,"+((fields.type[0] == 1)?true:false)+","+((fields.type[0] == 2)?true:false)+","+((fields.type[0] == 3)?true:false)+","+((fields.type[0] == 4)?true:false)+");";
+							thirdQuerySQL += "insert into "+tablename+" values ('"+fields.ID[0]+"',$$"+fields.password[0]+"$$,"+((fields.type[0] == 1)?true:false)+","+((fields.type[0] == 2)?true:false)+","+((fields.type[0] == 4)?true:false)+","+((fields.type[0] == 3)?true:false)+");";
 						}
 						else
 						{
@@ -850,12 +850,12 @@
 							tablename = "appartenance";
 							doubleQuerySQL = "\ninsert into "+ tablename+" values ('"+fields.ID+"',"+fields.officeID+");";
 							tablename = "login";
-							thirdQuerySQL += "insert into "+tablename+" values ('"+fields.ID+"',$$"+fields.password+"$$,"+((fields.type == 1)?true:false)+","+((fields.type == 2)?true:false)+","+((fields.type == 3)?true:false)+","+((fields.type == 4)?true:false)+");";
+							thirdQuerySQL += "insert into "+tablename+" values ('"+fields.ID+"',$$"+fields.password+"$$,"+((fields.type == 1)?true:false)+","+((fields.type == 2)?true:false)+","+((fields.type == 4)?true:false)+","+((fields.type == 3)?true:false)+");";
 						} 
 						
-						console.log(querySQL);	
-						console.log(doubleQuerySQL);
-						console.log(thirdQuerySQL);
+						//console.log(querySQL);	
+						//console.log(doubleQuerySQL);
+						//console.log(thirdQuerySQL);
 					
 					}
 					
@@ -878,9 +878,9 @@
 								let userTimeObject = undefined;
 								let userOfficeObject = undefined;
 								let userAdditionObject = undefined;
-								console.log(commandArg[0]);
-								console.log(commandArg);
-								console.log(dealingWithArray);
+								//console.log(commandArg[0]);
+								//console.log(commandArg);
+								//console.log(dealingWithArray);
 								if (commandArg === "offices" || (dealingWithArray && commandArg[0] === "offices"))
 								{
 									userOfficeObject = urlObject;
@@ -1951,10 +1951,10 @@
 								{	
 									nowDate = currentDateOfYear;
 									nowDateStr = day+"-"+amonth+"-"+ayear;
-									console.log("Current time is current time "+currentDateOfYear.toLocaleString('fr-FR',{day:"numeric",month:"long",year:"numeric"}));
-									console.log(nowDateStr);
-									console.log(currentDateOfYear);
-									console.log(dateNow);
+									//console.log("Current time is current time "+currentDateOfYear.toLocaleString('fr-FR',{day:"numeric",month:"long",year:"numeric"}));
+									//console.log(nowDateStr);
+									//console.log(currentDateOfYear);
+									//console.log(dateNow);
 									unitLocation.now = currentDateOfYear.toLocaleString('fr-FR',{day:"numeric",month:"long",year:"numeric"});
 									unitLocation.nowVisible = true;
 									unitLocation.yearIndex = l;
