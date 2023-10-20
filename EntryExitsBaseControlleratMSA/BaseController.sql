@@ -8,7 +8,7 @@ create table `mdeploye_1`.`appartenance` (IDIndividu varchar(255),IDBureau integ
 
 create table `mdeploye_1`.`individu` (img Text,ID varchar(255),Prenom varchar(255),Nom varchar(255),Genre varchar(255),`Date de naissance` date,Profession varchar(255),Début Date,Fin Date,PRIMARY KEY(ID)); 
 
-create table `mdeploye_1`.`location du bureau` (ID integer,`Nom du Bureau` varchar(255),Addresse varchar(255),Région varchar (255),Latitude decimal(12,2),Longitude decimal(12,2),PRIMARY KEY (ID));
+create table `mdeploye_1`.`location du bureau` (ID integer,`Nom du Bureau` varchar(255),Addresse varchar(255),Région varchar (255),Latitude decimal(12,10),Longitude decimal(12,10),PRIMARY KEY (ID));
 
 create table `mdeploye_1`.`login` (IDIndividu varchar(255),Password varchar(255),SuperAdmin BOOLEAN,Admin BOOLEAN,User BOOLEAN,`Key Admin` BOOLEAN,PRIMARY KEY(IDIndividu));
 
