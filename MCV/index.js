@@ -280,7 +280,7 @@
 									,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
 								});
 								res.write(JSON.stringify({first: undefined,res:"Call index is "+callIndex+"\n"
-								+"Charging pourcentage "+ charging_percentage+"",third:true}));
+								+"Charging pourcentage "+ charging_percentage+"",third:true,text:"Still Charging",charging:true}));
 								res.end();
 								return;
 							}
