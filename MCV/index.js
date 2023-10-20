@@ -2044,11 +2044,14 @@
 										let debut = resultTwo.first[m][resultTwo.second[7].name];
 										let end = resultTwo.first[m][resultTwo.second[8].name];
 										let profession = resultTwo.first[m][resultTwo.second[6].name];
+										let IDBureau = resultTwo.first[m][resultTwo.second[10].name];
 										//console.log("Inside m which is "+m);
 										//console.log(IDIndividu);
 										//console.log(debut);
 										//console.log(end);
 										//console.log(profession);
+										if(unitLocation.ID != IDBureau)
+											continue;
 										
 										let employeeContentModel = getEmployeeContentModel(yearContentModel.months[monthIndex].weeks[weekIndex].days[weekDayIndex],IDIndividu);
 										let employeeDescribed = undefined;
