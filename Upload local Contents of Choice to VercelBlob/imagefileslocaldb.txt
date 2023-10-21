@@ -19,3 +19,8 @@ assets/images/MrEya.jpg : https://70gxoz4jnkgivatx.public.blob.vercel-storage.co
 assets/images/MamadouMassalyphotodeprofil.jpg : https://70gxoz4jnkgivatx.public.blob.vercel-storage.com/assets/images/MamadouMassalyphotodeprofil-K8PwMsdgWuL5dt4RRHGfCM42zISArn.jpg
 assets/images/MamadouMassalyphotodeprofil2.jpg : https://70gxoz4jnkgivatx.public.blob.vercel-storage.com/assets/images/MamadouMassalyphotodeprofil2-pkUJq4o9271bSBJBHVLqKlJZKpMs0I.jpg
 assets/images/Mamadou Massaly PF1.jpg : https://70gxoz4jnkgivatx.public.blob.vercel-storage.com/assets/images/Mamadou%20Massaly%20PF1-j7gs9RTDfihVCVKzfTVbLJ8AMApsRG.jpg
+assets/images/MrAmath.jpg : https://70gxoz4jnkgivatx.public.blob.vercel-storage.com/assets/images/MrAmath-4SX8RMaT9mrPEgM3ebVXAR2AUslaeH.jpg
+assets/images/Mamadou Massaly PF1.jpg : https://70gxoz4jnkgivatx.public.blob.vercel-storage.com/assets/images/Mamadou%20Massaly%20PF1-6msn20T8P7AM2hU64TsUhbuXbFw71u.jpg
+assets/images/MamadouMassalyphotodeprofil2.jpg : https://70gxoz4jnkgivatx.public.blob.vercel-storage.com/assets/images/MamadouMassalyphotodeprofil2-NXDsr5xBkNh6LYP24kWeYfPp3OrGdD.jpg
+assets/images/MrEya.jpg : https://70gxoz4jnkgivatx.public.blob.vercel-storage.com/assets/images/MrEya-Ow9NmpeDbKALcAk6n3OCxiJAyAwc1r.jpg
+assets/images/MamadouMassalyphotodeprofil.jpg : https://70gxoz4jnkgivatx.public.blob.vercel-storage.com/assets/images/MamadouMassalyphotodeprofil-vhXeMl50A8J7oQslAzqqokQWCXQABu.jpg
