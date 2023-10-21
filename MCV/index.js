@@ -1428,16 +1428,16 @@
 			{
 				//console.log(" paramyear "+paramyear+" other paramday "+paramday+" other parammonth "+parammonth);
 				//console.log("Location argument "+locationArgObj+" employee argument "+empObj);
-				let query = "Select * from \"location du bureau\";";
+				let query = "Select * from \"location du bureau\" ORDER BY Id;;";
 				
 				if(locationArgObj != undefined)
 				{
 					//console.log(locationArgObj);
-					query = "Select * from \"location du bureau\" where \"location du bureau\".ID = "+locationArgObj.ID+";";
+					query = "Select * from \"location du bureau\" where \"location du bureau\".ID = "+locationArgObj.ID+" ORDER BY Id;";
 				}
 				else if(empObj != undefined)
 				{
-					query = "Select * from \"location du bureau\" where \"location du bureau\".ID = "+empObj.officeID+";";
+					query = "Select * from \"location du bureau\" where \"location du bureau\".ID = "+empObj.officeID+" ORDER BY Id;";
 				}
 
 				let checkfornewCommand = false;
@@ -1839,8 +1839,8 @@
 								
 								if(currentDateOfYear.getMonth() >= 9)
 								{
-									console.log(currentDateOfYear.toLocaleString('fr-FR',{day:"numeric",month:"long",year:"numeric"}));
-									console.log(year+"-"+monthCounts+"-"+start_day);
+									//console.log(currentDateOfYear.toLocaleString('fr-FR',{day:"numeric",month:"long",year:"numeric"}));
+									//console.log(year+"-"+monthCounts+"-"+start_day);
 								}
 								
 								let aresultFiltered = filterOutElementsThatAreNottheGivenDay(currentDateOfYear.getDate()+"-"+(currentDateOfYear.getMonth()+1)+"-"+currentDateOfYear.getFullYear(),aresult,"date",dateComparatorFunction);
