@@ -3752,7 +3752,7 @@
 		{
 			tempdtTwo = new Date();
 		}																		
-	}
+	} 
 	
 	function SubstractTwoHours(hour1,hour2)
 	{		
