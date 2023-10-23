@@ -1608,9 +1608,9 @@
 						query += " ORDER BY A.Date ASC;";
 					
 						query += "Select Case WHEN MIN(\""+table+"\".Entrées) >= '10:00:00' then 1 "; 
-						query += "WHEN MIN(\""+table+"\".Entrées) < '10:00:00' then 0 END,";
-						query += "Case WHEN MIN(\""+table+"\".Entrées) > '8:30:00' then 1 ";
-						query += "WHEN MIN(\""+table+"\".Entrées) <= '8:30:00' then 0 END,";
+						query += "WHEN MIN(\""+table+"\".Entrées) < '10:00:00' then 0 END as CaseOne,";
+						query += "Case WHEN  MIN(\""+table+"\".Entrées) > '8:30:00' then 1 ";
+						query += "WHEN MIN(\""+table+"\".Entrées) <= '8:30:00' then 0 END as CaseTwo,";
 						query += "MIN(\""+table+"\".Entrées), Date ,Idindividu FROM \""+table+"\"";
 						query += (param_year_month_day != undefined)?" WHERE Date ='"+param_year_month_day+"'":(empHoursObj== undefined)? ((empObj != undefined)?" WHERE Idindividu = "+empObj.ID:""):" Idindividu = "+empHoursObj.ID+" WHERE Date ='"+empHoursObj.date.getFullYear()+"-"+(empHoursObj.date.getMonth()+1)+"-"+empHoursObj.date.getDate()+"'";
 						query += " GROUP BY Date, Idindividu ORDER BY Date ASC;";
@@ -1619,7 +1619,6 @@
 						query += " \""+table+"\" as A";
 						query += (empObj == undefined)?((empHoursObj == undefined)?"":" where A.Idindividu ='"+empHoursObj.ID+"';"):" where A.Idindividu ='"+empObj.ID+"'";
 						query += " GROUP BY Entrées,Date,Idindividu ORDER BY Date ASC;";
-						
 						
 						
 						let threeResults = await faire_un_simple_query(query);
@@ -2334,11 +2333,11 @@
 										//console.log(aresult.first);
 											
 										let date = new Date();
-										let aresultFilteredb = FilterNotFoundEqualsFunction(aresultFiltered,"Idindividu",IDIndividu);
-										let bresultFilteredb = FilterNotFoundEqualsFunction(bresultFiltered,"Idindividu",IDIndividu);
-										let cresultFilteredb = FilterNotFoundEqualsFunction(cresultFiltered,"Idindividu",IDIndividu);
+										let aresultFilteredb = FilterNotFoundEqualsFunction(aresultFiltered,"idindividu",IDIndividu);
+										let bresultFilteredb = FilterNotFoundEqualsFunction(bresultFiltered,"idindividu",IDIndividu);
+										let cresultFilteredb = FilterNotFoundEqualsFunction(cresultFiltered,"idindividu",IDIndividu);
 										let date2 = new Date();
-										console.log("done filtering "+ (date2 -date)%1000);
+										//console.log("done filtering "+ (date2 -date)%1000);
 	
 										secondresult.first.push(aresultFilteredb.first);
 										secondresult.first.push(bresultFilteredb.first);
@@ -2364,8 +2363,9 @@
 										{
 											yearContentModel.employeeHours[employeeContentModel.ID] = "00:00:00";
 										}
-								
-								
+										// console.log("*****************************");
+										//console.log(aresult);
+										//console.log("*********************************");
 										if(secondresult.second !== false)
 										{	
 											let dateNowOther = new Date(Date.now());
@@ -2374,7 +2374,6 @@
 											
 											if(secondresult.first[0].length > 0)
 											{
-												
 												if( secondresult.first[0][0][secondresult.second[0][0].name] == 1 ) 
 												{
 													
@@ -3850,13 +3849,14 @@
 		objArray.first.forEach((element)=>
 		{
 			if(element[column] == element_received)
-			{
+			{	
 				arrayElements.first.push(objArray.first[count]);
-				arrayElements.second.push(objArray.second[count]);
+				arrayElements.second = objArray.second;
 			}
 			++count;
 		});
 		
+		//console.log(arrayElements);
 		return arrayElements;
 	}
 	
@@ -3873,7 +3873,7 @@
 			if(Number(dateReceived[2]) == Number(dateComparison[2]) && Number(dateReceived[1]) == Number(dateComparison[1]) && Number(dateReceived[0]) == Number(dateComparison[0]) )
 			{
 				arrayElements.first.push(objArray.first[count]);
-				arrayElements.second.push(objArray.second[count]);
+				arrayElements.second = objArray.second;
 			}
 			++count;
 		});
