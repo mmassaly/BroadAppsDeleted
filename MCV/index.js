@@ -1508,7 +1508,7 @@
 				
 				//console.log("Date today is "+dateToday);
 				//console.log("Info about response for officeInfo");
-				//console.log(result.second);
+				//console.log(result);
 				
 				for(let i = 0; i < result.first.length; ++i)
 				{
@@ -1843,16 +1843,14 @@
 									//console.log(year+"-"+monthCounts+"-"+start_day);
 								}
 								let aresultFiltered = FilterDateNotFoudFunction(aresult,"date",currentDateOfYear.getDate()+"-"+(currentDateOfYear.getMonth()+1)+"-"+currentDateOfYear.getFullYear());
-								aresultFiltered = FilterNotFoundEqualsFunction(aresultFiltered,"Idindividu",IDIndividu);
 								let bresultFiltered = FilterDateNotFoudFunction(bresult,"date",currentDateOfYear.getDate()+"-"+(currentDateOfYear.getMonth()+1)+"-"+currentDateOfYear.getFullYear());
-								bresultFiltered = FilterNotFoundEqualsFunction(bresultFiltered,"Idindividu",IDIndividu);
-	
+								
 								//console.log("bresultFiltered  by date "+currentDateOfYear.getDate()+"-"+(currentDateOfYear.getMonth()+1)+"-"+currentDateOfYear.getYear());
 								//console.log(bresultFiltered);
 								let cresultFiltered = FilterDateNotFoudFunction(cresult,"date",currentDateOfYear.getDate()+"-"+(currentDateOfYear.getMonth()+1)+"-"+currentDateOfYear.getFullYear());
-								cresultFiltered = FilterNotFoundEqualsFunction(cresultFiltered,"Idindividu",IDIndividu);
 	
 								//console.log(currentDateOfYear);
+								
 								
 								if(paramday != undefined || empHoursObj != undefined)
 								{
@@ -2334,14 +2332,21 @@
 
 										let secondresult = {first:[],second:[]};
 										//console.log(aresult.first);
+											
+										let date = new Date();
+										let aresultFilteredb = FilterNotFoundEqualsFunction(aresultFiltered,"Idindividu",IDIndividu);
+										let bresultFilteredb = FilterNotFoundEqualsFunction(bresultFiltered,"Idindividu",IDIndividu);
+										let cresultFilteredb = FilterNotFoundEqualsFunction(cresultFiltered,"Idindividu",IDIndividu);
+										let date2 = new Date();
+										console.log("done filtering "+ (date2 -date)%1000);
+	
+										secondresult.first.push(aresultFilteredb.first);
+										secondresult.first.push(bresultFilteredb.first);
+										secondresult.first.push(cresultFilteredb.first);
 										
-										secondresult.first.push(aresultFiltered.first);
-										secondresult.first.push(bresultFiltered.first);
-										secondresult.first.push(cresultFiltered.first);
-										
-										secondresult.second.push(aresultFiltered.second);
-										secondresult.second.push(bresultFiltered.second);
-										secondresult.second.push(cresultFiltered.second);
+										secondresult.second.push(aresultFilteredb.second);
+										secondresult.second.push(bresultFilteredb.second);
+										secondresult.second.push(cresultFilteredb.second);
 										
 										if(yearContentModel.months[monthIndex].weeks[weekIndex].days[dayIndex].employeeHours[employeeContentModel.ID] == undefined)
 										{
@@ -2360,7 +2365,6 @@
 											yearContentModel.employeeHours[employeeContentModel.ID] = "00:00:00";
 										}
 								
-
 								
 										if(secondresult.second !== false)
 										{	
@@ -3840,9 +3844,10 @@
 	function FilterNotFoundEqualsFunction(objArray,column,value)
 	{
 		let element_received = value;	
-		let arrayElements = {first: [],second:[]};;
+		let arrayElements = {first:[], second:[]};
 		let count = 0;
-		objArray.first.foreach((element)=>
+		
+		objArray.first.forEach((element)=>
 		{
 			if(element[column] == element_received)
 			{
@@ -3851,25 +3856,28 @@
 			}
 			++count;
 		});
+		
 		return arrayElements;
 	}
 	
 	function FilterDateNotFoudFunction(objArray,column,value)
 	{
-		let arrayElements = {first: [],second:[]};;
+		let arrayElements = {first:[], second:[]};
 		let count = 0;
-		objArray.first.foreach((element)=>
+		
+		objArray.first.forEach((element)=>
 		{
 			let dateReceived  = value.split("-");
-			let dateComparison = element.first[column].toLocaleString('fr-FR',{day:"numeric",month:"numeric",year:"numeric"}).split("/");
-		
+			let dateComparison = element[column].toLocaleString('fr-FR',{day:"numeric",month:"numeric",year:"numeric"}).split("/");
+			
 			if(Number(dateReceived[2]) == Number(dateComparison[2]) && Number(dateReceived[1]) == Number(dateComparison[1]) && Number(dateReceived[0]) == Number(dateComparison[0]) )
 			{
-				arrayElements.first.push(element.first);
-				arrayElements.second.push(element.second);
+				arrayElements.first.push(objArray.first[count]);
+				arrayElements.second.push(objArray.second[count]);
 			}
 			++count;
 		});
+				
 		return arrayElements;
 	}
 	
