@@ -1604,7 +1604,7 @@
 						
 						query += "Select * FROM";
 						query += " \""+state+"\" as A";
-						query += (param_year_month_day != undefined)?(" WHERE A.Date ='"+param_year_month_day+"'"):(empObj != undefined)?" WHERE individu.ID = "+empObj.ID:(empHoursObj != undefined)? " WHERE IdIndividu = '"+empHoursObj.ID+"' AND A.Date ='"+empHoursObj.date.getFullYear()+"-"+(empHoursObj.date.getMonth()+1)+"-"+empHoursObj.date.getDate()+"'":"";
+						query += (param_year_month_day != undefined)?(" WHERE A.Date ='"+param_year_month_day+"'"):(empObj != undefined)?" WHERE Idindividu = "+empObj.ID:(empHoursObj != undefined)? " WHERE IdIndividu = '"+empHoursObj.ID+"' AND A.Date ='"+empHoursObj.date.getFullYear()+"-"+(empHoursObj.date.getMonth()+1)+"-"+empHoursObj.date.getDate()+"'":"";
 						query += " ORDER BY A.Date ASC;";
 					
 						query += "Select Case WHEN MIN(\""+table+"\".Entrées) >= '10:00:00' then 1 "; 
@@ -1612,12 +1612,12 @@
 						query += "Case WHEN MIN(\""+table+"\".Entrées) > '8:30:00' then 1 ";
 						query += "WHEN MIN(\""+table+"\".Entrées) <= '8:30:00' then 0 END,";
 						query += "MIN(\""+table+"\".Entrées), Date ,Idindividu FROM \""+table+"\"";
-						query += (param_year_month_day != undefined)?" WHERE Date ='"+param_year_month_day+"'":(empHoursObj== undefined)? ((empObj != undefined)?" WHERE individu.ID = "+empObj.ID:""):" individu.ID = "+empHoursObj.ID+" WHERE Date ='"+empHoursObj.date.getFullYear()+"-"+(empHoursObj.date.getMonth()+1)+"-"+empHoursObj.date.getDate()+"'";
+						query += (param_year_month_day != undefined)?" WHERE Date ='"+param_year_month_day+"'":(empHoursObj== undefined)? ((empObj != undefined)?" WHERE Idindividu = "+empObj.ID:""):" Idindividu = "+empHoursObj.ID+" WHERE Date ='"+empHoursObj.date.getFullYear()+"-"+(empHoursObj.date.getMonth()+1)+"-"+empHoursObj.date.getDate()+"'";
 						query += " GROUP BY Date, Idindividu ORDER BY Date ASC;";
 						
 						query += "Select * FROM";
 						query += " \""+table+"\" as A";
-						query += (empObj == undefined)?((empHoursObj == undefined)?"":" where A.IDIndividu ='"+empHoursObj.ID+"';"):" where A.IDIndividu ='"+empObj.ID+"'";
+						query += (empObj == undefined)?((empHoursObj == undefined)?"":" where A.Idindividu ='"+empHoursObj.ID+"';"):" where A.Idindividu ='"+empObj.ID+"'";
 						query += " GROUP BY Entrées,Date,Idindividu ORDER BY Date ASC;";
 						
 						
@@ -1842,12 +1842,16 @@
 									//console.log(currentDateOfYear.toLocaleString('fr-FR',{day:"numeric",month:"long",year:"numeric"}));
 									//console.log(year+"-"+monthCounts+"-"+start_day);
 								}
-								
-								let aresultFiltered = filterOutElementsThatAreNottheGivenDay(currentDateOfYear.getDate()+"-"+(currentDateOfYear.getMonth()+1)+"-"+currentDateOfYear.getFullYear(),aresult,"date",dateComparatorFunction);
-								let bresultFiltered = filterOutElementsThatAreNottheGivenDay(currentDateOfYear.getDate()+"-"+(currentDateOfYear.getMonth()+1)+"-"+currentDateOfYear.getFullYear(),bresult,"date",dateComparatorFunction);
+								let aresultFiltered = FilterDateNotFoudFunction(aresult,"date",currentDateOfYear.getDate()+"-"+(currentDateOfYear.getMonth()+1)+"-"+currentDateOfYear.getFullYear());
+								aresultFiltered = FilterNotFoundEqualsFunction(aresultFiltered,"IdIndividu",IDIndividu);
+								let bresultFiltered = FilterDateNotFoudFunction(bresult,"date",currentDateOfYear.getDate()+"-"+(currentDateOfYear.getMonth()+1)+"-"+currentDateOfYear.getFullYear());
+								bresultFiltered = FilterNotFoundEqualsFunction(bresultFiltered,"IdIndividu",IDIndividu);
+	
 								//console.log("bresultFiltered  by date "+currentDateOfYear.getDate()+"-"+(currentDateOfYear.getMonth()+1)+"-"+currentDateOfYear.getYear());
 								//console.log(bresultFiltered);
-								let cresultFiltered = filterOutElementsThatAreNottheGivenDay(currentDateOfYear.getDate()+"-"+(currentDateOfYear.getMonth()+1)+"-"+currentDateOfYear.getFullYear(),cresult,"date",dateComparatorFunction);
+								let cresultFiltered = FilterDateNotFoudFunction(cresult,"date",currentDateOfYear.getDate()+"-"+(currentDateOfYear.getMonth()+1)+"-"+currentDateOfYear.getFullYear());
+								cresultFiltered = FilterNotFoundEqualsFunction(cresultFiltered,"IdIndividu",IDIndividu);
+	
 								//console.log(currentDateOfYear);
 								
 								if(paramday != undefined || empHoursObj != undefined)
@@ -2464,6 +2468,7 @@
 
 												for(let tempCount = 0; tempCount < secondresult.first[2].length ; ++tempCount)
 												{ 
+											
 													let a = secondresult.first[2][tempCount][secondresult.second[2][2].name];
 													let b = secondresult.first[2][tempCount][secondresult.second[2][3].name];
 															
@@ -3830,6 +3835,42 @@
 		{
 			return comparatorFunctionBinarySearch(objArray,value,column,start,middle-1,comparatorFunc);
 		}
+	}
+	
+	function FilterNotFoundEqualsFunction(objArray,column,value)
+	{
+		let element_received = value;	
+		let arrayElements = {first: [],second:[]};;
+		let count = 0;
+		objArray.first.foreach((element)=>
+		{
+			if(element[column] == element_received)
+			{
+				arrayElements.first.push(objArray.first[count]);
+				arrayElements.second.push(objArray.second[count]);
+			}
+			++count;
+		});
+		return arrayElements;
+	}
+	
+	function FilterDateNotFoudFunction(objArray,column,value)
+	{
+		let dateReceived = element.first[column].toLocaleString('fr-FR',{day:"numeric",month:"numeric",year:"numeric"}).split("/");
+		let arrayElements = {first: [],second:[]};;
+		let count = 0;
+		objArray.first.foreach((element)=>
+		{
+			let dateComparison = value.split("-");
+			
+			if(Number(dateReceived[2]) == Number(dateComparison[2]) && Number(dateReceived[1]) == Number(dateComparison[1]) && Number(dateReceived[0]) == Number(dateComparison[0]) )
+			{
+				arrayElements.first.push(element.first);
+				arrayElements.second.push(element.second);
+			}
+			++count;
+		});
+		return arrayElements;
 	}
 	
 	function dateComparatorFunction(index,objArray,column,value) 
