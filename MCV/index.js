@@ -1843,14 +1843,14 @@
 									//console.log(year+"-"+monthCounts+"-"+start_day);
 								}
 								let aresultFiltered = FilterDateNotFoudFunction(aresult,"date",currentDateOfYear.getDate()+"-"+(currentDateOfYear.getMonth()+1)+"-"+currentDateOfYear.getFullYear());
-								aresultFiltered = FilterNotFoundEqualsFunction(aresultFiltered,"IdIndividu",IDIndividu);
+								aresultFiltered = FilterNotFoundEqualsFunction(aresultFiltered,"Idindividu",IDIndividu);
 								let bresultFiltered = FilterDateNotFoudFunction(bresult,"date",currentDateOfYear.getDate()+"-"+(currentDateOfYear.getMonth()+1)+"-"+currentDateOfYear.getFullYear());
-								bresultFiltered = FilterNotFoundEqualsFunction(bresultFiltered,"IdIndividu",IDIndividu);
+								bresultFiltered = FilterNotFoundEqualsFunction(bresultFiltered,"Idindividu",IDIndividu);
 	
 								//console.log("bresultFiltered  by date "+currentDateOfYear.getDate()+"-"+(currentDateOfYear.getMonth()+1)+"-"+currentDateOfYear.getYear());
 								//console.log(bresultFiltered);
 								let cresultFiltered = FilterDateNotFoudFunction(cresult,"date",currentDateOfYear.getDate()+"-"+(currentDateOfYear.getMonth()+1)+"-"+currentDateOfYear.getFullYear());
-								cresultFiltered = FilterNotFoundEqualsFunction(cresultFiltered,"IdIndividu",IDIndividu);
+								cresultFiltered = FilterNotFoundEqualsFunction(cresultFiltered,"Idindividu",IDIndividu);
 	
 								//console.log(currentDateOfYear);
 								
@@ -3856,13 +3856,13 @@
 	
 	function FilterDateNotFoudFunction(objArray,column,value)
 	{
-		let dateReceived = element.first[column].toLocaleString('fr-FR',{day:"numeric",month:"numeric",year:"numeric"}).split("/");
 		let arrayElements = {first: [],second:[]};;
 		let count = 0;
 		objArray.first.foreach((element)=>
 		{
-			let dateComparison = value.split("-");
-			
+			let dateReceived  = value.split("-");
+			let dateComparison = element.first[column].toLocaleString('fr-FR',{day:"numeric",month:"numeric",year:"numeric"}).split("/");
+		
 			if(Number(dateReceived[2]) == Number(dateComparison[2]) && Number(dateReceived[1]) == Number(dateComparison[1]) && Number(dateReceived[0]) == Number(dateComparison[0]) )
 			{
 				arrayElements.first.push(element.first);
