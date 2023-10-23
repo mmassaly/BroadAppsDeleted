@@ -715,6 +715,7 @@
 		query = "insert into \""+nomdelaTable+"\" values ('"
 		+ ID+"','"+datereversed+"','"+startTime+"',"+((endTime == undefined)?null:"'"+endTime+"'")+")"
 		+" ON DUPLICATE KEY UPDATE SET \""+nomdelaTable+"\".Sorties="+((endTime == undefined)?null:"'"+endTime+"'")+";\n";
+		console.log(query);
 		results  = await faire_un_simple_query(query);
 		
 		if(results.second == false || aresult.second instanceof Array)
