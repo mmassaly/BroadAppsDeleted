@@ -3557,7 +3557,7 @@
 			if(!found)
 			{
 				nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].empDicofRetards[employeeContentModel.ID] = employeeContentModel;
-				nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].retarddates.push(employeeContentModel);
+				nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].retardsdates.push(employeeContentModel);
 				nodupTemp.empDic[employeeContentModel.ID].retarddates.other.push(employeeContentModel.date);
 				nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].retarddates.other.push(employeeContentModel.date);
 				
