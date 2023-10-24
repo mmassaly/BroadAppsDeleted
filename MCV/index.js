@@ -714,7 +714,7 @@
 				
 		query = "insert into \""+nomdelaTable+"\" values ('"
 		+ ID+"','"+datereversed+"','"+startTime+"',"+((endTime == undefined)?null:"'"+endTime+"'")+")"
-		+" ON CONFLICT (IdIndividu,Date,Entrées) DO UPDATE SET \""+nomdelaTable+"\".Sorties="+((endTime == undefined)?null:"'"+endTime+"'")+";\n";
+		+" ON CONFLICT (IdIndividu,Date,Entrées) DO UPDATE SET Sorties="+((endTime == undefined)?null:"'"+endTime+"'")+";\n";
 		console.log(query);
 		results  = await faire_un_simple_query(query);
 		
