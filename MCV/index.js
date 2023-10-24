@@ -704,7 +704,7 @@
 		{
 			//console.log(results.second);
 			//console.log(results.first);
-			nomdelaTable = results.first[0][results.second[1].name];
+			nomdelaTable = results.first[0][results.second[2].name];
 		}
 		else
 		{
@@ -714,7 +714,7 @@
 				
 		query = "insert into \""+nomdelaTable+"\" values ('"
 		+ ID+"','"+datereversed+"','"+startTime+"',"+((endTime == undefined)?null:"'"+endTime+"'")+")"
-		+" ON DUPLICATE KEY UPDATE SET \""+nomdelaTable+"\".Sorties="+((endTime == undefined)?null:"'"+endTime+"'")+";\n";
+		+" ON CONFLICT (IdIndividu,Date,Entrées) DO UPDATE SET \""+nomdelaTable+"\".Sorties="+((endTime == undefined)?null:"'"+endTime+"'")+";\n";
 		console.log(query);
 		results  = await faire_un_simple_query(query);
 		
