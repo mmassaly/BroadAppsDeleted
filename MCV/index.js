@@ -729,7 +729,7 @@
 		/* if(result == false)
 		{
 			//console.log("Dummy Response");
-			dummyResponseSimple(res,"ajout impossible");
+			dummyResponse(res,"ajout impossible");
 			return;
 		} */
 		//console.log("Basic Response");
