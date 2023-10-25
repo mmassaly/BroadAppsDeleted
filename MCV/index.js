@@ -1003,7 +1003,7 @@
 	async function faire_un_simple_query(queryString)
 	{
 		let sql = await exigencebasededonnée();	
-		//console.log(queryString);
+		console.log(queryString);
 		
 		try
 		{
@@ -1602,11 +1602,11 @@
 						query += " inner join \"location du bureau\" ON  appartenance.IDBureau =";
 						query += " \"location du bureau\".ID AND EXTRACT(YEAR FROM individu.Début) <= ";
 						query += year + " AND EXTRACT(YEAR FROM individu.Fin) >="+year;
-						query +=(empObj != undefined)?" AND individu.ID = "+empObj.ID+";":((empHoursObj != undefined)?" AND individu.ID = "+empHoursObj.userAuthentification.ID+";":";");
+						query +=(empObj != undefined)?" AND individu.ID = '"+empObj.ID+"';":((empHoursObj != undefined)?" AND individu.ID = '"+empHoursObj.ID+"';":";");
 						
 						query += "Select * FROM";
 						query += " \""+state+"\" as A";
-						query += (param_year_month_day != undefined)?(" WHERE A.Date ='"+param_year_month_day+"'"):(empObj != undefined)?" WHERE Idindividu = "+empObj.ID:(empHoursObj != undefined)? " WHERE IdIndividu = '"+empHoursObj.userAuthentification.ID+"' AND A.Date ='"+empHoursObj.date.getFullYear()+"-"+(empHoursObj.date.getMonth()+1)+"-"+empHoursObj.date.getDate()+"'":"";
+						query += (param_year_month_day != undefined)?(" WHERE A.Date ='"+param_year_month_day+"'"):(empObj != undefined)?" WHERE Idindividu = "+empObj.ID:(empHoursObj != undefined)? " WHERE IdIndividu = '"+empHoursObj.ID+"' AND A.Date ='"+empHoursObj.date.getFullYear()+"-"+(empHoursObj.date.getMonth()+1)+"-"+empHoursObj.date.getDate()+"'":"";
 						query += " ORDER BY A.Date ASC;";
 					
 						query += "Select Case WHEN MIN(\""+table+"\".Entrées) >= '10:00:00' then 1 "; 
@@ -1614,15 +1614,14 @@
 						query += "Case WHEN  MIN(\""+table+"\".Entrées) > '8:30:00' then 1 ";
 						query += "WHEN MIN(\""+table+"\".Entrées) <= '8:30:00' then 0 END as CaseTwo,";
 						query += "MIN(\""+table+"\".Entrées), Date ,Idindividu FROM \""+table+"\"";
-						query += (param_year_month_day != undefined)?" WHERE Date ='"+param_year_month_day+"'":(empHoursObj== undefined)? ((empObj != undefined)?" WHERE Idindividu = "+empObj.ID:""):" Idindividu = "+empHoursObj.userAuthentification.ID+" WHERE Date ='"+empHoursObj.date.getFullYear()+"-"+(empHoursObj.date.getMonth()+1)+"-"+empHoursObj.date.getDate()+"'";
+						query += (param_year_month_day != undefined)?" WHERE Date ='"+param_year_month_day+"'":(empHoursObj== undefined)? ((empObj != undefined)?" WHERE Idindividu = '"+empObj.ID+"'":""):" WHERE Idindividu = '"+empHoursObj.ID+"' AND Date ='"+empHoursObj.date.getFullYear()+"-"+(empHoursObj.date.getMonth()+1)+"-"+empHoursObj.date.getDate()+"'";
 						query += " GROUP BY Date, Idindividu ORDER BY Date ASC;";
 						
 						query += "Select * FROM";
 						query += " \""+table+"\" as A";
-						query += (empObj == undefined)?((empHoursObj == undefined)?"":" where A.Idindividu ='"+empHoursObj.userAuthentification.ID+"';"):" where A.Idindividu ='"+empObj.ID+"'";
+						query += (empObj == undefined)?((empHoursObj == undefined)?"":" where A.Idindividu ='"+empHoursObj.ID+"';"):" where A.Idindividu ='"+empObj.ID+"'";
 						query += " GROUP BY Entrées,Date,Idindividu ORDER BY Date ASC;";
 						
-						console.log(query);
 						console.log(empHoursObj);
 						let threeResults = await faire_un_simple_query(query);
 						let resultTwo = threeResults[0];
