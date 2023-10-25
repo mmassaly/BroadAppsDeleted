@@ -293,7 +293,7 @@
 							catch(ex)
 							{
 								//console.log(ex);
-								dummyResponse(res);
+								dummyResponseSimple(res);
 								return;
 							}
 
@@ -304,7 +304,7 @@
 							if(urlObject == undefined)
 							{
 								//console.log("Undefined urlObject");
-								dummyResponse(res);
+								dummyResponseSimple(res);
 								return;
 							}
 
@@ -319,13 +319,13 @@
 								if(commandArg == undefined)
 								{
 									//console.log("undefined commandArg");
-									dummyResponse(res);
+									dummyResponseSimple(res);
 									return;
 								}
 								else if(commandArg !== "hours")
 								{
 									//console.log("undefined commandArg");
-									dummyResponse(res);
+									dummyResponseSimple(res);
 									return;
 								}
 								
@@ -333,7 +333,7 @@
 								if(userAuthentification == undefined) 
 								{
 									//console.log("undefined userAuthentification");
-									dummyResponse(res);
+									dummyResponseSimple(res);
 									return;
 								}
 								else
@@ -346,7 +346,7 @@
 									|| userAuthentification.naissance == undefined || userAuthentification.pass == undefined)
 								{
 									//console.log("undefined credentials");
-									dummyResponse(res);
+									dummyResponseSimple(res);
 									return;
 								}
 								else
@@ -367,14 +367,14 @@
 									},
 									(errortempResult)=>
 									{
-										dummyResponse(res);
+										dummyResponseSimple(res);
 										return;
 									});
 									
 								},
 								(error)=>
 								{
-									dummyResponse(res);
+									dummyResponseSimple(res);
 									//console.log("This guy is not an authenticated admin");
 									return;
 								});
@@ -476,7 +476,7 @@
 								if(commandArg == undefined)
 								{
 									//console.log("undefined commandArg");
-									dummyResponse(res);
+									dummyResponseSimple(res);
 									return;
 								}
 								else
@@ -488,7 +488,7 @@
 								if(userAuthentification == undefined) 
 								{
 									//console.log("undefined userAuthentification");
-									dummyResponse(res);
+									dummyResponseSimple(res);
 									return;
 								}
 								else
@@ -502,7 +502,7 @@
 									{
 										//console.log(userAuthentification);
 										//console.log("undefined credentials");
-										dummyResponse(res);
+										dummyResponseSimple(res);
 										return;
 									}
 									else
@@ -607,7 +607,7 @@
 														if(primaryObject == undefined)
 														{
 															getDataForAdmin(res,undefined);
-															dummyResponse(res);
+															dummyResponseSimple(res);
 															return;
 														}
 														else
@@ -629,7 +629,7 @@
 												else
 												{
 													//console.log("No answer");
-													dummyResponse(res);
+													dummyResponseSimple(res);
 												}	
 											},
 											(error)=> 
@@ -639,7 +639,7 @@
 										}
 										else
 										{
-											dummyResponse(res);
+											dummyResponseSimple(res);
 											//console.log("This guy is not an authenticated admin");
 											return;
 										}
@@ -708,7 +708,7 @@
 		}
 		else
 		{
-			dummyResponse(res);
+			dummyResponseSimple(res);
 			return;
 		}
 				
@@ -718,9 +718,9 @@
 		console.log(query);
 		results  = await faire_un_simple_query(query);
 		
-		if(results.second == false && !aresult.second instanceof Array)
+		if(results.second == false && !results.second instanceof Array)
 		{
-			dummyResponse(res);
+			dummyResponseSimple(res);
 			return;
 		}
 
@@ -729,7 +729,7 @@
 		/* if(result == false)
 		{
 			//console.log("Dummy Response");
-			dummyResponse(res,"ajout impossible");
+			dummyResponseSimple(res,"ajout impossible");
 			return;
 		} */
 		//console.log("Basic Response");
@@ -1097,7 +1097,7 @@
 						if(tempResult.first.length == 0)
 						{
 							if(res != undefined)
-								dummyResponse(res);
+								dummyResponseSimple(res);
 							return {first:false,second:undefined};
 						}
 						else
@@ -1120,14 +1120,14 @@
 							}
 							//console.log("This guy is not logged in");
 							if(res != undefined)
-								dummyResponse(res);
+								dummyResponseSimple(res);
 							return {first:false,second:undefined,third:false};
 						}
 					}
 					else 
 					{
 						console.log("Error from query " +error);
-						dummyResponse(res);
+						dummyResponseSimple(res);
 						return {first:false,second:undefined,third:true};
 					}
 	}
@@ -1148,7 +1148,7 @@
 			if(tempResult.first.length == 0)
 			{
 				if(res != undefined)
-				dummyResponse(res);
+				dummyResponseSimple(res);
 				return false;
 			}
 			else
@@ -1167,14 +1167,14 @@
 				}
 				//console.log("This guy is not logged in");
 				if(res != undefined)
-					dummyResponse(res);
+					dummyResponseSimple(res);
 					return false;
 			}
 		}
 		else 
 		{
 			console.log("Error from query " +error);
-			dummyResponse(res);
+			dummyResponseSimple(res);
 			return false;
 		}
 	}
@@ -1349,7 +1349,7 @@
 			
 			
 			
-			function dummyResponse(res)
+			function dummyResponseSimple(res)
 			{
 				if(res === undefined || res.writableEnded)
 					return;
@@ -1452,7 +1452,7 @@
 				if(result.second == false ) 
 				{
 					//console.log(result);
-					dummyResponse(response);
+					dummyResponseSimple(response);
 					return false;
 				}
 
@@ -1573,7 +1573,7 @@
 					let result_ = await faire_un_simple_query(query);
 					if(result_.second == false && !(result_.second instanceof Array)) 
 					{
-						dummyResponse(response);
+						dummyResponseSimple(response);
 						return false;
 					}
 					console.log(query);
@@ -2034,7 +2034,7 @@
 								if(resultTwo.second == false ) 
 								{
 									base_init_exiting = true;
-									dummyResponse(response);
+									dummyResponseSimple(response);
 									return false;
 								}
 
@@ -2311,14 +2311,14 @@
 										if(aresult.second == false ) 
 										{
 											base_init_exiting = true;
-											dummyResponse(response);
+											dummyResponseSimple(response);
 											return false;
 										}
 
 										if(bresult.second == false ) 
 										{
 											base_init_exiting = true;
-											dummyResponse(response);
+											dummyResponseSimple(response);
 											return false;
 										}
 
@@ -2326,7 +2326,7 @@
 										if(cresult.second == false ) 
 										{
 											base_init_exiting = true;
-											dummyResponse(response);
+											dummyResponseSimple(response);
 											return false;
 										}
 
@@ -2752,7 +2752,7 @@
 											base_init_exiting = true;
 											//console.log("Quitting");
 											if (!(response === undefined))
-											dummyResponse(response);
+											dummyResponseSimple(response);
 											return false;
 										}
 									}
@@ -2763,7 +2763,7 @@
 									base_init_exiting = true;
 									//console.log("Quitting");
 									if (!(response === undefined))
-									dummyResponse(response);
+									dummyResponseSimple(response);
 									return false;
 								}
 									
