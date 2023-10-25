@@ -718,7 +718,7 @@
 		console.log(query);
 		results  = await faire_un_simple_query(query);
 		
-		if(results.second == false || aresult.second instanceof Array)
+		if(results.second == false && !aresult.second instanceof Array)
 		{
 			dummyResponse(res);
 			return;
@@ -726,12 +726,12 @@
 
 		//console.log(empHoursObj);
 		let result = await getDataForAdmin(undefined,undefined,undefined,empHoursObj,undefined,undefined,undefined);
-		if(result == false)
+		/* if(result == false)
 		{
 			//console.log("Dummy Response");
 			dummyResponse(res,"ajout impossible");
 			return;
-		}
+		} */
 		//console.log("Basic Response");
 
 		res.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
