@@ -1003,7 +1003,7 @@
 	async function faire_un_simple_query(queryString)
 	{
 		let sql = await exigencebasededonnée();	
-		//console.log(queryString);
+		console.log(queryString);
 		
 		try
 		{
@@ -1052,6 +1052,7 @@
 				
 			}
 			console.log("Exception caught");
+			console.log(ex);
 			return new Promise((resolve,reject)=>{reject({first:ex,second:false});});
 		}		
 	}
