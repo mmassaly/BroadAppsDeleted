@@ -1003,7 +1003,7 @@
 	async function faire_un_simple_query(queryString)
 	{
 		let sql = await exigencebasededonnée();	
-		console.log(queryString);
+		//console.log(queryString);
 		
 		try
 		{
@@ -1622,7 +1622,7 @@
 						query += (empObj == undefined)?((empHoursObj == undefined)?"":" where A.Idindividu ='"+empHoursObj.ID+"';"):" where A.Idindividu ='"+empObj.ID+"'";
 						query += " GROUP BY Entrées,Date,Idindividu ORDER BY Date ASC;";
 						
-						
+						console.log(empHoursObj);
 						let threeResults = await faire_un_simple_query(query);
 						let resultTwo = threeResults[0];
 						let aresult = threeResults[2];
