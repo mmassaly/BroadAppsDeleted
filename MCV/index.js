@@ -1933,16 +1933,17 @@
 										yearContentModel.months[monthIndex].weeks.push(week);
 										let command = { paths:[{path:"container",index:location_index},{path:"yearsContent",index:yearIndex},{path:"months",index:monthIndex},{path:"weeks",index:weekIndex}], commandObj:{command:"push",value:week} };
 										pushCommands(command);
-										//console.log("new weekIndex"+weekIndex);
+										console.log("new weekIndex"+weekIndex);
 									
 									}
 									else
 									{
 										weekIndex = weekFoundAlpha.second;
-										//console.log("old weekIndex "+weekIndex);
+										console.log("old weekIndex "+weekIndex);
 									}
 
 								}
+								
 								
 									
 								//console.log(currentmonth); console.log(currentday); console.log(currentYear);
@@ -2010,7 +2011,8 @@
 								let dayIndex = -1;
 
 								if( dayFound === undefined)
-								{	
+								{
+									console.log(dayIndex = yearContentModel.months[monthIndex].weeks);
 									dayIndex = yearContentModel.months[monthIndex].weeks[weekIndex].days.length;
 									yearContentModel.months[monthIndex].weeks[weekIndex].days.push(days);
 									let command = { paths:[{path:"container",index:location_index},{path:"yearsContent",index:yearIndex},{path:"months",index:monthIndex},{path:"weeks",index:weekIndex},{path:"days",index:dayIndex}], commandObj:{command:"push",value:days} };
