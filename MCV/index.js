@@ -1998,7 +1998,7 @@
 									vacationsdates:[]
 								};
 								
-								//console.log("month "+monthIndex+" week no is "+weekNo+" weekDayIndex "+ weekDayIndex+" weeks data length is "+yearContentModel.months[monthIndex].weeks.length);
+								console.log("month "+monthIndex+" week no is "+weekNo+" weekDayIndex "+ weekDayIndex+" weeks data length is "+yearContentModel.months[monthIndex].weeks.length);
 								let daySearchIndex = start_day;
 								
 								if(paramday != undefined)
