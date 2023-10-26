@@ -725,9 +725,11 @@
 		}
 
 		//console.log(empHoursObj);
+		
 		try
 		{
 			let result = await getDataForAdmin(undefined,undefined,undefined,empHoursObj,undefined,undefined,undefined);
+			console.log("Basic Response");
 		}
 		catch(ex)
 		{
@@ -740,6 +742,7 @@
 			res.write(JSON.stringify("NOT OK"));
 			res.end();
 		}
+		
 		/* if(result == false)
 		{
 			//console.log("Dummy Response");
