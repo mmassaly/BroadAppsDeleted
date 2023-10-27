@@ -17,6 +17,7 @@
 	let addUser_In_use = false; 
 	let commands = [];
 	let callIndex = 0;
+	var gettingData = false;
 	//"SET @@lc_time_names = 'fr_FR';"
 	let charging_percentage = 0; 	
 	let base_init_exiting = false;
@@ -123,6 +124,7 @@
 	{
 		console.log(req.method);
 		console.log(req.url);
+		
 		if (req.method === 'OPTIONS') 
 		{
 			console.log('!OPTIONS');
@@ -265,6 +267,7 @@
 				}
 				else
 				{
+						let result = res;
 						req.on("data",function(data)
 						{
 							reqData += data;
@@ -274,14 +277,14 @@
 							if(primaryObject == undefined)
 							{
 								//console.log("Your response should be with the 200 code");
-								res.writeHeader(200,{"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+								result.writeHeader(200,{"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
 									,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
 									,"Access-Control-Max-Age":'86400'
 									,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
 								});
-								res.write(JSON.stringify({first: undefined,res:"Call index is "+callIndex+"\n"
+								result.write(JSON.stringify({first: undefined,res:"Call index is "+callIndex+"\n"
 								+"Charging pourcentage "+ charging_percentage+"",third:true,text:"Still Charging",charging:true}));
-								res.end();
+								result.end();
 								return;
 							}
 							//console.log(reqData);
@@ -293,7 +296,7 @@
 							catch(ex)
 							{
 								//console.log(ex);
-								dummyResponseSimple(res);
+								dummyResponseSimple(result);
 								return;
 							}
 
@@ -304,7 +307,7 @@
 							if(urlObject == undefined)
 							{
 								//console.log("Undefined urlObject");
-								dummyResponseSimple(res);
+								dummyResponseSimple(result);
 								return;
 							}
 
@@ -319,13 +322,13 @@
 								if(commandArg == undefined)
 								{
 									//console.log("undefined commandArg");
-									dummyResponseSimple(res);
+									dummyResponseSimple(result);
 									return;
 								}
 								else if(commandArg !== "hours")
 								{
 									//console.log("undefined commandArg");
-									dummyResponseSimple(res);
+									dummyResponseSimple(result);
 									return;
 								}
 								
@@ -333,7 +336,7 @@
 								if(userAuthentification == undefined) 
 								{
 									//console.log("undefined userAuthentification");
-									dummyResponseSimple(res);
+									dummyResponseSimple(result);
 									return;
 								}
 								else
@@ -345,8 +348,8 @@
 									|| userAuthentification.Nom == undefined || userAuthentification.genre == undefined
 									|| userAuthentification.naissance == undefined || userAuthentification.pass == undefined)
 								{
-									//console.log("undefined credentials");
-									dummyResponseSimple(res);
+									console.log("undefined credentials");
+									dummyResponseSimple(result);
 									return;
 								}
 								else
@@ -355,6 +358,7 @@
 								}
 
 								//console.log("Trying to authenticate");
+								let resultb = result;
 								forced_authentification_query(userAuthentification,undefined).
 								then(
 								(tempResult)=> 
@@ -363,25 +367,26 @@
 									(othertempResult)=>
 									{
 										urlObject.date = new Date(urlObject.date);
-										insertEntryandExitIntoEmployees(userAuthentification.ID,new Date(urlObject.date),urlObject.start,urlObject.end,urlObject,res);	
+										console.log(urlObject);
+										insertEntryandExitIntoEmployees(userAuthentification.ID,urlObject.date,urlObject.start,urlObject.end,urlObject,resultb);	
 									},
 									(errortempResult)=>
 									{
-										dummyResponseSimple(res);
+										dummyResponseSimple(resultb);
 										return;
 									});
-									
 								},
 								(error)=>
 								{
-									dummyResponseSimple(res);
+									dummyResponseSimple(resultb);
 									//console.log("This guy is not an authenticated admin");
 									return;
 								});
 							}
 							if(command === "login")
 							{	
-								forced_authentification_query_login(urlObject.userAuthentification,res).then(
+								let resultb = result;
+								forced_authentification_query_login(urlObject.userAuthentification,result).then(
 								(ares)=>
 								{
 									check_super_admin(urlObject.userAuthentification,undefined,undefined).then(
@@ -428,27 +433,27 @@
 										}
 										if(ares.first)
 										{
-											res.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+											resultb.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
 											,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
 											,"Access-Control-Max-Age":'86400'
 											,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
 											});
 											//console.log("Sending response");
-											res.write(JSON.stringify(ares));
-											res.end();
+											resultb.write(JSON.stringify(ares));
+											resultb.end();
 
 										}
 										else if(ares.second || ares.third)
 										{
 											
-											res.writeHead(200,{"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+											resultb.writeHead(200,{"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
 											,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
 											,"Access-Control-Max-Age":'86400'
 											,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
 											});
 
-											res.write(JSON.stringify(ares));
-											res.end();
+											resultb.write(JSON.stringify(ares));
+											resultb.end();
 											
 										}
 										else
@@ -459,14 +464,14 @@
 									},(otherError)=>
 									{
 										//console.log(otherError);
-										dummyResponse(res,otherError);
+										dummyResponse(resultb,otherError);
 										return;
 									});
 								}
 								,(aerror)=>
 								{
 									//console.log(aerror);
-									dummyResponse(res,aerror);
+									dummyResponse(resultb,aerror);
 									return;
 								});
 							}
@@ -476,7 +481,7 @@
 								if(commandArg == undefined)
 								{
 									//console.log("undefined commandArg");
-									dummyResponseSimple(res);
+									dummyResponseSimple(result);
 									return;
 								}
 								else
@@ -488,7 +493,7 @@
 								if(userAuthentification == undefined) 
 								{
 									//console.log("undefined userAuthentification");
-									dummyResponseSimple(res);
+									dummyResponseSimple(result);
 									return;
 								}
 								else
@@ -502,7 +507,7 @@
 									{
 										//console.log(userAuthentification);
 										//console.log("undefined credentials");
-										dummyResponseSimple(res);
+										dummyResponseSimple(result);
 										return;
 									}
 									else
@@ -516,6 +521,7 @@
 								{
 									let sqlConnection = connection;
 									//console.log("Trying to authenticate");
+									let resultc = result;
 									forced_authentification_query(userAuthentification,undefined).then((tempResult)=> {
 										//console.log("Result is "+tempResult);
 										if(tempResult)
@@ -530,17 +536,17 @@
 													//console.log("This guy is a primary admin");
 													if(primaryObject == undefined)
 													{
-														getDataForAdmin(res,undefined);
+														getDataForAdmin(resultc,undefined);
 													}
 													
-													res.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+													resultc.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
 													,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
 													,"Access-Control-Max-Age":'86400'
 													,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
 													});
 													if(primaryObject != undefined)
-													res.write(JSON.stringify(primaryObject));
-													res.end();
+													resultc.write(JSON.stringify(primaryObject));
+													resultc.end();
 													
 													return;
 												}
@@ -561,13 +567,13 @@
 														otherVisible : false
 													};
 
-													res.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+													resultc.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
 													,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
 													,"Access-Control-Max-Age":'86400'
 													,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
 													});
-													res.write(JSON.stringify(tempData));
-													res.end();		
+													resultc.write(JSON.stringify(tempData));
+													resultc.end();		
 													
 												}
 												else if(othertempResult.third)
@@ -593,13 +599,13 @@
 														};
 														
 														notIDDecreaseAll(tempLocation,userAuthentification.ID);
-														res.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+														resultc.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
 														,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
 														,"Access-Control-Max-Age":'86400'
 														,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
 														});
-														res.write(JSON.stringify(tempData));
-														res.end();
+														resultc.write(JSON.stringify(tempData));
+														resultc.end();
 														return;
 													}
 													else if(commandArg == "update")
@@ -615,13 +621,13 @@
 															let command = getCommandGivenID(userAuthentification.ID);
 															//console.log("-------------------Passed Command----------------------")
 															//console.log(command);
-															res.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+															resultc.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
 															,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
 															,"Access-Control-Max-Age":'86400'
 															,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
 															});
-															res.write(JSON.stringify(command));
-															res.end();
+															resultc.write(JSON.stringify(command));
+															resultc.end();
 															return;
 														}
 													}
@@ -629,7 +635,7 @@
 												else
 												{
 													//console.log("No answer");
-													dummyResponseSimple(res);
+													dummyResponseSimple(resultc);
 												}	
 											},
 											(error)=> 
@@ -639,7 +645,7 @@
 										}
 										else
 										{
-											dummyResponseSimple(res);
+											dummyResponseSimple(resultc);
 											//console.log("This guy is not an authenticated admin");
 											return;
 										}
@@ -652,12 +658,12 @@
 								else
 								{
 									//console.log("You are at area with response 500");
-									res.writeHead(500, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+									result.writeHead(500, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
 												,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
 												,"Access-Control-Max-Age":'86400'
 												,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
 												});
-									res.end();
+									result.end();
 								}
 							}	
 						});
@@ -714,7 +720,7 @@
 				
 		query = "insert into \""+nomdelaTable+"\" values ('"
 		+ ID+"','"+datereversed+"','"+startTime+"',"+((endTime == undefined)?null:"'"+endTime+"'")+")"
-		+" ON CONFLICT (IdIndividu,Date,Entrées) DO UPDATE SET Sorties="+((endTime == undefined)?null:"'"+endTime+"'")+";\n";
+		+" ON CONFLICT (IdIndividu,Date,Entrées) WHERE Sorties = null OR Sorties < '"+endTime+"' DO UPDATE SET Sorties="+((endTime == undefined)?null:"'"+endTime+"'")+";\n";
 		console.log(query);
 		results  = await faire_un_simple_query(query);
 		
@@ -724,10 +730,17 @@
 			return;
 		}
 
-		//console.log(empHoursObj);
+		console.log(empHoursObj);
 		
 		try
 		{
+			res.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+								,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
+								,"Access-Control-Max-Age":'86400'
+								,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
+								});
+			res.write(JSON.stringify("OK"));
+			res.end();
 			let result = await getDataForAdmin(undefined,undefined,undefined,empHoursObj,undefined,undefined,undefined);
 			console.log("Basic Response");
 		}
@@ -737,8 +750,7 @@
 			res.writeHead(500, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
 								,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
 								,"Access-Control-Max-Age":'86400'
-								,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
-								});
+								,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"});
 			res.write(JSON.stringify("NOT OK"));
 			res.end();
 		}
@@ -750,14 +762,7 @@
 			return;
 		} */
 		//console.log("Basic Response");
-
-		res.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
-								,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
-								,"Access-Control-Max-Age":'86400'
-								,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
-								});
-		res.write(JSON.stringify("OK"));
-		res.end();
+		
  	}
 	
 	async function formidableFileUpload(req,path,res)
@@ -1447,6 +1452,10 @@
 			{
 				//console.log(" paramyear "+paramyear+" other paramday "+paramday+" other parammonth "+parammonth);
 				//console.log("Location argument "+locationArgObj+" employee argument "+empObj);
+				
+				while(gettingData);
+				gettingData = true;
+				
 				let query = "Select * from \"location du bureau\" ORDER BY Id;";
 				
 				if(locationArgObj != undefined)
@@ -1470,6 +1479,7 @@
 				if(result.second == false ) 
 				{
 					//console.log(result);
+					gettingData = false;
 					dummyResponseSimple(response);
 					return false;
 				}
@@ -1591,10 +1601,11 @@
 					let result_ = await faire_un_simple_query(query);
 					if(result_.second == false && !(result_.second instanceof Array)) 
 					{
+						gettingData = false;
 						dummyResponseSimple(response);
 						return false;
 					}
-					console.log(query);
+					//console.log(query);
 					let monthCounts = 0;
 					if( (parammonth === undefined) === false)
 					{
@@ -1950,13 +1961,13 @@
 										yearContentModel.months[monthIndex].weeks.push(week);
 										let command = { paths:[{path:"container",index:location_index},{path:"yearsContent",index:yearIndex},{path:"months",index:monthIndex},{path:"weeks",index:weekIndex}], commandObj:{command:"push",value:week} };
 										pushCommands(command);
-										console.log("new weekIndex"+weekIndex);
+										//console.log("new weekIndex"+weekIndex);
 									
 									}
 									else
 									{
 										weekIndex = weekFoundAlpha.second;
-										console.log("old weekIndex "+weekIndex);
+										//console.log("old weekIndex "+weekIndex);
 									}
 
 								}
@@ -2015,7 +2026,7 @@
 									vacationsdates:[]
 								};
 								
-								console.log("month "+monthIndex+" week no is "+weekNo+" weekDayIndex "+ weekDayIndex+" weeks data length is "+yearContentModel.months[monthIndex].weeks.length);
+								//console.log("month "+monthIndex+" week no is "+weekNo+" weekDayIndex "+ weekDayIndex+" weeks data length is "+yearContentModel.months[monthIndex].weeks.length);
 								let daySearchIndex = start_day;
 								
 								if(paramday != undefined)
@@ -2029,7 +2040,6 @@
 
 								if( dayFound === undefined)
 								{
-									console.log(dayIndex = yearContentModel.months[monthIndex].weeks);
 									dayIndex = yearContentModel.months[monthIndex].weeks[weekIndex].days.length;
 									yearContentModel.months[monthIndex].weeks[weekIndex].days.push(days);
 									let command = { paths:[{path:"container",index:location_index},{path:"yearsContent",index:yearIndex},{path:"months",index:monthIndex},{path:"weeks",index:weekIndex},{path:"days",index:dayIndex}], commandObj:{command:"push",value:days} };
@@ -2053,6 +2063,7 @@
 								
 								if(resultTwo.second == false ) 
 								{
+									gettingData = false;
 									base_init_exiting = true;
 									dummyResponseSimple(response);
 									return false;
@@ -2331,6 +2342,7 @@
 										if(aresult.second == false ) 
 										{
 											base_init_exiting = true;
+											gettingData = false;
 											dummyResponseSimple(response);
 											return false;
 										}
@@ -2338,6 +2350,7 @@
 										if(bresult.second == false ) 
 										{
 											base_init_exiting = true;
+											gettingData = false;
 											dummyResponseSimple(response);
 											return false;
 										}
@@ -2346,6 +2359,7 @@
 										if(cresult.second == false ) 
 										{
 											base_init_exiting = true;
+											gettingData = false;
 											dummyResponseSimple(response);
 											return false;
 										}
@@ -2769,6 +2783,7 @@
 										else
 										{
 											baseInit = false;
+											gettingData = false;
 											base_init_exiting = true;
 											//console.log("Quitting");
 											if (!(response === undefined))
@@ -2781,6 +2796,7 @@
 								{
 									baseInit = false;
 									base_init_exiting = true;
+									gettingData = false;
 									//console.log("Quitting");
 									if (!(response === undefined))
 									dummyResponseSimple(response);
@@ -2811,6 +2827,7 @@
 				
 				if (!(response === undefined))
 				{
+					gettingData = false;
 					response.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
 									,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
 									,"Access-Control-Max-Age":'86400'
@@ -2822,6 +2839,7 @@
 					return true;
 				}
 
+				gettingData = false;
 				return true;
 	} 
 	
