@@ -1,12 +1,12 @@
-	//require('dotenv').config();	
+	require('dotenv').config();	
 	var http = require("http");
 	var url = require("url");
 	var postgres = require('pg');
 	var formidable = require('formidable');
 	var fs = require('fs');
 	var vercelBlob = require("@vercel/blob");
-	
-	
+	var {GlobalsForcedFolding} = require('./Extra.js');	
+	let globalForcedFoldingPrime = undefined;
 	let connection = undefined;
 	let precedentDate = new Date(Date.now());
 	let todaysDate = new Date(Date.now());
@@ -17,7 +17,6 @@
 	let addUser_In_use = false; 
 	let commands = [];
 	let callIndex = 0;
-	var gettingData = false;
 	//"SET @@lc_time_names = 'fr_FR';"
 	let charging_percentage = 0; 	
 	let base_init_exiting = false;
@@ -77,48 +76,7 @@
 	}
 	
 	let sleep = true;
-	
-	function caller()
-	{
-		
-		precedentDate = todaysDate;
-		todaysDate = new Date(Date.now());
-			
-		let dateTime = new Date();
-		console.log("This function must sleep for 1 seconds before starting");
-		
-		setTimeout(
-				function()
-				{	
-					let currentDatedetails = getDateDetailsFromCorruptJavascript();
-					console.log("Done sleeping..............");
-					if(precedentDate.getYear() != todaysDate.getYear())
-					{
-						getDataForAdmin(undefined,undefined,undefined,undefined,currentDatedetails[2],undefined,undefined);
-					}
-					else if (precedentDate.getMonth() != todaysDate.getMonth())
-					{
-						getDataForAdmin(undefined,undefined,undefined,undefined,currentDatedetails[2],currentDatedetails[1],undefined);
-					}
-					else if(precedentDate.getDay() != todaysDate.getDay() )
-					{
-						getDataForAdmin(undefined,undefined,undefined,undefined,currentDatedetails[2],currentDatedetails[1],currentDatedetails[0]);
-					}
-					
-					ofUpdate();
-			},1000);
-	}
 
-
-	function ofUpdate()
-	{
-		current = new Date(Date.now());
-		let totalSeconds = (current.getHours()*60*60 + current.getMinutes()*60+ current.getSeconds())*1000;
-		let total = 86400000;
-		//total = 180000 + totalSeconds;
-		//'fr-FR'(total-totalSeconds)
-		setTimeout(caller,total-totalSeconds);
-	}
 	
 	var server = http.createServer(function(req,res)
 	{
@@ -258,11 +216,6 @@
 				if(req.url == "/form")
 				{
 					//console.log("incomming request but primary object is "+primaryObject);
-					if(primaryObject == undefined)
-					{
-						res.end();
-						return;
-					}
 					formidableFileUpload(req,"../Project Timing/my-app/src/assets/images/",res);
 				}
 				else
@@ -286,7 +239,7 @@
 								+"Charging pourcentage "+ charging_percentage+"",third:true,text:"Still Charging",charging:true}));
 								result.end();
 								return;
-							}
+							} 
 							//console.log(reqData);
 							let urlObject = undefined;
 							try
@@ -359,121 +312,108 @@
 
 								//console.log("Trying to authenticate");
 								let resultb = result;
-								forced_authentification_query(userAuthentification,undefined).
-								then(
-								(tempResult)=> 
+								forced_authentification_query(userAuthentification,undefined).then(( tempresult )=>
 								{
-									check_super_admin(userAuthentification,undefined,undefined).then(
-									(othertempResult)=>
-									{
-										urlObject.date = new Date(urlObject.date);
-										console.log(urlObject);
-										insertEntryandExitIntoEmployees(userAuthentification.ID,urlObject.date,urlObject.start,urlObject.end,urlObject,resultb);	
-									},
-									(errortempResult)=>
-									{
-										dummyResponseSimple(resultb);
-										return;
-									});
-								},
-								(error)=>
+									let othertempResult = check_super_admin(userAuthentification,undefined,undefined);
+									urlObject.date = new Date(urlObject.date);
+									insertEntryandExitIntoEmployees(userAuthentification.ID,urlObject.date,urlObject.start,urlObject.end,urlObject,resultb);	
+									getDataForAdminThreeArgs(res,undefined,undefined,empHoursObj,undefined,undefined,undefined);
+								}
+								,(ex) =>
 								{
 									dummyResponseSimple(resultb);
-									//console.log("This guy is not an authenticated admin");
 									return;
 								});
 							}
 							if(command === "login")
 							{	
 								let resultb = result;
-								forced_authentification_query_login(urlObject.userAuthentification,result).then(
-								(ares)=>
+								
+								forced_authentification_query_login(urlObject.userAuthentification,result).then((ares)=>
 								{
-									check_super_admin(urlObject.userAuthentification,undefined,undefined).then(
-									(othertempResult)=>
+										check_super_admin(urlObject.userAuthentification,undefined,undefined).then((othertempResult)=>
+										{
+												if(ares.first == true || ares.second == true || ares.third == true)
+												{
+													//console.log("Inside setting");
+													if(othertempResult.first)
+													{
+														ares.element.superadmin = true;
+														ares.element.admin = false;
+														ares.element.user = false; 
+														ares.element.keyadmin = false;
+													}
+													else if(othertempResult.second)
+													{
+														ares.element.superadmin = false;
+														ares.element.admin = true;
+														ares.element.user = false;
+														ares.element.keyadmin = false;
+													}
+													else if(othertempResult.third)
+													{
+														ares.element.superadmin = false;
+														ares.element.admin = false;
+														ares.element.user = true;
+														ares.element.keyadmin = false;
+													}
+													else if (othertempResult.fourth)
+													{
+														ares.element.superadmin = false;
+														ares.element.admin = false;
+														ares.element.user = false; 
+														ares.element.keyadmin = true;
+													}
+												}
+												else
+												{
+													//console.log(ares);
+													//console.log("Not inside setting");
+												}
+												
+												if(ares.first)
+												{
+													resultb.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+													,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
+													,"Access-Control-Max-Age":'86400'
+													,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
+													});
+													//console.log("Sending response");
+													resultb.write(JSON.stringify(ares));
+													resultb.end();
+												}
+												else if(ares.second || ares.third || ares.fourth)
+												{
+													
+													resultb.writeHead(200,{"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+													,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
+													,"Access-Control-Max-Age":'86400'
+													,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
+													});
+
+													resultb.write(JSON.stringify(ares));
+													resultb.end();
+													
+												}
+												else
+												{
+													
+												}
+
+											
+										}
+										,(ex)=>
+										{
+											//console.log(otherError);
+											dummyResponse(resultb,ex);
+											return;
+										});
+									}
+									,(ex2)=>
 									{
-										//console.log(othertempResult);
-										if(ares.first == true || ares.second == true || ares.third == true)
-										{
-											//console.log("Inside setting");
-											
-											if(othertempResult.first)
-											{
-												ares.element.superadmin = true;
-												ares.element.admin = false;
-												ares.element.user = false; 
-												ares.element.keyadmin = false;
-											}
-											else if(othertempResult.second)
-											{
-												ares.element.superadmin = false;
-												ares.element.admin = true;
-												ares.element.user = false;
-												ares.element.keyadmin = false;
-											}
-											else if(othertempResult.third)
-											{
-												ares.element.superadmin = false;
-												ares.element.admin = false;
-												ares.element.user = true;
-												ares.element.keyadmin = false;
-											}
-											else if (othertempResult.fourth)
-											{
-												ares.element.superadmin = false;
-												ares.element.admin = false;
-												ares.element.user = false; 
-												ares.element.keyadmin = true;
-											}
-										}
-										else
-										{
-											//console.log(ares);
-											//console.log("Not inside setting");
-										}
-										if(ares.first)
-										{
-											resultb.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
-											,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
-											,"Access-Control-Max-Age":'86400'
-											,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
-											});
-											//console.log("Sending response");
-											resultb.write(JSON.stringify(ares));
-											resultb.end();
-
-										}
-										else if(ares.second || ares.third)
-										{
-											
-											resultb.writeHead(200,{"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
-											,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
-											,"Access-Control-Max-Age":'86400'
-											,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
-											});
-
-											resultb.write(JSON.stringify(ares));
-											resultb.end();
-											
-										}
-										else
-										{
-											
-										}
-
-									},(otherError)=>
-									{
-										//console.log(otherError);
-										dummyResponse(resultb,otherError);
+										dummyResponse(resultb,ex2);
 										return;
 									});
-								}
-								,(aerror)=>
-								{
-									//console.log(aerror);
-									dummyResponse(resultb,aerror);
-									return;
-								});
 							}
 							else if(command === "pull") 
 							{
@@ -492,7 +432,7 @@
 								let userAuthentification = urlObject.userAuthentification;
 								if(userAuthentification == undefined) 
 								{
-									//console.log("undefined userAuthentification");
+									console.log("undefined userAuthentification");
 									dummyResponseSimple(result);
 									return;
 								}
@@ -505,11 +445,11 @@
 									|| userAuthentification.Nom == undefined || userAuthentification.genre == undefined
 									|| userAuthentification.naissance == undefined || userAuthentification.pass == undefined)
 									{
-										//console.log(userAuthentification);
-										//console.log("undefined credentials");
+										console.log(userAuthentification);
+										console.log("undefined credentials");
 										dummyResponseSimple(result);
 										return;
-									}
+									} 
 									else
 									{
 										//console.log("all credentials received");
@@ -520,76 +460,56 @@
 								if(commandArg === "all" || commandArg === "update") 
 								{
 									let sqlConnection = connection;
-									//console.log("Trying to authenticate");
+									console.log("Trying to authenticate");
 									let resultc = result;
-									forced_authentification_query(userAuthentification,undefined).then((tempResult)=> {
-										//console.log("Result is "+tempResult);
-										if(tempResult)
-										{
-											//console.log("This guy is authenticated");
-											check_super_admin(userAuthentification,sqlConnection,undefined).then(
-											(othertempResult)=>
-											{		
-												//console.log(othertempResult);
-												if(othertempResult.first)
+									
+									forced_authentification_query(userAuthentification,undefined).then((tempResult)=>
+									{
+											if(tempResult)
+											{
+												console.log("This guy is authenticated");
+												let resultd = resultc;
+												check_super_admin(userAuthentification,sqlConnection,undefined).then((othertempResult)=>
 												{
-													//console.log("This guy is a primary admin");
-													if(primaryObject == undefined)
+													if(othertempResult.first)
 													{
-														getDataForAdmin(resultc,undefined);
-													}
-													
-													resultc.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
-													,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
-													,"Access-Control-Max-Age":'86400'
-													,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
-													});
-													if(primaryObject != undefined)
-													resultc.write(JSON.stringify(primaryObject));
-													resultc.end();
-													
-													return;
-												}
-												else if(othertempResult.second)
-												{
-													//console.log("This guy is a secondary admin");
-													if(primaryObject == undefined )
-													{
-														getDataForAdmin(res,undefined);
-													}
-
-													let tempLocation = getLocation(primaryObject,userAuthentification.IDBureau);
-													let tempData =
-													{
-														selected_name: 0,
-														container : [tempLocation],
-														nowVisible: false,
-														otherVisible : false
-													};
-
-													resultc.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
-													,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
-													,"Access-Control-Max-Age":'86400'
-													,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
-													});
-													resultc.write(JSON.stringify(tempData));
-													resultc.end();		
-													
-												}
-												else if(othertempResult.third)
-												{
-													if(commandArg == "all")
-													{
-														if(primaryObject == undefined)
+														console.log("This guy is a primary admin");
+														console.log("responding");
+														resultd.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+														,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
+														,"Access-Control-Max-Age":'86400'
+														,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
+														});
+														resultd.write(JSON.stringify(primaryObject));
+														resultd.end();
+														/*getDataForAdminThreeArgs(undefined,undefined).then((getresult)=>{
+															console.log(getresult);
+															if(getresult == false)
+															{
+																dummyResponseSimple(resultd);
+																return;
+															}
+															console.log("responding");
+															resultd.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+															,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
+															,"Access-Control-Max-Age":'86400'
+															,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
+															});
+															resultd.write(JSON.stringify(getresult));
+															resultd.end();
+															
+														},
+														(error)=>
 														{
-															getDataForAdmin(res,undefined);
-														}
-													
-														//console.log("This guy is a ternary admin");
-														
+															console.log(error); console.log("Error Problem");	
+														});*/
+													}
+													else if(othertempResult.second || othertempResult.fourth)
+													{
+														//console.log("This guy is a secondary admin");
 														let tempLocation = getLocation(primaryObject,userAuthentification.IDBureau);
-														tempLocation = Object.fromEntries(tempLocation.entries());
-														
+															tempLocation = Object.fromEntries(tempLocation.entries());
+																
 														let tempData =
 														{
 															selected_name: 0,
@@ -597,63 +517,145 @@
 															nowVisible: true,
 															otherVisible : false
 														};
-														
+																
 														notIDDecreaseAll(tempLocation,userAuthentification.ID);
-														resultc.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+														
+														resultd.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
 														,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
 														,"Access-Control-Max-Age":'86400'
 														,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
 														});
-														resultc.write(JSON.stringify(tempData));
-														resultc.end();
-														return;
-													}
-													else if(commandArg == "update")
-													{
-														if(primaryObject == undefined)
-														{
-															getDataForAdmin(res,undefined);
-															dummyResponseSimple(res);
-															return;
-														}
-														else
-														{
-															let command = getCommandGivenID(userAuthentification.ID);
-															//console.log("-------------------Passed Command----------------------")
-															//console.log(command);
-															resultc.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+																
+														resultd.write(JSON.stringify(tempData));
+														resultd.end();
+														
+														/*getDataForAdminThreeArgs(undefined,undefined).then((primaryObject)=>{
+															if(primaryObject == false)
+															{
+																dummyResponseSimple(resultd);
+																return;
+															}
+																//console.log("This guy is a ternary admin");	
+															let tempLocation = getLocation(primaryObject,userAuthentification.IDBureau);
+															tempLocation = Object.fromEntries(tempLocation.entries());
+																
+															let tempData =
+															{
+																selected_name: 0,
+																container : [tempLocation],
+																nowVisible: true,
+																otherVisible : false
+															};
+																
+															notIDDecreaseAll(tempLocation,userAuthentification.ID);
+															resultd.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
 															,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
 															,"Access-Control-Max-Age":'86400'
 															,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
 															});
-															resultc.write(JSON.stringify(command));
-															resultc.end();
+																
+															resultd.write(JSON.stringify(tempData));
+															resultd.end();
 															return;
+															
+														},(error)=>
+														{
+															console.log("Error");console.log(error);
+														});*/
+													}
+													else if(othertempResult.third )
+													{
+														if(commandArg == "all")
+														{
+															if(primaryObject == undefined)
+															{
+																dummyResponseSimple(resultc);
+															}
+															else
+															{
+																let tempLocation = getLocation(primaryObject,userAuthentification.IDBureau);
+																tempLocation = Object.fromEntries(tempLocation.entries());
+																	
+																let tempData =
+																{
+																	selected_name: 0,
+																	container : [tempLocation],
+																	nowVisible: true,
+																	otherVisible : false
+																};
+																	
+																notIDDecreaseAll(tempLocation,userAuthentification.ID);
+														
+																resultd.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+																	,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
+																	,"Access-Control-Max-Age":'86400'
+																	,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
+																});
+																resultd.write(JSON.stringify(tempData));
+																resultd.end();
+															}
+															
+															
+															
+															
+															/*
+															getDataForAdmin(undefined,undefined,undefined,userAuthentification,undefined,undefined,undefined).then((primaryObject)=>
+															{	
+																if(primaryObject == false)
+																{
+																	dummyResponseSimple(resultc);
+																}
+																else
+																{
+																	resultd.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+																	,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
+																	,"Access-Control-Max-Age":'86400'
+																	,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
+																	});
+																	resultd.write(JSON.stringify(primaryObject));
+																	resultd.end();
+																}
+															},(otherError)=>
+															{
+																console.log(otherError);
+																console.log("Error");
+															});*/
+														}
+														else if(commandArg == "update")
+														{
+																let command = getCommandGivenID(userAuthentification.ID);
+																//console.log("-------------------Passed Command----------------------")
+																//console.log(command);
+																resultc.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+																,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
+																,"Access-Control-Max-Age":'86400'
+																,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
+																});
+																resultd.write(JSON.stringify(command));
+																resultd.end();
+																return;
 														}
 													}
-												}
-												else
+													else
+													{
+														//console.log("No answer");
+														dummyResponseSimple(resultd);
+													}	
+												},(error)=>
 												{
-													//console.log("No answer");
-													dummyResponseSimple(resultc);
-												}	
-											},
-											(error)=> 
+													console.log(error);
+												});
+											}
+											else
 											{
-												//console.log(error);
-											});
-										}
-										else
+												dummyResponseSimple(resultd);
+												return;
+											}
+										} ,
+										(ex)=>
 										{
-											dummyResponseSimple(resultc);
-											//console.log("This guy is not an authenticated admin");
-											return;
-										}
-									},(error)=>
-									{
-										//console.log(error);
-									} );
-									
+											
+										});
 								}
 								else
 								{
@@ -679,11 +681,10 @@
 			try
 			{
 				add_all_users();
+				getDataForAdminThreeArgs(undefined,undefined);
 				//console.log(startingTag);
 				//'fr-FR',
 				baseInit = true;
-				getDataForAdmin(undefined,undefined);
-				ofUpdate();
 			}
 			catch(ex)
 			{
@@ -720,8 +721,8 @@
 				
 		query = "insert into \""+nomdelaTable+"\" values ('"
 		+ ID+"','"+datereversed+"','"+startTime+"',"+((endTime == undefined)?null:"'"+endTime+"'")+")"
-		+" ON CONFLICT (IdIndividu,Date,Entrées) WHERE Sorties = null OR Sorties < '"+endTime+"' DO UPDATE SET Sorties="+((endTime == undefined)?null:"'"+endTime+"'")+";\n";
-		console.log(query);
+		+" ON CONFLICT (IdIndividu,Date,Entrées) "+((endTime == undefined)?(" WHERE Sorties < '"+((endTime == undefined)? null+"'":"'"+endTime+"'")):"")+" DO UPDATE SET Sorties = "+((endTime == undefined)?null:"'"+endTime+"'")+";\n";
+		//console.log(query);
 		results  = await faire_un_simple_query(query);
 		
 		if(results.second == false && !results.second instanceof Array)
@@ -730,9 +731,9 @@
 			return;
 		}
 
-		console.log(empHoursObj);
+		//console.log(empHoursObj);
 		
-		try
+		if(res == undefined)
 		{
 			res.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
 								,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
@@ -741,18 +742,7 @@
 								});
 			res.write(JSON.stringify("OK"));
 			res.end();
-			let result = await getDataForAdmin(undefined,undefined,undefined,empHoursObj,undefined,undefined,undefined);
 			console.log("Basic Response");
-		}
-		catch(ex)
-		{
-			console.log(ex);
-			res.writeHead(500, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
-								,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
-								,"Access-Control-Max-Age":'86400'
-								,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"});
-			res.write(JSON.stringify("NOT OK"));
-			res.end();
 		}
 		
 		/* if(result == false)
@@ -769,8 +759,7 @@
 	{
 		var form = new formidable.IncomingForm();
 		//console.log("Inside formidable");
-    	
-		await form.parse(req, async function (err, fields, files) 
+    	await form.parse(req, async function (err, fields, files) 
 		{
 			
 			let command = fields.command;
@@ -810,8 +799,8 @@
 			{
 					let dealingWithArray = command instanceof Array;
 					let commandArg = fields.cmdArg;
-					console.log(commandArg);
-					console.log(fields.cmdArg);
+					//console.log(commandArg);
+					//console.log(fields.cmdArg);
 					let tablename = "";
 					let querySQL = "";
 					let doubleQuerySQL = "";
@@ -835,7 +824,7 @@
 							querySQL += fields.address[0] +"$$,$$"+fields.region[0]+"$$,'"+fields.latittude[0]+"','"+fields.longitude[0];
 							querySQL += "');";
 						}
-						//console.log(querySQL);
+						console.log(querySQL);
 						//console.log(fields);
 					}
 					else if(commandArg === "employees" || (dealingWithArray && commandArg[0] === "employees"))
@@ -844,7 +833,7 @@
 			
 						if(filesDup != undefined && filesDup.imgfile != undefined || ( filesDup.originalFilename != undefined))
 						{
-								console.log(fs.readFileSync(filesDup.filepath));
+								//console.log(fs.readFileSync(filesDup.filepath));
 								const blob = await vercelBlob.put("assets/images/"+filesDup.originalFilename,fs.readFileSync(filesDup.filepath),{
 									access: 'public',
 									contentType: filesDup.mimetype,
@@ -876,9 +865,9 @@
 							thirdQuerySQL += "insert into "+tablename+" values ('"+fields.ID+"',$$"+fields.password+"$$,"+((fields.type == 1)?true:false)+","+((fields.type == 2)?true:false)+","+((fields.type == 4)?true:false)+","+((fields.type == 3)?true:false)+");";
 						} 
 						
-						//console.log(querySQL);	
-						//console.log(doubleQuerySQL);
-						//console.log(thirdQuerySQL);
+						console.log(querySQL);	
+						console.log(doubleQuerySQL);
+						console.log(thirdQuerySQL);
 					
 					}
 					
@@ -907,29 +896,34 @@
 								if (commandArg === "offices" || (dealingWithArray && commandArg[0] === "offices"))
 								{
 									userOfficeObject = urlObject;
-									let okresult = await getDataForAdmin(undefined,userOfficeObject,undefined,undefined,undefined,undefined,undefined);
-									//console.log("after offices getDataForAdmin");
+									//let okresult = //console.log("after offices getDataForAdmin");
 									//console.log("res writable ended is " +res.writableEnded);
-									//console.log(primaryObject.container);
+							 		//console.log(primaryObject.container);
 									
-									if(okresult)
-									{
-										if(res.writableEnded)
+									if(res.writableEnded)
 											return;
-										res.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+									res.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
 																,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
 																,"Access-Control-Max-Age":'86400'
 																,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
 																});
-										res.write(JSON.stringify({customtext:"OK"}));
+									
+									res.write(JSON.stringify({customtext:"OK"}));
 										//console.log("no problems");
-										res.end();
+									res.end();
+									await getDataForAdmin(undefined,userOfficeObject,undefined,undefined,undefined,undefined,undefined);
+									
+									/*	
+									if(okresult)
+									{
+										
 									}
 									else
 									{
 										dummyResponse(res,"Error");
 										//console.log("errors problems");
-									}
+									}*/
+									
 								}
 
 								if(commandArg === "employees" || (dealingWithArray && commandArg[0] === "employees"))
@@ -941,7 +935,6 @@
 										if(cresult.second != false || cresult.second instanceof Array)
 										{
 											userAdditionObject = urlObject;
-											await  getDataForAdmin(undefined,undefined,userAdditionObject,undefined,undefined,undefined,undefined);
 											//let fs = require('fs');
 											//await fs.rename(filesDup.filepath, path + filesDup.originalFilename,function(err_){});
 											res.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
@@ -952,6 +945,7 @@
 											res.write(JSON.stringify({customtext:"OK"}));
 											//console.log("no problems");
 											res.end();
+											await getDataForAdmin(undefined,undefined,userAdditionObject,undefined,undefined,undefined,undefined);
 										}
 										else
 										{
@@ -998,7 +992,6 @@
 			
 			
 	}
-		
 	async function exigencebasededonnée()
 	{	
 		try 
@@ -1013,6 +1006,7 @@
 		}
 		catch(ex)
 		{
+			console.log(ex);
 			return new Promise ((resolve,reject) => 
 			{
 				//console.log("Database Connection not successful.");	
@@ -1025,7 +1019,7 @@
 	async function faire_un_simple_query(queryString)
 	{
 		let sql = await exigencebasededonnée();	
-		console.log(queryString);
+		//console.log(queryString);
 		
 		try
 		{
@@ -1058,7 +1052,9 @@
 						resolve(tempfirst);
 					}
 					else
-					resolve({first:result.rows,second:result.fields});
+					{
+						resolve({first:result.rows,second:result.fields});
+					}
 				}
 						
 			});
@@ -1071,8 +1067,8 @@
 			}
 			catch(e)
 			{
-				
 			}
+			console.log(queryString);
 			console.log("Exception caught");
 			console.log(ex);
 			return new Promise((resolve,reject)=>{reject({first:ex,second:false});});
@@ -1088,12 +1084,12 @@
 		
 		for(let i = 0; i < tempResult.first.length; ++i)
 		{
+				//console.log(tempResult.first[i]);
 				let addResult = addUser(tempResult.first[i].idindividu,tempResult.first[i]["prenom"],tempResult.first[i].nom,
 								tempResult.first[i].genre,tempResult.first[i]['Date de naissance'].toLocaleString(undefined,{day:'numeric',month:'numeric',year:'numeric'}),tempResult.first[i]["début"],tempResult.first[i].fin
 								,tempResult.first[i].password,tempResult.first[i].idbureau,tempResult.first[i]['Nom du Bureau'],
 								tempResult.first[i].latitude,tempResult.first[i].longitude,tempResult.first[i].admin
-								,tempResult.first[i].superadmin,tempResult.first[i].User,tempResult.first[i]["key admin"]);
-									
+								,tempResult.first[i].superadmin,tempResult.first[i].User,tempResult.first[i]["Key Admin"]);
 				return {first:true,second:undefined,element:addResult.userAuthentification};
 		}
 	}
@@ -1127,7 +1123,6 @@
 						{
 							for(let i = 0; i < tempResult.first.length; ++i)
 							{
-								
 								if( tempResult.first[i].idindividu == userAuthentification.ID && tempResult.first[i].password == userAuthentification.pass) 
 								{
 									//console.log("This guy is logged in.");
@@ -1214,8 +1209,8 @@
 							return {found:true,index:loginGuysCount,superadmin:true,element:connectedguys[loginGuysCount]};
 						if( connectedguys[loginGuysCount].user )
 							return {found:true,index:loginGuysCount,user:true,element:connectedguys[loginGuysCount]};
-						if( connectedguys[loginGuysCount]["key admin"]  )
-							return {found:true,index:loginGuysCount,"key admin":true,element:connectedguys[loginGuysCount]};
+						if( connectedguys[loginGuysCount]["Key Admin"]  )
+							return {found:true,index:loginGuysCount,"Key Admin":true,element:connectedguys[loginGuysCount]};
 					}
 				}
 				return {found:false,index:-1};
@@ -1274,9 +1269,9 @@
 					ID: IDparam,first:firstparam,second:secondparam,gender:genderparam,
 					birthdate:birthdateparam,begin:beginparam,end:endparam,pwd:pwdparam,
 					locationID:IDLoc,locationName:NameLoc,lati:latitude,longi:longitude,
-					admin:adminparam,superadmin:superadminparam,user:userparam,"key admin":keyadminparam,
+					admin:adminparam,superadmin:superadminparam,user:userparam,"Key Admin":keyadminparam,
 					userAuthentification: {ID:IDparam,Prenom:firstparam,Nom:secondparam,genre:genderparam,naissance:birthdateparam,pass:pwdparam,
-					locationID:IDLoc,locationName:NameLoc,lati:latitude,longi:longitude,superadmin:superadminparam,admin:adminparam,user:userparam,"key admin":keyadminparam}
+					locationID:IDLoc,locationName:NameLoc,lati:latitude,longi:longitude,superadmin:superadminparam,admin:adminparam,user:userparam,"Key Admin":keyadminparam}
 					,commands:[]
 				};
 				
@@ -1299,7 +1294,7 @@
 				if(result.found)
 				{
 					return {first:result.element.userAuthentification.superadmin,second:result.element.userAuthentification.admin,
-					third:result.element.userAuthentification.user,fourth:result.element.userAuthentification["key admin"]};
+					third:result.element.userAuthentification.user,fourth:result.element.userAuthentification["Key Admin"]};
 				}
 				
 				let query = "SELECT IDIndividu,SuperAdmin, Admin, \"User\",Password FROM login inner join ";
@@ -1438,1334 +1433,1270 @@
 				return employeeContentModel;
 			}
 			
-			async function getDataForAdmin(response,locationArgObj)
+			async function getDataForAdminThreeArgs(response,locationArgObj)
 			{
-				getDataForAdmin(response,locationArgObj,undefined,undefined,undefined,undefined,undefined);
+				 return await getDataForAdmin(response,locationArgObj,undefined,undefined,undefined,undefined,undefined);
 			}
 
-			async function getDataForAdmin(response,locationArgObj,empObj)
+			async function getDataForAdminFourArgs(response,locationArgObj,empObj)
 			{
-				getDataForAdmin(response,locationArgObj,empObj,undefined,undefined,undefined,undefined);
+				return await getDataForAdmin(response,locationArgObj,empObj,undefined,undefined,undefined,undefined);
 			}
 			
 			async function getDataForAdmin(response,locationArgObj,empObj,empHoursObj,paramyear,parammonth,paramday)
 			{
 				//console.log(" paramyear "+paramyear+" other paramday "+paramday+" other parammonth "+parammonth);
 				//console.log("Location argument "+locationArgObj+" employee argument "+empObj);
+				let data = 
+				{
+					selected_name: 0,
+					container : [],
+					nowVisible: false,
+					otherVisible : false
+				};	
 				
-				while(gettingData);
-				gettingData = true;
-				
-				let query = "Select * from \"location du bureau\" ORDER BY Id;";
-				
-				if(locationArgObj != undefined)
-				{
-					//console.log(locationArgObj);
-					query = "Select * from \"location du bureau\" where \"location du bureau\".ID = "+locationArgObj.ID+" ORDER BY Id;";
-				}
-				else if(empObj != undefined)
-				{
-					query = "Select * from \"location du bureau\" where \"location du bureau\".ID = "+empObj.officeID+" ORDER BY Id;";
-				}
-
-				let checkfornewCommand = false;
-				if(locationArgObj != undefined || empObj != undefined || empHoursObj != undefined 
-				|| paramday != undefined || parammonth != undefined || paramday != undefined)
-				{
-					checkfornewCommand = true;
-				}
-
-				let result = await faire_un_simple_query(query);
-				if(result.second == false ) 
-				{
-					//console.log(result);
-					gettingData = false;
-					dummyResponseSimple(response);
-					return false;
-				}
-
-				let location_index = 0;
-				let data = undefined;
-				let foundValueForLocation = undefined;
-
-				if( locationArgObj != undefined )
-				{
-					data = primaryObject;
-					//console.log("----------------------");
-					//console.log(data);
-					let foundValueForLocationTemp = getLocation(data,locationArgObj.ID);
-					foundValueForLocation = foundValueForLocationTemp.first;
-					if(foundValueForLocationTemp.second != undefined)
-						location_index = foundValueForLocationTemp.second;
-					//console.log("----------------------");
-					//console.log(data.container);
-					//console.log(foundValueForLocation);
-					//console.log(locationArgObj);
-					//console.log("----------------------");
-				}
-				else if( primaryObject != undefined )
-				{
-					data = primaryObject;
-				}
+				if (primaryObject == undefined)
+					primaryObject = data;
 				else
-				{
-					data = 
-					{
-						selected_name: 0,
-						container : [],
-						nowVisible: false,
-						otherVisible : false
-					};
-				}
+					data = primaryObject;
 				
-				let dateNow = new Date(Date.now());
-				console.log(dateNow.toLocaleString('fr-FR',{day:"numeric",month:"long",year:"numeric"}));
-				console.log(dateNow);
-				//console.log("Date today is "+dateNow.toLocaleString());
-				
-				let day = Number.parseInt(dateNow.toLocaleString().split("/")[0]);
-				let amonth = Number.parseInt(dateNow.toLocaleString().split("/")[1])-1;
-				let ayear = Number.parseInt(dateNow.toLocaleString().split("/")[2]);
-				//console.log(day+"-"+amonth+"-"+ayear);
-				day = dateNow.getDate();
-				amonth = dateNow.getMonth();
-				ayear = dateNow.getFullYear();
-				//console.log(day+"-"+amonth+"-"+ayear);
-				let dateToday = new Date(ayear,amonth,day);
-				amonth += 1;
-				//console.log("new date today is "+ dateToday.toLocaleString());
-				
-				//console.log("Date today is "+dateToday);
-				//console.log("Info about response for officeInfo");
-				//console.log(result);
-				
-				for(let i = 0; i < result.first.length; ++i)
+				try
 				{
 					
-					let officeID = result.first[i][result.second[0].name];
-					let officeName = result.first[i][result.second[1].name];
-					let officeAddresse = result.first[i][result.second[2].name];
-					let officeRegion = result.first[i][result.second[3].name];
-					let officeLatitude = result.first[i][result.second[4].name];
-					let officeLongitude = result.first[i][result.second[5].name];
-					let passed = true;
-					
-					var unitLocation = 
-					{
-						name: officeName,
-						ID: officeID,
-						OfficeAddresse: officeAddresse,
-						OfficeRegion: officeRegion,
-						OfficeLatitude: officeLatitude,
-						OfficeLongitude: officeLongitude,
-						yearsContent: [],
-						now: dateNow.toLocaleString('fr-FR',{day:"numeric",month:"long",year:"numeric"}),
-						yearIndex: 0,
-						monthIndex: 0,
-						weekIndex: 0,
-						dayIndex: 0,
-						nowVisible: false
-					};
-					
-					let foundValueForLocationTemp = getLocation(data,officeID);
-					foundValueForLocation = foundValueForLocationTemp.first;
-					if(foundValueForLocationTemp.second != undefined)
-						location_index = foundValueForLocationTemp.second;
-					data.nowVisible = true;
-					
-					if(foundValueForLocation == undefined)
-					{
-						location_index = data.container.length;
-						data.container.push(unitLocation);
-						commands.push({paths:[{path:"container",index:""}], commandObj:{command:"push",value:unitLocation}});
-						//console.log("data now contains new location");
-					}
-					else
-					{
-						unitLocation = foundValueForLocation;
-					}
-					
+					let query = "Select * from \"location du bureau\" ORDER BY Id;";
 
-					let locationvalue = "";
-					query = "Select * from \"manuel des tables d'entrées et de sorties\";";
-					
-					if( !(paramyear === undefined  )) 
+					if(locationArgObj != undefined)
 					{
-						query = "Select * from \"manuel des tables d'entrées et de sorties\" where Année = "+paramyear+";";
-					}																																		
-					else if (empHoursObj != undefined)
-					{
-						query = "Select * from \"manuel des tables d'entrées et de sorties\" where Année = "+empHoursObj.date.getFullYear()+";";
+						//console.log(locationArgObj);
+						query = "Select * from \"location du bureau\" where \"location du bureau\".ID = "+locationArgObj.ID+" ORDER BY Id;";
 					}
-					
-					let result_ = await faire_un_simple_query(query);
-					if(result_.second == false && !(result_.second instanceof Array)) 
+					else if(empObj != undefined)
 					{
-						gettingData = false;
+						query = "Select * from \"location du bureau\" where \"location du bureau\".ID = "+empObj.officeID+" ORDER BY Id;";
+					}
+
+					let checkfornewCommand = false;
+					if(locationArgObj != undefined || empObj != undefined || empHoursObj != undefined 
+					|| paramday != undefined || parammonth != undefined || paramday != undefined)
+					{
+						checkfornewCommand = true;
+					}
+
+					let result = await faire_un_simple_query(query);
+					if(result.second == false ) 
+					{
+						//console.log(result);
 						dummyResponseSimple(response);
 						return false;
 					}
-					//console.log(query);
-					let monthCounts = 0;
-					if( (parammonth === undefined) === false)
-					{
-						monthCounts = parammonth;
-					}
 
-					if(empHoursObj != undefined)
-					{
-						monthCounts = empHoursObj.date.getMonth();
-					}
-					let prevMonthCounts = monthCounts;
-					for (let l = 0; l < result_.first.length; ++l)
-					{
-						monthCounts = prevMonthCounts;
-						let year = result_.first[l][result_.second[0].name];
-						let state = result_.first[l][result_.second[1].name];
-						let table = result_.first[l][result_.second[2].name];
-						let param_year_month_day = (paramday != undefined && paramonth != undefined && paramyear != undefined)?paramyear+"-"+paramonth+"-"+paramday : undefined;
-						
-						let query = "Select * from individu inner join appartenance";
-						query += " ON appartenance.IDIndividu =  individu.ID";
-						query += " inner join \"location du bureau\" ON  appartenance.IDBureau =";
-						query += " \"location du bureau\".ID AND EXTRACT(YEAR FROM individu.Début) <= ";
-						query += year + " AND EXTRACT(YEAR FROM individu.Fin) >="+year;
-						query +=(empObj != undefined)?" AND individu.ID = '"+empObj.ID+"';":((empHoursObj != undefined)?" AND individu.ID = '"+empHoursObj.userAuthentification.ID+"';":";");
-						
-						query += "Select * FROM";
-						query += " \""+state+"\" as A";
-						query += (param_year_month_day != undefined)?(" WHERE A.Date ='"+param_year_month_day+"'"):(empObj != undefined)?" WHERE Idindividu = "+empObj.ID:(empHoursObj != undefined)? " WHERE IdIndividu = '"+empHoursObj.userAuthentification.ID+"' AND A.Date ='"+empHoursObj.date.getFullYear()+"-"+(empHoursObj.date.getMonth()+1)+"-"+empHoursObj.date.getDate()+"'":"";
-						query += " ORDER BY A.Date ASC;";
+					let location_index = 0;
+					let foundValueForLocation = undefined;
+
+					let dateNow = new Date(Date.now());
+					console.log(dateNow.toLocaleString('fr-FR',{day:"numeric",month:"long",year:"numeric"}));
+					console.log(dateNow);
+					//console.log("Date today is "+dateNow.toLocaleString());
 					
-						query += "Select Case WHEN MIN(\""+table+"\".Entrées) >= '10:00:00' then 1 "; 
-						query += "WHEN MIN(\""+table+"\".Entrées) < '10:00:00' then 0 END as CaseOne,";
-						query += "Case WHEN  MIN(\""+table+"\".Entrées) > '8:30:00' then 1 ";
-						query += "WHEN MIN(\""+table+"\".Entrées) <= '8:30:00' then 0 END as CaseTwo,";
-						query += "MIN(\""+table+"\".Entrées), Date ,Idindividu FROM \""+table+"\"";
-						query += (param_year_month_day != undefined)?" WHERE Date ='"+param_year_month_day+"'":(empHoursObj== undefined)? ((empObj != undefined)?" WHERE Idindividu = '"+empObj.ID+"'":""):" WHERE Idindividu = '"+empHoursObj.userAuthentification.ID+"' AND Date ='"+empHoursObj.date.getFullYear()+"-"+(empHoursObj.date.getMonth()+1)+"-"+empHoursObj.date.getDate()+"'";
-						query += " GROUP BY Date, Idindividu ORDER BY Date ASC;";
+					let day = Number.parseInt(dateNow.toLocaleString().split("/")[0]);
+					let amonth = Number.parseInt(dateNow.toLocaleString().split("/")[1])-1;
+					let ayear = Number.parseInt(dateNow.toLocaleString().split("/")[2]);
+					//console.log(day+"-"+amonth+"-"+ayear);
+					day = dateNow.getDate();
+					amonth = dateNow.getMonth();
+					ayear = dateNow.getFullYear();
+					//console.log(day+"-"+amonth+"-"+ayear);
+					let dateToday = new Date(ayear,amonth,day);
+					amonth += 1;
+					//console.log("new date today is "+ dateToday.toLocaleString());
+					
+					//console.log("Date today is "+dateToday);
+					//console.log("Info about response for officeInfo");
+					//console.log(result);
+					
+					for(let i = 0; i < result.first.length; ++i)
+					{
 						
-						query += "Select * FROM";
-						query += " \""+table+"\" as A";
-						query += (empObj == undefined)?((empHoursObj == undefined)?"":" where A.Idindividu ='"+empHoursObj.userAuthentification.ID+"'"):" where A.Idindividu ='"+empObj.ID+"'";
-						query += " GROUP BY Entrées,Date,Idindividu ORDER BY Date ASC;";
+						let officeID = result.first[i][result.second[0].name];
+						let officeName = result.first[i][result.second[1].name];
+						let officeAddresse = result.first[i][result.second[2].name];
+						let officeRegion = result.first[i][result.second[3].name];
+						let officeLatitude = result.first[i][result.second[4].name];
+						let officeLongitude = result.first[i][result.second[5].name];
+						let passed = true;
 						
-						console.log(empHoursObj);
-						let threeResults = await faire_un_simple_query(query);
-						let resultTwo = threeResults[0];
-						let aresult = threeResults[2];
-						let bresult = threeResults[1];
-						let cresult = threeResults[3];
-						
-						let currentDateOfYear =  new Date(year,monthCounts,(paramday == undefined)?(empHoursObj != undefined? empHoursObj.date.getDate():1):paramday);		
-						let weekIndex = -1;
-						let monthFound = -1;
-						let monthIndex = -1;
-						let yearIndex = -1;
-						let employeeContentModelIndex = -1;
-
-						if(paramyear == undefined)
+						var unitLocation = 
 						{
-							if(currentDateOfYear > dateToday )
-							{
-								//console.log("breaking");
-								break;
-							}
-						}
+							name: officeName,
+							ID: officeID,
+							OfficeAddresse: officeAddresse,
+							OfficeRegion: officeRegion,
+							OfficeLatitude: officeLatitude,
+							OfficeLongitude: officeLongitude,
+							yearsContent: [],
+							now: dateNow.toLocaleString('fr-FR',{day:"numeric",month:"long",year:"numeric"}),
+							yearIndex: 0,
+							monthIndex: 0,
+							weekIndex: 0,
+							dayIndex: 0,
+							nowVisible: false
+						};
 						
-						let yearContentModel = undefined;
-						let start_day = 1;
+						let foundValueForLocationTemp = getLocation(data,officeID);
+						foundValueForLocation = foundValueForLocationTemp.first;
+						if(foundValueForLocationTemp.second != undefined)
+							location_index = foundValueForLocationTemp.second;
+						data.nowVisible = true;
 						
-						if(paramyear !== undefined )
+						if(foundValueForLocation == undefined)
 						{
-							let yearContentModelalpha = getYear(unitLocation,paramyear);
-							yearContentModel = yearContentModelalpha.first; 
-							yearIndex = yearContentModelalpha.second;
+							location_index = data.container.length;
+							data.container.push(unitLocation);
+							commands.push({paths:[{path:"container",index:""}], commandObj:{command:"push",value:unitLocation}});
+							//console.log("data now contains new location");
 						}
 						else
 						{
-							let yearContentModelalpha = getYear(unitLocation,year);
-							yearContentModel = yearContentModelalpha.first;
-							yearIndex = yearContentModelalpha.second;
+							unitLocation = foundValueForLocation;
 						}
 						
-						if( yearContentModel == undefined)						
-						{
-							yearContentModel = 
-							{
-								year: year,
-								index: l,
-								employees:[],
-								empDic:{},
-								employeesCount: 0,
-								months: [],
-								employeeHours: {},
-								missions: 0,
-								vacations:0,
-								absences: 0,
-								retards: 0,
-								sicknesses: 0,
-								presence: 0,
-								retardsCritical: 0
-							};
 
-							yearIndex = unitLocation.yearsContent.length;
-							let command = { paths:[{path:"container",index:location_index},{path:"yearsContent",index:yearIndex}], commandObj:{command:"push",value:yearContentModel} };
-							pushCommands(command);
-							unitLocation.yearsContent.push(yearContentModel);
+						let locationvalue = "";
+						query = "Select * from \"manuel des tables d'entrées et de sorties\";";
+						
+						if( !(paramyear === undefined  )) 
+						{
+							query = "Select * from \"manuel des tables d'entrées et de sorties\" where Année = "+paramyear+";";
+						}																																		
+						else if (empHoursObj != undefined)
+						{
+							query = "Select * from \"manuel des tables d'entrées et de sorties\" where Année = "+empHoursObj.date.getFullYear()+";";
 						}
 						
-						let testCount = (parammonth == undefined)? 0: parammonth;
-						if(empHoursObj != undefined)
-							testCount = empHoursObj.date.getMonth();
-						let going_yearly_count = (parammonth == undefined)? 12: parammonth + 1;
-						if(empHoursObj != undefined)
-							going_yearly_count = empHoursObj.date.getMonth()+1;
-						//console.log("Test count "+testCount+" year_count "+going_yearly_count);
-						
-						while( testCount < going_yearly_count )
+						let result_ = await faire_un_simple_query(query);
+						if(result_.second == false && !(result_.second instanceof Array)) 
 						{
-							++monthCounts;
-							if(locationArgObj == undefined && empObj == undefined && empHoursObj == undefined
-							&& paramyear == undefined && parammonth == undefined && paramday == undefined)
+							dummyResponseSimple(response);
+							return false;
+						}
+						//console.log(query);
+						let monthCounts = 0;
+						if( (parammonth === undefined) === false)
+						{
+							monthCounts = parammonth;
+						}
+
+						if(empHoursObj != undefined)
+						{
+							monthCounts = empHoursObj.date.getMonth();
+						}
+						let prevMonthCounts = monthCounts;
+						for (let l = 0; l < result_.first.length; ++l)
+						{
+							monthCounts = prevMonthCounts;
+							let year = result_.first[l][result_.second[0].name];
+							let state = result_.first[l][result_.second[1].name];
+							let table = result_.first[l][result_.second[2].name];
+							let param_year_month_day = (paramday != undefined && paramonth != undefined && paramyear != undefined)?paramyear+"-"+paramonth+"-"+paramday : undefined;
+							
+							let query = "Select * from individu inner join appartenance";
+							query += " ON appartenance.IDIndividu =  individu.ID";
+							query += " inner join \"location du bureau\" ON  appartenance.IDBureau =";
+							query += " \"location du bureau\".ID AND EXTRACT(YEAR FROM individu.Début) <= ";
+							query += year + " AND EXTRACT(YEAR FROM individu.Fin) >="+year;
+							query +=(empObj != undefined)?" AND individu.ID = '"+empObj.ID+"';":((empHoursObj != undefined)?" AND individu.ID = '"+empHoursObj.userAuthentification.ID+"';":";");
+							
+							query += "Select * FROM";
+							query += " \""+state+"\" as A";
+							query += (param_year_month_day != undefined)?(" WHERE A.Date ='"+param_year_month_day+"'"):(empObj != undefined)?" WHERE Idindividu = '"+empObj.ID+"'":(empHoursObj != undefined)? " WHERE IdIndividu = '"+empHoursObj.userAuthentification.ID+"' AND A.Date ='"+empHoursObj.date.getFullYear()+"-"+(empHoursObj.date.getMonth()+1)+"-"+empHoursObj.date.getDate()+"'":"";
+							query += " ORDER BY A.Date ASC;";
+						
+							query += "Select Case WHEN MIN(\""+table+"\".Entrées) >= '10:00:00' then 1 "; 
+							query += "WHEN MIN(\""+table+"\".Entrées) < '10:00:00' then 0 END as CaseOne,";
+							query += "Case WHEN  MIN(\""+table+"\".Entrées) > '8:30:00' then 1 ";
+							query += "WHEN MIN(\""+table+"\".Entrées) <= '8:30:00' then 0 END as CaseTwo,";
+							query += "MIN(\""+table+"\".Entrées), Date ,Idindividu FROM \""+table+"\"";
+							query += (param_year_month_day != undefined)?" WHERE Date ='"+param_year_month_day+"'":(empHoursObj== undefined)? ((empObj != undefined)?" WHERE Idindividu = '"+empObj.ID+"'":""):" WHERE Idindividu = '"+empHoursObj.userAuthentification.ID+"' AND Date ='"+empHoursObj.date.getFullYear()+"-"+(empHoursObj.date.getMonth()+1)+"-"+empHoursObj.date.getDate()+"'";
+							query += " GROUP BY Date, Idindividu ORDER BY Date ASC;";
+							
+							query += "Select * FROM";
+							query += " \""+table+"\" as A";
+							query += (empObj == undefined)?((empHoursObj == undefined)?"":" where A.Idindividu ='"+empHoursObj.userAuthentification.ID+"'"):" where A.Idindividu ='"+empObj.ID+"'";
+							query += " GROUP BY Entrées,Date,Idindividu ORDER BY Date ASC;";
+							
+							//console.log(empHoursObj);
+							let threeResults = await faire_un_simple_query(query);
+							let resultTwo = threeResults[0];
+							let aresult = threeResults[2];
+							let bresult = threeResults[1];
+							let cresult = threeResults[3];
+							
+							let currentDateOfYear =  new Date(year,monthCounts,(paramday == undefined)?(empHoursObj != undefined? empHoursObj.date.getDate():1):paramday);		
+							let weekIndex = -1;
+							let monthFound = -1;
+							let monthIndex = -1;
+							let yearIndex = -1;
+							let employeeContentModelIndex = -1;
+
+							if(paramyear == undefined)
 							{
-								charging_percentage = (testCount)*100 / going_yearly_count;
-								//console.log("Monthly charging pourcentage "+ charging_percentage);
+								if(currentDateOfYear > dateToday )
+								{
+									//console.log("breaking");
+									break;
+								}
 							}
 							
-							let astart = false;
-							let startDateOfMonth = new Date(year,testCount,1);
-							//console.log(year);
-							//console.log(startDateOfMonth);
-							currentDateOfYear = new Date(year,monthCounts-1,(paramday == undefined)?(empHoursObj != undefined? empHoursObj.date.getDate():1):paramday);
-							//console.log(currentDateOfYear);
+							let yearContentModel = undefined;
+							let start_day = 1;
 							
-							if(paramyear != undefined && parammonth != undefined && paramday != undefined)
+							if(paramyear !== undefined )
 							{
-								//console.log("Current year "+ year+" current month "+monthCounts-1);
-								//console.log("Year passed ="+paramyear+" month passed "+parammonth+" day passed "+paramday);
-							}		
-							
-							if(parammonth == undefined)
-							{
-								//console.log("Current month "+ (monthCounts));
-								//console.log("Count of TestCount "+ testCount++);
-								//console.log("Début year loop for month "+(monthCounts+1)+" passing date "+currentDateOfYear+" starting date "+startDateOfMonth);
-								++testCount;
+								let yearContentModelalpha = getYear(unitLocation,paramyear);
+								yearContentModel = yearContentModelalpha.first; 
+								yearIndex = yearContentModelalpha.second;
 							}
 							else
 							{
-								testCount++;
+								let yearContentModelalpha = getYear(unitLocation,year);
+								yearContentModel = yearContentModelalpha.first;
+								yearIndex = yearContentModelalpha.second;
 							}
 							
-							if(parammonth == undefined && currentDateOfYear > dateToday )
+							if( yearContentModel == undefined)						
 							{
-								//console.log(currentDateOfYear+" > to "+ dateToday);
-								//console.log("breaking");
-								break;
-							}
-							else if(parammonth == undefined)
-							{
-								//console.log("Both equal "+ (currentDateOfYear.getMonth() == startDateOfMonth.getMonth())+" Start month "+currentDateOfYear.getMonth()+" end month "+ startDateOfMonth.getMonth());
-								//console.log(currentDateOfYear+" not > to "+ dateToday);
+								yearContentModel = 
+								{
+									year: year,
+									index: l,
+									employees:[],
+									empDic:{},
+									employeesCount: 0,
+									months: [],
+									employeeHours: {},
+									missions: 0,
+									vacations:0,
+									absences: 0,
+									retards: 0,
+									sicknesses: 0,
+									presence: 0,
+									retardsCritical: 0
+								};
+
+								yearIndex = unitLocation.yearsContent.length;
+								let command = { paths:[{path:"container",index:location_index},{path:"yearsContent",index:yearIndex}], commandObj:{command:"push",value:yearContentModel} };
+								pushCommands(command);
+								unitLocation.yearsContent.push(yearContentModel);
 							}
 							
-							let k = 0;
-							start_day = 1;
-							
-							if( !(paramday == undefined) )
-							{
-								start_day = paramday;
-							}
-							
+							let testCount = (parammonth == undefined)? 0: parammonth;
 							if(empHoursObj != undefined)
-							{
-								start_day = empHoursObj.date.getDate();
-							}
-
-							let monthly =  
-							{
-								month: testCount+1,
-								yearCount: testCount,
-								name: startDateOfMonth.toLocaleString('fr-FR',{month:"long"}),
-								weeks: [],
-								employeeHours: {},
-								missions: 0,
-								vacations:0,
-								absences: 0,
-								retards: 0,
-								sicknesses: 0,
-								presence: 0,
-								retardsCritical: 0
-							};
-
-							let monthFoundAlpha = undefined;
-							let monthSearchIndex = testCount+1;
+								testCount = empHoursObj.date.getMonth();
+							let going_yearly_count = (parammonth == undefined)? 12: parammonth + 1;
+							if(empHoursObj != undefined)
+								going_yearly_count = empHoursObj.date.getMonth()+1;
+							//console.log("Test count "+testCount+" year_count "+going_yearly_count);
 							
-							if(parammonth != undefined)
+							while( testCount < going_yearly_count )
 							{
-								monthSearchIndex = parammonth+1;
-							}	
-
-							monthFoundAlpha = getMonth(yearContentModel,monthSearchIndex);
-							monthFound = monthFoundAlpha.first;
-							//console.log("Month found is?"+monthFound);
-
-							if( monthFound == undefined && parammonth != undefined )
-							{
-								//console.log(yearContentModel.months);
-								//console.log("The value of paramonth is "+parammonth);
-								//console.log("The length of months is "+yearContentModel.months.length)
-							}
-							
-							if(parammonth != undefined && monthFound == undefined)
-							{
-								monthIndex = yearContentModel.months.length;
-								let command = { paths:[{path:"container",index:location_index},{path:"yearsContent",index:yearIndex},{path:"months",index:monthIndex}], commandObj:{command:"push",value:monthly} };
-								pushCommands(command);
-								yearContentModel.months.push(monthly);
-							}
-							else if (parammonth == undefined && monthFound == undefined)
-							{	
-								monthIndex = yearContentModel.months.length;
-								let command = { paths:[{path:"container",index:location_index},{path:"yearsContent",index:yearIndex},{path:"months",index:monthIndex}], commandObj:{command:"push",value:monthly} };
-								pushCommands(command);
-								yearContentModel.months.push(monthly);
-							}
-							else
-							{
-								monthIndex = monthFoundAlpha.second;
-							}
-
-							let weekNo = 1;
-							let weekDayIndex = 0;
-							
-							let value = currentDateOfYear.getMonth() === startDateOfMonth.getMonth();
-							let nombre_de_jours = (new Date(currentDateOfYear.getFullYear(),currentDateOfYear.getMonth(),0)).getDate();
-							
-							if(paramday != undefined)
-								nombre_de_jours = paramday;
-							if( empHoursObj != undefined ) 
-							{
-								nombre_de_jours  = empHoursObj.date.getDate();
-							}
-
-							//console.log(" What is the result of the comparison " + value);
-							let dateTransformer = [6,0,1,2,3,4,5];
-							let offset = dateTransformer[startDateOfMonth.getDay()]-1;
-							//console.log(" Day based on offset is "+currentDateOfYear.getDay()+" date is "+currentDateOfYear);
-							//console.log("Waw! we are corrupted");
-							
-							while( start_day <= nombre_de_jours)
-							{
-								
-								currentDateOfYear = new Date(year,monthCounts-1,start_day);
-								if(monthCounts-1 > dateNow.getMonth())
+								++monthCounts;
+								if(locationArgObj == undefined && empObj == undefined && empHoursObj == undefined
+								&& paramyear == undefined && parammonth == undefined && paramday == undefined)
 								{
-									//console.log(currentDateOfYear.toLocaleString('fr-FR',{day:"numeric",month:"long",year:"numeric"}));
-									//console.log(year+"-"+monthCounts+"-"+start_day);
+									charging_percentage = (testCount)*100 / going_yearly_count;
+									//console.log("Monthly charging pourcentage "+ charging_percentage);
 								}
 								
-								if(currentDateOfYear.getMonth() >= 9)
-								{
-									//console.log(currentDateOfYear.toLocaleString('fr-FR',{day:"numeric",month:"long",year:"numeric"}));
-									//console.log(year+"-"+monthCounts+"-"+start_day);
-								}
-								let aresultFiltered = FilterDateNotFoudFunction(aresult,"date",currentDateOfYear.getDate()+"-"+(currentDateOfYear.getMonth()+1)+"-"+currentDateOfYear.getFullYear());
-								let bresultFiltered = FilterDateNotFoudFunction(bresult,"date",currentDateOfYear.getDate()+"-"+(currentDateOfYear.getMonth()+1)+"-"+currentDateOfYear.getFullYear());
-								
-								//console.log("bresultFiltered  by date "+currentDateOfYear.getDate()+"-"+(currentDateOfYear.getMonth()+1)+"-"+currentDateOfYear.getYear());
-								//console.log(bresultFiltered);
-								let cresultFiltered = FilterDateNotFoudFunction(cresult,"date",currentDateOfYear.getDate()+"-"+(currentDateOfYear.getMonth()+1)+"-"+currentDateOfYear.getFullYear());
-	
+								let astart = false;
+								let startDateOfMonth = new Date(year,testCount,1);
+								//console.log(year);
+								//console.log(startDateOfMonth);
+								currentDateOfYear = new Date(year,monthCounts-1,(paramday == undefined)?(empHoursObj != undefined? empHoursObj.date.getDate():1):paramday);
 								//console.log(currentDateOfYear);
 								
-								
-								if(paramday != undefined || empHoursObj != undefined)
+								if(paramyear != undefined && parammonth != undefined && paramday != undefined)
 								{
-									weekDayIndex = dateTransformer[currentDateOfYear.getDay()];
+									//console.log("Current year "+ year+" current month "+monthCounts-1);
+									//console.log("Year passed ="+paramyear+" month passed "+parammonth+" day passed "+paramday);
+								}		
+								
+								if(parammonth == undefined)
+								{
+									//console.log("Current month "+ (monthCounts));
+									//console.log("Count of TestCount "+ testCount++);
+									//console.log("Début year loop for month "+(monthCounts+1)+" passing date "+currentDateOfYear+" starting date "+startDateOfMonth);
+									++testCount;
 								}
 								else
 								{
-									weekDayIndex = weekDayIndex % 7;
+									testCount++;
 								}
-
-								if(currentDateOfYear > dateToday )
-								{	
+								
+								if(parammonth == undefined && currentDateOfYear > dateToday )
+								{
 									//console.log(currentDateOfYear+" > to "+ dateToday);
 									//console.log("breaking");
 									break;
 								}
-								
-								let tempdate = currentDateOfYear.toLocaleString('fr-FR',{day:"numeric",month:"long",year:"numeric"});
-								let queryDate = currentDateOfYear.toLocaleString('fr-FR',{year:"numeric",month:"numeric",day:"numeric"});
-								
-								queryDate = queryDate.split("/");
-								queryDate = queryDate[2]+"-"+queryDate[1]+"-"+queryDate[0];
-								//console.log("Date passing is "+tempdate+" date today is "+dateToday);
-								
-								let nowDate = undefined;
-								let nowDateStr = "";
-								
-								let currentday = start_day;
-								let currentmonth = monthCounts;
-								let currentYear = year;
-								
-								//console.log("Start day is "+ start_day);
-								if( monthCounts == 7 || monthCounts-1 == 0)
+								else if(parammonth == undefined)
 								{
-									//console.log("This day "+currentDateOfYear+" in week no "+ weekNo +" but the start day is "+start_day);
-									//console.log("Offset is "+offset+" weekNo current is calculated "+Math.floor((start_day+offset)/ 7));
+									//console.log("Both equal "+ (currentDateOfYear.getMonth() == startDateOfMonth.getMonth())+" Start month "+currentDateOfYear.getMonth()+" end month "+ startDateOfMonth.getMonth());
+									//console.log(currentDateOfYear+" not > to "+ dateToday);
 								}
 								
-								if( astart == false || weekNo < (Math.floor((start_day + offset)/ 7) + 1))
+								let k = 0;
+								start_day = 1;
+								
+								if( !(paramday == undefined) )
 								{
+									start_day = paramday;
+								}
+								
+								if(empHoursObj != undefined)
+								{
+									start_day = empHoursObj.date.getDate();
+								}
+
+								let monthly =  
+								{
+									month: testCount,
+									yearCount: testCount,
+									name: startDateOfMonth.toLocaleString('fr-FR',{month:"long"}),
+									weeks: [],
+									employeeHours: {},
+									missions: 0,
+									vacations:0,
+									absences: 0,
+									retards: 0,
+									sicknesses: 0,
+									presence: 0,
+									retardsCritical: 0
+								};
+
+								let monthFoundAlpha = undefined;
+								let monthSearchIndex = testCount+1;
+								
+								if(parammonth != undefined)
+								{
+									monthSearchIndex = parammonth+1;
+								}	
+
+								monthFoundAlpha = getMonth(yearContentModel,monthSearchIndex);
+								monthFound = monthFoundAlpha.first;
+								//console.log("Month found is?"+monthFound);
+
+								if( monthFound == undefined && parammonth != undefined )
+								{
+									//console.log(yearContentModel.months);
+									//console.log("The value of paramonth is "+parammonth);
+									//console.log("The length of months is "+yearContentModel.months.length)
+								}
+								
+								if(parammonth != undefined && monthFound == undefined)
+								{
+									monthIndex = yearContentModel.months.length;
+									let command = { paths:[{path:"container",index:location_index},{path:"yearsContent",index:yearIndex},{path:"months",index:monthIndex}], commandObj:{command:"push",value:monthly} };
+									pushCommands(command);
+									yearContentModel.months.push(monthly);
+								}
+								else if (parammonth == undefined && monthFound == undefined)
+								{	
+									monthIndex = yearContentModel.months.length;
+									let command = { paths:[{path:"container",index:location_index},{path:"yearsContent",index:yearIndex},{path:"months",index:monthIndex}], commandObj:{command:"push",value:monthly} };
+									pushCommands(command);
+									yearContentModel.months.push(monthly);
+								}
+								else
+								{
+									monthIndex = monthFoundAlpha.second;
+								}
+
+								let weekNo = 1;
+								let weekDayIndex = 0;
+								
+								let value = currentDateOfYear.getMonth() === startDateOfMonth.getMonth();
+								let nombre_de_jours = (new Date(currentDateOfYear.getFullYear(),currentDateOfYear.getMonth(),0)).getDate();
+								
+								if(paramday != undefined)
+									nombre_de_jours = paramday;
+								if( empHoursObj != undefined ) 
+								{
+									nombre_de_jours  = empHoursObj.date.getDate();
+								}
+
+								//console.log(" What is the result of the comparison " + value);
+								let dateTransformer = [6,0,1,2,3,4,5];
+								let offset = dateTransformer[startDateOfMonth.getDay()]-1;
+								//console.log(" Day based on offset is "+currentDateOfYear.getDay()+" date is "+currentDateOfYear);
+								//console.log("Waw! we are corrupted");
+								
+								while( start_day <= nombre_de_jours)
+								{
+									
+									currentDateOfYear = new Date(year,monthCounts-1,start_day);
+									if(monthCounts-1 > dateNow.getMonth())
+									{
+										//console.log(currentDateOfYear.toLocaleString('fr-FR',{day:"numeric",month:"long",year:"numeric"}));
+										//console.log(year+"-"+monthCounts+"-"+start_day);
+									}
+									
+									if(currentDateOfYear.getMonth() >= 9)
+									{
+										//console.log(currentDateOfYear.toLocaleString('fr-FR',{day:"numeric",month:"long",year:"numeric"}));
+										//console.log(year+"-"+monthCounts+"-"+start_day);
+									}
+									
+									let aresultFiltered = FilterDateNotFoudFunction(aresult,"date",currentDateOfYear.getDate()+"-"+(currentDateOfYear.getMonth()+1)+"-"+currentDateOfYear.getFullYear());
+									let bresultFiltered = FilterDateNotFoudFunction(bresult,"date",currentDateOfYear.getDate()+"-"+(currentDateOfYear.getMonth()+1)+"-"+currentDateOfYear.getFullYear());
+									
+									//console.log("bresultFiltered  by date "+currentDateOfYear.getDate()+"-"+(currentDateOfYear.getMonth()+1)+"-"+currentDateOfYear.getYear());
+									//console.log(bresultFiltered);
+									let cresultFiltered = FilterDateNotFoudFunction(cresult,"date",currentDateOfYear.getDate()+"-"+(currentDateOfYear.getMonth()+1)+"-"+currentDateOfYear.getFullYear());
+		
+									//console.log(currentDateOfYear);
+									
+									
 									if(paramday != undefined || empHoursObj != undefined)
 									{
 										weekDayIndex = dateTransformer[currentDateOfYear.getDay()];
 									}
-									else if(weekDayIndex != 0)
-										weekDayIndex = 0;
-									
-									astart = true;
-									weekNo = Math.floor((start_day + offset)/ 7) + 1;
-									//console.log("start of day "+start_day+" + offset "+offset+" Updated week no "+ weekNo);
-									
-									let week = 
+									else
 									{
-										weekNo: weekNo,
-										employeeHours: {},
-										days: [],
-										missions: 0,
-										vacations:0,
-										absences: 0,
-										retards: 0,
-										sicknesses: 0,
-										presence: 0,
-										retardsCritical: 0
-									};
-									
-									let weekFoundAlpha = getWeek(yearContentModel.months[monthCounts-1],weekNo);
-									let weekFound = weekFoundAlpha.first;
-
-									if(empObj != undefined)
-									{
-										//console.log(weekNo);
-										//console.log(weekFound);		
+										weekDayIndex = weekDayIndex % 7;
 									}
 
-									if( weekFound == undefined )
+									if(currentDateOfYear > dateToday )
 									{	
-										
-										weekIndex = yearContentModel.months[monthIndex].weeks.length;
-										yearContentModel.months[monthIndex].weeks.push(week);
-										let command = { paths:[{path:"container",index:location_index},{path:"yearsContent",index:yearIndex},{path:"months",index:monthIndex},{path:"weeks",index:weekIndex}], commandObj:{command:"push",value:week} };
-										pushCommands(command);
-										//console.log("new weekIndex"+weekIndex);
+										//console.log(currentDateOfYear+" > to "+ dateToday);
+										//console.log("breaking");
+										break;
+									}
 									
+									let tempdate = currentDateOfYear.toLocaleString('fr-FR',{day:"numeric",month:"long",year:"numeric"});
+									let queryDate = currentDateOfYear.toLocaleString('fr-FR',{year:"numeric",month:"numeric",day:"numeric"});
+									
+									queryDate = queryDate.split("/");
+									queryDate = queryDate[2]+"-"+queryDate[1]+"-"+queryDate[0];
+									//console.log("Date passing is "+tempdate+" date today is "+dateToday);
+									
+									let nowDate = undefined;
+									let nowDateStr = "";
+									
+									let currentday = start_day;
+									let currentmonth = monthCounts;
+									let currentYear = year;
+									
+									//console.log("Start day is "+ start_day);
+									if( monthCounts == 7 || monthCounts-1 == 0)
+									{
+										//console.log("This day "+currentDateOfYear+" in week no "+ weekNo +" but the start day is "+start_day);
+										//console.log("Offset is "+offset+" weekNo current is calculated "+Math.floor((start_day+offset)/ 7));
+									}
+									
+									if( astart == false || weekNo < (Math.floor((start_day + offset)/ 7) + 1))
+									{
+										if(paramday != undefined || empHoursObj != undefined)
+										{
+											weekDayIndex = dateTransformer[currentDateOfYear.getDay()];
+										}
+										else if(weekDayIndex != 0)
+											weekDayIndex = 0;
+										
+										astart = true;
+										weekNo = Math.floor((start_day + offset)/ 7) + 1;
+										//console.log("start of day "+start_day+" + offset "+offset+" Updated week no "+ weekNo);
+										
+										let week = 
+										{
+											weekNo: weekNo,
+											employeeHours: {},
+											days: [],
+											missions: 0,
+											vacations:0,
+											absences: 0,
+											retards: 0,
+											sicknesses: 0,
+											presence: 0,
+											retardsCritical: 0
+										};
+										
+										let weekFoundAlpha = getWeek(yearContentModel.months[monthCounts-1],weekNo);
+										let weekFound = weekFoundAlpha.first;
+
+										if(empObj != undefined)
+										{
+											//console.log(weekNo);
+											//console.log(weekFound);		
+										}
+
+										if( weekFound == undefined )
+										{	
+											
+											weekIndex = yearContentModel.months[monthIndex].weeks.length;
+											yearContentModel.months[monthIndex].weeks.push(week);
+											let command = { paths:[{path:"container",index:location_index},{path:"yearsContent",index:yearIndex},{path:"months",index:monthIndex},{path:"weeks",index:weekIndex}], commandObj:{command:"push",value:week} };
+											pushCommands(command);
+											//console.log("new weekIndex"+weekIndex);
+										
+										}
+										else
+										{
+											weekIndex = weekFoundAlpha.second;
+											//console.log("old weekIndex "+weekIndex);
+										}
+
+									}
+									
+									
+										
+									//console.log(currentmonth); console.log(currentday); console.log(currentYear);
+									//console.log(amonth); console.log(day); console.log(ayear);
+									//console.log(currentDateOfYear);
+									
+									if( currentmonth == amonth
+										&& currentday == day && currentYear == year)
+									{	
+										nowDate = currentDateOfYear;
+										nowDateStr = day+"-"+amonth+"-"+ayear;
+										//console.log("Current time is current time "+currentDateOfYear.toLocaleString('fr-FR',{day:"numeric",month:"long",year:"numeric"}));
+										//console.log(nowDateStr);
+										//console.log(currentDateOfYear);
+										//console.log(dateNow);
+										unitLocation.now = currentDateOfYear.toLocaleString('fr-FR',{day:"numeric",month:"long",year:"numeric"});
+										unitLocation.nowVisible = true;
+										unitLocation.yearIndex = l;
+										unitLocation.monthIndex = monthCounts-1;
+										unitLocation.dayIndex = weekDayIndex;
+										unitLocation.weekIndex = weekNo-1;
+									}
+									
+									
+									
+									let options = { year: "numeric", month: "long", day: "numeric"};
+									let days = 
+									{
+										date: currentDateOfYear.toLocaleString('fr-FR',options),
+										day: currentDateOfYear.getDate(),
+										empDicofAbsences:{},
+										empDicofMissions:{},
+										empDicofPresences:{},
+										empDicofSicknesses:{},
+										empDicofCritical:{},
+										empDicofRetards:{},
+										empDicofVacances:{}, 
+										absences: 0,
+										employeeHours: {},
+										absencesdates: [],
+										missions: 0,
+										missionsdates: [],
+										presence: 0,
+										presencedates: [],
+										sicknesses: 0,
+										sicknessesdates: [],
+										retards: 0,
+										retardsdates:[],
+										retardsCritical: 0,
+										retardsCriticaldates:[],
+										vacations:0,
+										vacationsdates:[]
+									};
+									
+									//console.log("month "+monthIndex+" week no is "+weekNo+" weekDayIndex "+ weekDayIndex+" weeks data length is "+yearContentModel.months[monthIndex].weeks.length);
+									let daySearchIndex = start_day;
+									
+									if(paramday != undefined)
+									{
+										daySearchIndex = paramday;
+									}
+
+									let dayFoundAlpha = getDay(yearContentModel.months[monthIndex].weeks[weekIndex],daySearchIndex);
+									let dayFound = dayFoundAlpha.first; 
+									let dayIndex = -1;
+
+									if( dayFound === undefined)
+									{
+										dayIndex = yearContentModel.months[monthIndex].weeks[weekIndex].days.length;
+										yearContentModel.months[monthIndex].weeks[weekIndex].days.push(days);
+										let command = { paths:[{path:"container",index:location_index},{path:"yearsContent",index:yearIndex},{path:"months",index:monthIndex},{path:"weeks",index:weekIndex},{path:"days",index:dayIndex}], commandObj:{command:"push",value:days} };
+										pushCommands(command);
 									}
 									else
 									{
-										weekIndex = weekFoundAlpha.second;
-										//console.log("old weekIndex "+weekIndex);
+										dayIndex = dayFoundAlpha.second;
+									}
+									
+									
+									
+									if(empObj == undefined)
+									{
+										postgresqueryArg = [officeID,year,year];
+									}
+									else
+									{
+										postgresqueryArg = [officeID,year,year,empObj.ID];
+									}
+									
+									if(resultTwo.second == false ) 
+									{
+										base_init_exiting = true;
+										dummyResponseSimple(response);
+										return false;
 									}
 
-								}
-								
-								
-									
-								//console.log(currentmonth); console.log(currentday); console.log(currentYear);
-								//console.log(amonth); console.log(day); console.log(ayear);
-								//console.log(currentDateOfYear);
-								
-								if( currentmonth == amonth
-									&& currentday == day && currentYear == year)
-								{	
-									nowDate = currentDateOfYear;
-									nowDateStr = day+"-"+amonth+"-"+ayear;
-									//console.log("Current time is current time "+currentDateOfYear.toLocaleString('fr-FR',{day:"numeric",month:"long",year:"numeric"}));
-									//console.log(nowDateStr);
-									//console.log(currentDateOfYear);
-									//console.log(dateNow);
-									unitLocation.now = currentDateOfYear.toLocaleString('fr-FR',{day:"numeric",month:"long",year:"numeric"});
-									unitLocation.nowVisible = true;
-									unitLocation.yearIndex = l;
-									unitLocation.monthIndex = monthCounts-1;
-									unitLocation.dayIndex = weekDayIndex;
-									unitLocation.weekIndex = weekNo-1;
-								}
-								
-								
-								
-								let options = { year: "numeric", month: "long", day: "numeric"};
-								let days = 
-								{
-									date: currentDateOfYear.toLocaleString('fr-FR',options),
-									day: currentDateOfYear.getDate(),
-									empDicofAbsences:{},
-									empDicofMissions:{},
-									empDicofPresences:{},
-									empDicofSicknesses:{},
-									empDicofCritical:{},
-									empDicofRetards:{},
-									empDicofVacances:{}, 
-									absences: 0,
-									employeeHours: {},
-									absencesdates: [],
-									missions: 0,
-									missionsdates: [],
-									presence: 0,
-									presencedates: [],
-									sicknesses: 0,
-									sicknessesdates: [],
-									retards: 0,
-									retardsdates:[],
-									retardsCritical: 0,
-									retardsCriticaldates:[],
-									vacations:0,
-									vacationsdates:[]
-								};
-								
-								//console.log("month "+monthIndex+" week no is "+weekNo+" weekDayIndex "+ weekDayIndex+" weeks data length is "+yearContentModel.months[monthIndex].weeks.length);
-								let daySearchIndex = start_day;
-								
-								if(paramday != undefined)
-								{
-									daySearchIndex = paramday;
-								}
-
-								let dayFoundAlpha = getDay(yearContentModel.months[monthIndex].weeks[weekIndex],daySearchIndex);
-								let dayFound = dayFoundAlpha.first; 
-								let dayIndex = -1;
-
-								if( dayFound === undefined)
-								{
-									dayIndex = yearContentModel.months[monthIndex].weeks[weekIndex].days.length;
-									yearContentModel.months[monthIndex].weeks[weekIndex].days.push(days);
-									let command = { paths:[{path:"container",index:location_index},{path:"yearsContent",index:yearIndex},{path:"months",index:monthIndex},{path:"weeks",index:weekIndex},{path:"days",index:dayIndex}], commandObj:{command:"push",value:days} };
-									pushCommands(command);
-								}
-								else
-								{
-									dayIndex = dayFoundAlpha.second;
-								}
-								
-								
-								
-								if(empObj == undefined)
-								{
-									postgresqueryArg = [officeID,year,year];
-								}
-								else
-								{
-									postgresqueryArg = [officeID,year,year,empObj.ID];
-								}
-								
-								if(resultTwo.second == false ) 
-								{
-									gettingData = false;
-									base_init_exiting = true;
-									dummyResponseSimple(response);
-									return false;
-								}
-
-								if(resultTwo.second !== false)
-								{
-									for( let m = 0; m < resultTwo.first.length; ++m)
+									if(resultTwo.second !== false)
 									{
-										let IDIndividu = resultTwo.first[m][resultTwo.second[9].name];
-										let debut = resultTwo.first[m][resultTwo.second[7].name];
-										let end = resultTwo.first[m][resultTwo.second[8].name];
-										let profession = resultTwo.first[m][resultTwo.second[6].name];
-										let IDBureau = resultTwo.first[m][resultTwo.second[10].name];
-										//console.log("Inside m which is "+m);
-										//console.log(IDIndividu);
-										//console.log(debut);
-										//console.log(end);
-										//console.log(profession);
-										if(unitLocation.ID != IDBureau)
-											continue;
-										
-										let employeeContentModel = getEmployeeContentModel(yearContentModel.months[monthIndex].weeks[weekIndex].days[weekDayIndex],IDIndividu);
-										let employeeDescribed = undefined;
-
-										let imgsrc = resultTwo.first[m].img;
-										let empModeldefined = false;
-										if(employeeContentModel == undefined)
-										{	
-											empModeldefined = true;
-											employeeContentModel = 
-											{
-												strings:[],
-												ID: IDIndividu,
-												img: {exists: undefined,src: undefined}, 
-												imgClass: "smallandRoundImg",
-												wrapperParragraph: "flexible",
-												wrapperLi: "clickable",
-												mission: false,
-												missionstr: "MISSION",
-												vacation: false,
-												vacationstr: "VACANCE",
-												absence: false,
-												absencestr: "ABSENCE",
-												retard: false,
-												retardstr: "RETARD",
-												maladie : false,
-												sicknessestr: "MALADIE",
-												presence: false,
-												present: "PRESENT",
-												entriesexitsCouples: [],
-												presenceHours: [],
-												entries:[],
-												exits:[],
-												retardCritical: false,
-												retardCriticalStr: "RETARD CRITIQUE", 
-												date: ""
-											};
-										}
-
-											employeeDescribed = 
-											{
-												img: {exists: undefined,src: undefined},  
-												imgClass: "smallandRoundImg", 
-												wrapperParragraph: "flexible",
-												wrapperLi: "clickableBasic",
-												ID: IDIndividu,
-												strings: [],
-												profession: profession,
-												startdate: debut.toLocaleString('fr-FR',{day:"numeric",month:"long",year:"numeric"}),
-												enddate: end.toLocaleString('fr-FR',{day:"numeric",month:"long",year:"numeric"}),
-												missiondates:{count:0,other:[]},
-												sicknessdates:{count:0,other:[]},
-												vacationdates:{count:0,other:[]},
-												absencedates:{count:0,other:[]},
-												presencedates:{count:0,other:[]},
-												retarddates:{count:0,other:[]},
-												criticalretarddates:{count:0,other:[]},
-												overallretarddates:{count:0,other:[]},
-												months: [
-													{
-														month:"Janvier",
-														missiondates:{count:0,other:[]},
-														presencedates:{count:0,other:[]},
-														vacationdates:{count:0,other:[]},
-														absencedates:{count:0,other:[]},
-														sicknessdates:{count:0,other:[]},
-														retarddates:{count:0,other:[]},
-														criticalretarddates:{count:0,other:[]},
-														overallretarddates:{count:0,other:[]}
-													},
-													{
-														month:"Février",
-														missiondates:{count:0,other:[]},
-														presencedates:{count:0,other:[]},
-														vacationdates:{count:0,other:[]},
-														absencedates:{count:0,other:[]},
-														sicknessdates:{count:0,other:[]},
-														retarddates:{count:0,other:[]},
-														criticalretarddates:{count:0,other:[]},
-														overallretarddates:{count:0,other:[]}
-													},
-													{
-														month:"Mars",
-														missiondates:{count:0,other:[]},
-														presencedates:{count:0,other:[]},
-														vacationdates:{count:0,other:[]},
-														absencedates:{count:0,other:[]},
-														sicknessdates:{count:0,other:[]},
-														retarddates:{count:0,other:[]},
-														criticalretarddates:{count:0,other:[]},
-														overallretarddates:{count:0,other:[]}
-													},
-													{
-														month:"Avril",
-														missiondates:{count:0,other:[]},
-														presencedates:{count:0,other:[]},
-														vacationdates:{count:0,other:[]},
-														absencedates:{count:0,other:[]},
-														sicknessdates:{count:0,other:[]},
-														retarddates:{count:0,other:[]},
-														criticalretarddates:{count:0,other:[]},
-														overallretarddates:{count:0,other:[]}
-													},
-													{
-														month:"Mai",
-														missiondates:{count:0,other:[]},
-														presencedates:{count:0,other:[]},
-														vacationdates:{count:0,other:[]},
-														absencedates:{count:0,other:[]},
-														sicknessdates:{count:0,other:[]},
-														retarddates:{count:0,other:[]},
-														criticalretarddates:{count:0,other:[]},
-														overallretarddates:{count:0,other:[]}
-													},
-													{
-														month:"Juin",
-														missiondates:{count:0,other:[]},
-														presencedates:{count:0,other:[]},
-														vacationdates:{count:0,other:[]},
-														absencedates:{count:0,other:[]},
-														sicknessdates:{count:0,other:[]},
-														retarddates:{count:0,other:[]},
-														criticalretarddates:{count:0,other:[]},
-														overallretarddates:{count:0,other:[]}
-													},
-													{
-														month:"Juillet",
-														missiondates:{count:0,other:[]},
-														presencedates:{count:0,other:[]},
-														vacationdates:{count:0,other:[]},
-														absencedates:{count:0,other:[]},
-														sicknessdates:{count:0,other:[]},
-														retarddates:{count:0,other:[]},
-														criticalretarddates:{count:0,other:[]},
-														overallretarddates:{count:0,other:[]}
-													},
-													{
-														month:"Août",
-														missiondates:{count:0,other:[]},
-														presencedates:{count:0,other:[]},
-														vacationdates:{count:0,other:[]},
-														absencedates:{count:0,other:[]},
-														sicknessdates:{count:0,other:[]},
-														retarddates:{count:0,other:[]},
-														criticalretarddates:{count:0,other:[]},
-														overallretarddates:{count:0,other:[]}
-													},
-													{
-														month:"Septembre",
-														missiondates:{count:0,other:[]},
-														presencedates:{count:0,other:[]},
-														vacationdates:{count:0,other:[]},
-														absencedates:{count:0,other:[]},
-														sicknessdates:{count:0,other:[]},
-														retarddates:{count:0,other:[]},
-														criticalretarddates:{count:0,other:[]},
-														overallretarddates:{count:0,other:[]}
-													},
-													{
-														month:"Octobre",
-														missiondates:{count:0,other:[]},
-														presencedates:{count:0,other:[]},
-														vacationdates:{count:0,other:[]},
-														absencedates:{count:0,other:[]},
-														sicknessdates:{count:0,other:[]},
-														retarddates:{count:0,other:[]},
-														criticalretarddates:{count:0,other:[]},
-														overallretarddates:{count:0,other:[]}
-													},
-													{
-														month:"Novembre",
-														missiondates:{count:0,other:[]},
-														presencedates:{count:0,other:[]},
-														vacationdates:{count:0,other:[]},
-														absencedates:{count:0,other:[]},
-														sicknessdates:{count:0,other:[]},
-														retarddates:{count:0,other:[]},
-														criticalretarddates:{count:0,other:[]},
-														overallretarddates:{count:0,other:[]}
-													},
-													{
-														month:"Décembre",
-														missiondates:{count:0,other:[]},
-														presencedates:{count:0,other:[]},
-														vacationdates:{count:0,other:[]},
-														absencedates:{count:0,other:[]},
-														sicknessdates:{count:0,other:[]},
-														retarddates:{count:0,other:[]},
-														criticalretarddates:{count:0,other:[]},
-														overallretarddates:{count:0,other:[]}
-													}]
-											};
-
-											if(imgsrc == undefined)
-											{
-												if(empModeldefined)
-													employeeContentModel.img = {exists: false,src:""};
-												employeeDescribed.img = {exists: false,src:""};	
-											}
-											else
-											{
-												if(empModeldefined)
-													employeeContentModel.img = {exists: true,src:imgsrc};
-												employeeDescribed.img = {exists: true,src:imgsrc};
-											}
-
-											if(empModeldefined)
-											{
-												employeeContentModel.strings.push(resultTwo.first[m][resultTwo.second[9].name]);
-												employeeContentModel.strings.push(resultTwo.first[m][resultTwo.second[2].name]);
-												employeeContentModel.strings.push(resultTwo.first[m][resultTwo.second[3].name]);
-												employeeContentModel.strings.push(resultTwo.first[m][resultTwo.second[4].name]);
-												employeeContentModel.strings.push(resultTwo.first[m][resultTwo.second[13].name]);
-											}
-
-											employeeDescribed.strings.push(resultTwo.first[m][resultTwo.second[9].name]);
-											employeeDescribed.strings.push(resultTwo.first[m][resultTwo.second[2].name]);
-											employeeDescribed.strings.push(resultTwo.first[m][resultTwo.second[3].name]);
-											employeeDescribed.strings.push(resultTwo.first[m][resultTwo.second[4].name]);
-											employeeDescribed.strings.push(resultTwo.first[m][resultTwo.second[13].name]);
+										for( let m = 0; m < resultTwo.first.length; ++m)
+										{
+											let IDIndividu = resultTwo.first[m][resultTwo.second[9].name];
+											let debut = resultTwo.first[m][resultTwo.second[7].name];
+											let end = resultTwo.first[m][resultTwo.second[8].name];
+											let profession = resultTwo.first[m][resultTwo.second[6].name];
+											let IDBureau = resultTwo.first[m][resultTwo.second[10].name];
+											//console.log("Inside m which is "+m);
+											//console.log(IDIndividu);
+											//console.log(debut);
+											//console.log(end);
+											//console.log(profession);
+											if(unitLocation.ID != IDBureau)
+												continue;
 											
-											let existing_element = false;
-											for(let i = 0; i < yearContentModel.employees.length && !existing_element;++i)
-											{
-												if(yearContentModel.employees[i].ID == employeeDescribed.ID 
-													&& yearContentModel.employees[i].startdate == employeeDescribed.startdate && employeeDescribed.enddate == yearContentModel.employees[i].enddate)
+											let employeeContentModel = getEmployeeContentModel(yearContentModel.months[monthIndex].weeks[weekIndex].days[weekDayIndex],IDIndividu);
+											let employeeDescribed = undefined;
+
+											let imgsrc = resultTwo.first[m].img;
+											let empModeldefined = false;
+											if(employeeContentModel == undefined)
+											{	
+												empModeldefined = true;
+												employeeContentModel = 
 												{
-													let allFound = true;
-													for( let k = 0; k < employeeDescribed.strings.length;++k)
-													{
-														if(employeeDescribed.strings[k] !== yearContentModel.employees[i].strings[k])
+													strings:[],
+													ID: IDIndividu,
+													img: {exists: undefined,src: undefined}, 
+													imgClass: "smallandRoundImg",
+													wrapperParragraph: "flexible",
+													wrapperLi: "clickable",
+													mission: false,
+													missionstr: "MISSION",
+													vacation: false,
+													vacationstr: "VACANCE",
+													absence: false,
+													absencestr: "ABSENCE",
+													retard: false,
+													retardstr: "RETARD",
+													maladie : false,
+													sicknessestr: "MALADIE",
+													presence: false,
+													present: "PRESENT",
+													entriesexitsCouples: [],
+													presenceHours: [],
+													entries:[],
+													exits:[],
+													retardCritical: false,
+													retardCriticalStr: "RETARD CRITIQUE", 
+													date: ""
+												};
+											}
+
+												employeeDescribed = 
+												{
+													img: {exists: undefined,src: undefined},  
+													imgClass: "smallandRoundImg", 
+													wrapperParragraph: "flexible",
+													wrapperLi: "clickableBasic",
+													ID: IDIndividu,
+													strings: [],
+													profession: profession,
+													startdate: debut.toLocaleString('fr-FR',{day:"numeric",month:"long",year:"numeric"}),
+													enddate: end.toLocaleString('fr-FR',{day:"numeric",month:"long",year:"numeric"}),
+													missiondates:{count:0,other:[]},
+													sicknessdates:{count:0,other:[]},
+													vacationdates:{count:0,other:[]},
+													absencedates:{count:0,other:[]},
+													presencedates:{count:0,other:[]},
+													retarddates:{count:0,other:[]},
+													criticalretarddates:{count:0,other:[]},
+													overallretarddates:{count:0,other:[]},
+													months: [
 														{
-															allFound = false;
+															month:"Janvier",
+															missiondates:{count:0,other:[]},
+															presencedates:{count:0,other:[]},
+															vacationdates:{count:0,other:[]},
+															absencedates:{count:0,other:[]},
+															sicknessdates:{count:0,other:[]},
+															retarddates:{count:0,other:[]},
+															criticalretarddates:{count:0,other:[]},
+															overallretarddates:{count:0,other:[]}
+														},
+														{
+															month:"Février",
+															missiondates:{count:0,other:[]},
+															presencedates:{count:0,other:[]},
+															vacationdates:{count:0,other:[]},
+															absencedates:{count:0,other:[]},
+															sicknessdates:{count:0,other:[]},
+															retarddates:{count:0,other:[]},
+															criticalretarddates:{count:0,other:[]},
+															overallretarddates:{count:0,other:[]}
+														},
+														{
+															month:"Mars",
+															missiondates:{count:0,other:[]},
+															presencedates:{count:0,other:[]},
+															vacationdates:{count:0,other:[]},
+															absencedates:{count:0,other:[]},
+															sicknessdates:{count:0,other:[]},
+															retarddates:{count:0,other:[]},
+															criticalretarddates:{count:0,other:[]},
+															overallretarddates:{count:0,other:[]}
+														},
+														{
+															month:"Avril",
+															missiondates:{count:0,other:[]},
+															presencedates:{count:0,other:[]},
+															vacationdates:{count:0,other:[]},
+															absencedates:{count:0,other:[]},
+															sicknessdates:{count:0,other:[]},
+															retarddates:{count:0,other:[]},
+															criticalretarddates:{count:0,other:[]},
+															overallretarddates:{count:0,other:[]}
+														},
+														{
+															month:"Mai",
+															missiondates:{count:0,other:[]},
+															presencedates:{count:0,other:[]},
+															vacationdates:{count:0,other:[]},
+															absencedates:{count:0,other:[]},
+															sicknessdates:{count:0,other:[]},
+															retarddates:{count:0,other:[]},
+															criticalretarddates:{count:0,other:[]},
+															overallretarddates:{count:0,other:[]}
+														},
+														{
+															month:"Juin",
+															missiondates:{count:0,other:[]},
+															presencedates:{count:0,other:[]},
+															vacationdates:{count:0,other:[]},
+															absencedates:{count:0,other:[]},
+															sicknessdates:{count:0,other:[]},
+															retarddates:{count:0,other:[]},
+															criticalretarddates:{count:0,other:[]},
+															overallretarddates:{count:0,other:[]}
+														},
+														{
+															month:"Juillet",
+															missiondates:{count:0,other:[]},
+															presencedates:{count:0,other:[]},
+															vacationdates:{count:0,other:[]},
+															absencedates:{count:0,other:[]},
+															sicknessdates:{count:0,other:[]},
+															retarddates:{count:0,other:[]},
+															criticalretarddates:{count:0,other:[]},
+															overallretarddates:{count:0,other:[]}
+														},
+														{
+															month:"Août",
+															missiondates:{count:0,other:[]},
+															presencedates:{count:0,other:[]},
+															vacationdates:{count:0,other:[]},
+															absencedates:{count:0,other:[]},
+															sicknessdates:{count:0,other:[]},
+															retarddates:{count:0,other:[]},
+															criticalretarddates:{count:0,other:[]},
+															overallretarddates:{count:0,other:[]}
+														},
+														{
+															month:"Septembre",
+															missiondates:{count:0,other:[]},
+															presencedates:{count:0,other:[]},
+															vacationdates:{count:0,other:[]},
+															absencedates:{count:0,other:[]},
+															sicknessdates:{count:0,other:[]},
+															retarddates:{count:0,other:[]},
+															criticalretarddates:{count:0,other:[]},
+															overallretarddates:{count:0,other:[]}
+														},
+														{
+															month:"Octobre",
+															missiondates:{count:0,other:[]},
+															presencedates:{count:0,other:[]},
+															vacationdates:{count:0,other:[]},
+															absencedates:{count:0,other:[]},
+															sicknessdates:{count:0,other:[]},
+															retarddates:{count:0,other:[]},
+															criticalretarddates:{count:0,other:[]},
+															overallretarddates:{count:0,other:[]}
+														},
+														{
+															month:"Novembre",
+															missiondates:{count:0,other:[]},
+															presencedates:{count:0,other:[]},
+															vacationdates:{count:0,other:[]},
+															absencedates:{count:0,other:[]},
+															sicknessdates:{count:0,other:[]},
+															retarddates:{count:0,other:[]},
+															criticalretarddates:{count:0,other:[]},
+															overallretarddates:{count:0,other:[]}
+														},
+														{
+															month:"Décembre",
+															missiondates:{count:0,other:[]},
+															presencedates:{count:0,other:[]},
+															vacationdates:{count:0,other:[]},
+															absencedates:{count:0,other:[]},
+															sicknessdates:{count:0,other:[]},
+															retarddates:{count:0,other:[]},
+															criticalretarddates:{count:0,other:[]},
+															overallretarddates:{count:0,other:[]}
+														}]
+												};
+
+												if(imgsrc == undefined)
+												{
+													if(empModeldefined)
+														employeeContentModel.img = {exists: false,src:""};
+													employeeDescribed.img = {exists: false,src:""};	
+												}
+												else
+												{
+													if(empModeldefined)
+														employeeContentModel.img = {exists: true,src:imgsrc};
+													employeeDescribed.img = {exists: true,src:imgsrc};
+												}
+
+												if(empModeldefined)
+												{
+													employeeContentModel.strings.push(resultTwo.first[m][resultTwo.second[9].name]);
+													employeeContentModel.strings.push(resultTwo.first[m][resultTwo.second[2].name]);
+													employeeContentModel.strings.push(resultTwo.first[m][resultTwo.second[3].name]);
+													employeeContentModel.strings.push(resultTwo.first[m][resultTwo.second[4].name]);
+													employeeContentModel.strings.push(resultTwo.first[m][resultTwo.second[13].name]);
+												}
+
+												employeeDescribed.strings.push(resultTwo.first[m][resultTwo.second[9].name]);
+												employeeDescribed.strings.push(resultTwo.first[m][resultTwo.second[2].name]);
+												employeeDescribed.strings.push(resultTwo.first[m][resultTwo.second[3].name]);
+												employeeDescribed.strings.push(resultTwo.first[m][resultTwo.second[4].name]);
+												employeeDescribed.strings.push(resultTwo.first[m][resultTwo.second[13].name]);
+												
+												let existing_element = false;
+												for(let i = 0; i < yearContentModel.employees.length && !existing_element;++i)
+												{
+													if(yearContentModel.employees[i].ID == employeeDescribed.ID 
+														&& yearContentModel.employees[i].startdate == employeeDescribed.startdate && employeeDescribed.enddate == yearContentModel.employees[i].enddate)
+													{
+														let allFound = true;
+														for( let k = 0; k < employeeDescribed.strings.length;++k)
+														{
+															if(employeeDescribed.strings[k] !== yearContentModel.employees[i].strings[k])
+															{
+																allFound = false;
+															}
+														}
+														
+														if(allFound)
+														{
+															existing_element = true;
 														}
 													}
-													
-													if(allFound)
-													{
-														existing_element = true;
-													}
 												}
+
+												if(existing_element == false)
+												{
+													//console.log("New Element added");
+													let command = { paths:[{path:"container",index:location_index},{path:"yearsContent",index:yearIndex},{path:"employees",index:yearContentModel.employees.length}], commandObj:{command:"push",value:days} };
+													pushCommands(command);
+													yearContentModel.employees.push(employeeDescribed);
+													yearContentModel.empDic[employeeDescribed.ID] = employeeDescribed;
+													yearContentModel.employeesCount++;
+												}
+												
+											
+											if(aresult.second == false ) 
+											{	
+												base_init_exiting = true;
+												dummyResponseSimple(response);
+												return false;
 											}
 
-											if(existing_element == false)
+											if(bresult.second == false ) 
 											{
-												//console.log("New Element added");
-												let command = { paths:[{path:"container",index:location_index},{path:"yearsContent",index:yearIndex},{path:"employees",index:yearContentModel.employees.length}], commandObj:{command:"push",value:days} };
-												pushCommands(command);
-												yearContentModel.employees.push(employeeDescribed);
-												yearContentModel.empDic[employeeDescribed.ID] = employeeDescribed;
-												yearContentModel.employeesCount++;
+												base_init_exiting = true;
+												dummyResponseSimple(response);
+												return false;
 											}
-											
-										
-										if(aresult.second == false ) 
-										{
-											base_init_exiting = true;
-											gettingData = false;
-											dummyResponseSimple(response);
-											return false;
-										}
 
-										if(bresult.second == false ) 
-										{
-											base_init_exiting = true;
-											gettingData = false;
-											dummyResponseSimple(response);
-											return false;
-										}
-
-										
-										if(cresult.second == false ) 
-										{
-											base_init_exiting = true;
-											gettingData = false;
-											dummyResponseSimple(response);
-											return false;
-										}
-
-										let secondresult = {first:[],second:[]};
-										//console.log(aresult.first);
 											
-										let date = new Date();
-										let aresultFilteredb = FilterNotFoundEqualsFunction(aresultFiltered,"idindividu",IDIndividu);
-										let bresultFilteredb = FilterNotFoundEqualsFunction(bresultFiltered,"idindividu",IDIndividu);
-										let cresultFilteredb = FilterNotFoundEqualsFunction(cresultFiltered,"idindividu",IDIndividu);
-										let date2 = new Date();
-										//console.log("done filtering "+ (date2 -date)%1000);
-	
-										secondresult.first.push(aresultFilteredb.first);
-										secondresult.first.push(bresultFilteredb.first);
-										secondresult.first.push(cresultFilteredb.first);
-										
-										secondresult.second.push(aresultFilteredb.second);
-										secondresult.second.push(bresultFilteredb.second);
-										secondresult.second.push(cresultFilteredb.second);
-										
-										if(yearContentModel.months[monthIndex].weeks[weekIndex].days[dayIndex].employeeHours[employeeContentModel.ID] == undefined)
-										{
-											yearContentModel.months[monthIndex].weeks[weekIndex].days[dayIndex].employeeHours[employeeContentModel.ID] = "00:00:00";
-										}
-										if(yearContentModel.months[monthIndex].weeks[weekIndex].employeeHours[employeeContentModel.ID] == undefined)
-										{
-											yearContentModel.months[monthIndex].weeks[weekIndex].employeeHours[employeeContentModel.ID] = "00:00:00";
-										}
-										if(yearContentModel.months[monthIndex].employeeHours[employeeContentModel.ID] == undefined)
-										{
-											yearContentModel.months[monthIndex].employeeHours[employeeContentModel.ID] = "00:00:00";
-										}
-										if(yearContentModel.employeeHours[employeeContentModel.ID] == undefined)
-										{
-											yearContentModel.employeeHours[employeeContentModel.ID] = "00:00:00";
-										}
-										// console.log("*****************************");
-										//console.log(aresult);
-										//console.log("*********************************");
-										if(secondresult.second !== false)
-										{	
-											let dateNowOther = new Date(Date.now());
-											let criticallylate = false; 
-											let retard = false;
-											
-											if(secondresult.first[0].length > 0)
+											if(cresult.second == false ) 
 											{
-												if( secondresult.first[0][0][secondresult.second[0][0].name] == 1 ) 
+												base_init_exiting = true;
+												dummyResponseSimple(response);
+												return false;
+											}
+
+											let secondresult = {first:[],second:[]};
+											//console.log(aresult.first);
+												
+											let date = new Date();
+											let aresultFilteredb = FilterNotFoundEqualsFunction(aresultFiltered,"idindividu",IDIndividu);
+											let bresultFilteredb = FilterNotFoundEqualsFunction(bresultFiltered,"idindividu",IDIndividu);
+											let cresultFilteredb = FilterNotFoundEqualsFunction(cresultFiltered,"idindividu",IDIndividu);
+											let date2 = new Date();
+											//console.log("done filtering "+ (date2 -date)%1000);
+		
+											secondresult.first.push(aresultFilteredb.first);
+											secondresult.first.push(bresultFilteredb.first);
+											secondresult.first.push(cresultFilteredb.first);
+											
+											secondresult.second.push(aresultFilteredb.second);
+											secondresult.second.push(bresultFilteredb.second);
+											secondresult.second.push(cresultFilteredb.second);
+											
+											if(yearContentModel.months[monthIndex].weeks[weekIndex].days[dayIndex].employeeHours[employeeContentModel.ID] == undefined)
+											{
+												yearContentModel.months[monthIndex].weeks[weekIndex].days[dayIndex].employeeHours[employeeContentModel.ID] = "00:00:00";
+											}
+											if(yearContentModel.months[monthIndex].weeks[weekIndex].employeeHours[employeeContentModel.ID] == undefined)
+											{
+												yearContentModel.months[monthIndex].weeks[weekIndex].employeeHours[employeeContentModel.ID] = "00:00:00";
+											}
+											if(yearContentModel.months[monthIndex].employeeHours[employeeContentModel.ID] == undefined)
+											{
+												yearContentModel.months[monthIndex].employeeHours[employeeContentModel.ID] = "00:00:00";
+											}
+											if(yearContentModel.employeeHours[employeeContentModel.ID] == undefined)
+											{
+												yearContentModel.employeeHours[employeeContentModel.ID] = "00:00:00";
+											}
+											// console.log("*****************************");
+											//console.log(aresult);
+											//console.log("*********************************");
+											if(secondresult.second !== false)
+											{	
+												let dateNowOther = new Date(Date.now());
+												let criticallylate = false; 
+												let retard = false;
+												
+												if(secondresult.first[0].length > 0)
 												{
-													
-													if(employeeContentModel.retard)
+													if( secondresult.first[0][0][secondresult.second[0][0].name] == 1 ) 
 													{
-														calculateRetards(unitLocation,year,-1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
-														employeeContentModel.retard = false;
+														
+														if(employeeContentModel.retard)
+														{
+															calculateRetards(unitLocation,year,-1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
+															employeeContentModel.retard = false;
+														}
+
+														employeeContentModel.retardCritical = true;
+														employeeContentModel.date = currentDateOfYear.toLocaleString('fr-FR',{day:"numeric",month:"long",year:"numeric"});
+														criticallylate = true;
+														calculateCriticalRetards(unitLocation,year,1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
+														
+														if(employeeContentModel.absence)
+														{
+															employeeContentModel.absence = false;
+															calculateAbsence(unitLocation,year,-1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);	
+														}
+													}
+													else if (secondresult.first[0][0][secondresult.second[0][1].name] == 1 ) 
+													{
+														if(employeeContentModel.retardCritical)
+														{
+															employeeContentModel.retardCritical = false;
+															calculateCriticalRetards(unitLocation,year,-1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
+														}
+
+														employeeContentModel.retard = true;
+														employeeContentModel.date = currentDateOfYear.toLocaleString('fr-FR',{day:"numeric",month:"long",year:"numeric"});
+														retard = true;	
+
+														if(employeeContentModel.absence)
+														{
+															employeeContentModel.absence = false;
+															calculateAbsence(unitLocation,year,-1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);	
+														}
+
+														calculateRetards(unitLocation,year,1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
+													}
+													else if (secondresult.first[0][0][secondresult.second[0][2].name] != undefined && secondresult.first[0][0][secondresult.second[0][2].name] != null ) 
+													{
+														employeeContentModel.presence = true;
+														employeeContentModel.date = currentDateOfYear.toLocaleString('fr-FR',{day:"numeric",month:"long",year:"numeric"});
+														calculatePresence(unitLocation,year,1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
+
+														if(employeeContentModel.retard)
+														{
+															//nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].retardsdates.remove(employeeContentModel);
+															calculateRetards(unitLocation,year,-1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
+															employeeContentModel.retard = false;
+														}
+
+														if(employeeContentModel.retardCritical)
+														{
+															//nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].retardsCriticaldates.remove(employeeContentModel);
+															calculateCriticalRetards(unitLocation,year,-1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
+															employeeContentModel.retardCritical = false;
+														}
+														
+														retard = false;	
+														
 													}
 
-													employeeContentModel.retardCritical = true;
-													employeeContentModel.date = currentDateOfYear.toLocaleString('fr-FR',{day:"numeric",month:"long",year:"numeric"});
-													criticallylate = true;
-													calculateCriticalRetards(unitLocation,year,1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
-													
-													if(employeeContentModel.absence)
+													let index_of_entries_into = 0;
+													let elements_not_found = [];
+
+													employeeContentModel.entries.forEach(element=>
 													{
-														employeeContentModel.absence = false;
-														calculateAbsence(unitLocation,year,-1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);	
-													}
-												}
-												else if (secondresult.first[0][0][secondresult.second[0][1].name] == 1 ) 
-												{
-													if(employeeContentModel.retardCritical)
+														let temp_found = false;
+														for(let tempCount = 0; tempCount < secondresult.first[2].length ; ++tempCount)
+														{ 
+															let a = secondresult.first[2][tempCount][secondresult.second[2][2].name];
+															let b = secondresult.first[2][tempCount][secondresult.second[2][3].name];
+															
+															if(a == element)
+															{
+																temp_found = true;
+															}
+														}
+
+														if(!temp_found)
+														{
+															elements_not_found.push(element);
+														}
+														++index_of_entries_into;
+													});
+												
+													elements_not_found.forEach(element=>
 													{
-														employeeContentModel.retardCritical = false;
-														calculateCriticalRetards(unitLocation,year,-1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
-													}
+														let startIndex = employeeContentModel.entries.indexOf(element);
+														employeeContentModel.entries.splice(startIndex,1);
+														employeeContentModel.exits.splice(startIndex,1);
+													});
 
-													employeeContentModel.retard = true;
-													employeeContentModel.date = currentDateOfYear.toLocaleString('fr-FR',{day:"numeric",month:"long",year:"numeric"});
-													retard = true;	
-
-													if(employeeContentModel.absence)
-													{
-														employeeContentModel.absence = false;
-														calculateAbsence(unitLocation,year,-1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);	
-													}
-
-													calculateRetards(unitLocation,year,1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
-												}
-												else if (secondresult.first[0][0][secondresult.second[0][2].name] != undefined && secondresult.first[0][0][secondresult.second[0][2].name] != null ) 
-												{
-													employeeContentModel.presence = true;
-													employeeContentModel.date = currentDateOfYear.toLocaleString('fr-FR',{day:"numeric",month:"long",year:"numeric"});
-													calculatePresence(unitLocation,year,1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
-
-													if(employeeContentModel.retard)
-													{
-														//nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].retardsdates.remove(employeeContentModel);
-														calculateRetards(unitLocation,year,-1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
-														employeeContentModel.retard = false;
-													}
-
-													if(employeeContentModel.retardCritical)
-													{
-														//nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].retardsCriticaldates.remove(employeeContentModel);
-														calculateCriticalRetards(unitLocation,year,-1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
-														employeeContentModel.retardCritical = false;
-													}
-													
-													retard = false;	
-													
-												}
-
-												let index_of_entries_into = 0;
-												let elements_not_found = [];
-
-												employeeContentModel.entries.forEach(element=>
-												{
-													let temp_found = false;
 													for(let tempCount = 0; tempCount < secondresult.first[2].length ; ++tempCount)
 													{ 
+												
 														let a = secondresult.first[2][tempCount][secondresult.second[2][2].name];
 														let b = secondresult.first[2][tempCount][secondresult.second[2][3].name];
-														
-														if(a == element)
-														{
-															temp_found = true;
-														}
-													}
-
-													if(!temp_found)
-													{
-														elements_not_found.push(element);
-													}
-													++index_of_entries_into;
-												});
-											
-												elements_not_found.forEach(element=>
-												{
-													let startIndex = employeeContentModel.entries.indexOf(element);
-													employeeContentModel.entries.splice(startIndex,1);
-													employeeContentModel.exits.splice(startIndex,1);
-												});
-
-												for(let tempCount = 0; tempCount < secondresult.first[2].length ; ++tempCount)
-												{ 
-											
-													let a = secondresult.first[2][tempCount][secondresult.second[2][2].name];
-													let b = secondresult.first[2][tempCount][secondresult.second[2][3].name];
-															
-															let couple = "";
-															if(b == null || b == undefined || b == "NULL")
-															{
-																//console.log("Trying to complete Hour couple");
-																let entriesIndex = employeeContentModel.entries.length;
-																let existsIndex = employeeContentModel.exits.length;
-																let tempcommand = { paths:[{path:"container",index:location_index},{path:"yearsContent",index:yearIndex},{path:"employees",index:employeeContentModelIndex},{path:"entries",index:entriesIndex}], commandObj:{command:"push",value:a} };
-																commands.push(tempcommand);
-																tempcommand = { paths:[{path:"container",index:location_index},{path:"yearsContent",index:yearIndex},{path:"employees",index:employeeContentModelIndex},{path:"exits",index:existsIndex}], commandObj:{command:"push",value:" "} };
-																commands.push(tempcommand);
-																b = "non définie";
-																let startIndex = employeeContentModel.entries.indexOf(a);
 																
-																if(startIndex != -1)
+																let couple = "";
+																if(b == null || b == undefined || b == "NULL")
 																{
-																	employeeContentModel.exits[startIndex] = b;
-																	//console.log("Empty Second");
-																	//console.log(employeeContentModel.entries);
-																	//console.log(employeeContentModel.exits);
-																}
-																else
-																{
-																	//console.log("Full Second");	
-																	employeeContentModel.entries.push(a);
-																	employeeContentModel.exits.push(b);
-																	//console.log(employeeContentModel.entries);
-																	//console.log(employeeContentModel.exits);
-																}
-
-															}
-															else
-															{					 
-																//console.log("Trying to update Hour couple");
-																let entriesIndex = employeeContentModel.entries.length;
-																let existsIndex = employeeContentModel.exits.length;
-																let tempcommand = { paths:[{path:"container",index:location_index},{path:"yearsContent",index:yearIndex},{path:"employees",index:employeeContentModelIndex},{path:"entries",index:entriesIndex}], commandObj:{command:"push",value:a} };
-																commands.push(tempcommand);
-																tempcommand = { paths:[{path:"container",index:location_index},{path:"yearsContent",index:yearIndex},{path:"employees",index:employeeContentModelIndex},{path:"exits",index:existsIndex}], commandObj:{command:"push",value:b} };
-																commands.push(tempcommand);
-																let startIndex = employeeContentModel.entries.indexOf(a);
-																
-																let objTemp = {entry:a,exit:b};
-																let objElements = [];
-																objElements.push(objTemp);
-																let value_to_deal_with = compareHoursOneSuperior(a,b)< 0;
-																if(startIndex != -1)
-																{
-																	//console.log("Empty Second");
-																	if(value_to_deal_with )
+																	//console.log("Trying to complete Hour couple");
+																	let entriesIndex = employeeContentModel.entries.length;
+																	let existsIndex = employeeContentModel.exits.length;
+																	let tempcommand = { paths:[{path:"container",index:location_index},{path:"yearsContent",index:yearIndex},{path:"employees",index:employeeContentModelIndex},{path:"entries",index:entriesIndex}], commandObj:{command:"push",value:a} };
+																	commands.push(tempcommand);
+																	tempcommand = { paths:[{path:"container",index:location_index},{path:"yearsContent",index:yearIndex},{path:"employees",index:employeeContentModelIndex},{path:"exits",index:existsIndex}], commandObj:{command:"push",value:" "} };
+																	commands.push(tempcommand);
+																	b = "non définie";
+																	let startIndex = employeeContentModel.entries.indexOf(a);
+																	
+																	if(startIndex != -1)
 																	{
 																		employeeContentModel.exits[startIndex] = b;
+																		//console.log("Empty Second");
+																		//console.log(employeeContentModel.entries);
+																		//console.log(employeeContentModel.exits);
 																	}
 																	else
 																	{
-																		employeeContentModel.entries.splice(startIndex,1);
-																	}
-																}
-																else
-																{
-																	//console.log("Full Second");
-																	if(value_to_deal_with)
-																	{
+																		//console.log("Full Second");	
 																		employeeContentModel.entries.push(a);
 																		employeeContentModel.exits.push(b);
+																		//console.log(employeeContentModel.entries);
+																		//console.log(employeeContentModel.exits);
 																	}
-																}	
 
-																if(value_to_deal_with)
-																{
-																	let count;
-																	let tempIndex;
-
-																	employeeContentModel.entriesexitsCouples.forEach((element)=>
+																}
+																else
+																{					 
+																	//console.log("Trying to update Hour couple");
+																	let entriesIndex = employeeContentModel.entries.length;
+																	let existsIndex = employeeContentModel.exits.length;
+																	let tempcommand = { paths:[{path:"container",index:location_index},{path:"yearsContent",index:yearIndex},{path:"employees",index:employeeContentModelIndex},{path:"entries",index:entriesIndex}], commandObj:{command:"push",value:a} };
+																	commands.push(tempcommand);
+																	tempcommand = { paths:[{path:"container",index:location_index},{path:"yearsContent",index:yearIndex},{path:"employees",index:employeeContentModelIndex},{path:"exits",index:existsIndex}], commandObj:{command:"push",value:b} };
+																	commands.push(tempcommand);
+																	let startIndex = employeeContentModel.entries.indexOf(a);
+																	
+																	let objTemp = {entry:a,exit:b};
+																	let objElements = [];
+																	objElements.push(objTemp);
+																	let value_to_deal_with = compareHoursOneSuperior(a,b)< 0;
+																	if(startIndex != -1)
 																	{
-																		count = objElements.length;
-																		tempIndex = 0;
-																		
-																		while(tempIndex < count)
+																		//console.log("Empty Second");
+																		if(value_to_deal_with )
 																		{
-																			if( compareHoursOneSuperior(objTemp.entry,element.entry) >= 0 && compareHoursOneSuperior(objTemp.entry, element.exit) <= 0)
-																			{
-																				if(compareHoursOneSuperior(objTemp.exit,element.entry) > 0 && compareHoursOneSuperior(objTemp.exit, element.exit) > 0)
-																				{
-																					objTemp.entry = element.exit ;			
-																					objElements.push({entry:objTemp.entry,exit:objTemp.exit});
-																				}
-																			}
-																			else
-																			{
-																				if(compareHoursOneSuperior(objTemp.exit,element.entry) >= 0 && compareHoursOneSuperior(objTemp.exit, element.exit) <= 0)
-																				{
-																					objTemp.exit = element.entry ;	
-																					objElements.push({entry:objTemp.entry,exit:objTemp.exit});		
-																				}
-																				else if (compareHoursOneSuperior(objTemp.exit,element.entry) < 0)
-																				{
-																					objElements.push({entry:objTemp.entry,exit:objTemp.exit});	
-																				}
-																				else if (compareHoursOneSuperior(objTemp.entry, element.exit) > 0) 
-																				{
-																					objElements.push({entry:objTemp.entry,exit:objTemp.exit});
-																				}
-																				else if (compareHoursOneSuperior(objTemp.entry, element.exit) < 0)
-																				{
-																					objElements.push({entry:objTemp.entry,exit:element.entry});	
-																					objElements.push({entry:element.exit,exit:objTemp.exit});
-																				}	
-																			}
-																			++tempIndex;						
+																			employeeContentModel.exits[startIndex] = b;
 																		}
+																		else
+																		{
+																			employeeContentModel.entries.splice(startIndex,1);
+																		}
+																	}
+																	else
+																	{
+																		//console.log("Full Second");
+																		if(value_to_deal_with)
+																		{
+																			employeeContentModel.entries.push(a);
+																			employeeContentModel.exits.push(b);
+																		}
+																	}	
 
+																	if(value_to_deal_with)
+																	{
+																		let count;
+																		let tempIndex;
+
+																		employeeContentModel.entriesexitsCouples.forEach((element)=>
+																		{
+																			count = objElements.length;
+																			tempIndex = 0;
+																			
+																			while(tempIndex < count)
+																			{
+																				if( compareHoursOneSuperior(objTemp.entry,element.entry) >= 0 && compareHoursOneSuperior(objTemp.entry, element.exit) <= 0)
+																				{
+																					if(compareHoursOneSuperior(objTemp.exit,element.entry) > 0 && compareHoursOneSuperior(objTemp.exit, element.exit) > 0)
+																					{
+																						objTemp.entry = element.exit ;			
+																						objElements.push({entry:objTemp.entry,exit:objTemp.exit});
+																					}
+																				}
+																				else
+																				{
+																					if(compareHoursOneSuperior(objTemp.exit,element.entry) >= 0 && compareHoursOneSuperior(objTemp.exit, element.exit) <= 0)
+																					{
+																						objTemp.exit = element.entry ;	
+																						objElements.push({entry:objTemp.entry,exit:objTemp.exit});		
+																					}
+																					else if (compareHoursOneSuperior(objTemp.exit,element.entry) < 0)
+																					{
+																						objElements.push({entry:objTemp.entry,exit:objTemp.exit});	
+																					}
+																					else if (compareHoursOneSuperior(objTemp.entry, element.exit) > 0) 
+																					{
+																						objElements.push({entry:objTemp.entry,exit:objTemp.exit});
+																					}
+																					else if (compareHoursOneSuperior(objTemp.entry, element.exit) < 0)
+																					{
+																						objElements.push({entry:objTemp.entry,exit:element.entry});	
+																						objElements.push({entry:element.exit,exit:objTemp.exit});
+																					}	
+																				}
+																				++tempIndex;						
+																			}
+
+																			tempIndex = 0;
+																			while(tempIndex < count)
+																			{
+																				objElements.splice(0,1);
+																				++tempIndex;
+																			}						
+
+																		});
+																		
 																		tempIndex = 0;
+																		count = objElements.length;
+																		employeeContentModel.dailyHoursTotal = "00:00:00";
+																		
 																		while(tempIndex < count)
 																		{
-																			objElements.splice(0,1);
+																			
+																			let first = yearContentModel.months[monthIndex].weeks[weekIndex].days[dayIndex].employeeHours[employeeContentModel.ID];
+																			let second = yearContentModel.months[monthIndex].weeks[weekIndex].employeeHours[employeeContentModel.ID];
+																			let third = yearContentModel.months[monthIndex].employeeHours[employeeContentModel.ID];
+																			let fourth = yearContentModel.employeeHours[employeeContentModel.ID];
+
+																			let loopVar = objElements[tempIndex];
+																			yearContentModel.months[monthIndex].weeks[weekIndex].days[dayIndex].employeeHours[employeeContentModel.ID] = AddTwoHours(first,SubstractTwoHours(loopVar.entry,loopVar.exit));
+																			yearContentModel.months[monthIndex].weeks[weekIndex].employeeHours[employeeContentModel.ID] = AddTwoHours(second,SubstractTwoHours(loopVar.entry,loopVar.exit));
+																			yearContentModel.months[monthIndex].employeeHours[employeeContentModel.ID] =  AddTwoHours(third,SubstractTwoHours(loopVar.entry,loopVar.exit));
+																			yearContentModel.employeeHours[employeeContentModel.ID] =  AddTwoHours(fourth,SubstractTwoHours(loopVar.entry,loopVar.exit));
 																			++tempIndex;
-																		}						
-
-																	});
-																	
-																	tempIndex = 0;
-																	count = objElements.length;
-																	employeeContentModel.dailyHoursTotal = "00:00:00";
-																	
-																	while(tempIndex < count)
-																	{
+																		}
 																		
-																		let first = yearContentModel.months[monthIndex].weeks[weekIndex].days[dayIndex].employeeHours[employeeContentModel.ID];
-																		let second = yearContentModel.months[monthIndex].weeks[weekIndex].employeeHours[employeeContentModel.ID];
-																		let third = yearContentModel.months[monthIndex].employeeHours[employeeContentModel.ID];
-																		let fourth = yearContentModel.employeeHours[employeeContentModel.ID];
-
-																		let loopVar = objElements[tempIndex];
-																		yearContentModel.months[monthIndex].weeks[weekIndex].days[dayIndex].employeeHours[employeeContentModel.ID] = AddTwoHours(first,SubstractTwoHours(loopVar.entry,loopVar.exit));
-																		yearContentModel.months[monthIndex].weeks[weekIndex].employeeHours[employeeContentModel.ID] = AddTwoHours(second,SubstractTwoHours(loopVar.entry,loopVar.exit));
-																		yearContentModel.months[monthIndex].employeeHours[employeeContentModel.ID] =  AddTwoHours(third,SubstractTwoHours(loopVar.entry,loopVar.exit));
-																		yearContentModel.employeeHours[employeeContentModel.ID] =  AddTwoHours(fourth,SubstractTwoHours(loopVar.entry,loopVar.exit));
-																		++tempIndex;
-																	}
-																	
-																	employeeContentModel.entriesexitsCouples.push({entry:a,exit:b});
-																}														
-															}
+																		employeeContentModel.entriesexitsCouples.push({entry:a,exit:b});
+																	}														
+																}
+													}
+													
+													
 												}
 												
-												
-											}
-											
-											if( secondresult.first[0].length == 0 && secondresult.first[1].length == 0 && dateNowOther.getUTCDate() > currentDateOfYear)
-											{
-												employeeContentModel.absence = true;
-												employeeContentModel.retard = false;
-												absence = true;
-												employeeContentModel.date = currentDateOfYear.toLocaleString('fr-FR',{day:"numeric",month:"long",year:"numeric"});
-												calculateAbsence(unitLocation,year,1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
-											}
-											
-											if(!employeeContentModel.presence && !retard && !criticallylate 
-												&& ((dateNowOther.getUTCHours() == 8 && dateNowOther.getUTCMinutes() > 30)
-												|| ((dateNowOther.getUTCHours() == 8 && dateNowOther.getUTCMinutes() == 30 && dateNowOther.getUTCSeconds() > 0)) 
-												|| (dateNowOther.getUTCHours() > 8) ) )
-											{
+												if( secondresult.first[0].length == 0 && secondresult.first[1].length == 0 && dateNowOther.getUTCDate() > currentDateOfYear)
+												{
 													employeeContentModel.absence = true;
-													if(employeeContentModel.retard == true)
-													{
-														calculateRetards(unitLocation,year,-1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
-														employeeContentModel.retard = false;
-													}
-
-													if(employeeContentModel.retardCritical == true)
-													{
-														calculateCriticalRetards(unitLocation,year,-1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
-														employeeContentModel.retardCritical = false;
-													}
-
+													employeeContentModel.retard = false;
+													absence = true;
 													employeeContentModel.date = currentDateOfYear.toLocaleString('fr-FR',{day:"numeric",month:"long",year:"numeric"});
 													calculateAbsence(unitLocation,year,1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
-															
-											} 
-											
-											if(secondresult.first[1].length > 0)
-											{
-												//console.log("Getting to know secondresult ");
-												//console.log(secondresult.first[1]);
-												//console.log(secondresult.first[0]);
-												//console.log(secondresult.first[2]);
-												
-												if( secondresult.first[1][secondresult.second[1][3].name] == 1 ) 
-												{
-													employeeContentModel.maladie = true;
-													employeeContentModel.date = currentDateOfYear.toLocaleString('fr-FR',{day:"numeric",month:"long",year:"numeric"});
-													calculateSicknesses(unitLocation,year,1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
-													if(employeeContentModel.mission)
-													{
-														calculateMission(unitLocation,year,-1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
-													}
-													if(employeeContentModel.absence)
-													{
-														calculateAbsence(unitLocation,year,-1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
-													}
-													if(employeeContentModel.congès)
-													{
-														calculateCongès(unitLocation,year,-1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
-													}
-													
 												}
 												
-												if( secondresult.first[1][secondresult.second[1][4].name] == 1 )
+												if(!employeeContentModel.presence && !retard && !criticallylate 
+													&& ((dateNowOther.getUTCHours() == 8 && dateNowOther.getUTCMinutes() > 30)
+													|| ((dateNowOther.getUTCHours() == 8 && dateNowOther.getUTCMinutes() == 30 && dateNowOther.getUTCSeconds() > 0)) 
+													|| (dateNowOther.getUTCHours() > 8) ) )
 												{
-													employeeContentModel.mission = true;
-													employeeContentModel.date = currentDateOfYear.toLocaleString('fr-FR',{day:"numeric",month:"long",year:"numeric"});
-													calculateMission(unitLocation,year,1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
-													
-													if(employeeContentModel.absence)
-													{
-														calculateAbsence(unitLocation,year,-1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
-													}
-													if(employeeContentModel.congès)
-													{
-														calculateCongès(unitLocation,year,-1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
-													}
-													if(employeeContentModel.sicknesses)
-													{
-														calculateSicknesses(unitLocation,year,-1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
-													}
-												}
-												
-												if( secondresult.first[1][secondresult.second[1][5].name] == 1 )
-												{
-													employeeContentModel.congès = true;
-													employeeContentModel.date = currentDateOfYear.toLocaleString('fr-FR',{day:"numeric",month:"long",year:"numeric"});
-													calculateCongès(unitLocation,year,1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
-													if(employeeContentModel.mission)
-													{
-														calculateMission(unitLocation,year,-1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
-													}
-													if(employeeContentModel.absence)
-													{
-														calculateAbsence(unitLocation,year,-1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
-													}
-													if(employeeContentModel.sicknesses)
-													{
-														calculateSicknesses(unitLocation,year,-1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
-													}
-												}
-												
-												if( secondresult.first[1][secondresult.second[1][2].name] == 1 )
-												{
-													if(! employeeContentModel.absence)
-													{
 														employeeContentModel.absence = true;
+														if(employeeContentModel.retard == true)
+														{
+															calculateRetards(unitLocation,year,-1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
+															employeeContentModel.retard = false;
+														}
+
+														if(employeeContentModel.retardCritical == true)
+														{
+															calculateCriticalRetards(unitLocation,year,-1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
+															employeeContentModel.retardCritical = false;
+														}
+
 														employeeContentModel.date = currentDateOfYear.toLocaleString('fr-FR',{day:"numeric",month:"long",year:"numeric"});
 														calculateAbsence(unitLocation,year,1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
+																
+												} 
+												
+												if(secondresult.first[1].length > 0)
+												{
+													//console.log("Getting to know secondresult ");
+													//console.log(secondresult.first[1]);
+													//console.log(secondresult.first[0]);
+													//console.log(secondresult.first[2]);
+													
+													if( secondresult.first[1][secondresult.second[1][3].name] == 1 ) 
+													{
+														employeeContentModel.maladie = true;
+														employeeContentModel.date = currentDateOfYear.toLocaleString('fr-FR',{day:"numeric",month:"long",year:"numeric"});
+														calculateSicknesses(unitLocation,year,1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
 														if(employeeContentModel.mission)
 														{
 															calculateMission(unitLocation,year,-1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
+														}
+														if(employeeContentModel.absence)
+														{
+															calculateAbsence(unitLocation,year,-1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
+														}
+														if(employeeContentModel.congès)
+														{
+															calculateCongès(unitLocation,year,-1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
+														}
+														
+													}
+													
+													if( secondresult.first[1][secondresult.second[1][4].name] == 1 )
+													{
+														employeeContentModel.mission = true;
+														employeeContentModel.date = currentDateOfYear.toLocaleString('fr-FR',{day:"numeric",month:"long",year:"numeric"});
+														calculateMission(unitLocation,year,1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
+														
+														if(employeeContentModel.absence)
+														{
+															calculateAbsence(unitLocation,year,-1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
 														}
 														if(employeeContentModel.congès)
 														{
@@ -2776,71 +2707,110 @@
 															calculateSicknesses(unitLocation,year,-1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
 														}
 													}
+													
+													if( secondresult.first[1][secondresult.second[1][5].name] == 1 )
+													{
+														employeeContentModel.congès = true;
+														employeeContentModel.date = currentDateOfYear.toLocaleString('fr-FR',{day:"numeric",month:"long",year:"numeric"});
+														calculateCongès(unitLocation,year,1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
+														if(employeeContentModel.mission)
+														{
+															calculateMission(unitLocation,year,-1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
+														}
+														if(employeeContentModel.absence)
+														{
+															calculateAbsence(unitLocation,year,-1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
+														}
+														if(employeeContentModel.sicknesses)
+														{
+															calculateSicknesses(unitLocation,year,-1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
+														}
+													}
+													
+													if( secondresult.first[1][secondresult.second[1][2].name] == 1 )
+													{
+														if(! employeeContentModel.absence)
+														{
+															employeeContentModel.absence = true;
+															employeeContentModel.date = currentDateOfYear.toLocaleString('fr-FR',{day:"numeric",month:"long",year:"numeric"});
+															calculateAbsence(unitLocation,year,1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
+															if(employeeContentModel.mission)
+															{
+																calculateMission(unitLocation,year,-1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
+															}
+															if(employeeContentModel.congès)
+															{
+																calculateCongès(unitLocation,year,-1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
+															}
+															if(employeeContentModel.sicknesses)
+															{
+																calculateSicknesses(unitLocation,year,-1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
+															}
+														}
+													}
+													
 												}
-												
+											}
+											else
+											{	
+												baseInit = false;
+												base_init_exiting = true;
+												//console.log("Quitting");
+												if (!(response === undefined))
+												dummyResponseSimple(response);
+												return false;
 											}
 										}
-										else
-										{
-											baseInit = false;
-											gettingData = false;
-											base_init_exiting = true;
-											//console.log("Quitting");
-											if (!(response === undefined))
-											dummyResponseSimple(response);
-											return false;
-										}
 									}
-								}
-								else
-								{
-									baseInit = false;
-									base_init_exiting = true;
-									gettingData = false;
-									//console.log("Quitting");
-									if (!(response === undefined))
-									dummyResponseSimple(response);
-									return false;
-								}
-									
-								start_day++;
-								weekDayIndex = weekDayIndex+1;
-								++k;
-								astart = true;
+									else
+									{	
+										base_init_exiting = true;
+										//console.log("Quitting");
+										if (!(response === undefined))
+										dummyResponseSimple(response);
+										return false;
+									}
+										
+									start_day++;
+									weekDayIndex = weekDayIndex+1;
+									++k;
+									astart = true;
+									if(empHoursObj != undefined)
+										break;	
+								}	
+								
 								if(empHoursObj != undefined)
 									break;	
-							}	
+							}
 							
-							if(empHoursObj != undefined)
-								break;	
 						}
 						
 					}
 					
-				}
-				
-				if(primaryObject === undefined)
-					primaryObject = data;
-
-				console.log("Location argument "+locationArgObj+" employee argument "+empObj);
-				console.log(primaryObject);
-				
-				if (!(response === undefined))
-				{
-					gettingData = false;
-					response.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
-									,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
-									,"Access-Control-Max-Age":'86400'
-									,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
-									});
-					if(primaryObject != undefined)
-					response.write(JSON.stringify(primaryObject));
-					response.end();
-					return true;
-				}
-
-				gettingData = false;
-				return true;
+					
+					//console.log("Location argument "+locationArgObj+" employee argument "+empObj);
+					//console.log(primaryObject);
+					
+					if (!(response === undefined))
+					{
+						response.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+										,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
+										,"Access-Control-Max-Age":'86400'
+										,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
+										});
+						if(primaryObject != undefined)
+						response.write(JSON.stringify(primaryObject));
+						response.end();
+						return data;
+					}
+					
+					return data;
+			}
+			catch(ex)
+			{
+				console.log(ex.message);
+				return false;
+			}
 	} 
 	
 	
