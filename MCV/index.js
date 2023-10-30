@@ -1,4 +1,3 @@
-	require('dotenv').config();	
 	var http = require("http");
 	var url = require("url");
 	var postgres = require('pg');
@@ -139,7 +138,7 @@
 						try
 						{
 							const blob = await vercelBlob.head(req.url,{
-								token: process.env.BLOB_READ_WRITE_TOKEN
+								token: "vercel_blob_rw_70gXoZ4JnkgIVATX_LItRzZnyiVF2IfjUxYT3srgV7mUcTn"
 							});
 							//console.log(blob);
 							res.writeHeader(200,{"Content-Type":blob.contentType});
