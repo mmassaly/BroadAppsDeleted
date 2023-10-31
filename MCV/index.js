@@ -31,6 +31,47 @@
 	let d = new Date(Date.now());
 	console.log(d.getHours()+" "+d.getMinutes()+" "+d.getSeconds());
 	
+	function caller()
+	{
+		
+		precedentDate = todaysDate;
+		todaysDate = new Date(Date.now());
+			
+		let dateTime = new Date();
+		console.log("This function must sleep for 1 seconds before starting");
+		
+		setTimeout(
+				function()
+				{	
+					let currentDatedetails = getDateDetailsFromCorruptJavascript();
+					console.log("Done sleeping..............");
+					if(precedentDate.getYear() != todaysDate.getYear())
+					{
+						getDataForAdmin(undefined,undefined,undefined,undefined,currentDatedetails[2],undefined,undefined);
+					}
+					else if (precedentDate.getMonth() != todaysDate.getMonth())
+					{
+						getDataForAdmin(undefined,undefined,undefined,undefined,currentDatedetails[2],currentDatedetails[1],undefined);
+					}
+					else if(precedentDate.getDay() != todaysDate.getDay() )
+					{
+						getDataForAdmin(undefined,undefined,undefined,undefined,currentDatedetails[2],currentDatedetails[1],currentDatedetails[0]);
+					}
+					
+					ofUpdate();
+			},1000);
+	}
+
+
+	function ofUpdate()
+	{
+		current = new Date(Date.now());
+		let totalSeconds = (current.getHours()*60*60 + current.getMinutes()*60+ current.getSeconds())*1000;
+		let total = 86400000;
+		//total = 180000 + totalSeconds;
+		//'fr-FR'(total-totalSeconds)
+		setTimeout(caller,total-totalSeconds);
+	}
 	
 	function getCommandGivenID(ID)
 	{
@@ -672,7 +713,7 @@
 					}
 				}
 			});
-
+	
 	function whileFunction(startingTag)
 	{
 		try
@@ -681,8 +722,10 @@
 			try
 			{
 				add_all_users();
-				getDataForAdminThreeArgs(undefined,undefined);
+				var func = async()=>{console.log(await getDataForAdminThreeArgs(undefined,undefined));};
+				func();
 				//console.log(startingTag);
+				ofUpdate();
 				//'fr-FR',
 				baseInit = true;
 			}
