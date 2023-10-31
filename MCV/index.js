@@ -121,7 +121,7 @@
 	var server = http.createServer(function(req,res)
 	{
 		console.log(req.method);
-		console.log(req.url);
+		//console.log(req.url);
 		
 		if (req.method === 'OPTIONS') 
 		{
@@ -520,7 +520,7 @@
 														,"Access-Control-Max-Age":'86400'
 														,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
 														});
-														console.log(primaryObject);
+														//console.log(primaryObject);
 														resultd.write(JSON.stringify(primaryObject));
 														resultd.end();
 														/*getDataForAdminThreeArgs(undefined,undefined).then((getresult)=>{
@@ -722,7 +722,10 @@
 			try
 			{
 				add_all_users();
-				var func = async()=>{console.log(await getDataForAdminThreeArgs(undefined,undefined));};
+				var func = async()=>
+				{
+					await getDataForAdminThreeArgs(undefined,undefined));
+				};
 				func();
 				//console.log(startingTag);
 				ofUpdate();
@@ -1750,8 +1753,8 @@
 									//console.log("Monthly charging pourcentage "+ charging_percentage);
 								}
 								
-								let astart = false;
-								let startDateOfMonth = new Date(year,testCount,1);
+								var astart = false;
+								let startDateOfMonth = new Date(year,monthCounts-1,1);
 								//console.log(year);
 								//console.log(startDateOfMonth);
 								currentDateOfYear = new Date(year,monthCounts-1,(paramday == undefined)?(empHoursObj != undefined? empHoursObj.date.getDate():1):paramday);
@@ -1803,7 +1806,7 @@
 								let monthly =  
 								{
 									month: testCount,
-									yearCount: testCount,
+									yearCount: l+1,
 									name: startDateOfMonth.toLocaleString('fr-FR',{month:"long"}),
 									weeks: [],
 									employeeHours: {},
@@ -1817,7 +1820,7 @@
 								};
 
 								let monthFoundAlpha = undefined;
-								let monthSearchIndex = testCount+1;
+								let monthSearchIndex = testCount;
 								
 								if(parammonth != undefined)
 								{
@@ -1826,8 +1829,7 @@
 
 								monthFoundAlpha = getMonth(yearContentModel,monthSearchIndex);
 								monthFound = monthFoundAlpha.first;
-								//console.log("Month found is?"+monthFound);
-
+								
 								if( monthFound == undefined && parammonth != undefined )
 								{
 									//console.log(yearContentModel.months);
@@ -1853,12 +1855,21 @@
 								{
 									monthIndex = monthFoundAlpha.second;
 								}
-
+								
+								//console.log("MonthIndex is "+monthIndex);
+								//console.log("Month found is?");
+								//console.log(monthFound);
+								//console.log("Month search index is "+monthSearchIndex);
+								
 								let weekNo = 1;
 								let weekDayIndex = 0;
 								
 								let value = currentDateOfYear.getMonth() === startDateOfMonth.getMonth();
-								let nombre_de_jours = (new Date(currentDateOfYear.getFullYear(),currentDateOfYear.getMonth(),0)).getDate();
+								let nombre_de_jours = (new Date(currentDateOfYear.getFullYear(),currentDateOfYear.getMonth()+1,0)).getDate();
+								
+								console.log(currentDateOfYear);
+								console.log("Month is "+currentDateOfYear.getMonth());
+								console.log("Nombre de jours "+(new Date(currentDateOfYear.getFullYear(),currentDateOfYear.getMonth()+1,0)).getDate());
 								
 								if(paramday != undefined)
 									nombre_de_jours = paramday;
@@ -1873,21 +1884,44 @@
 								//console.log(" Day based on offset is "+currentDateOfYear.getDay()+" date is "+currentDateOfYear);
 								//console.log("Waw! we are corrupted");
 								
+								if( monthIndex == 9 )
+								{
+									//console.log("Jour de début " + start_day);
+									//console.log("Nombre de jours " + nombre_de_jours);
+									//console.log("Month counts " + monthCounts);
+									//console.log("Current month " + currentDateOfYear.getMonth());
+								}
+									
 								while( start_day <= nombre_de_jours)
 								{
-									
 									currentDateOfYear = new Date(year,monthCounts-1,start_day);
+									
+									if( monthIndex == 9 )
+									{
+										//console.log("Jour de début "+start_day);
+										//console.log("Nombre de jours "+nombre_de_jours);
+										//console.log(currentDateOfYear);
+										//console.log(monthCounts);
+									}
+									
 									if(monthCounts-1 > dateNow.getMonth())
 									{
 										//console.log(currentDateOfYear.toLocaleString('fr-FR',{day:"numeric",month:"long",year:"numeric"}));
 										//console.log(year+"-"+monthCounts+"-"+start_day);
 									}
 									
-									if(currentDateOfYear.getMonth() >= 9)
+									/* if(currentDateOfYear.getMonth() >= 9 && monthIndex == 9 && currentDateOfYear.getDate() > 27)
 									{
-										//console.log(currentDateOfYear.toLocaleString('fr-FR',{day:"numeric",month:"long",year:"numeric"}));
-										//console.log(year+"-"+monthCounts+"-"+start_day);
-									}
+										console.log(currentDateOfYear.toLocaleString('fr-FR',{day:"numeric",month:"long",year:"numeric"}));
+										console.log(year+"-"+monthCounts+"-"+start_day);
+									} */
+									
+									/* if(currentDateOfYear.getMonth() == 9)
+									{
+										console.log("astart "+astart);
+										console.log("weekNo "+weekNo);
+										console.log("<=?"+( Math.floor((start_day + offset)/ 7) + 1));
+									} */
 									
 									let aresultFiltered = FilterDateNotFoudFunction(aresult,"date",currentDateOfYear.getDate()+"-"+(currentDateOfYear.getMonth()+1)+"-"+currentDateOfYear.getFullYear());
 									let bresultFiltered = FilterDateNotFoudFunction(bresult,"date",currentDateOfYear.getDate()+"-"+(currentDateOfYear.getMonth()+1)+"-"+currentDateOfYear.getFullYear());
@@ -1910,10 +1944,11 @@
 
 									if(currentDateOfYear > dateToday )
 									{	
-										//console.log(currentDateOfYear+" > to "+ dateToday);
-										//console.log("breaking");
+										console.log(currentDateOfYear+" > to "+ dateToday);
+										console.log("breaking");
 										break;
 									}
+									
 									
 									let tempdate = currentDateOfYear.toLocaleString('fr-FR',{day:"numeric",month:"long",year:"numeric"});
 									let queryDate = currentDateOfYear.toLocaleString('fr-FR',{year:"numeric",month:"numeric",day:"numeric"});
@@ -1936,13 +1971,14 @@
 										//console.log("Offset is "+offset+" weekNo current is calculated "+Math.floor((start_day+offset)/ 7));
 									}
 									
+									
 									if( astart == false || weekNo < (Math.floor((start_day + offset)/ 7) + 1))
 									{
 										if(paramday != undefined || empHoursObj != undefined)
 										{
 											weekDayIndex = dateTransformer[currentDateOfYear.getDay()];
 										}
-										else if(weekDayIndex != 0)
+										else if( weekDayIndex != 0 )
 											weekDayIndex = 0;
 										
 										astart = true;
@@ -1971,6 +2007,11 @@
 											//console.log(weekNo);
 											//console.log(weekFound);		
 										}
+										
+										if(currentDateOfYear == todaysDate)
+										{
+											//console.log(weekFound);
+										}
 
 										if( weekFound == undefined )
 										{	
@@ -1979,19 +2020,25 @@
 											yearContentModel.months[monthIndex].weeks.push(week);
 											let command = { paths:[{path:"container",index:location_index},{path:"yearsContent",index:yearIndex},{path:"months",index:monthIndex},{path:"weeks",index:weekIndex}], commandObj:{command:"push",value:week} };
 											pushCommands(command);
-											//console.log("new weekIndex"+weekIndex);
+											
+											//if(currentDateOfYear.getMonth() == 9 && monthIndex == 9)												
+											//{
+												//console.log("new week added "+weekIndex);
+												//console.log("month index is "+ monthIndex);
+												//console.log("month is "+ yearContentModel.months[monthIndex].month+" month name is "+yearContentModel.months[monthIndex].name);
+												//console.log(yearContentModel.months);
+											//}
 										
 										}
 										else
 										{
 											weekIndex = weekFoundAlpha.second;
-											//console.log("old weekIndex "+weekIndex);
+											//if(currentDateOfYear == todaysDate)
+												//console.log("old weekIndex found "+weekIndex);
 										}
 
 									}
 									
-									
-										
 									//console.log(currentmonth); console.log(currentday); console.log(currentYear);
 									//console.log(amonth); console.log(day); console.log(ayear);
 									//console.log(currentDateOfYear);
