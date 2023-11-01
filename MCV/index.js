@@ -724,7 +724,7 @@
 				add_all_users();
 				var func = async()=>
 				{
-					await getDataForAdminThreeArgs(undefined,undefined)\;
+					await getDataForAdminThreeArgs(undefined,undefined);
 				};
 				func();
 				//console.log(startingTag);
