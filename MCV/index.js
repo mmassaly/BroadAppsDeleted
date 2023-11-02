@@ -2709,7 +2709,12 @@
 																	if(element.entry == a && element.exit == b )
 																	{
 																		found = true;
-																	} 
+																	}
+																	else if(element.entry == a)
+																	{
+																		element.exit = b;
+																		found = true;
+																	}
 																});
 																		
 																if(!found)
