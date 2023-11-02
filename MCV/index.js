@@ -357,7 +357,7 @@
 									let othertempResult = check_super_admin(userAuthentification,undefined,undefined);
 									urlObject.date = new Date(urlObject.date);
 									insertEntryandExitIntoEmployees(userAuthentification.ID,urlObject.date,urlObject.start,urlObject.end,urlObject,resultb);	
-									getDataForAdminThreeArgs(res,undefined,undefined,userAuthentification,undefined,undefined,undefined);
+									getDataForAdmin(res,undefined,undefined,userAuthentification,undefined,undefined,undefined);
 								}
 								,(ex) =>
 								{
