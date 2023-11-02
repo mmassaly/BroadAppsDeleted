@@ -1670,6 +1670,9 @@
 							query += (empObj == undefined)?((empHoursObj == undefined)?"":" where A.Idindividu ='"+empHoursObj.userAuthentification.ID+"'"):" where A.Idindividu ='"+empObj.ID+"'";
 							query += " GROUP BY Entrées,Date,Idindividu ORDER BY Date ASC;";
 							
+							if(empHoursObj)
+							{console.log(query);}
+						
 							//console.log(empHoursObj);
 							let threeResults = await faire_un_simple_query(query);
 							let resultTwo = threeResults[0];
