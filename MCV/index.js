@@ -357,7 +357,7 @@
 									let othertempResult = check_super_admin(userAuthentification,undefined,undefined);
 									urlObject.date = new Date(urlObject.date);
 									insertEntryandExitIntoEmployees(userAuthentification.ID,urlObject.date,urlObject.start,urlObject.end,urlObject,resultb);	
-									getDataForAdmin(res,undefined,undefined,userAuthentification,undefined,undefined,undefined);
+									getDataForAdmin(res,undefined,undefined,urlObject,undefined,undefined,undefined);
 								}
 								,(ex) =>
 								{
@@ -870,7 +870,7 @@
 							querySQL += fields.address[0] +"$$,$$"+fields.region[0]+"$$,'"+fields.latittude[0]+"','"+fields.longitude[0];
 							querySQL += "');";
 						}
-						console.log(querySQL);
+						//console.log(querySQL);
 						//console.log(fields);
 					}
 					else if(commandArg === "employees" || (dealingWithArray && commandArg[0] === "employees"))
@@ -911,9 +911,9 @@
 							thirdQuerySQL += "insert into "+tablename+" values ('"+fields.ID+"',$$"+fields.password+"$$,"+((fields.type == 1)?true:false)+","+((fields.type == 2)?true:false)+","+((fields.type == 4)?true:false)+","+((fields.type == 3)?true:false)+");";
 						} 
 						
-						console.log(querySQL);	
-						console.log(doubleQuerySQL);
-						console.log(thirdQuerySQL);
+						//console.log(querySQL);	
+						//console.log(doubleQuerySQL);
+						//console.log(thirdQuerySQL);
 					
 					}
 					
@@ -1616,6 +1616,7 @@
 						}																																		
 						else if (empHoursObj != undefined)
 						{
+							//console.log(empHoursObj);
 							query = "Select * from \"manuel des tables d'entrées et de sorties\" where Année = "+empHoursObj.date.getFullYear()+";";
 						}
 						
@@ -1670,8 +1671,8 @@
 							query += (empObj == undefined)?((empHoursObj == undefined)?"":" where A.Idindividu ='"+empHoursObj.userAuthentification.ID+"'"):" where A.Idindividu ='"+empObj.ID+"'";
 							query += " GROUP BY Entrées,Date,Idindividu ORDER BY Date ASC;";
 							
-							if(empHoursObj)
-							{console.log(query);}
+							/* if(empHoursObj)
+							{console.log(query);} */
 						
 							//console.log(empHoursObj);
 							let threeResults = await faire_un_simple_query(query);
@@ -1870,9 +1871,9 @@
 								let value = currentDateOfYear.getMonth() === startDateOfMonth.getMonth();
 								let nombre_de_jours = (new Date(currentDateOfYear.getFullYear(),currentDateOfYear.getMonth()+1,0)).getDate();
 								
-								console.log(currentDateOfYear);
-								console.log("Month is "+currentDateOfYear.getMonth());
-								console.log("Nombre de jours "+(new Date(currentDateOfYear.getFullYear(),currentDateOfYear.getMonth()+1,0)).getDate());
+								//console.log(currentDateOfYear);
+								//console.log("Month is "+currentDateOfYear.getMonth());
+								//console.log("Nombre de jours "+(new Date(currentDateOfYear.getFullYear(),currentDateOfYear.getMonth()+1,0)).getDate());
 								
 								if(paramday != undefined)
 									nombre_de_jours = paramday;
@@ -1938,11 +1939,25 @@
 									
 									if(paramday != undefined || empHoursObj != undefined)
 									{
-										weekDayIndex = dateTransformer[currentDateOfYear.getDay()];
+										if( start_day + offset >= 7)
+										{
+											weekDayIndex = (start_day + offset)%7 ;
+										}
+										else
+										{
+											weekDayIndex = start_day -1;
+										}
 									}
 									else
 									{
-										weekDayIndex = weekDayIndex % 7;
+										if( start_day + offset >= 7)
+										{
+											weekDayIndex = (start_day + offset)%7 ;
+										}
+										else
+										{
+											weekDayIndex = start_day -1;
+										}
 									}
 
 									if(currentDateOfYear > dateToday )
@@ -1979,13 +1994,29 @@
 									{
 										if(paramday != undefined || empHoursObj != undefined)
 										{
-											weekDayIndex = dateTransformer[currentDateOfYear.getDay()];
+											if( start_day + offset >= 7)
+											{
+												weekDayIndex = (start_day + offset) % 7 ;
+											}
+											else
+											{
+												weekDayIndex = start_day -1;
+											}
 										}
-										else if( weekDayIndex != 0 )
-											weekDayIndex = 0;
+										else
+										{ 
+											if( start_day + offset >= 7)
+											{
+												weekDayIndex = (start_day + offset)%7 ;
+											}
+											else
+											{
+												weekDayIndex = start_day -1;
+											}
+										}
 										
 										astart = true;
-										weekNo = Math.floor((start_day + offset)/ 7) + 1;
+										weekNo = Math.floor((start_day + offset)/ 7)+1;
 										//console.log("start of day "+start_day+" + offset "+offset+" Updated week no "+ weekNo);
 										
 										let week = 
@@ -2618,6 +2649,7 @@
 																	let objTemp = {entry:a,exit:b};
 																	let objElements = [];
 																	objElements.push(objTemp);
+																	
 																	let value_to_deal_with = compareHoursOneSuperior(a,b)< 0;
 																	if(startIndex != -1)
 																	{
@@ -2645,58 +2677,11 @@
 																	{
 																		let count;
 																		let tempIndex;
-
-																		employeeContentModel.entriesexitsCouples.forEach((element)=>
-																		{
-																			count = objElements.length;
-																			tempIndex = 0;
-																			
-																			while(tempIndex < count)
-																			{
-																				if( compareHoursOneSuperior(objTemp.entry,element.entry) >= 0 && compareHoursOneSuperior(objTemp.entry, element.exit) <= 0)
-																				{
-																					if(compareHoursOneSuperior(objTemp.exit,element.entry) > 0 && compareHoursOneSuperior(objTemp.exit, element.exit) > 0)
-																					{
-																						objTemp.entry = element.exit ;			
-																						objElements.push({entry:objTemp.entry,exit:objTemp.exit});
-																					}
-																				}
-																				else
-																				{
-																					if(compareHoursOneSuperior(objTemp.exit,element.entry) >= 0 && compareHoursOneSuperior(objTemp.exit, element.exit) <= 0)
-																					{
-																						objTemp.exit = element.entry ;	
-																						objElements.push({entry:objTemp.entry,exit:objTemp.exit});		
-																					}
-																					else if (compareHoursOneSuperior(objTemp.exit,element.entry) < 0)
-																					{
-																						objElements.push({entry:objTemp.entry,exit:objTemp.exit});	
-																					}
-																					else if (compareHoursOneSuperior(objTemp.entry, element.exit) > 0) 
-																					{
-																						objElements.push({entry:objTemp.entry,exit:objTemp.exit});
-																					}
-																					else if (compareHoursOneSuperior(objTemp.entry, element.exit) < 0)
-																					{
-																						objElements.push({entry:objTemp.entry,exit:element.entry});	
-																						objElements.push({entry:element.exit,exit:objTemp.exit});
-																					}	
-																				}
-																				++tempIndex;						
-																			}
-
-																			tempIndex = 0;
-																			while(tempIndex < count)
-																			{
-																				objElements.splice(0,1);
-																				++tempIndex;
-																			}						
-
-																		});
 																		
 																		tempIndex = 0;
 																		count = objElements.length;
 																		employeeContentModel.dailyHoursTotal = "00:00:00";
+																		let elements_to_remove = [];
 																		
 																		while(tempIndex < count)
 																		{
@@ -2714,9 +2699,21 @@
 																			++tempIndex;
 																		}
 																		
-																		employeeContentModel.entriesexitsCouples.push({entry:a,exit:b});
-																	}														
+																		
+																	}
 																}
+																
+																let found = false;
+																employeeContentModel.entriesexitsCouples.forEach((element)=>
+																{
+																	if(element.entry == a && element.exit == b )
+																	{
+																		found = true;
+																	} 
+																});
+																		
+																if(!found)
+																	employeeContentModel.entriesexitsCouples.push({entry:a,exit:b});
 													}
 													
 													
@@ -2901,6 +2898,7 @@
 			}
 			catch(ex)
 			{
+				console.log(ex);
 				console.log(ex.message);
 				return false;
 			}
@@ -3625,6 +3623,7 @@
 
 	function calculateRetards(unitLocation,year,offset,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex)
 	{
+		try{
 		let nodupTempAlpha = getYear(unitLocation,year);
 		let nodupTemp = nodupTempAlpha.first;
 		let found = false;
@@ -3696,7 +3695,20 @@
 				
 				nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].empDicofRetards[employeeContentModel.ID] = undefined;
 			}
-		}												
+		}	
+		}
+		catch(ex)
+		{
+			let nodupTempAlpha = getYear(unitLocation,year);
+			let nodupTemp = nodupTempAlpha.first;
+			//console.log(location_index);
+			//console.log(yearIndex);
+			//console.log(monthIndex);
+			//console.log(weekIndex);
+			//console.log(weekDayIndex);
+			//console.log(nodupTemp.months[monthIndex].weeks[weekIndex]);
+			console.log(ex); //throw ex;
+		}
 	}
 	
 	function calculateCriticalRetards(unitLocation,year,offset,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex)
