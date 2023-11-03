@@ -1040,6 +1040,7 @@
 	}
 	async function exigencebasededonnée()
 	{	
+	
 		try 
 		{	
 			var postgresConnection = new postgres.Client("postgres://default:QHiOur92EwzF@ep-patient-darkness-72544749.us-east-1.postgres.vercel-storage.com:5432/verceldb"+ "?sslmode=require");
@@ -1055,8 +1056,8 @@
 			console.log(ex);
 			return new Promise ((resolve,reject) => 
 			{
-				//console.log("Database Connection not successful.");	
-				reject(postgresConnection);
+				//console.log("Database connection not  successfull.");
+				resolve(undefined);	
 			});
 		}
 		//console.log(postgresConnection);
@@ -1064,8 +1065,12 @@
 
 	async function faire_un_simple_query(queryString)
 	{
-		let sql = await exigencebasededonnée();	
+		let sql = undefined;	
 		//console.log(queryString);
+		while(sql == undefined)
+		{
+			sql = await exigencebasededonnée();
+		};
 		
 		try
 		{
