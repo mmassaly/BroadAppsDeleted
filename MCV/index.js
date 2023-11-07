@@ -3124,10 +3124,10 @@
 						deleteElementMinusRepertory(tempDeleteStack,dayContent.retardsCriticaldates);
 						tempDeleteStack = [];
 						
-						tempDeleteStack = (findElementsNotEquivalentToValueIntoDic(ID,empdaily,"empHours");
+						tempDeleteStack = (findElementsNotEquivalentToValueIntoDic(ID,empdaily,"empHours"));
 						deleteKeysElementsIntoDic(tempDeleteStack,empdaily),empdaily.empHours);
 						
-						tempDeleteStack = (findElementsNotEquivalentToValueIntoDic(ID,empdaily,"empDicofAbsences");
+						tempDeleteStack = (findElementsNotEquivalentToValueIntoDic(ID,empdaily,"empDicofAbsences"));
 						deleteKeysElementsIntoDic(tempDeleteStack,empdaily.empDicofAbsences.absences);
 						
 						tempDeleteStack = (findElementsNotEquivalentToValueIntoDic(ID,empdaily,"empDicofMissions"),empdaily);
