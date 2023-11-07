@@ -3124,28 +3124,28 @@
 						deleteElementMinusRepertory(tempDeleteStack,dayContent.retardsCriticaldates);
 						tempDeleteStack = [];
 						
-						tempDeleteStack = (findElementsNotEquivalentToValueIntoDic(ID,empdaily,"empHours"));
-						deleteKeysElementsIntoDic(tempDeleteStack,empdaily),empdaily.empHours);
+						tempDeleteStack = findElementsNotEquivalentToValueIntoDic(ID,empdaily,"empHours");
+						deleteKeysElementsIntoDic(tempDeleteStack,empdaily,empdaily.empHours);
 						
-						tempDeleteStack = (findElementsNotEquivalentToValueIntoDic(ID,empdaily,"empDicofAbsences"));
+						tempDeleteStack = findElementsNotEquivalentToValueIntoDic(ID,empdaily,"empDicofAbsences");
 						deleteKeysElementsIntoDic(tempDeleteStack,empdaily.empDicofAbsences.absences);
 						
-						tempDeleteStack = (findElementsNotEquivalentToValueIntoDic(ID,empdaily,"empDicofMissions"),empdaily);
+						tempDeleteStack = findElementsNotEquivalentToValueIntoDic(ID,empdaily,"empDicofMissions");
 						deleteKeysElementsIntoDic(tempDeleteStack,empdaily.empDicofMissions);
 						
-						tempDeleteStack = (findElementsNotEquivalentToValueIntoDic(ID,empdaily,"empDicofPresences"),empdaily);
+						tempDeleteStack = findElementsNotEquivalentToValueIntoDic(ID,empdaily,"empDicofPresences");
 						deleteKeysElementsIntoDic(tempDeleteStack,empdaily.empDicofPresences);
 						
-						tempDeleteStack = (findElementsNotEquivalentToValueIntoDic(ID,empdaily,"empDicofSicknesses"),empdaily);
+						tempDeleteStack = findElementsNotEquivalentToValueIntoDic(ID,empdaily,"empDicofSicknesses");
 						deleteKeysElementsIntoDic(tempDeleteStack,empdaily.empDicofSicknesses);
 						
-						tempDeleteStack = (findElementsNotEquivalentToValueIntoDic(ID,empdaily,"empDicofCritical"),empdaily);
+						tempDeleteStack = findElementsNotEquivalentToValueIntoDic(ID,empdaily,"empDicofCritical");
 						deleteKeysElementsIntoDic(tempDeleteStack,empdaily.empDicofCritical);	
 						
-						tempDeleteStack = (findElementsNotEquivalentToValueIntoDic(ID,empdaily,"empDicofRetards"),empdaily);
+						tempDeleteStack = findElementsNotEquivalentToValueIntoDic(ID,empdaily,"empDicofRetards");
 						deleteKeysElementsIntoDic(tempDeleteStack,empdaily.empDicofRetards);
 						
-						tempDeleteStack = (findElementsNotEquivalentToValueIntoDic(ID,empdaily,"empDicofVacances"),empdaily);
+						tempDeleteStack = findElementsNotEquivalentToValueIntoDic(ID,empdaily,"empDicofVacances");
 						deleteKeysElementsIntoDic(tempDeleteStack,empdaily.empDicofVacances);	
 						
 						tempDeleteStack = [];
