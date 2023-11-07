@@ -1,1 +1,2 @@
 apks/app-debug.apk : https://70gxoz4jnkgivatx.public.blob.vercel-storage.com/apks/app-debug-rr9Ffc9dLOXaUm8mp3MNkiOdiIpBOi.apk
+apks/app-debug.apk : https://70gxoz4jnkgivatx.public.blob.vercel-storage.com/apks/app-debug-RDPMIdvzr15emiLSidSercVzNUbRcO.apk
