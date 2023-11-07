@@ -2,6 +2,8 @@ var vercelBlob = require("@vercel/blob");
 var fs = require('fs');
 require ('dotenv').config();
 var paths = ['C:\\Users\\Mamadou\\Desktop\\WebPages\\Project Timing\\my-app\\src\\assets\\images'];
+paths = ['C:\\Users\\Mamadou\\Desktop\\WebPages\\Project Timing Phone\\TestProject\\platforms\\android\\app\\build\\outputs\\apk\\debug'];
+var directories = ["assets/images/","apks/"];
 
 async function start(pathsofInterest)
 {
@@ -40,16 +42,24 @@ async function start(pathsofInterest)
 							let element_dup = element;
 							fs.readFile(notGivenPath+"\\"+element_dup.name,async function(err,data)
 							{
-								const blob = await vercelBlob.put("assets/images/"+element_dup.name,data, {
-										access: 'public',
-										contentType:'image/'+element_dup.mimetype ,
-										token: process.env.token
-								});
-								console.log(blob);
-								fs.appendFile("imagefileslocaldb.txt","assets/images/"+element_dup.name+" : "+blob.url+"\n",function(err)
+								if(element_dup.name.endsWith("apk") || !element_dup.name.endsWith("json"))
 								{
-										if (err) throw err;
-								}); 
+									var directories = ["assets/images/","apks/"];
+									var commandContentTypes = ['image/'+element_dup.mimetype,"application/vnd.android.package-archive"];
+									var txtNames = ["imagefileslocaldb.txt","apks.txt"];
+									
+									const blob = await vercelBlob.put(directories[1]+element_dup.name,data, {
+											access: 'public',
+											contentType:commandContentTypes[1] ,
+											token: process.env.token
+									});
+									
+									console.log(blob);
+									fs.appendFile(txtNames[1],directories[1]+element_dup.name+" : "+blob.url+"\n",function(err)
+									{
+											if (err) throw err;
+									});
+								}
 							});
 							
 							
