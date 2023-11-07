@@ -1,7 +1,6 @@
 	var http = require("http");
 	var url = require("url");
 	var postgres = require('pg');
-	import { sql } from '@vercel/postgres';
 	var formidable = require('formidable');
 	var fs = require('fs');
 	var vercelBlob = require("@vercel/blob");
@@ -1041,7 +1040,7 @@
 	}
 	async function exigencebasededonnée()
 	{	
-		/*
+	
 		try 
 		{	
 			var postgresConnection = new postgres.Client("postgres://default:QHiOur92EwzF@ep-patient-darkness-72544749.us-east-1.postgres.vercel-storage.com:5432/verceldb"+ "?sslmode=require");
@@ -1060,55 +1059,13 @@
 				//console.log("Database connection not  successfull.");
 				resolve(undefined);	
 			});
-		}*/
+		}
 		//console.log(postgresConnection);
-		return new Promise ((resolve,reject) => 
-		{
-			resolve(sql);	
-		});
 	}
 
 	async function faire_un_simple_query(queryString)
 	{
 		let sql = undefined;	
-		sql = await exigencebasededonnée();
-		try
-		{
-			let result = await sql`${queryString}`;
-			return new Promise ((resolve,reject) => 
-			{
-				if(result == undefined)
-				{
-					reject({first:result,second:false});
-				}
-				else
-				{
-					if(result.rows == undefined)
-					{
-						let tempfirst = [];
-						result.forEach((element)=>
-						{
-							tempfirst.push({first: element.rows,second:element.fields});
-						});
-						
-						resolve(tempfirst);
-					}
-					else
-					{
-						resolve({first:result.rows,second:result.fields});
-					}
-				}
-						
-			});
-		}
-		catch(ex)
-		{
-			console.log(queryString);
-			console.log("Exception caught");
-			console.log(ex);
-			return new Promise((resolve,reject)=>{reject({first:ex,second:false});});
-		}
-		/*
 		//console.log(queryString);
 		while(sql == undefined)
 		{
@@ -1166,7 +1123,7 @@
 			console.log("Exception caught");
 			console.log(ex);
 			return new Promise((resolve,reject)=>{reject({first:ex,second:false});});
-		}*/		
+		}		
 	}
 	
 	async function add_all_users()
