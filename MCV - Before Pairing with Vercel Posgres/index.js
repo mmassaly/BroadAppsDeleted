@@ -2966,16 +2966,50 @@
 		for(let yearLength = 0; yearLength < location.yearsContent; ++yearLength)
 		{
 			let yearContent = location.yearsContent[yearLength];
+			let keysToRemove = [];
+			
+			
 			for(let monthLength = 0; monthLength < yearContent.months.length; ++monthLength) 
 			{
 				let monthContent = yearContent.months[month];
+				let keysToRemove = [];
+				
 				for(let weekLength = 0; weekLength < monthContent.weeks.length; ++weekLength) 
 				{
 					let weekContent = monthContent.weeks[weekLength];
+					let keysToRemove = [];
+					
+					weekContent.empHours.forEach(element => 
+					{
+						if(element != ID)
+						{
+							keysToRemove.push(element);
+						}
+					});
+					
+					keysToRemove.forEach(element =>
+					{
+						weekContent.empHours[element] = undefined;
+					});
+					
 					for(let dayLength = 0; dayLength < weekContent.days.length; ++weekLength) 
 					{
 						let dayContent = weekContent[dayLength].days[dayLength];
 						let tempDeleteStack = [];
+						let keysToRemove = [];
+					
+						weekContent.empHours.forEach(element => 
+						{
+							if(element != ID)
+							{
+								keysToRemove.push(element);
+							}
+						});
+						
+						keysToRemove.forEach(element =>
+						{
+							weekContent.empHours[element] = undefined;
+						});
 						
 						for(let itemLength = 0; itemLength < dayContent.absencesdates.length; ++itemLength) 
 						{
@@ -3004,6 +3038,8 @@
 								yearContent.missions--;
 								tempDeleteStack.push(empdaily);
 							}
+							
+							let tempDeleteStack = [];
 						}
 						
 						deleteElement(tempDeleteStack,dayContent.missionsdates);
@@ -3085,11 +3121,43 @@
 							}
 						}
 						
-						deleteElement(tempDeleteStack,dayContent.retardsCriticaldates);
+						deleteElementMinusRepertory(tempDeleteStack,dayContent.retardsCriticaldates);
 						tempDeleteStack = [];
+						
+						tempDeleteStack = (findElementsNotEquivalentToValueIntoDic(ID,empdaily,"empHours");
+						deleteKeysElementsIntoDic(tempDeleteStack,empdaily),empdaily.empHours);
+						
+						tempDeleteStack = (findElementsNotEquivalentToValueIntoDic(ID,empdaily,"empDicofAbsences");
+						deleteKeysElementsIntoDic(tempDeleteStack,empdaily.empDicofAbsences.absences);
+						
+						tempDeleteStack = (findElementsNotEquivalentToValueIntoDic(ID,empdaily,"empDicofMissions"),empdaily);
+						deleteKeysElementsIntoDic(tempDeleteStack,empdaily.empDicofMissions);
+						
+						tempDeleteStack = (findElementsNotEquivalentToValueIntoDic(ID,empdaily,"empDicofPresences"),empdaily);
+						deleteKeysElementsIntoDic(tempDeleteStack,empdaily.empDicofPresences);
+						
+						tempDeleteStack = (findElementsNotEquivalentToValueIntoDic(ID,empdaily,"empDicofSicknesses"),empdaily);
+						deleteKeysElementsIntoDic(tempDeleteStack,empdaily.empDicofSicknesses);
+						
+						tempDeleteStack = (findElementsNotEquivalentToValueIntoDic(ID,empdaily,"empDicofCritical"),empdaily);
+						deleteKeysElementsIntoDic(tempDeleteStack,empdaily.empDicofCritical);	
+						
+						tempDeleteStack = (findElementsNotEquivalentToValueIntoDic(ID,empdaily,"empDicofRetards"),empdaily);
+						deleteKeysElementsIntoDic(tempDeleteStack,empdaily.empDicofRetards);
+						
+						tempDeleteStack = (findElementsNotEquivalentToValueIntoDic(ID,empdaily,"empDicofVacances"),empdaily);
+						deleteKeysElementsIntoDic(tempDeleteStack,empdaily.empDicofVacances);	
+						
+						tempDeleteStack = [];
+						
 					}
-				}
+					
+					deleteKeysElementsIntoDic((findElementsNotEquivalentToValueIntoDic(ID,monthContent,"empHours"),monthContent),monthContent.empHours);
+						
+				}	
 			}
+			deleteKeysElementsIntoDic((findElementsNotEquivalentToValueIntoDic(ID,yearContent,"empHours"),yearContent),yearContent.empHours);
+				
 		}
 	}
 	
@@ -3108,10 +3176,57 @@
 			}
 
 			if(tempJIndex != -1)
-				array.splice(tempJIndex,1);
+			{
+				arrayContainer.splice(tempJIndex,1);
+			}
 		}
 	}
+	
+	function deleteElementMinusRepertory (elements,arrayContainer,repertory) 
+	{
+		for(let i = 0; i < elements.length;++i )
+		{
+			let tempJIndex = -1;
+			for(let j = 0; j < arrayContainer.length;++j)
+			{
+				if(elements[i].ID == arrayContainer[j].ID)
+				{
+					tempJIndex = j;
+					break;
+				}
+			}
 
+			if(tempJIndex != -1)
+			{
+				arrayContainer[repertory]--;
+				arrayContainer.splice(tempJIndex,1);
+			}
+		}
+	}
+	
+	function deleteKeysElementsIntoDic(keysElements,dicContainer) 
+	{
+		keysElements.forEach(
+		element=>
+		{
+			diContainer[element] = undefined;
+		});
+	}
+	
+	function findElementsNotEquivalentToValueIntoDic(keyName,dicContainer,repertory)
+	{
+		let returnKeys = [];
+		
+		dicContainer[repertory].keys.forEach((key_element)=>
+		{
+			if(key_element != keyName)
+			{
+				returnkeys.push(key_element);
+			}
+		});
+		
+		return returnKeys;
+	}
 	function getLocation(content,locationID)
 	{
 		if(content != undefined)
