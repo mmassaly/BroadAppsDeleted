@@ -1,7 +1,7 @@
 	var http = require("http");
 	var url = require("url");
 	var postgres = require('pg');
-	import { sql } from '@vercel/postgres';
+	var sqlModule = require('@vercel/postgres');
 	var formidable = require('formidable');
 	var fs = require('fs');
 	var vercelBlob = require("@vercel/blob");
@@ -1064,7 +1064,7 @@
 		//console.log(postgresConnection);
 		return new Promise ((resolve,reject) => 
 		{
-			resolve(sql);	
+			resolve(sqlModule.sql);	
 		});
 	}
 
