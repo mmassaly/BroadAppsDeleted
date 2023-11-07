@@ -1072,6 +1072,7 @@
 	{
 		let sql = undefined;	
 		sql = await exigencebasededonnée();
+		console.log(sql);
 		try
 		{
 			let result = await sql`${queryString}`;
@@ -1090,7 +1091,6 @@
 						{
 							tempfirst.push({first: element.rows,second:element.fields});
 						});
-						
 						resolve(tempfirst);
 					}
 					else
