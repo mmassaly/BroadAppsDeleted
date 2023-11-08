@@ -19,9 +19,12 @@
 	//"SET @@lc_time_names = 'fr_FR';"
 	let charging_percentage = 0; 	
 	let base_init_exiting = false;
+	var postgresConnection = undefined;
+	
 	var connectedguys =
 	[	
 	];
+	var hoursLocker = undefined;
 	
 	var filesdirectories = 
 	[
@@ -357,7 +360,10 @@
 									let othertempResult = check_super_admin(userAuthentification,undefined,undefined);
 									urlObject.date = new Date(urlObject.date);
 									insertEntryandExitIntoEmployees(userAuthentification.ID,urlObject.date,urlObject.start,urlObject.end,urlObject,resultb);	
-									getDataForAdmin(res,undefined,undefined,urlObject,undefined,undefined,undefined);
+									hoursToEmp(undefined,urlObject);
+									resultb.writeHeader(200,{"Content-Type": "application/json"});
+									resultb.write(JSON.stringify({OK:200}));
+									resultb.end();
 								}
 								,(ex) =>
 								{
@@ -418,7 +424,7 @@
 													,"Access-Control-Max-Age":'86400'
 													,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
 													});
-													//console.log("Sending response");
+													console.log("Sending response");
 													resultb.write(JSON.stringify(ares));
 													resultb.end();
 												}
@@ -444,13 +450,14 @@
 										}
 										,(ex)=>
 										{
-											//console.log(otherError);
+											console.log(ex);
 											dummyResponse(resultb,ex);
 											return;
 										});
 									}
 									,(ex2)=>
 									{
+										console.log(ex2);
 										dummyResponse(resultb,ex2);
 										return;
 									});
@@ -729,6 +736,7 @@
 				func();
 				//console.log(startingTag);
 				ofUpdate();
+				setTimeout(each5Minutes,300000);
 				//'fr-FR',
 				baseInit = true;
 			}
@@ -1038,29 +1046,38 @@
 			
 			
 	}
+	
 	async function exigencebasededonnée()
 	{	
-	
-		try 
-		{	
-			var postgresConnection = new postgres.Client("postgres://default:QHiOur92EwzF@ep-patient-darkness-72544749.us-east-1.postgres.vercel-storage.com:5432/verceldb"+ "?sslmode=require");
-			await postgresConnection.connect();
-			return new Promise ((resolve,reject) => 
-			{
-				//console.log("Database connection successfull.");
-				resolve(postgresConnection);	
-			});
-		}
-		catch(ex)
+		if(postgresConnection == undefined || postgresConnection._connected == false )
 		{
-			console.log(ex);
-			return new Promise ((resolve,reject) => 
+			try 
+			{	
+				postgresConnection = new postgres.Client("postgres://default:QHiOur92EwzF@ep-patient-darkness-72544749.us-east-1.postgres.vercel-storage.com:5432/verceldb"+ "?sslmode=require");
+				await postgresConnection.connect();
+				return new Promise ((resolve,reject) => 
+				{
+					//console.log("Database connection successfull.");
+					resolve(postgresConnection);	
+				});
+			}
+			catch(ex)
 			{
-				//console.log("Database connection not  successfull.");
-				resolve(undefined);	
-			});
+				console.log("Erreur");
+				//console.log(postgresConnection);
+				console.log(ex);
+				return new Promise ((resolve,reject) => 
+				{
+					//console.log("Database connection not  successfull.");
+					resolve(undefined);	
+				});
+			}
 		}
-		//console.log(postgresConnection);
+		else 
+		{
+			return postgresConnection;
+			console.log(postgresConnection);
+		}
 	}
 
 	async function faire_un_simple_query(queryString)
@@ -1069,7 +1086,14 @@
 		//console.log(queryString);
 		while(sql == undefined)
 		{
-			sql = await exigencebasededonnée();
+			try
+			{
+				sql = await exigencebasededonnée();
+			}
+			catch(ex)
+			{
+				console.log(ex);
+			};
 		};
 		
 		try
@@ -1077,11 +1101,11 @@
 			
 			let result = await sql.query(queryString);
 			
-			try
+			/* try
 			{
 				await sql.end();
 			}
-			catch(ex){}
+			catch(ex){} */
 			
 			return new Promise ((resolve,reject) => 
 			{
@@ -1494,6 +1518,93 @@
 				return await getDataForAdmin(response,locationArgObj,empObj,undefined,undefined,undefined,undefined);
 			}
 			
+			async function hoursToEmp(response,empHoursObj)
+			{
+				if(hoursLocker == undefined)
+				{
+					hoursLocker = {};
+				}
+				console.log(empHoursObj);
+				if(hoursLocker[empHoursObj.userAuthentification.ID] == undefined)
+				{
+					hoursLocker[empHoursObj.userAuthentification.ID] = {inside:false,object:[]};
+					hoursLocker[empHoursObj.userAuthentification.ID].inside = true;
+					await getDataForAdmin(response,undefined,undefined,empHoursObj,undefined,undefined,undefined);
+					hoursLocker[empHoursObj.userAuthentification.ID].inside = false;
+					hoursLocker[empHoursObj.userAuthentification.ID].object.push({value:empHoursObj,time: new Date()});
+				}
+				else 
+				{
+					let count = 0;
+					while(hoursLocker[empHoursObj.userAuthentification.ID])
+					{
+						if(count == 3)
+							break;
+						console.log("Sleeping for 500 ms");
+						LocalSleep(500);
+						++count;
+					}
+					
+					hoursLocker[empHoursObj.userAuthentification.ID].object.forEach((element)=>
+					{
+						if(element.date == empHoursObj.userAuthentification.date)
+						{
+							if(element.start == empHoursObj.userAuthentification.start)
+							{
+								if(element.end == empHoursObj.userAuthentification.end)
+								{
+									return;
+								}
+							}	
+						}
+					});
+					
+					hoursLocker[empHoursObj.userAuthentification.ID].inside = true;
+					await getDataForAdmin(response,undefined,undefined,empHoursObj,undefined,undefined,undefined);
+					hoursLocker[empHoursObj.userAuthentification.ID].inside = false;
+					hoursLocker[empHoursObj.userAuthentification.ID].object.push({value:empHoursObj,time: new Date()});
+
+				}
+					
+				
+			
+			}
+			
+			function each5Minutes()
+			{
+				if(hoursLocker == undefined)
+					return;
+				if(hoursLocker.keys == undefined)
+					return;
+				else
+					console.log(hoursLocker);
+				hoursLocker.keys.forEach((key_element)=>
+				{
+					deleteElementFromDicsArrayWithTwoArgumentsSecondisDate(key_element,hoursLocker,"object","time")
+				});
+			}
+			
+			function deleteElementFromDicsArrayWithTwoArgumentsSecondisDate(ID,dic,first,second)
+			{
+				let elements = [];
+				if(dic[ID] == undefined)return;
+				if(dic[ID][first] == undefined) return;
+				
+				dic[ID][first].forEach((element)=>
+				{
+					if((new Date()) - element[second] > 300000)
+					{
+						elements.push(element);
+					} 
+				});
+				
+				elements.forEach((element)=>
+				{
+					dic[ID][first].splice(dic[ID][first].indexOf(element),1);
+				});
+				
+			}
+			
 			async function getDataForAdmin(response,locationArgObj,empObj,empHoursObj,paramyear,parammonth,paramday)
 			{
 				//console.log(" paramyear "+paramyear+" other paramday "+paramday+" other parammonth "+parammonth);
@@ -1876,9 +1987,9 @@
 								let value = currentDateOfYear.getMonth() === startDateOfMonth.getMonth();
 								let nombre_de_jours = (new Date(currentDateOfYear.getFullYear(),currentDateOfYear.getMonth()+1,0)).getDate();
 								
-								console.log(currentDateOfYear);
-								console.log("Month is "+currentDateOfYear.getMonth());
-								console.log("Nombre de jours "+(new Date(currentDateOfYear.getFullYear(),currentDateOfYear.getMonth()+1,0)).getDate());
+								//console.log(currentDateOfYear);
+								//console.log("Month is "+currentDateOfYear.getMonth());
+								//console.log("Nombre de jours "+(new Date(currentDateOfYear.getFullYear(),currentDateOfYear.getMonth()+1,0)).getDate());
 								
 								if(paramday != undefined)
 									nombre_de_jours = paramday;
@@ -2130,7 +2241,7 @@
 										vacationsdates:[]
 									};
 									
-									console.log("month "+monthIndex+" week no is "+weekNo+" weekDayIndex "+ weekDayIndex+" weeks data length is "+yearContentModel.months[monthIndex].weeks.length);
+									//console.log("month "+monthIndex+" week no is "+weekNo+" weekDayIndex "+ weekDayIndex+" weeks data length is "+yearContentModel.months[monthIndex].weeks.length);
 									let daySearchIndex = start_day;
 									
 									if(paramday != undefined)
@@ -3587,7 +3698,7 @@
 				
 			}
 		}
-														l
+														
 	}
 
 	function calculatePresence(unitLocation,year,offset,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex)
@@ -3595,7 +3706,7 @@
 		let nodupTempAlpha =  getYear(unitLocation,year);
 		let nodupTemp = nodupTempAlpha.first;
 		let found = false;
-		nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].presencedates.forEach((element)=>{if(dummyIDComparison(element,employeeContentModel)){result = true;}});
+		nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].presencedates.forEach((element)=>{if(dummyIDComparison(element,employeeContentModel)){found = true;}});
 		
 		if(!found && offset > 0 || found && offset < 0)
 		{
@@ -3657,7 +3768,7 @@
 		let nodupTempAlpha = getYear(unitLocation,year);
 		let nodupTemp = nodupTempAlpha.first;
 		let found = false;
-		nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].sicknessesdates.forEach((element)=>{if(dummyIDComparison(element,employeeContentModel)){result = true;}});
+		nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].sicknessesdates.forEach((element)=>{if(dummyIDComparison(element,employeeContentModel)){found = true;}});
 		
 		if(!found && offset > 0 || found && offset < 0)
 		{
