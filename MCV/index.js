@@ -19,7 +19,6 @@
 	//"SET @@lc_time_names = 'fr_FR';"
 	let charging_percentage = 0; 	
 	let base_init_exiting = false;
-	var postgresConnection = undefined;
 	
 	var connectedguys =
 	[	
@@ -1049,34 +1048,26 @@
 	
 	async function exigencebasededonnée()
 	{	
-		if(postgresConnection == undefined || postgresConnection._connected == false )
-		{
-			try 
-			{	
-				postgresConnection = new postgres.Client("postgres://default:QHiOur92EwzF@ep-patient-darkness-72544749.us-east-1.postgres.vercel-storage.com:5432/verceldb"+ "?sslmode=require");
-				await postgresConnection.connect();
-				return new Promise ((resolve,reject) => 
-				{
-					//console.log("Database connection successfull.");
-					resolve(postgresConnection);	
-				});
-			}
-			catch(ex)
+		try 
+		{	
+			let postgresConnection = new postgres.Client("postgres://default:QHiOur92EwzF@ep-patient-darkness-72544749.us-east-1.postgres.vercel-storage.com:5432/verceldb"+ "?sslmode=require");
+			await postgresConnection.connect();
+			return new Promise ((resolve,reject) => 
 			{
-				console.log("Erreur");
-				//console.log(postgresConnection);
-				console.log(ex);
-				return new Promise ((resolve,reject) => 
-				{
-					//console.log("Database connection not  successfull.");
-					resolve(undefined);	
-				});
-			}
+				//console.log("Database connection successfull.");
+				resolve(postgresConnection);	
+			});
 		}
-		else 
+		catch(ex)
 		{
-			return postgresConnection;
-			console.log(postgresConnection);
+			console.log("Erreur");
+			//console.log(postgresConnection);
+			console.log(ex);
+			return new Promise ((resolve,reject) => 
+			{
+				//console.log("Database connection not  successfull.");
+				resolve(undefined);	
+			});
 		}
 	}
 
@@ -1101,11 +1092,11 @@
 			
 			let result = await sql.query(queryString);
 			
-			/* try
+			try
 			{
 				await sql.end();
 			}
-			catch(ex){} */
+			catch(ex){}
 			
 			return new Promise ((resolve,reject) => 
 			{
@@ -1527,6 +1518,7 @@
 				console.log(empHoursObj);
 				if(hoursLocker[empHoursObj.userAuthentification.ID] == undefined)
 				{
+					console.log("Inside");
 					hoursLocker[empHoursObj.userAuthentification.ID] = {inside:false,object:[]};
 					hoursLocker[empHoursObj.userAuthentification.ID].inside = true;
 					await getDataForAdmin(response,undefined,undefined,empHoursObj,undefined,undefined,undefined);
@@ -1535,6 +1527,7 @@
 				}
 				else 
 				{
+					console.log("element not found yet");
 					let count = 0;
 					while(hoursLocker[empHoursObj.userAuthentification.ID])
 					{
@@ -1553,17 +1546,19 @@
 							{
 								if(element.end == empHoursObj.userAuthentification.end)
 								{
+									console.log("element found");
 									return;
 								}
 							}	
 						}
 					});
 					
+					console.log("Calling getDataForAdmin");
 					hoursLocker[empHoursObj.userAuthentification.ID].inside = true;
 					await getDataForAdmin(response,undefined,undefined,empHoursObj,undefined,undefined,undefined);
 					hoursLocker[empHoursObj.userAuthentification.ID].inside = false;
 					hoursLocker[empHoursObj.userAuthentification.ID].object.push({value:empHoursObj,time: new Date()});
-
+	
 				}
 					
 				
@@ -3452,7 +3447,7 @@
 	{
 		let tempdate = new Date(Date.now());
 		let tempday = Number.parseInt(tempdate.toLocaleString().split("/")[0]);
-		let tempmonth = Number.parseInt(tempdate.toLocaleString().split("/")[1])-1;
+		let tempmonth = Number.parseInt(tempdate.toLocaleString().split("/")[1]);
 		let tempyear = Number.parseInt(tempdate.toLocaleString().split("/")[2]);
 		return [tempday,tempmonth,tempyear];
 	}
