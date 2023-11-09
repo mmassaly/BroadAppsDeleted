@@ -364,6 +364,9 @@
 									resultc.write(JSON.stringify({OK:200}));
 									resultc.end();
 									await hoursToEmp(undefined,urlObject);
+									hoursLocker[empHoursObj.userAuthentification.ID].inside = true;
+									await getDataForAdmin(response,undefined,undefined,empHoursObj,undefined,undefined,undefined);
+									hoursLocker[empHoursObj.userAuthentification.ID].inside = false;
 								}
 								,(ex) =>
 								{
@@ -1523,9 +1526,6 @@
 				{
 					console.log("Inside");
 					hoursLocker[empHoursObj.userAuthentification.ID] = {inside:false,object:[]};
-					hoursLocker[empHoursObj.userAuthentification.ID].inside = true;
-					await getDataForAdmin(response,undefined,undefined,empHoursObj,undefined,undefined,undefined);
-					hoursLocker[empHoursObj.userAuthentification.ID].inside = false;
 					hoursLocker[empHoursObj.userAuthentification.ID].object.push({value:empHoursObj,time: new Date()});
 				}
 				else 
@@ -1557,9 +1557,6 @@
 					});
 					
 					console.log("Calling getDataForAdmin");
-					hoursLocker[empHoursObj.userAuthentification.ID].inside = true;
-					await getDataForAdmin(response,undefined,undefined,empHoursObj,undefined,undefined,undefined);
-					hoursLocker[empHoursObj.userAuthentification.ID].inside = false;
 					hoursLocker[empHoursObj.userAuthentification.ID].object.push({value:empHoursObj,time: new Date()});
 	
 				}
