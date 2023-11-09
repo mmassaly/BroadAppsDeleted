@@ -360,13 +360,15 @@
 									let resultc = resultb;
 									urlObject.date = new Date(urlObject.date);
 									await insertEntryandExitIntoEmployees(userAuthentification.ID,urlObject.date,urlObject.start,urlObject.end,urlObject,resultb)	
-									hoursToEmp(undefined,urlObject);
 									resultc.writeHeader(200,{"Content-Type": "application/json"});
 									resultc.write(JSON.stringify({OK:200}));
 									resultc.end();
+									await hoursToEmp(undefined,urlObject);
+									
 								}
 								,(ex) =>
 								{
+									console.log(ex);
 									dummyResponseSimple(resultb);
 									return;
 								});
