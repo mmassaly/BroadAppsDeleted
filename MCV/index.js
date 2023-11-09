@@ -354,11 +354,11 @@
 
 								//console.log("Trying to authenticate");
 								let resultb = result;
-								forced_authentification_query(userAuthentification,undefined).then(( tempresult )=>
+								forced_authentification_query(userAuthentification,undefined).then(async ( tempresult )=>
 								{
 									let othertempResult = check_super_admin(userAuthentification,undefined,undefined);
 									urlObject.date = new Date(urlObject.date);
-									insertEntryandExitIntoEmployees(userAuthentification.ID,urlObject.date,urlObject.start,urlObject.end,urlObject,resultb);	
+									await insertEntryandExitIntoEmployees(userAuthentification.ID,urlObject.date,urlObject.start,urlObject.end,urlObject,resultb)	
 									hoursToEmp(undefined,urlObject);
 									resultb.writeHeader(200,{"Content-Type": "application/json"});
 									resultb.write(JSON.stringify({OK:200}));
@@ -754,7 +754,7 @@
 	whileFunction("Starting Server....");
 	async function insertEntryandExitIntoEmployees(ID,date,startTime,endTime,empHoursObj,res)
 	{
-			
+		
 		let nomdelaTable = "";
 		let datereversed = date.getFullYear()+"-"+(date.getMonth()+1)+"-"+date.getDate();
 		let query = "Select * from \"manuel des tables d'entrées et de sorties\" where \"manuel des tables d'entrées et de sorties\".Année = '"+date.getFullYear()+"'";
@@ -786,7 +786,7 @@
 
 		//console.log(empHoursObj);
 		
-		if(res == undefined)
+		/*if(res = undefined)
 		{
 			res.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
 								,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
@@ -796,7 +796,7 @@
 			res.write(JSON.stringify("OK"));
 			res.end();
 			console.log("Basic Response");
-		}
+		}*/
 		
 		/* if(result == false)
 		{
