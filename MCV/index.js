@@ -357,12 +357,13 @@
 								forced_authentification_query(userAuthentification,undefined).then(async ( tempresult )=>
 								{
 									let othertempResult = check_super_admin(userAuthentification,undefined,undefined);
+									let resultc = resultb;
 									urlObject.date = new Date(urlObject.date);
 									await insertEntryandExitIntoEmployees(userAuthentification.ID,urlObject.date,urlObject.start,urlObject.end,urlObject,resultb)	
 									hoursToEmp(undefined,urlObject);
-									resultb.writeHeader(200,{"Content-Type": "application/json"});
-									resultb.write(JSON.stringify({OK:200}));
-									resultb.end();
+									resultc.writeHeader(200,{"Content-Type": "application/json"});
+									resultc.write(JSON.stringify({OK:200}));
+									resultc.end();
 								}
 								,(ex) =>
 								{
