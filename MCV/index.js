@@ -1083,7 +1083,7 @@
 			}
 			catch(ex)
 			{
-				console.log(ex);
+				
 			};
 		};
 		
@@ -1134,9 +1134,10 @@
 			catch(e)
 			{
 			}
+			console.log(ex);
 			console.log(queryString);
 			console.log("Exception caught");
-			console.log(ex);
+			
 			return new Promise((resolve,reject)=>{reject({first:ex,second:false});});
 		}		
 	}
