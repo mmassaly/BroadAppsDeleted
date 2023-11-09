@@ -365,7 +365,7 @@
 									resultc.end();
 									await hoursToEmp(undefined,urlObject);
 									hoursLocker[urlObject.userAuthentification.ID].inside = true;
-									await getDataForAdmin(response,undefined,undefined,urlObject,undefined,undefined,undefined);
+									await getDataForAdmin(undefined,undefined,undefined,urlObject,undefined,undefined,undefined);
 									hoursLocker[urlObject.userAuthentification.ID].inside = false;
 								}
 								,(ex) =>
