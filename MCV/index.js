@@ -364,7 +364,6 @@
 									resultc.write(JSON.stringify({OK:200}));
 									resultc.end();
 									await hoursToEmp(undefined,urlObject);
-									
 								}
 								,(ex) =>
 								{
