@@ -5,7 +5,9 @@
 	var fs = require('fs');
 	var vercelBlob = require("@vercel/blob");
 	var {GlobalsForcedFolding} = require('./Extra.js');	
+	var {ImageFilesContainer} = require('./queryTests.js');
 	let globalForcedFoldingPrime = undefined;
+	let imageDictionary = new ImageFilesContainer();
 	let connection = undefined;
 	let precedentDate = new Date(Date.now());
 	let todaysDate = new Date(Date.now());
@@ -142,6 +144,7 @@
 			//console.log("Inside request method "+req.method);
 			//console.log(req.url);
 			//console.log(req.method);
+			//console.log(url.parse(req.url));
 			callIndex++;
 			//console.log("Call index is "+callIndex);
 			var imageType = "";
@@ -155,7 +158,9 @@
 			if(req.url.endsWith(".jpeg") ||req.url.endsWith(".png") || req.url.endsWith(".jpg") || req.url.endsWith(".ico"))
 			{
 				var imageUrlReprocessed = req.url.substring(1,req.url.length).replaceAll("%20"," ");
-				//console.log("You bot are making an image request processed to be "+imageUrlReprocessed);
+				imageUrlReprocessed = decodeURI(imageUrlReprocessed);
+				console.log("You bot are making an image request processed to be "+imageUrlReprocessed);
+				
 				fs.exists(imageUrlReprocessed,async function(exists)
 				{
 					//console.log("exists = "+exists);
@@ -180,18 +185,32 @@
 					{
 						try
 						{
-							const blob = await vercelBlob.head(req.url,{
+							/*const blob = await vercelBlob.head(req.url,{
 								token: "vercel_blob_rw_70gXoZ4JnkgIVATX_LItRzZnyiVF2IfjUxYT3srgV7mUcTn"
 							});
 							//console.log(blob);
 							res.writeHeader(200,{"Content-Type":blob.contentType});
-							res.write(blob);
+							res.write(blob);*/
+							imageDictionary.findUrlBufferValue("http://msa-pointage-server.vercel.app/"+imageUrlReprocessed).then((result)=>{
+								res.writeHeader(200,{"Content-Type":"image/"+imageType});
+								console.log(result);
+								res.write(result);
+								res.end();
+							}
+							,(err)=>
+							{
+								res.writeHeader(200,{"Content-Type":"image/"+imageType});
+								console.log(err);
+								res.write(err);
+								res.end();
+							});
 						}
 						catch(ex)
 						{
-							//console.log(ex);
+							console.log(ex);
+							res.end();
 						}
-						res.end();
+						
 						//console.log("Image file does not exist.");
 					}
 				});
@@ -863,6 +882,7 @@
 					let querySQL = "";
 					let doubleQuerySQL = "";
 					let thirdQuerySQL = "";
+					let url_query = "";
 					let yearParam = undefined;
 					let monthParam = undefined;
 					let dayParam = undefined;
@@ -892,12 +912,24 @@
 						if(filesDup != undefined && filesDup.imgfile != undefined || ( filesDup.originalFilename != undefined))
 						{
 								//console.log(fs.readFileSync(filesDup.filepath));
-								const blob = await vercelBlob.put("assets/images/"+filesDup.originalFilename,fs.readFileSync(filesDup.filepath),{
-									access: 'public',
-									contentType: filesDup.mimetype,
-									token: process.env.BLOB_READ_WRITE_TOKEN
-								});
-								image_url = blob.url;
+								try
+								{
+									url_query = "insert into blobsholder (Url, bytesvalue) values ('http://msa-pointage-server.vercel.app/";
+									url_query += filesDup.originalFilename+"','";
+									url_query += "\\x"+ fs.readFileSync(filesDup.filepath) +"');";
+									image_url = "http://msa-pointage-server.vercel.app/"+filesDup.originalFilename;
+									
+									const blob = await vercelBlob.put("assets/images/"+filesDup.originalFilename,fs.readFileSync(filesDup.filepath),{
+										access: 'public',
+										contentType: filesDup.mimetype,
+										token: process.env.BLOB_READ_WRITE_TOKEN
+									});
+									image_url = blob.url;
+								}
+								catch(ex)
+								{
+									
+								}
 						}
 						if(dealingWithArray)
 						{
@@ -986,7 +1018,7 @@
 
 								if(commandArg === "employees" || (dealingWithArray && commandArg[0] === "employees"))
 								{
-									let bresult = await faire_un_simple_query(doubleQuerySQL);
+									let bresult = await faire_un_simple_query(doubleQuerySQL+url_query);
 									if(bresult.second != false || bresult.second instanceof Array)
 									{
 										let cresult = await faire_un_simple_query(thirdQuerySQL);

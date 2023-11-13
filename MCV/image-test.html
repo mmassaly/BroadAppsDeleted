@@ -1,0 +1,25 @@
+<!DOCTYPE HTML>
+<head>
+<title>
+	Vue sur Image
+</title>
+<meta lang ="fr_FR">
+</head>
+<body>
+<img src = "http://localhost:3034/Mamadou Massaly PF1.jpg" width ="300px" height="300px">
+<script>
+var func = async function()
+{
+	let fetchObject = await fetch( "http://localhost:3034/Mamadou Massaly PF1.jpg",
+	{
+		method: "GET",
+		headers: {"Content-Type":"image/jpg"}
+	});
+	console.log("..............")
+	console.log(fetchObject);
+};
+//func();
+</script>
+</body>
+<footer>
+</footer>
