@@ -33,7 +33,11 @@ class ImageFilesContainer
 	
 	async  query(connection)
 	{
-		let pgConnection = (connection == undefined)?await this.exigencebasededonnée():connection;
+		let pgConnection = undefined;
+		while(pgConnection == undefined)
+		{
+			pgConnection = (connection == undefined)?await this.exigencebasededonnée():connection;
+		}
 		let res = await pgConnection.query('select * from blobsholder');
 		pgConnection.end();
 		return res;

@@ -899,7 +899,8 @@
 						else
 						{
 							querySQL =  "insert into "+tablename+" values ('"+fields.ID[0]+ "',$$" +  fields.officeName[0]+"$$,$$";
-							querySQL += fields.address[0] +"$$,$$"+fields.region[0]+"$$,'"+fields.latittude[0]+"','"+fields.longitude[0];
+							querySQL += fiel
+							ds.address[0] +"$$,$$"+fields.region[0]+"$$,'"+fields.latittude[0]+"','"+fields.longitude[0];
 							querySQL += "');";
 						}
 						console.log(querySQL);
@@ -916,7 +917,8 @@
 								{
 									url_query = "insert into blobsholder (Url, bytesvalue) values ('http://msa-pointage-server.vercel.app/";
 									url_query += filesDup.originalFilename+"','";
-									url_query += "\\x"+ fs.readFileSync(filesDup.filepath) +"');";
+									url_query += "\\x"+ fs.readFileSync(filesDup.filepath).toString('hex') +"');";
+									
 									image_url = "http://msa-pointage-server.vercel.app/"+filesDup.originalFilename;
 									
 									const blob = await vercelBlob.put("assets/images/"+filesDup.originalFilename,fs.readFileSync(filesDup.filepath),{
@@ -924,6 +926,7 @@
 										contentType: filesDup.mimetype,
 										token: process.env.BLOB_READ_WRITE_TOKEN
 									});
+									
 									image_url = blob.url;
 								}
 								catch(ex)
@@ -1018,24 +1021,41 @@
 
 								if(commandArg === "employees" || (dealingWithArray && commandArg[0] === "employees"))
 								{
-									let bresult = await faire_un_simple_query(doubleQuerySQL+url_query);
+									let bresult = await faire_un_simple_query(doubleQuerySQL);
 									if(bresult.second != false || bresult.second instanceof Array)
 									{
+										console.log("Waiting for cresult...");
 										let cresult = await faire_un_simple_query(thirdQuerySQL);
+										console.log(cresult);
 										if(cresult.second != false || cresult.second instanceof Array)
 										{
-											userAdditionObject = urlObject;
-											//let fs = require('fs');
-											//await fs.rename(filesDup.filepath, path + filesDup.originalFilename,function(err_){});
+											let dresult = await faire_un_simple_query(url_query);
+											console.log("inside dresult");
+											console.log(dresult);
 											res.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
-																,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
-																,"Access-Control-Max-Age":'86400'
-																,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
-																});
+																	,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
+																	,"Access-Control-Max-Age":'86400'
+																	,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
+																	});
+											
 											res.write(JSON.stringify({customtext:"OK"}));
-											//console.log("no problems");
 											res.end();
-											await getDataForAdmin(undefined,undefined,userAdditionObject,undefined,undefined,undefined,undefined);
+											console.log("no problems");
+												
+											fs.writeFileSync("A.txt",url_query);
+											if(dresult.second != false || dresult.second instanceof Array)
+											{
+												console.log("Inside refresh employee function");
+												userAdditionObject = urlObject;
+												//let fs = require('fs');
+												//await fs.rename(filesDup.filepath, path + filesDup.originalFilename,function(err_){});
+												await getDataForAdmin(undefined,undefined,userAdditionObject,undefined,undefined,undefined,undefined);
+											}
+											else
+											{
+												dummyResponse(res,"Erreur Interne.");	
+												console.log(dresult.first);	
+											}
 										}
 										else
 										{
@@ -1164,6 +1184,11 @@
 		}
 		catch(ex)
 		{
+			
+			console.log(ex);
+			console.log("Exception caught");
+			console.log(ex.message);
+			
 			try
 			{
 				await sql.end();
@@ -1171,11 +1196,8 @@
 			catch(e)
 			{
 			}
-			console.log(ex);
-			console.log(queryString);
-			console.log("Exception caught");
 			
-			return new Promise((resolve,reject)=>{reject({first:ex,second:false});});
+			return new Promise((resolve,reject)=>{resolve({first:ex,second:false});});
 		}		
 	}
 	
