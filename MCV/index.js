@@ -1167,7 +1167,7 @@
 							
 							if(element.command == 'SELECT')
 							{
-								console.log(element);
+								//console.log(element);
 								tempfirst.push({first: element.rows,second:element.fields});	
 							}
 								
