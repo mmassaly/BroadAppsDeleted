@@ -214,6 +214,7 @@
 						catch(ex)
 						{
 							console.log(ex);
+							res.writeHeader(200,{"Content-Type":"image/"+imageType});
 							res.end();
 						}
 						
