@@ -406,8 +406,10 @@
 								
 								forced_authentification_query_login(urlObject.userAuthentification,result).then((ares)=>
 								{
+										let resultc = resultb;
 										check_super_admin(urlObject.userAuthentification,undefined,undefined).then((othertempResult)=>
 										{
+											let resultd = resultc;
 												if(ares.first == true || ares.second == true || ares.third == true)
 												{
 													console.log("Inside setting");
@@ -448,33 +450,33 @@
 												
 												if(ares.first)
 												{
-													resultb.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+													resultd.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
 													,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
 													,"Access-Control-Max-Age":'86400'
 													,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
 													});
 													console.log("Sending response");
-													resultb.write(JSON.stringify(ares));
-													resultb.end();
+													resultd.write(JSON.stringify(ares));
+													resultd.end();
 												}
 												else if(ares.second || ares.third || ares.fourth)
 												{
 													
-													resultb.writeHead(200,{"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+													resultd.writeHead(200,{"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
 													,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
 													,"Access-Control-Max-Age":'86400'
 													,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
 													});
 
-													resultb.write(JSON.stringify(ares));
-													resultb.end();
+													resultd.write(JSON.stringify(ares));
+													resultd.end();
 													
 												}
 												else
 												{
 													console.log("Other results problems");
 													console.log(ares);
-													dummyResponse(resultb,"No type of user found.");
+													dummyResponse(resultd,"No type of user found.");
 												}
 
 											
@@ -482,7 +484,7 @@
 										,(ex)=>
 										{
 											console.log(ex);
-											dummyResponse(resultb,ex);
+											dummyResponse(resultc,ex);
 											return;
 										});
 									}
