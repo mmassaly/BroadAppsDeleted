@@ -30,7 +30,7 @@ class ImageFilesContainer
 		return res;
 	}
 	
-	async  query(connection)
+	async query(connection)
 	{
 		let pgConnection = undefined;
 		while(pgConnection == undefined)

@@ -1122,7 +1122,86 @@
 			});
 		}
 	}
-
+	
+	async function faire_un_simple_query_filter_not_select(queryString)
+	{
+		let sql = undefined;	
+		//console.log(queryString);
+		while(sql == undefined)
+		{
+			try
+			{
+				sql = await exigencebasededonnée();
+			}
+			catch(ex)
+			{
+				
+			};
+		};
+		
+		try
+		{
+			
+			let result = await sql.query(queryString);
+			
+			try
+			{
+				await sql.end();
+			}
+			catch(ex){}
+			
+			return new Promise ((resolve,reject) => 
+			{
+						
+				if(result == undefined)
+				{
+					reject({first:result,second:false});
+				}
+				else
+				{
+					if(result.rows == undefined)
+					{
+						let tempfirst = [];
+						result.forEach((element)=>
+						{
+							
+							if(element.command == 'SELECT')
+							{
+								console.log(element);
+								tempfirst.push({first: element.rows,second:element.fields});	
+							}
+								
+						});
+						
+						resolve(tempfirst);
+					}
+					else
+					{
+						resolve({first:result.rows,second:result.fields});
+					}
+				}
+						
+			});
+		}
+		catch(ex)
+		{
+			
+			console.log(ex);
+			console.log("Exception caught");
+			console.log(ex.message);
+			
+			try
+			{
+				await sql.end();
+			}
+			catch(e)
+			{
+			}
+			
+			return new Promise((resolve,reject)=>{resolve({first:ex,second:false});});
+		}
+	}
+	
 	async function faire_un_simple_query(queryString)
 	{
 		let sql = undefined;	
@@ -1669,6 +1748,8 @@
 				try
 				{
 					let totalQuery = "";
+					let param_year_month_day = (paramday != undefined && parammonth != undefined && paramyear != undefined)?paramyear+"-"+parammonth+"-"+paramday : undefined;
+							
 					let query = "Select * from \"location du bureau\" ORDER BY Id;";
 
 					if(locationArgObj != undefined)
@@ -1681,6 +1762,105 @@
 						query = "Select * from \"location du bureau\" where \"location du bureau\".ID = "+empObj.officeID+" ORDER BY Id;";
 					}
 					
+					if( !(paramyear === undefined  )) 
+					{
+						query += "Select * from \"manuel des tables d'entrées et de sorties\" where Année = "+paramyear+";\n";
+					}																																		
+					else if (empHoursObj != undefined)
+					{
+						query += "Select * from \"manuel des tables d'entrées et de sorties\" where Année = "+empHoursObj.date.getFullYear()+";\n";
+					}
+					else
+					{
+						query += "Select * from \"manuel des tables d'entrées et de sorties\";\n";
+					}
+					
+					query += "Select * from individu inner join appartenance";
+					query += " ON appartenance.IDIndividu =  individu.ID";
+					query += " inner join \"location du bureau\" ON  appartenance.IDBureau =";
+					query += " \"location du bureau\".ID ";
+					query += (empObj != undefined)?" AND individu.ID = '"+empObj.ID+"';":((empHoursObj != undefined)?" AND individu.ID = '"+empHoursObj.userAuthentification.ID+"';":";");
+												
+					query += "create or replace function c(value text) returns\n"
+					+"TABLE(IDIndividu varchar(255),Date Date,Absence BOOLEAN,Maladie BOOLEAN,Mission BOOLEAN,Congès BOOLEAN) AS\n"
+					+"$$\nBEGIN\n"
+					+"	RETURN QUERY EXECUTE format('Select * FROM %I as A ";
+					query += ((param_year_month_day != undefined)?(" WHERE A.Date ='"+param_year_month_day+"'"):(empObj != undefined)?" WHERE Idindividu = '"+empObj.ID+"'":(empHoursObj != undefined)? " WHERE IdIndividu = '"+empHoursObj.userAuthentification.ID+"' AND A.Date ='"+empHoursObj.date.getFullYear()+"-"+(empHoursObj.date.getMonth()+1)+"-"+empHoursObj.date.getDate()+"'":"")+" ORDER BY A.Date ASC;',$1);\n"
+					query += "END;\n"
+					+"$$\n"
+					+"LANGUAGE PLPGSQL;\n"
+					+"\ncreate or replace function d() returns\n"
+					+"TABLE(IDIndividu varchar(255),Date Date,Absence BOOLEAN,Maladie BOOLEAN,Mission BOOLEAN,Congès BOOLEAN) AS\n"
+					+"$$"
+					+"\nDECLARE\n"
+					+"rows RECORD;\n"
+					+"\nBEGIN\n"
+					+"FOR rows IN (Select *  from \"manuel des tables d'entrées et de sorties\")\n"
+					+"LOOP\n"
+					+"RETURN QUERY SELECT * FROM c(rows.\"Etat de l'individu\");\n"
+					+"END LOOP;\n"
+					+"END;\n"
+					+"$$\n"
+					+"LANGUAGE PLPGSQL;\n";
+
+					let querybeta = "create or replace function a(value text) returns\n"
+					+"TABLE(CaseOne integer,CaseTwo integer,MinEntrées Time,Date date,Idindividu varchar(255)) AS\n"
+					+"$$\nBEGIN\n"
+					+"	RETURN QUERY EXECUTE format('Select Case WHEN MIN(Entrées) >= %L then 1 " 
+					+"WHEN MIN(Entrées) < %L then 0 END as CaseOne,"
+					+"Case WHEN MIN(Entrées) > %L then 1 "
+					+"WHEN MIN(Entrées) <= %L then 0 END as CaseTwo,"
+					+"MIN(Entrées), Date ,Idindividu FROM %I";
+					querybeta += (param_year_month_day != undefined)?" WHERE Date ='"+param_year_month_day+"'":(empHoursObj== undefined)? ((empObj != undefined)?" WHERE Idindividu = '"+empObj.ID+"'":""):" WHERE Idindividu = '"+empHoursObj.userAuthentification.ID+"' AND Date ='"+empHoursObj.date.getFullYear()+"-"+(empHoursObj.date.getMonth()+1)+"-"+empHoursObj.date.getDate()+"'";
+					querybeta +=" GROUP BY Date, Idindividu ORDER BY Date ASC;"+"','10:00:00','10:00:00','8:30:00','8:30:00',$1);\n"
+					+"END;\n"
+					+"$$\n"
+					+"LANGUAGE PLPGSQL;\n"
+					+"create or replace function b() returns\n"
+					+"TABLE(CaseOne integer,CaseTwo integer,MinEntrées Time,Date date,Idindividu varchar(255)) AS\n"
+					+"$$"
+					+"\nDECLARE\n"
+					+"rows RECORD;\n"
+					+"\nBEGIN\n"
+					+"FOR rows IN (Select Nom from \"manuel des tables d'entrées et de sorties\")\n"
+					+"LOOP\n"
+					+"RETURN QUERY SELECT * FROM a(rows.Nom);\n"
+					+"END LOOP;\n"
+					+"END;\n"
+					+"$$\n"
+					+"LANGUAGE PLPGSQL;\n"
+					+"SELECT * FROM b();\n";
+
+					query += querybeta;
+					query += "create or replace function g(value text) returns\n";
+					query += "TABLE(IDIndividu varchar(255),Date Date,Entrées Time,Sorties VARCHAR(10)) AS\n"
+					+"$$\nBEGIN\n"
+					+"	RETURN QUERY EXECUTE format('Select * FROM %I as A ";
+					query += (empObj == undefined)?((empHoursObj == undefined)?"":" where A.Idindividu ='"+empHoursObj.userAuthentification.ID+"'"):" where A.Idindividu ='"+empObj.ID+"'";
+					query += " GROUP BY Entrées,Date,Idindividu ORDER BY Date ASC;',$1);\n"
+					query += "END;\n"
+					+"$$\n"
+					+"LANGUAGE PLPGSQL;\n"
+					+"\ncreate or replace function h() returns\n"
+					+"TABLE(IDIndividu varchar(255),Date Date,Entrées Time,Sorties VARCHAR(10)) AS\n"
+					+"$$"
+					+"\nDECLARE\n"
+					+"rows RECORD;\n"
+					+"\nBEGIN\n"
+					+"FOR rows IN (Select *  from \"manuel des tables d'entrées et de sorties\")\n"
+					+"LOOP\n"
+					+"RETURN QUERY SELECT * FROM g(rows.Nom);\n"
+					+"END LOOP;\n"
+					+"END;\n"
+					+"$$\n"
+					+"LANGUAGE PLPGSQL;\n"
+					+"SELECT * FROM d();\n"
+					+"SELECT * FROM h();\n"
+					+"drop function c;\n"
+					+"drop function d;\n"
+					+"drop function g;\n"
+					+"drop function h;\n";
+					
 					
 					let checkfornewCommand = false;
 					if(locationArgObj != undefined || empObj != undefined || empHoursObj != undefined 
@@ -1689,7 +1869,8 @@
 						checkfornewCommand = true;
 					}
 
-					let result = await faire_un_simple_query(query);
+					let result = await faire_un_simple_query_filter_not_select(query);
+					//console.log(result);
 					if(result.second == false ) 
 					{
 						//console.log(result);
@@ -1721,15 +1902,15 @@
 					//console.log("Info about response for officeInfo");
 					//console.log(result);
 					
-					for(let i = 0; i < result.first.length; ++i)
+					for(let i = 0; i < result[0].first.length; ++i)
 					{
 						
-						let officeID = result.first[i][result.second[0].name];
-						let officeName = result.first[i][result.second[1].name];
-						let officeAddresse = result.first[i][result.second[2].name];
-						let officeRegion = result.first[i][result.second[3].name];
-						let officeLatitude = result.first[i][result.second[4].name];
-						let officeLongitude = result.first[i][result.second[5].name];
+						let officeID = result[0].first[i][result[0].second[0].name];
+						let officeName = result[0].first[i][result[0].second[1].name];
+						let officeAddresse = result[0].first[i][result[0].second[2].name];
+						let officeRegion = result[0].first[i][result[0].second[3].name];
+						let officeLatitude = result[0].first[i][result[0].second[4].name];
+						let officeLongitude = result[0].first[i][result[0].second[5].name];
 						let passed = true;
 						
 						var unitLocation = 
@@ -1767,7 +1948,7 @@
 							unitLocation = foundValueForLocation;
 						}
 						
-
+						/*
 						let locationvalue = "";
 						query = "Select * from \"manuel des tables d'entrées et de sorties\";";
 						
@@ -1781,13 +1962,17 @@
 							query = "Select * from \"manuel des tables d'entrées et de sorties\" where Année = "+empHoursObj.date.getFullYear()+";";
 						}
 						
-						let result_ = await faire_un_simple_query(query);
+						let result_ = await faire_un_simple_query_filter_not_select(query);
 						if(result_.second == false && !(result_.second instanceof Array)) 
 						{
 							dummyResponseSimple(response);
 							return false;
 						}
 						//console.log(query);
+						*/
+						
+						let result_ = result[1];
+						
 						let monthCounts = 0;
 						if( (parammonth === undefined) === false)
 						{
@@ -1799,14 +1984,21 @@
 							monthCounts = empHoursObj.date.getMonth();
 						}
 						let prevMonthCounts = monthCounts;
+						
+						let resultTwo = result[2];//ex 0 individu details complets 
+						let aresult = result[3];//ex 2 minimum heure d'entrée
+						let bresult = result[4];//ex 1 etat de l'individu
+						let cresult = result[5];//ex 3 heures d'entrées et sorties details
+
+						
 						for (let l = 0; l < result_.first.length; ++l)
 						{
 							monthCounts = prevMonthCounts;
 							let year = result_.first[l][result_.second[0].name];
 							let state = result_.first[l][result_.second[1].name];
 							let table = result_.first[l][result_.second[2].name];
-							let param_year_month_day = (paramday != undefined && parammonth != undefined && paramyear != undefined)?paramyear+"-"+parammonth+"-"+paramday : undefined;
 							
+							/*
 							let query = "Select * from individu inner join appartenance";
 							query += " ON appartenance.IDIndividu =  individu.ID";
 							query += " inner join \"location du bureau\" ON  appartenance.IDBureau =";
@@ -1841,7 +2033,15 @@
 							let aresult = threeResults[2];
 							let bresult = threeResults[1];
 							let cresult = threeResults[3];
+							*/
 							
+							/*
+							let resultTwo = result[2];//ex 0 individu details complets 
+							let aresult = result[4];//ex 2 minimum heure d'entrée
+							let bresult = result[3];//ex 1 etat de l'individu
+							let cresult = result[5];//ex 3 heures d'entrées et sorties details
+							*/
+														
 							let currentDateOfYear =  new Date(year,monthCounts,(paramday == undefined)?(empHoursObj != undefined? empHoursObj.date.getDate():1):paramday);		
 							let weekIndex = -1;
 							let monthFound = -1;
@@ -2626,10 +2826,13 @@
 											let date = new Date();
 											let aresultFilteredb = FilterNotFoundEqualsFunction(aresultFiltered,"idindividu",IDIndividu);
 											let bresultFilteredb = FilterNotFoundEqualsFunction(bresultFiltered,"idindividu",IDIndividu);
+											
+											
 											let cresultFilteredb = FilterNotFoundEqualsFunction(cresultFiltered,"idindividu",IDIndividu);
 											let date2 = new Date();
 											//console.log("done filtering "+ (date2 -date)%1000);
-		
+											
+											
 											secondresult.first.push(aresultFilteredb.first);
 											secondresult.first.push(bresultFilteredb.first);
 											secondresult.first.push(cresultFilteredb.first);
@@ -2931,6 +3134,7 @@
 													
 												}
 												
+												//if( secondresult.first[0].length == 0 && secondresult.first[1].length == 0 && dateNowOther.getUTCDate() > currentDateOfYear)
 												if( secondresult.first[0].length == 0 && secondresult.first[1].length == 0 && dateNowOther.getUTCDate() > currentDateOfYear)
 												{
 													employeeContentModel.absence = true;
@@ -2939,7 +3143,7 @@
 													employeeContentModel.date = currentDateOfYear.toLocaleString('fr-FR',{day:"numeric",month:"long",year:"numeric"});
 													calculateAbsence(unitLocation,year,1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
 												}
-												
+												else
 												if(!employeeContentModel.presence && !retard && !criticallylate 
 													&& ((dateNowOther.getUTCHours() == 8 && dateNowOther.getUTCMinutes() > 30)
 													|| ((dateNowOther.getUTCHours() == 8 && dateNowOther.getUTCMinutes() == 30 && dateNowOther.getUTCSeconds() > 0)) 
@@ -2975,6 +3179,7 @@
 														employeeContentModel.maladie = true;
 														employeeContentModel.date = currentDateOfYear.toLocaleString('fr-FR',{day:"numeric",month:"long",year:"numeric"});
 														calculateSicknesses(unitLocation,year,1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
+														
 														if(employeeContentModel.mission)
 														{
 															calculateMission(unitLocation,year,-1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
@@ -3009,33 +3214,58 @@
 															calculateSicknesses(unitLocation,year,-1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
 														}
 													}
-													
-													if( secondresult.first[1][secondresult.second[1][5].name] == 1 )
+													try
 													{
-														employeeContentModel.congès = true;
-														employeeContentModel.date = currentDateOfYear.toLocaleString('fr-FR',{day:"numeric",month:"long",year:"numeric"});
-														calculateCongès(unitLocation,year,1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
-														if(employeeContentModel.mission)
+														if( secondresult.first[1][secondresult.second[1][5].name] == 1 )
 														{
-															calculateMission(unitLocation,year,-1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
-														}
-														if(employeeContentModel.absence)
-														{
-															calculateAbsence(unitLocation,year,-1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
-														}
-														if(employeeContentModel.sicknesses)
-														{
-															calculateSicknesses(unitLocation,year,-1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
+															employeeContentModel.congès = true;
+															employeeContentModel.date = currentDateOfYear.toLocaleString('fr-FR',{day:"numeric",month:"long",year:"numeric"});
+															calculateCongès(unitLocation,year,1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
+															
+															if(employeeContentModel.mission)
+															{
+																calculateMission(unitLocation,year,-1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
+															}
+															if(employeeContentModel.absence)
+															{
+																calculateAbsence(unitLocation,year,-1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
+															}
+															if(employeeContentModel.sicknesses)
+															{
+																calculateSicknesses(unitLocation,year,-1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
+															}
 														}
 													}
-													
+													catch(ex)
+													{
+														//console.log("*****************aresult filtered***************");
+														//console.log(aresultFilteredb.second);
+														//console.log("*****************aresult filtered***************");
+														//console.log("*****************aresult***************");
+														//console.log(aresult.second);
+														//console.log("*****************aresult***************");
+														
+														//console.log("*****************bresult filtered***************");
+														//console.log(bresultFilteredb.second);
+														//console.log("*****************bresult filtered***************");
+														//console.log("*****************cresult filtered***************");
+														//console.log(cresultFilteredb.second);
+														//console.log("*****************cresult filtered***************");
+														
+														//console.log(bresult.second);
+														//console.log(cresult.second);
+														//console.log(secondresult);
+														console.log(ex);
+														throw ex;
+													}
 													if( secondresult.first[1][secondresult.second[1][2].name] == 1 )
 													{
-														if(! employeeContentModel.absence)
+														if(!employeeContentModel.absence)
 														{
 															employeeContentModel.absence = true;
 															employeeContentModel.date = currentDateOfYear.toLocaleString('fr-FR',{day:"numeric",month:"long",year:"numeric"});
 															calculateAbsence(unitLocation,year,1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
+															
 															if(employeeContentModel.mission)
 															{
 																calculateMission(unitLocation,year,-1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
