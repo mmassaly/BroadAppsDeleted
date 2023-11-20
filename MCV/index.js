@@ -404,7 +404,7 @@
 										{
 												if(ares.first == true || ares.second == true || ares.third == true)
 												{
-													//console.log("Inside setting");
+													console.log("Inside setting");
 													if(othertempResult.first)
 													{
 														ares.element.superadmin = true;
@@ -436,8 +436,8 @@
 												}
 												else
 												{
-													//console.log(ares);
-													//console.log("Not inside setting");
+													console.log(ares);
+													console.log("Not inside setting");
 												}
 												
 												if(ares.first)
@@ -466,7 +466,9 @@
 												}
 												else
 												{
-													
+													console.log("Other results problems");
+													console.log(ares);
+													dummyResponse(resultb,"No type of user found.");
 												}
 
 											
@@ -1325,7 +1327,7 @@
 							{
 								if( tempResult.first[i].idindividu == userAuthentification.ID && tempResult.first[i].password == userAuthentification.pass) 
 								{
-									//console.log("This guy is logged in.");
+									console.log("This guy is logged in.");
 									let addResult = addUser(tempResult.first[i].idindividu,tempResult.first[i]["prenom"],tempResult.first[i].nom,
 										tempResult.first[i].genre,tempResult.first[i]['Date de naissance'].toLocaleString(undefined,{day:'numeric',month:'numeric',year:'numeric'}),tempResult.first[i]["début"],tempResult.first[i].fin
 										,tempResult.first[i].password,tempResult.first[i].idbureau,tempResult.first[i]['Nom du Bureau'],
@@ -1334,20 +1336,19 @@
 									
 									return {first:true,second:undefined,element:addResult.userAuthentification};
 								}
-
 							}
-							//console.log("This guy is not logged in");
+							console.log("This guy is not logged in");
 							if(res != undefined)
 								dummyResponseSimple(res);
 							return {first:false,second:undefined,third:false};
 						}
-					}
-					else 
-					{
-						console.log("Error from query " +error);
-						dummyResponseSimple(res);
-						return {first:false,second:undefined,third:true};
-					}
+		}
+		else 
+		{
+			console.log("Error from query " +error);
+			dummyResponseSimple(res);
+			return {first:false,second:undefined,third:true};
+		}
 	}
 			
 	async function forced_authentification_query(userAuthentification,res)
@@ -1493,15 +1494,19 @@
 				let result = findTypeofAdminShort(userAuthentification.ID,userAuthentification.pass);
 				if(result.found)
 				{
-					return {first:result.element.userAuthentification.superadmin,second:result.element.userAuthentification.admin,
-					third:result.element.userAuthentification.user,fourth:result.element.userAuthentification["Key Admin"]};
+					let resultElement = {first:false,second:false,third:false,fourth:false};
+					resultElement.first = result.element.userAuthentification.superadmin;
+					resultElement.second = result.element.userAuthentification.admin;
+					resultElement.third = result.element.userAuthentification.user;
+					resultElement.fourth = result.element.userAuthentification["Key Admin"];
+					return resultElement;
 				}
 				
 				let query = "SELECT IDIndividu,SuperAdmin, Admin, \"User\",Password FROM login inner join ";
-				query+= "individu ON individu.ID = login.IDIndividu;"; 
+				query += "individu ON individu.ID = login.IDIndividu;"; 
 					
 				let notAnError = await faire_un_simple_query(query);
-				
+				//console.log(userAuthentification);
 				if(!(notAnError.second == false))
 				{
 					let authenticated = false;
@@ -1522,6 +1527,12 @@
 							//console.log(notAnError.first[u].User);
 							//console.log(userAuthentification.ID);
 							//console.log(userAuthentification.pass);
+							
+							if(notAnError.first[u].idindividu == userAuthentification.ID)
+							{
+								console.log(notAnError.first[u]);
+								console.log(userAuthentification);
+							}
 							
 							if(notAnError.first[u].superadmin == 1 && notAnError.first[u].idindividu == userAuthentification.ID
 							&& notAnError.first[u].password == userAuthentification.pass)
