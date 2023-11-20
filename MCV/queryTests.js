@@ -1,5 +1,4 @@
 
-
 class ImageFilesContainer
 {
 	urlandValues;
@@ -42,7 +41,19 @@ class ImageFilesContainer
 		pgConnection.end();
 		return res;
 	}
-
+	
+	async queryGiven(queryString)
+	{
+		let pgConnection = undefined;
+		while(pgConnection == undefined)
+		{
+			pgConnection = await this.exigencebasededonnée();
+		}
+		let res = await pgConnection.query(queryString);
+		pgConnection.end();
+		return res;
+	}
+	
 	processRows(res)
 	{
 		res.rows.forEach((element)=>

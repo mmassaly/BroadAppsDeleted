@@ -909,17 +909,14 @@
 					else if(commandArg === "employees" || (dealingWithArray && commandArg[0] === "employees"))
 					{
 						let image_url = undefined;
-			
+						let blob = true;
 						if(filesDup != undefined && filesDup.imgfile != undefined || ( filesDup.originalFilename != undefined))
 						{
 								//console.log(fs.readFileSync(filesDup.filepath));
+								
 								try
 								{
-									url_query = "insert into blobsholder (Url, bytesvalue) values ('http://msa-pointage-server.vercel.app/";
-									url_query += filesDup.originalFilename+"','";
-									url_query += "\\x"+ fs.readFileSync(filesDup.filepath).toString('hex') +"');";
 									
-									image_url = "http://msa-pointage-server.vercel.app/"+filesDup.originalFilename;
 									
 									const blob = await vercelBlob.put("assets/images/"+filesDup.originalFilename,fs.readFileSync(filesDup.filepath),{
 										access: 'public',
@@ -931,7 +928,12 @@
 								}
 								catch(ex)
 								{
-									
+									url_query = "insert into blobsholder (Url, bytesvalue) values ('http://msa-pointage-server.vercel.app/";
+									url_query += filesDup.originalFilename+"','";
+									url_query += "\\x"+"');";
+									//fs.readFileSync(filesDup.filepath).toString('hex')
+									image_url = "http://msa-pointage-server.vercel.app/"+filesDup.originalFilename;
+									blob = false;
 								}
 						}
 						if(dealingWithArray)
@@ -1024,14 +1026,10 @@
 									let bresult = await faire_un_simple_query(doubleQuerySQL);
 									if(bresult.second != false || bresult.second instanceof Array)
 									{
-										console.log("Waiting for cresult...");
 										let cresult = await faire_un_simple_query(thirdQuerySQL);
-										console.log(cresult);
 										if(cresult.second != false || cresult.second instanceof Array)
 										{
 											let dresult = await faire_un_simple_query(url_query);
-											console.log("inside dresult");
-											console.log(dresult);
 											res.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
 																	,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
 																	,"Access-Control-Max-Age":'86400'
@@ -1040,12 +1038,9 @@
 											
 											res.write(JSON.stringify({customtext:"OK"}));
 											res.end();
-											console.log("no problems");
 												
-											fs.writeFileSync("A.txt",url_query);
-											if(dresult.second != false || dresult.second instanceof Array)
+											if (dresult.second != false || dresult.second instanceof Array)
 											{
-												console.log("Inside refresh employee function");
 												userAdditionObject = urlObject;
 												//let fs = require('fs');
 												//await fs.rename(filesDup.filepath, path + filesDup.originalFilename,function(err_){});
@@ -1673,7 +1668,7 @@
 				
 				try
 				{
-					
+					let totalQuery = "";
 					let query = "Select * from \"location du bureau\" ORDER BY Id;";
 
 					if(locationArgObj != undefined)
@@ -1685,7 +1680,8 @@
 					{
 						query = "Select * from \"location du bureau\" where \"location du bureau\".ID = "+empObj.officeID+" ORDER BY Id;";
 					}
-
+					
+					
 					let checkfornewCommand = false;
 					if(locationArgObj != undefined || empObj != undefined || empHoursObj != undefined 
 					|| paramday != undefined || parammonth != undefined || paramday != undefined)
@@ -1809,7 +1805,7 @@
 							let year = result_.first[l][result_.second[0].name];
 							let state = result_.first[l][result_.second[1].name];
 							let table = result_.first[l][result_.second[2].name];
-							let param_year_month_day = (paramday != undefined && paramonth != undefined && paramyear != undefined)?paramyear+"-"+paramonth+"-"+paramday : undefined;
+							let param_year_month_day = (paramday != undefined && parammonth != undefined && paramyear != undefined)?paramyear+"-"+parammonth+"-"+paramday : undefined;
 							
 							let query = "Select * from individu inner join appartenance";
 							query += " ON appartenance.IDIndividu =  individu.ID";
