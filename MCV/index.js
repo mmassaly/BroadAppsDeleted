@@ -11,7 +11,13 @@
 	let connection = undefined;
 	let precedentDate = new Date(Date.now());
 	let todaysDate = new Date(Date.now());
-	let primaryObject = undefined;
+	let primaryObject = 
+	{
+		selected_name: 0,
+		container : [],
+		nowVisible: false,
+		otherVisible : false
+	};
 	let baseInit = false;
 	let schema = "";
 	let current= todaysDate;
@@ -1743,18 +1749,12 @@
 			{
 				//console.log(" paramyear "+paramyear+" other paramday "+paramday+" other parammonth "+parammonth);
 				//console.log("Location argument "+locationArgObj+" employee argument "+empObj);
-				let data = 
-				{
-					selected_name: 0,
-					container : [],
-					nowVisible: false,
-					otherVisible : false
-				};	
+				let data = primaryObject;
 				
-				if (primaryObject == undefined)
+				/* if (primaryObject == undefined)
 					primaryObject = data;
 				else
-					data = primaryObject;
+					data = primaryObject; */
 				
 				try
 				{
