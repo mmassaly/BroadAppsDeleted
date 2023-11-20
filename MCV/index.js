@@ -293,7 +293,8 @@
 							reqData += data;
 						}).on("end",()=>
 						{
-							console.log("incomming request but primary object is "+primaryObject);
+							console.log("incomming request but primary object is ");
+							console.log(primaryObject);
 							if(primaryObject == undefined)
 							{
 								//console.log("Your response should be with the 200 code");
