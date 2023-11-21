@@ -3336,7 +3336,7 @@
 					
 					
 					//console.log("Location argument "+locationArgObj+" employee argument "+empObj);
-					//console.log(primaryObject);
+					console.log(primaryObject);
 					
 					if (!(response === undefined))
 					{
