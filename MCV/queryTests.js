@@ -22,7 +22,7 @@ class ImageFilesContainer
 		console.log(this.urlandValues);
 	}
 	
-	async  queryGetUrlElement(urlElement,connection)
+	async queryGetUrlElement(urlElement,connection)
 	{
 		let pgConnection = (connection == undefined)?await this.exigencebasededonnée():connection;
 		let res = await pgConnection.query('select * from blobsholder where url=\''+urlElement+'\';');

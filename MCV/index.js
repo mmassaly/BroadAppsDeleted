@@ -236,6 +236,23 @@
 						}
 					});
 				}
+				else if(req.url.endsWith("Download/pointage-apk")
+				{
+					fs.readFile("Files/app-pointage-msa.apk",(error,data)=>
+					{
+						if(error)
+						{
+							res.writeHead(500,{"Content-Type":"application/vnd.android.package-archive"});
+							res.end();
+						}
+						else
+						{
+							res.writeHead(200,{"Content-Type":"application/vnd.android.package-archive"});
+							res.write(data);
+							res.end();
+						}
+					});
+				}
 				else
 				{
 					var imageUrlReprocessed = "icons/outline_home_black_24dp.png";	
