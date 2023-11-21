@@ -171,8 +171,8 @@ let queryFour = "drop function openTablesThree();create or replace function open
 
 let empHoursObj = undefined;
 let empObj = undefined;
-let param_year_month_day = undefined;
-let paramyear = undefined;
+let param_year_month_day = "2023-11-21";
+let paramyear = "2023";
 let locationArgObj = undefined;
 
 if(locationArgObj != undefined)
