@@ -236,7 +236,7 @@
 						}
 					});
 				}
-				else if(req.url.endsWith("Download/pointage-apk")
+				else if(req.url.endsWith("Download/pointage-apk"))
 				{
 					fs.readFile("Files/app-pointage-msa.apk",(error,data)=>
 					{
