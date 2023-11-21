@@ -1128,9 +1128,7 @@
 		}
 		catch(ex)
 		{
-			console.log("Erreur");
-			console.log("Database connection not  successfull.");
-			//console.log(ex);
+			console.log("Error-Database connection not successfull.");
 			return new Promise ((resolve,reject) => 
 			{
 				resolve(undefined);	
