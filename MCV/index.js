@@ -166,7 +166,7 @@
 				var imageUrlReprocessed = req.url.substring(1,req.url.length).replaceAll("%20"," ");
 				imageUrlReprocessed = decodeURI(imageUrlReprocessed);
 				//console.log("You bot are making an image request processed to be "+imageUrlReprocessed);
-				if(req.url.endsWith("favicon.ico")
+				if(req.url.endsWith("favicon.ico"))
 				{	
 					res.end();
 					return;
