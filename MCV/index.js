@@ -2341,6 +2341,7 @@
 									{	
 										console.log(currentDateOfYear+" > to "+ dateToday);
 										console.log("breaking");
+										console.log(primaryObject);
 										break;
 									}
 									
