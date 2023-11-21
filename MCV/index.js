@@ -566,7 +566,7 @@
 														,"Access-Control-Max-Age":'86400'
 														,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
 														});
-														//console.log(primaryObject);
+														console.log(primaryObject);
 														resultd.write(JSON.stringify(primaryObject));
 														resultd.end();
 														/*getDataForAdminThreeArgs(undefined,undefined).then((getresult)=>{
