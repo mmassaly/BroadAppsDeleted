@@ -899,8 +899,7 @@
 						else
 						{
 							querySQL =  "insert into "+tablename+" values ('"+fields.ID[0]+ "',$$" +  fields.officeName[0]+"$$,$$";
-							querySQL += fiel
-							ds.address[0] +"$$,$$"+fields.region[0]+"$$,'"+fields.latittude[0]+"','"+fields.longitude[0];
+							querySQL += fields.address[0] +"$$,$$"+fields.region[0]+"$$,'"+fields.latittude[0]+"','"+fields.longitude[0];
 							querySQL += "');";
 						}
 						console.log(querySQL);
