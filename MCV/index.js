@@ -1120,20 +1120,19 @@
 		{	
 			let postgresConnection = new postgres.Client("postgres://default:QHiOur92EwzF@ep-patient-darkness-72544749.us-east-1.postgres.vercel-storage.com:5432/verceldb"+ "?sslmode=require");
 			await postgresConnection.connect();
+			console.log("Database connection successfull.");
 			return new Promise ((resolve,reject) => 
 			{
-				//console.log("Database connection successfull.");
 				resolve(postgresConnection);	
 			});
 		}
 		catch(ex)
 		{
 			console.log("Erreur");
-			//console.log(postgresConnection);
-			console.log(ex);
+			console.log("Database connection not  successfull.");
+			//console.log(ex);
 			return new Promise ((resolve,reject) => 
 			{
-				//console.log("Database connection not  successfull.");
 				resolve(undefined);	
 			});
 		}
