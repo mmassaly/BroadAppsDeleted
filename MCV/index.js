@@ -2704,6 +2704,7 @@
 														if(employeeContentModel.absence)
 														{
 															employeeContentModel.absence = false;
+															if(currentDateOfYear.getDay() != 0 && currentDateOfYear.getDay() != 6)
 															calculateAbsence(unitLocation,year,-1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);	
 														}
 													}
@@ -2722,6 +2723,7 @@
 														if(employeeContentModel.absence)
 														{
 															employeeContentModel.absence = false;
+															if(currentDateOfYear.getDay() != 0 && currentDateOfYear.getDay() != 6)
 															calculateAbsence(unitLocation,year,-1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);	
 														}
 
@@ -2959,6 +2961,7 @@
 													employeeContentModel.retard = false;
 													absence = true;
 													employeeContentModel.date = currentDateOfYear.toLocaleString('fr-FR',{day:"numeric",month:"long",year:"numeric"});
+													if(currentDateOfYear.getDay() != 0 && currentDateOfYear.getDay() != 6)
 													calculateAbsence(unitLocation,year,1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
 												}
 												
@@ -2981,6 +2984,7 @@
 														}
 
 														employeeContentModel.date = currentDateOfYear.toLocaleString('fr-FR',{day:"numeric",month:"long",year:"numeric"});
+														if(currentDateOfYear.getDay() != 0 && currentDateOfYear.getDay() != 6)
 														calculateAbsence(unitLocation,year,1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
 																
 												} 
@@ -3003,6 +3007,7 @@
 														}
 														if(employeeContentModel.absence)
 														{
+															if(currentDateOfYear.getDay() != 0 && currentDateOfYear.getDay() != 6)
 															calculateAbsence(unitLocation,year,-1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
 														}
 														if(employeeContentModel.congès)
@@ -3020,6 +3025,7 @@
 														
 														if(employeeContentModel.absence)
 														{
+															if(currentDateOfYear.getDay() != 0 && currentDateOfYear.getDay() != 6)
 															calculateAbsence(unitLocation,year,-1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
 														}
 														if(employeeContentModel.congès)
@@ -3043,6 +3049,7 @@
 														}
 														if(employeeContentModel.absence)
 														{
+															if(currentDateOfYear.getDay() != 0 && currentDateOfYear.getDay() != 6)
 															calculateAbsence(unitLocation,year,-1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
 														}
 														if(employeeContentModel.sicknesses)
@@ -3057,6 +3064,7 @@
 														{
 															employeeContentModel.absence = true;
 															employeeContentModel.date = currentDateOfYear.toLocaleString('fr-FR',{day:"numeric",month:"long",year:"numeric"});
+															if(currentDateOfYear.getDay() != 0 && currentDateOfYear.getDay() != 6)
 															calculateAbsence(unitLocation,year,1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
 															if(employeeContentModel.mission)
 															{
