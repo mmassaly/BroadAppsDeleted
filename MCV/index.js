@@ -1812,13 +1812,14 @@
 						let monthCounts = 0;
 						if( (parammonth === undefined) === false)
 						{
-							monthCounts = parammonth;
+							monthCounts = parammonth-1;
 						}
 
 						if(empHoursObj != undefined)
 						{
 							monthCounts = empHoursObj.date.getMonth();
 						}
+						
 						let prevMonthCounts = monthCounts;
 						for (let l = 0; l < result_.first.length; ++l)
 						{
