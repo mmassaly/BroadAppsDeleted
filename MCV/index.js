@@ -238,15 +238,18 @@
 				}
 				else if(req.url.endsWith("Download/pointage-apk"))
 				{
-					fs.readFile("Files/app-pointage-msa.apk",(error,data)=>
+					console.log("inside Download");
+					fs.readFile("File/app-pointage-msa.apk",(error,data)=>
 					{
 						if(error)
 						{
+							console.log(error);
 							res.writeHead(500,{"Content-Type":"application/vnd.android.package-archive"});
 							res.end();
 						}
 						else
 						{
+							console.log(data);
 							res.writeHead(200,{"Content-Type":"application/vnd.android.package-archive"});
 							res.write(data);
 							res.end();
