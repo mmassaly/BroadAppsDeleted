@@ -1123,7 +1123,7 @@
 	{	
 		try 
 		{	
-			let postgresConnection = new postgres.Client("postgres://default:QHiOur92EwzF@ep-patient-darkness-72544749.us-east-1.postgres.vercel-storage.com:5432/verceldb"+ "?sslmode=require");
+			let postgresConnection = new postgres.Client("postgres://default:lxUS6wVv9igb@ep-fancy-cherry-01895600.us-east-1.postgres.vercel-storage.com:5432/verceldb"+"?sslmode=require");
 			await postgresConnection.connect();
 			return new Promise ((resolve,reject) => 
 			{
@@ -2964,8 +2964,7 @@
 													if(currentDateOfYear.getDay() != 0 && currentDateOfYear.getDay() != 6)
 													calculateAbsence(unitLocation,year,1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
 												}
-												
-												if(!employeeContentModel.presence && !retard && !criticallylate 
+												else if(!employeeContentModel.presence && !retard && !criticallylate 
 													&& ((dateNowOther.getUTCHours() == 8 && dateNowOther.getUTCMinutes() > 30)
 													|| ((dateNowOther.getUTCHours() == 8 && dateNowOther.getUTCMinutes() == 30 && dateNowOther.getUTCSeconds() > 0)) 
 													|| (dateNowOther.getUTCHours() > 8) ) )
@@ -2985,8 +2984,7 @@
 
 														employeeContentModel.date = currentDateOfYear.toLocaleString('fr-FR',{day:"numeric",month:"long",year:"numeric"});
 														if(currentDateOfYear.getDay() != 0 && currentDateOfYear.getDay() != 6)
-														calculateAbsence(unitLocation,year,1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
-																
+														calculateAbsence(unitLocation,year,1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);										
 												} 
 												
 												if(secondresult.first[1].length > 0)
