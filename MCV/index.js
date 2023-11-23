@@ -2011,7 +2011,7 @@
 								
 								if(parammonth != undefined)
 								{
-									monthSearchIndex = parammonth+1;
+									monthSearchIndex = parammonth;//ex prammonth+1 remember date is 11/23/2023 not getMonth() == 10
 								}	
 
 								monthFoundAlpha = getMonth(yearContentModel,monthSearchIndex);
@@ -2253,8 +2253,8 @@
 											//if(currentDateOfYear == todaysDate)
 												//console.log("old weekIndex found "+weekIndex);
 										}
-
 									}
+									
 									
 									//console.log(currentmonth); console.log(currentday); console.log(currentYear);
 									//console.log(amonth); console.log(day); console.log(ayear);
@@ -2315,7 +2315,7 @@
 									{
 										daySearchIndex = paramday;
 									}
-
+									
 									let dayFoundAlpha = getDay(yearContentModel.months[monthIndex].weeks[weekIndex],daySearchIndex);
 									let dayFound = dayFoundAlpha.first; 
 									let dayIndex = -1;
