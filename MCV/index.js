@@ -422,11 +422,13 @@
 								
 								forced_authentification_query_login(urlObject.userAuthentification,result).then((ares)=>
 								{
+										//console.log(ares);
 										check_super_admin(urlObject.userAuthentification,undefined,undefined).then((othertempResult)=>
 										{
+											//console.log(othertempResult);
 												if(ares.first == true || ares.second == true || ares.third == true)
 												{
-													//console.log("Inside setting");
+													console.log("Inside setting");
 													if(othertempResult.first)
 													{
 														ares.element.superadmin = true;
@@ -563,6 +565,7 @@
 												let resultd = resultc;
 												check_super_admin(userAuthentification,sqlConnection,undefined).then((othertempResult)=>
 												{
+													console.log("Inside checking admin type");
 													if(othertempResult.first)
 													{
 														console.log("This guy is a primary admin");
@@ -599,10 +602,10 @@
 													}
 													else if(othertempResult.second || othertempResult.fourth)
 													{
-														//console.log("This guy is a secondary admin");
-														let tempLocation = getLocation(primaryObject,userAuthentification.IDBureau);
-															tempLocation = Object.fromEntries(tempLocation.entries());
-																
+														console.log("This guy is a secondary or a fouth kind of  admin");
+														let tempLocation = getLocation(primaryObject,userAuthentification.locationID);
+														tempLocation = Object.fromEntries(Object.entries(tempLocation.first));
+														
 														let tempData =
 														{
 															selected_name: 0,
@@ -611,7 +614,6 @@
 															otherVisible : false
 														};
 																
-														notIDDecreaseAll(tempLocation,userAuthentification.ID);
 														
 														resultd.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
 														,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
@@ -658,7 +660,7 @@
 													}
 													else if(othertempResult.third )
 													{
-														if(commandArg == "all")
+														if(commandArg == "all"||commandArg == "update")
 														{
 															if(primaryObject == undefined)
 															{
@@ -666,19 +668,21 @@
 															}
 															else
 															{
-																let tempLocation = getLocation(primaryObject,userAuthentification.IDBureau);
-																tempLocation = Object.fromEntries(tempLocation.entries());
-																	
+																let tempLocation = getLocation(primaryObject,userAuthentification.locationID);
+																
+																//let newtempLocation = Object.fromEntries(Object.entries(tempLocation.first));
+																let newtempLocation = JSON.parse(JSON.stringify(tempLocation.first));
+																
+																notIDDecreaseAll(newtempLocation,userAuthentification.ID);
+																
 																let tempData =
 																{
 																	selected_name: 0,
-																	container : [tempLocation],
+																	container : [newtempLocation],
 																	nowVisible: true,
 																	otherVisible : false
 																};
-																	
-																notIDDecreaseAll(tempLocation,userAuthentification.ID);
-														
+																
 																resultd.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
 																	,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
 																	,"Access-Control-Max-Age":'86400'
@@ -687,9 +691,6 @@
 																resultd.write(JSON.stringify(tempData));
 																resultd.end();
 															}
-															
-															
-															
 															
 															/*
 															getDataForAdmin(undefined,undefined,undefined,userAuthentification,undefined,undefined,undefined).then((primaryObject)=>
@@ -1439,7 +1440,7 @@
 					third:result.element.userAuthentification.user,fourth:result.element.userAuthentification["Key Admin"]};
 				}
 				
-				let query = "SELECT IDIndividu,SuperAdmin, Admin, \"User\",Password FROM login inner join ";
+				let query = "SELECT IDIndividu,SuperAdmin, Admin, \"User\",\"Key Admin\",Password FROM login inner join ";
 				query+= "individu ON individu.ID = login.IDIndividu;"; 
 					
 				let notAnError = await faire_un_simple_query(query);
@@ -1447,7 +1448,10 @@
 				if(!(notAnError.second == false))
 				{
 					let authenticated = false;
-						
+					console.log(query);
+					console.log(userAuthentification);
+					console.log(notAnError.first);
+					
 					if(notAnError.first.length == 0)
 					{
 						//console.log(notAnError);
@@ -1459,11 +1463,18 @@
 						//console.log(notAnError);
 						for(let u = 0; u < notAnError.first.length; u++)
 						{	
-							//console.log(notAnError.first[u].superadmin);
-							//console.log(notAnError.first[u].admin);
-							//console.log(notAnError.first[u].User);
-							//console.log(userAuthentification.ID);
-							//console.log(userAuthentification.pass);
+							//console.log("Super Admin "+notAnError.first[u].superadmin);
+							//console.log("Admin "+notAnError.first[u].admin);
+							//console.log("User "+notAnError.first[u].User);
+							//console.log("ID "+userAuthentification.ID);
+							//console.log(notAnError.first[u].idindividu+" == "+userAuthentification.ID);
+							//console.log(userAuthentification.pass+" == "+userAuthentification.pass);
+							
+							/*if(u == 1)
+							{
+								console.log(notAnError.first[u].idindividu == userAuthentification.ID);
+								console.log(notAnError.first[u].password == userAuthentification.pass);
+							}*/
 							
 							if(notAnError.first[u].superadmin == 1 && notAnError.first[u].idindividu == userAuthentification.ID
 							&& notAnError.first[u].password == userAuthentification.pass)
@@ -1682,9 +1693,7 @@
 					otherVisible : false
 				};	
 				
-				if (primaryObject == undefined)
-					primaryObject = data;
-				else
+				if(primaryObject !== undefined)
 					data = primaryObject;
 				
 				try
@@ -2955,7 +2964,8 @@
 													
 												}
 												
-												if( secondresult.first[0].length == 0 && secondresult.first[1].length == 0 && dateNowOther.getUTCDate() > currentDateOfYear)
+												
+												if( secondresult.first[0].length == 0 && secondresult.first[1].length == 0 && basicDateComparison(dateNowOther ,currentDateOfYear) > 0)
 												{
 													employeeContentModel.absence = true;
 													employeeContentModel.retard = false;
@@ -2969,6 +2979,8 @@
 													|| ((dateNowOther.getUTCHours() == 8 && dateNowOther.getUTCMinutes() == 30 && dateNowOther.getUTCSeconds() > 0)) 
 													|| (dateNowOther.getUTCHours() > 8) ) )
 												{
+														
+														
 														employeeContentModel.absence = true;
 														if(employeeContentModel.retard == true)
 														{
@@ -3117,6 +3129,10 @@
 						
 					}
 					
+					if(baseInit)
+					{
+						primaryObject = data;
+					}
 					
 					//console.log("Location argument "+locationArgObj+" employee argument "+empObj);
 					//console.log(primaryObject);
@@ -3146,16 +3162,16 @@
 	
 	
 	function notIDDecreaseAll(location,ID)
-	{						
-		for(let yearLength = 0; yearLength < location.yearsContent; ++yearLength)
+	{			
+		for(let yearLength = 0; yearLength < location.yearsContent.length; ++yearLength)
 		{
-			let yearContent = location.yearsContent[yearLength];
+			let yearContentElement = location.yearsContent[yearLength];
 			let keysToRemove = [];
 			
-			
-			for(let monthLength = 0; monthLength < yearContent.months.length; ++monthLength) 
+			for(let monthLength = 0; monthLength < yearContentElement.months.length; ++monthLength) 
 			{
-				let monthContent = yearContent.months[month];
+				let monthContent = yearContentElement.months[monthLength];
+				//console.log(monthContent);
 				let keysToRemove = [];
 				
 				for(let weekLength = 0; weekLength < monthContent.weeks.length; ++weekLength) 
@@ -3163,7 +3179,7 @@
 					let weekContent = monthContent.weeks[weekLength];
 					let keysToRemove = [];
 					
-					weekContent.empHours.forEach(element => 
+					Object.keys(weekContent.employeeHours).forEach(element => 
 					{
 						if(element != ID)
 						{
@@ -3173,16 +3189,16 @@
 					
 					keysToRemove.forEach(element =>
 					{
-						weekContent.empHours[element] = undefined;
+						weekContent.employeeHours[element] = undefined;
 					});
 					
-					for(let dayLength = 0; dayLength < weekContent.days.length; ++weekLength) 
+					for(let dayLength = 0; dayLength < weekContent.days.length; ++dayLength) 
 					{
-						let dayContent = weekContent[dayLength].days[dayLength];
+						let dayContent = weekContent.days[dayLength];
 						let tempDeleteStack = [];
 						let keysToRemove = [];
 					
-						weekContent.empHours.forEach(element => 
+						Object.keys(weekContent.employeeHours).forEach(element => 
 						{
 							if(element != ID)
 							{
@@ -3192,44 +3208,10 @@
 						
 						keysToRemove.forEach(element =>
 						{
-							weekContent.empHours[element] = undefined;
+							weekContent.employeeHours[element] = undefined;
 						});
 						
 						for(let itemLength = 0; itemLength < dayContent.absencesdates.length; ++itemLength) 
-						{
-						 	let empdaily = dayContent.absencedates[itemLength];
-							if(empdaily.ID != ID)
-							{
-								dayContent.absences--;
-								weekContent.absences--;
-								monthContent.absences--;
-								yearContent.absences--;
-								tempDeleteStack.push(empdaily);
-							}
-						}
-						
-						deleteElement(tempDeleteStack,dayContent.absencesdates);
-						tempDeleteStack = [];
-
-						for(let itemLength = 0; itemLength < days.missionsdates.length; ++itemLength) 
-						{
-							let empdaily = dayContent.missionsdates[itemLength];
-							if(empdaily.ID != ID)
-							{
-								dayContent.missons--;
-								weekContent.missions--;
-								monthContent.missions--;
-								yearContent.missions--;
-								tempDeleteStack.push(empdaily);
-							}
-							
-							let tempDeleteStack = [];
-						}
-						
-						deleteElement(tempDeleteStack,dayContent.missionsdates);
-						tempDeleteStack = [];
-
-						for(let itemLength = 0; itemLength < days.absencesdates.length; ++itemLength) 
 						{
 							let empdaily = dayContent.absencesdates[itemLength];
 							if(empdaily.ID != ID)
@@ -3237,7 +3219,7 @@
 								dayContent.absences--;
 								weekContent.absences--;
 								monthContent.absences--;
-								yearContent.absences--;
+								yearContentElement.absences--;
 								tempDeleteStack.push(empdaily);
 							}
 						}
@@ -3245,7 +3227,24 @@
 						deleteElement(tempDeleteStack,dayContent.absencesdates);
 						tempDeleteStack = [];
 
-						for(let itemLength = 0; itemLength < days.presencesdates.length; ++itemLength) 
+						for(let itemLength = 0; itemLength < dayContent.missionsdates.length; ++itemLength) 
+						{
+							let empdaily = dayContent.missionsdates[itemLength];
+							
+							if(empdaily.ID != ID)
+							{
+								dayContent.missons--;
+								weekContent.missions--;
+								monthContent.missions--;
+								yearContentElement.missions--;
+								tempDeleteStack.push(empdaily);
+							}
+						}
+						
+						deleteElement(tempDeleteStack,dayContent.missionsdates);
+						tempDeleteStack = [];
+
+						for(let itemLength = 0; itemLength < dayContent.presencedates.length; ++itemLength) 
 						{
 							let empdaily = dayContent.presencesdates[itemLength];
 							if(empdaily.ID != ID)
@@ -3253,15 +3252,15 @@
 								dayContent.presence--;
 								weekContent.presence--;
 								monthContent.presence--;
-								yearContent.presence--;
+								yearContentElement.presence--;
 								tempDeleteStack.push(empdaily);
 							}
 						}
 						
-						deleteElement(tempDeleteStack,dayContent.presencesdates);
+						deleteElement(tempDeleteStack,dayContent.presencedates);
 						tempDeleteStack = [];
 
-						for(let itemLength = 0; itemLength < days.sicknessesdates.length; ++itemLength) 
+						for(let itemLength = 0; itemLength < dayContent.sicknessesdates.length; ++itemLength) 
 						{
 							let empdaily = dayContent.sicknessesdates[itemLength];
 							if(empdaily.ID != ID)
@@ -3269,14 +3268,15 @@
 								dayContent.sicknesses--;
 								weekContent.sicknesses--;
 								monthContent.sicknesses--;
-								yearContent.sicknesses--;
+								yearContentElement.sicknesses--;
 								tempDeleteStack.push(empdaily);
 							}
 						}
+						
 						deleteElement(tempDeleteStack,dayContent.sicknessesdates);
 						tempDeleteStack = [];
 
-						for(let itemLength = 0; itemLength < days.retardsdates.length; ++itemLength) 
+						for(let itemLength = 0; itemLength < dayContent.retardsdates.length; ++itemLength) 
 						{
 							let empdaily = dayContent.retardsdates[itemLength];
 							if(empdaily.ID != ID)
@@ -3284,7 +3284,7 @@
 								dayContent.retards--;
 								weekContent.retards--;
 								monthContent.retards--;
-								yearContent.retards--;
+								yearContentElement.retards--;
 								tempDeleteStack.push(empdaily);
 							}
 						}
@@ -3292,7 +3292,7 @@
 						deleteElement(tempDeleteStack,dayContent.retardsdates);
 						tempDeleteStack = [];
 
-						for(let itemLength = 0; itemLength < days.retardsCriticaldates.length; ++itemLength) 
+						for(let itemLength = 0; itemLength < dayContent.retardsCriticaldates.length; ++itemLength) 
 						{
 							let empdaily = dayContent.retardsCriticaldates[itemLength];
 							if(empdaily.ID != ID)
@@ -3300,15 +3300,16 @@
 								dayContent.retardsCritical--;
 								weekContent.retardsCritical--;
 								monthContent.retardsCritical--;
-								yearContent.retardsCritical--;
+								yearContentElement.retardsCritical--;
 								tempDeleteStack.push(empdaily);
 							}
 						}
 						
-						deleteElementMinusRepertory(tempDeleteStack,dayContent.retardsCriticaldates);
+						deleteElement(tempDeleteStack,dayContent.retardsCriticaldates);
 						tempDeleteStack = [];
 						
-						tempDeleteStack = findElementsNotEquivalentToValueIntoDic(ID,empdaily,"empHours");
+						/*
+						tempDeleteStack = findElementsNotEquivalentToValueIntoDic(ID,empdaily,"employeeHours");
 						deleteKeysElementsIntoDic(tempDeleteStack,empdaily,empdaily.empHours);
 						
 						tempDeleteStack = findElementsNotEquivalentToValueIntoDic(ID,empdaily,"empDicofAbsences");
@@ -3333,15 +3334,19 @@
 						deleteKeysElementsIntoDic(tempDeleteStack,empdaily.empDicofVacances);	
 						
 						tempDeleteStack = [];
+						*/
 						
 					}
 					
-					deleteKeysElementsIntoDic((findElementsNotEquivalentToValueIntoDic(ID,monthContent,"empHours"),monthContent),monthContent.empHours);
+					deleteKeysElementsIntoDic(findElementsNotEquivalentToValueIntoDic(ID,monthContent,"employeeHours"),monthContent.employeeHours);
 						
 				}	
 			}
-			deleteKeysElementsIntoDic((findElementsNotEquivalentToValueIntoDic(ID,yearContent,"empHours"),yearContent),yearContent.empHours);
-				
+			
+			let employeesListtoDelete = findElementsNotEquivalentToValueIntoArray(ID,yearContentElement,"employees");
+			deleteKeysElementsIntoDic(findElementsNotEquivalentToValueIntoDic(ID,yearContentElement,"employeeHours"),yearContentElement.employeeHours);
+			deleteKeysElementsIntoArray(employeesListtoDelete,yearContentElement,"employees","employeesCount");
+			deleteKeysElementsIntoDic(findElementsNotEquivalentToValueIntoDic(ID,yearContentElement,"empDic"),yearContentElement.empDic);
 		}
 	}
 	
@@ -3382,7 +3387,7 @@
 
 			if(tempJIndex != -1)
 			{
-				arrayContainer[repertory]--;
+				//arrayContainer[repertory]--;
 				arrayContainer.splice(tempJIndex,1);
 			}
 		}
@@ -3393,7 +3398,18 @@
 		keysElements.forEach(
 		element=>
 		{
-			diContainer[element] = undefined;
+			dicContainer[element] = undefined;
+		});
+	}
+	
+	function deleteKeysElementsIntoArray(keysElements,dicContainer,name,other_decrement_container_name) 
+	{
+		keysElements.forEach(
+		element=>
+		{
+			let index = dicContainer[name].indexOf(element);
+			dicContainer[name].splice(index,1);
+			dicContainer[other_decrement_container_name]--;
 		});
 	}
 	
@@ -3401,16 +3417,33 @@
 	{
 		let returnKeys = [];
 		
-		dicContainer[repertory].keys.forEach((key_element)=>
+		Object.keys(dicContainer[repertory]).forEach((key_element)=>
 		{
 			if(key_element != keyName)
 			{
-				returnkeys.push(key_element);
+				returnKeys.push(key_element);
 			}
 		});
 		
 		return returnKeys;
 	}
+	
+	
+	function findElementsNotEquivalentToValueIntoArray(keyName,dicContainer,repertory)
+	{
+		let returnKeys = [];
+		
+		dicContainer[repertory].forEach((key_element)=>
+		{
+			if(key_element.ID != keyName)
+			{
+				returnKeys.push(key_element);
+			}
+		});
+		
+		return returnKeys;
+	}
+	
 	function getLocation(content,locationID)
 	{
 		if(content != undefined)
@@ -4387,6 +4420,17 @@
 					return 0;
 			}
 		}
+	}
+	
+	function basicDateComparison(dateOne,dateTwo)
+	{
+			if(dateOne.getYear() > dateTwo.getYear()) return 1;
+			if(dateOne.getYear() < dateTwo.getYear()) return -1;
+			if(dateOne.getMonth() > dateTwo.getMonth()) return 1;
+			if(dateOne.getMonth() < dateTwo.getMonth()) return -1;
+			if(dateOne.getDay()> dateTwo.getDay()) return 1;
+			if(dateOne.getDay()< dateTwo.getDay()) return -1;
+			return 0;
 	}
 	
 	function formingValuesAroundElement(objArray,value,column,start,middle,end,comparatorFunc)
