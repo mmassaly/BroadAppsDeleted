@@ -59,7 +59,7 @@ create table "login" (IDIndividu varchar(255),Password varchar(255),SuperAdmin B
 
 create table "manuel des tables d'entrées et de sorties" (Année integer,"Etat de l'individu" varchar(255),Nom varchar(255));
 
-INSERT INTO individu ("Date de naissance", Début, Fin, Genre, ID, img, Nom, Profession, Prenom) VALUES ('1993-10-06', '2023-01-02', '2024-04-30', 'Homme', '1-23', 'src\\assets\\images\\MamadouMassalyphotodeprofil.jpg', 'Massaly', 'Développeur', 'Mamadou');
+INSERT INTO individu ("Date de naissance", Début, Fin, Genre, ID, img, Nom, Profession, Prenom) VALUES ('1993-10-06', '2023-01-02', '2024-04-30', 'Homme', '1-23', 'https://msa-pointage-server.vercel.app/Mamadou Massaly PF1.jpg', 'Massaly', 'Développeur', 'Mamadou');
 INSERT INTO appartenance(IDIndividu,IDBureau) values ('1-23',1);
 INSERT INTO "location du bureau" (ID ,"Nom du Bureau" ,Addresse ,Région ,Latitude ,Longitude) values  (1,'MSADAKAR','Sicap Sacré Coeur 3','Dakar','14.74076570000000','-17.4720195000000');
 INSERT INTO "login" (IDIndividu ,Password ,SuperAdmin ,Admin,"User","Key Admin") values ('1-23','pwd',true,false,false,false);

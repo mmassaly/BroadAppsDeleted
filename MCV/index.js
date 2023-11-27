@@ -1136,7 +1136,7 @@
 	{	
 		try 
 		{	
-			let postgresConnection = new postgres.Client("postgres://default:lxUS6wVv9igb@ep-fancy-cherry-01895600.us-east-1.postgres.vercel-storage.com:5432/verceldb"+"?sslmode=require");
+			let postgresConnection = new postgres.Client("postgres://default:Yu2XsAFm9NKl@ep-jolly-dust-47615088.eu-central-1.postgres.vercel-storage.com:5432/verceldb"+"?sslmode=require");
 			await postgresConnection.connect();
 			return new Promise ((resolve,reject) => 
 			{
