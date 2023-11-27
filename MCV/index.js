@@ -423,6 +423,18 @@
 								forced_authentification_query_login(urlObject.userAuthentification,result).then((ares)=>
 								{
 										//console.log(ares);
+										if(JSON.stringify(ares.first) == "false" && JSON.stringify(ares.second) == "false" )
+										{
+											resultb.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+											,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
+											,"Access-Control-Max-Age":'86400'
+											,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"});
+											console.log("Sending response");
+											resultb.write(JSON.stringify(ares));
+											resultb.end();
+											return;
+										}
+										
 										check_super_admin(urlObject.userAuthentification,undefined,undefined).then((othertempResult)=>
 										{
 											//console.log(othertempResult);
@@ -953,7 +965,7 @@
 									url_query = "insert into blobsholder (Url, bytesvalue) values ('http://msa-pointage-server.vercel.app/";
 									url_query += filesDup.originalFilename+"','";
 									url_query += "\\x"+fs.readFileSync(filesDup.filepath).toString('hex')+"');";
-									image_url = "http://msa-pointage-server.vercel.app/"+filesDup.originalFilename;
+									image_url = "https://msa-pointage-server.vercel.app/"+filesDup.originalFilename;
 									blob = false;
 								}
 						}
@@ -1247,7 +1259,6 @@
 			return {first:true,second:undefined,element:returnValue.element.userAuthentification};
 		}
 		
-		
 		let query = "SELECT  * FROM individu inner join login on individu.ID = login.IDIndividu inner join "
 		query += "appartenance on individu.ID = appartenance.IDIndividu inner join \"location du bureau\" as A on A.ID = ";
 		query += "appartenance.IDBureau;"; 
@@ -1284,13 +1295,14 @@
 								dummyResponseSimple(res);
 							return {first:false,second:undefined,third:false};
 						}
-					}
-					else 
-					{
-						console.log("Error from query " +error);
-						dummyResponseSimple(res);
-						return {first:false,second:undefined,third:true};
-					}
+		}
+		else 
+		{
+			console.log("Error from query " +error);
+			if(res != undefined)
+				dummyResponseSimple(res);
+			return {first:false,second:undefined,third:true};
+		}
 	}
 			
 	async function forced_authentification_query(userAuthentification,res)
