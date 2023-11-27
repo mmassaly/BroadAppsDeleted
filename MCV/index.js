@@ -161,6 +161,7 @@
 				imageUrlReprocessed = decodeURI(imageUrlReprocessed);
 				console.log("You bot are making an image request processed to be "+imageUrlReprocessed);
 				
+				let responseb = res;
 				fs.exists(imageUrlReprocessed,async function(exists)
 				{
 					//console.log("exists = "+exists);
@@ -171,13 +172,13 @@
 							if(err)
 							{
 								//console.log(err);
-								res.end();
+								responseb.end();
 							}
 							else if(data)
 							{
-								res.writeHeader(200,{"Content-Type":"image/"+imageType});
-								res.write(data);
-								res.end();
+								responseb.writeHeader(200,{"Content-Type":"image/"+imageType});
+								responseb.write(data);
+								responseb.end();
 							}
 						});
 					}
@@ -192,23 +193,23 @@
 							res.writeHeader(200,{"Content-Type":blob.contentType});
 							res.write(blob);*/
 							imageDictionary.findUrlBufferValue("http://msa-pointage-server.vercel.app/"+imageUrlReprocessed).then((result)=>{
-								res.writeHeader(200,{"Content-Type":"image/"+imageType});
+								responseb.writeHeader(200,{"Content-Type":"image/"+imageType});
 								console.log(result);
-								res.write(result);
-								res.end();
+								responseb.write(result);
+								responseb.end();
 							}
 							,(err)=>
 							{
-								res.writeHeader(200,{"Content-Type":"image/"+imageType});
+								responseb.writeHeader(200,{"Content-Type":"image/"+imageType});
 								console.log(err);
-								res.write(err);
-								res.end();
+								responseb.write(err);
+								responseb.end();
 							});
 						}
 						catch(ex)
 						{
 							console.log(ex);
-							res.end();
+							responseb.end();
 						}
 						
 						//console.log("Image file does not exist.");
