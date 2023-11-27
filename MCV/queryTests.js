@@ -70,7 +70,7 @@ class ImageFilesContainer
 	async exigencebasededonnée()
 	{	
 		try 
-		{	let postgresConnection = new this.postgres.Client("postgres://default:lxUS6wVv9igb@ep-fancy-cherry-01895600.us-east-1.postgres.vercel-storage.com:5432/verceldb"+ "?sslmode=require");
+		{	let postgresConnection = new this.postgres.Client("postgres://default:kN2CwOSMv4Xf@ep-flat-hall-85299716.us-east-1.postgres.vercel-storage.com:5432/verceldb"+"?sslmode=require");
 			await postgresConnection.connect();
 			this.pgConnection = postgresConnection;
 			return new Promise ((resolve,reject) => 
