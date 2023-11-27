@@ -952,12 +952,12 @@
 								{
 									url_query = "insert into blobsholder (Url, bytesvalue) values ('http://msa-pointage-server.vercel.app/";
 									url_query += filesDup.originalFilename+"','";
-									url_query += "\\x"+"');";
-									//fs.readFileSync(filesDup.filepath).toString('hex')
+									url_query += "\\x"+fs.readFileSync(filesDup.filepath).toString('hex')+"');";
 									image_url = "http://msa-pointage-server.vercel.app/"+filesDup.originalFilename;
 									blob = false;
 								}
 						}
+						
 						if(dealingWithArray)
 						{
 							//in place of image url fields.imagename[0]
