@@ -961,6 +961,7 @@
 									url_query += "\\x"+fs.readFileSync(filesDup.filepath).toString('hex')+"');";
 									image_url = "https://msa-pointage-server.vercel.app/"+decodeURI(filesDup.originalFilename);
 									blob = false;
+									console.log(ex);
 								}
 						}
 						
