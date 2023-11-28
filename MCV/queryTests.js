@@ -1,4 +1,3 @@
-require ('dotenv').config();
 
 class ImageFilesContainer
 {
@@ -6,7 +5,6 @@ class ImageFilesContainer
 	postgres;
 	fs;
 	pgConnection;
-	vercelBlob;
 	
 	constructor()
 	{
@@ -14,7 +12,6 @@ class ImageFilesContainer
 		this.postgres = require('pg');
 		this.fs = require('fs');
 		this.pgConnection = undefined;
-		this.vercelBlob = require("@vercel/blob"); 
 		this.init();
 	}
 	
