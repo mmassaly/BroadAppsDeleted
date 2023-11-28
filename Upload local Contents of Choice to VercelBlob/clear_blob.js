@@ -7,8 +7,8 @@ async function getListandDeleteContent()
 	try
 	{
 		let list = await vercelBlob.list({token:process.env.token}) ;
-		
-		list.forEach(async (element)=>
+		console.log(list);
+		list.blobs.forEach(async (element)=>
 		{
 			console.log(element);
 			await vercelBlob.del(element.url,{token:process.env.token});

@@ -2,8 +2,8 @@ var vercelBlob = require("@vercel/blob");
 var fs = require('fs');
 require ('dotenv').config();
 var paths = ['C:\\Users\\Mamadou\\Desktop\\WebPages\\Project Timing\\my-app\\src\\assets\\images'];
-paths = ['C:\\Users\\Mamadou\\Desktop\\WebPages\\Project Timing Phone\\TestProject\\platforms\\android\\app\\build\\outputs\\apk\\debug'];
-var directories = ["assets/images/","apks/"];
+//paths = ['C:\\Users\\Mamadou\\Desktop\\WebPages\\Project Timing Phone\\TestProject\\platforms\\android\\app\\build\\outputs\\apk\\debug'];
+var directories = ["assets/images/profile-pictures/","apks/"];
 
 async function start(pathsofInterest)
 {
@@ -36,34 +36,35 @@ async function start(pathsofInterest)
 					{
 						if(element.isFile())
 						{
-							console.log(element.name+" element instanceof BLOB is "+(element instanceof Blob));
-							let file_ico = element.name.split(".")[1];
+							//console.log(element.name+" element instanceof file is "+(element instanceof File));
+							let file_ico = element.name.split(".");
+							file_ico = file_ico[file_ico.length-1];
 							
 							let element_dup = element;
-							fs.readFile(notGivenPath+"\\"+element_dup.name,async function(err,data)
+							let data = fs.readFileSync(notGivenPath+"\\"+element_dup.name);
+							
+							if(data)
 							{
-								if(element_dup.name.endsWith("apk") || !element_dup.name.endsWith("json"))
+								if(file_ico != "json" && file_ico != "txt")
 								{
-									var directories = ["assets/images/","apks/"];
-									var commandContentTypes = ['image/'+element_dup.mimetype,"application/vnd.android.package-archive"];
+									var directories = ["assets/images/profile-pictures/","apks/"];
+									var commandContentTypes = ['image/'+file_ico,"application/vnd.android.package-archive"];
 									var txtNames = ["imagefileslocaldb.txt","apks.txt"];
-									
-									const blob = await vercelBlob.put(directories[1]+element_dup.name,data, {
+									console.log(element);
+									const blob = await vercelBlob.put(directories[0]+element_dup.name,data, {
 											access: 'public',
-											contentType:commandContentTypes[1] ,
+											contentType:commandContentTypes[0] ,
 											token: process.env.token
 									});
-									
+										
 									console.log(blob);
-									fs.appendFile(txtNames[1],directories[1]+element_dup.name+" : "+blob.url+"\n",function(err)
+									fs.appendFile(txtNames[0],directories[0]+element_dup.name+" : "+blob.url+"\n",function(err)
 									{
-											if (err) throw err;
+										if (err) throw err;
 									});
 								}
-							});
+							}
 							
-							
-						
 						}
 						
 						if(element.isDirectory())

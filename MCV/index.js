@@ -186,12 +186,7 @@
 					{
 						try
 						{
-							/*const blob = await vercelBlob.head(req.url,{
-								token: "vercel_blob_rw_70gXoZ4JnkgIVATX_LItRzZnyiVF2IfjUxYT3srgV7mUcTn"
-							});
-							//console.log(blob);
-							res.writeHeader(200,{"Content-Type":blob.contentType});
-							res.write(blob);*/
+							
 							imageDictionary.findUrlBufferValue("https://msa-pointage-server.vercel.app/"+imageUrlReprocessed).then((result)=>{
 								responseb.writeHeader(200,{"Content-Type":"image/"+imageType});
 								console.log(result);
@@ -948,25 +943,23 @@
 						if(filesDup != undefined && filesDup.imgfile != undefined || ( filesDup.originalFilename != undefined))
 						{
 								//console.log(fs.readFileSync(filesDup.filepath));
-								
 								try
-								{
-									
-									
-									const blob = await vercelBlob.put("assets/images/"+filesDup.originalFilename,fs.readFileSync(filesDup.filepath),{
+								{			
+									//not decodeURI for the originalFilename risk taken even if percentages are introduced however urls must be processed
+									const blob = await vercelBlob.put("assets/images/profile-pictures/"+decodeURI(filesDup.originalFilename),fs.readFileSync(filesDup.filepath),{
 										access: 'public',
-										contentType: filesDup.mimetype,
+										contentType: filesDup.mimetype, 
 										token: process.env.BLOB_READ_WRITE_TOKEN
 									});
 									
-									image_url = blob.url;
+									image_url = decodeURI(blob.url);
 								}
 								catch(ex)
 								{
 									url_query = "insert into blobsholder (Url, bytesvalue) values ('https://msa-pointage-server.vercel.app/";
-									url_query += filesDup.originalFilename+"','";
+									url_query += decodeURI(filesDup.originalFilename)+"','";
 									url_query += "\\x"+fs.readFileSync(filesDup.filepath).toString('hex')+"');";
-									image_url = "https://msa-pointage-server.vercel.app/"+filesDup.originalFilename;
+									image_url = "https://msa-pointage-server.vercel.app/"+decodeURI(filesDup.originalFilename);
 									blob = false;
 								}
 						}

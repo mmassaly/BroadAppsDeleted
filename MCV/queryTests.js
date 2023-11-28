@@ -1,3 +1,4 @@
+require ('dotenv').config();
 
 class ImageFilesContainer
 {
@@ -5,6 +6,7 @@ class ImageFilesContainer
 	postgres;
 	fs;
 	pgConnection;
+	vercelBlob;
 	
 	constructor()
 	{
@@ -12,6 +14,7 @@ class ImageFilesContainer
 		this.postgres = require('pg');
 		this.fs = require('fs');
 		this.pgConnection = undefined;
+		this.vercelBlob = require("@vercel/blob"); 
 		this.init();
 	}
 	
@@ -19,7 +22,6 @@ class ImageFilesContainer
 	{
 		let res = await this.query(undefined);
 		await this.processRows(res);
-		console.log(this.urlandValues);
 	}
 	
 	async queryGetUrlElement(urlElement,connection)

@@ -1,0 +1,34 @@
+assets/images/computer-desk.ico:https://70gxoz4jnkgivatx.public.blob.vercel-storage.com/assets/images/computer-desk-zPCDTHkdOqlbVGpGqoqp1iTMCBY3bP.ico
+assets/images/ease.png:https://70gxoz4jnkgivatx.public.blob.vercel-storage.com/assets/images/ease-z2bE0Y5vFgU8WnXLfWOYzt0c5Y3MaW.png
+assets/images/employee-desk.ico:https://70gxoz4jnkgivatx.public.blob.vercel-storage.com/assets/images/employee-desk-3xioStgJ863AR15wu5hCsfo2SXawn7.ico
+assets/images/employee-workplace.ico:https://70gxoz4jnkgivatx.public.blob.vercel-storage.com/assets/images/employee-workplace-9iJfqIXHk19jC5qr8KQCvM4eyTBrQO.ico
+assets/images/employee-workplace.png:https://70gxoz4jnkgivatx.public.blob.vercel-storage.com/assets/images/employee-workplace-jZc7QPoEKoqCiZlRKhxr0x4svK7Tws.png
+assets/images/employee.png:https://70gxoz4jnkgivatx.public.blob.vercel-storage.com/assets/images/employee-Wyqd4HrcVKGy2uaoetWrWNlw3avxtT.png
+assets/images/fever.ico:https://70gxoz4jnkgivatx.public.blob.vercel-storage.com/assets/images/fever-usCJrrRrCZAAlZKiJPgGHIz6ZWrzTi.ico
+assets/images/fever.png:https://70gxoz4jnkgivatx.public.blob.vercel-storage.com/assets/images/fever-bvURqlJ54c7zFysiqN3lxSRhkLBFvd.png
+assets/images/map-and-location.ico:https://70gxoz4jnkgivatx.public.blob.vercel-storage.com/assets/images/map-and-location-J90hP4gsKMzi3jvb8TFYCXbFF0nds8.ico
+assets/images/map-and-location.png:https://70gxoz4jnkgivatx.public.blob.vercel-storage.com/assets/images/map-and-location-PdTQrHBtqnIHYr0dX7JhFZfUD3xixu.png
+assets/images/maps.ico:https://70gxoz4jnkgivatx.public.blob.vercel-storage.com/assets/images/maps-bEnmNGw673KCeohqiGGAh39WzBNxjB.ico
+assets/images/maps.png:https://70gxoz4jnkgivatx.public.blob.vercel-storage.com/assets/images/maps-TCEQOcY1bWkCvQtEaqpmvL2ky16sBR.png
+assets/images/office.ico:https://70gxoz4jnkgivatx.public.blob.vercel-storage.com/assets/images/office-cSzuJcDCEd2vAzczNoEDpbw7DtMeHi.ico
+assets/images/office.png:https://70gxoz4jnkgivatx.public.blob.vercel-storage.com/assets/images/office-3WzJbNVbDccvofMUTl7vXuHovhDJyi.png
+assets/images/outline_home_black_24dp.png:https://70gxoz4jnkgivatx.public.blob.vercel-storage.com/assets/images/outline_home_black_24dp-M3xi4JSuntg7xU9KcfYt1BLNplVRlk.png
+assets/images/working-employee.ico:https://70gxoz4jnkgivatx.public.blob.vercel-storage.com/assets/images/working-employee-mlVmOJtqmrTmBkyzeGMfz2Sq3ZgrfJ.ico
+assets/images/working-employee.png:https://70gxoz4jnkgivatx.public.blob.vercel-storage.com/assets/images/working-employee-BmTUCy6qakDcXGOXCYzuHPyEjvTC1y.pngassets/images/MrAmath.jpg : https://70gxoz4jnkgivatx.public.blob.vercel-storage.com/assets/images/MrAmath-4wQeuZttQpOmfAT5rfTCyDHZ9zM1Wv.jpg
+assets/images/MrEya.jpg : https://70gxoz4jnkgivatx.public.blob.vercel-storage.com/assets/images/MrEya-HmedvX84Pa5IWYS1RUyyzdn3wtjjAX.jpg
+assets/images/MamadouMassalyphotodeprofil.jpg : https://70gxoz4jnkgivatx.public.blob.vercel-storage.com/assets/images/MamadouMassalyphotodeprofil-K8PwMsdgWuL5dt4RRHGfCM42zISArn.jpg
+assets/images/MamadouMassalyphotodeprofil2.jpg : https://70gxoz4jnkgivatx.public.blob.vercel-storage.com/assets/images/MamadouMassalyphotodeprofil2-pkUJq4o9271bSBJBHVLqKlJZKpMs0I.jpg
+assets/images/Mamadou Massaly PF1.jpg : https://70gxoz4jnkgivatx.public.blob.vercel-storage.com/assets/images/Mamadou%20Massaly%20PF1-j7gs9RTDfihVCVKzfTVbLJ8AMApsRG.jpg
+assets/images/MrAmath.jpg : https://70gxoz4jnkgivatx.public.blob.vercel-storage.com/assets/images/MrAmath-4SX8RMaT9mrPEgM3ebVXAR2AUslaeH.jpg
+assets/images/Mamadou Massaly PF1.jpg : https://70gxoz4jnkgivatx.public.blob.vercel-storage.com/assets/images/Mamadou%20Massaly%20PF1-6msn20T8P7AM2hU64TsUhbuXbFw71u.jpg
+assets/images/MamadouMassalyphotodeprofil2.jpg : https://70gxoz4jnkgivatx.public.blob.vercel-storage.com/assets/images/MamadouMassalyphotodeprofil2-NXDsr5xBkNh6LYP24kWeYfPp3OrGdD.jpg
+assets/images/MrEya.jpg : https://70gxoz4jnkgivatx.public.blob.vercel-storage.com/assets/images/MrEya-Ow9NmpeDbKALcAk6n3OCxiJAyAwc1r.jpg
+assets/images/MamadouMassalyphotodeprofil.jpg : https://70gxoz4jnkgivatx.public.blob.vercel-storage.com/assets/images/MamadouMassalyphotodeprofil-vhXeMl50A8J7oQslAzqqokQWCXQABu.jpg
+assets/images/profile-pictures/MrAmath.jpg : https://ahaynnm8butrk7li.public.blob.vercel-storage.com/assets/images/profile-pictures/MrAmath-2qmtvQjeEZJJtjPVz73DNQ7WwQ9Emi.jpg
+assets/images/profile-pictures/Mamadou Massaly PF1.txt : https://ahaynnm8butrk7li.public.blob.vercel-storage.com/assets/images/profile-pictures/Mamadou%20Massaly%20PF1-99P5sABen0TpmrDxf3Yf61oLaXTifr.txt
+assets/images/profile-pictures/Mamadou Massaly PF1.txt : https://ahaynnm8butrk7li.public.blob.vercel-storage.com/assets/images/profile-pictures/Mamadou%20Massaly%20PF1-izRiPQtgiKo1atV31aqzEnO0vFBPBq.txt
+assets/images/profile-pictures/Mamadou Massaly PF1.jpg : https://ahaynnm8butrk7li.public.blob.vercel-storage.com/assets/images/profile-pictures/Mamadou%20Massaly%20PF1-cTew8m8OZWwq76Hfb6lTgieqh5H66K.jpg
+assets/images/profile-pictures/MamadouMassalyphotodeprofil.jpg : https://ahaynnm8butrk7li.public.blob.vercel-storage.com/assets/images/profile-pictures/MamadouMassalyphotodeprofil-glqmH19qwwr9KhACOJhPQkQl972yzt.jpg
+assets/images/profile-pictures/MamadouMassalyphotodeprofil2.jpg : https://ahaynnm8butrk7li.public.blob.vercel-storage.com/assets/images/profile-pictures/MamadouMassalyphotodeprofil2-Fdr6pOlQcPEWMYqZfJzRNFNlRtXZTR.jpg
+assets/images/profile-pictures/MrAmath.jpg : https://ahaynnm8butrk7li.public.blob.vercel-storage.com/assets/images/profile-pictures/MrAmath-zg8EpBY2g1Luale8VgBuEht544GK3P.jpg
+assets/images/profile-pictures/MrEya.jpg : https://ahaynnm8butrk7li.public.blob.vercel-storage.com/assets/images/profile-pictures/MrEya-ptF1gRy8oDU5pfly1YtqfwidCoWN3V.jpg
