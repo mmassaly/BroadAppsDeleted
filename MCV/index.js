@@ -949,7 +949,7 @@
 									const blob = await vercelBlob.put("assets/images/profile-pictures/"+decodeURI(filesDup.originalFilename),fs.readFileSync(filesDup.filepath),{
 										access: 'public',
 										contentType: filesDup.mimetype, 
-										token: process.env.BLOB_READ_WRITE_TOKEN
+										token: blob_stuff
 									});
 									
 									image_url = decodeURI(blob.url);
@@ -4502,3 +4502,38 @@
 		//return othereturnValue;
 		return returnValue;
 	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	let blob_stuff = "vercel_blob_rw_AhayNnM8BUTRk7li_Pirrs7p4aeFH5cnD9hONM9peBfDhxd";
