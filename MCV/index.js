@@ -192,7 +192,7 @@
 							//console.log(blob);
 							res.writeHeader(200,{"Content-Type":blob.contentType});
 							res.write(blob);*/
-							imageDictionary.findUrlBufferValue("http://msa-pointage-server.vercel.app/"+imageUrlReprocessed).then((result)=>{
+							imageDictionary.findUrlBufferValue("https://msa-pointage-server.vercel.app/"+imageUrlReprocessed).then((result)=>{
 								responseb.writeHeader(200,{"Content-Type":"image/"+imageType});
 								console.log(result);
 								responseb.write(result);
@@ -963,7 +963,7 @@
 								}
 								catch(ex)
 								{
-									url_query = "insert into blobsholder (Url, bytesvalue) values ('http://msa-pointage-server.vercel.app/";
+									url_query = "insert into blobsholder (Url, bytesvalue) values ('https://msa-pointage-server.vercel.app/";
 									url_query += filesDup.originalFilename+"','";
 									url_query += "\\x"+fs.readFileSync(filesDup.filepath).toString('hex')+"');";
 									image_url = "https://msa-pointage-server.vercel.app/"+filesDup.originalFilename;
