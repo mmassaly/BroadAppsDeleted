@@ -402,6 +402,7 @@
 									resultc.end();
 									await hoursToEmp(undefined,urlObject);
 									hoursLocker[urlObject.userAuthentification.ID].inside = true;
+									urlObject.day = undefined; urlObject.startDay = undefined; urlObject.endDay = undefined;
 									await getDataForAdmin(undefined,undefined,undefined,urlObject,undefined,undefined,undefined);
 									hoursLocker[urlObject.userAuthentification.ID].inside = false;
 								}
@@ -830,6 +831,7 @@
 		query = "insert into \""+nomdelaTable+"\" values ('"
 		+ ID+"','"+datereversed+"','"+startTime+"',"+((endTime == undefined)?null:"'"+endTime+"'")+")"
 		+" ON CONFLICT (IdIndividu,Date,Entrées) "+((endTime == undefined)?(" WHERE Sorties < '"+((endTime == undefined)? null+"'":"'"+endTime+"'")):"")+" DO UPDATE SET Sorties = "+((endTime == undefined)?null:"'"+endTime+"'")+";\n";
+		
 		//console.log(query);
 		results  = await faire_un_simple_query(query);
 		
@@ -907,7 +909,7 @@
 			{
 					let dealingWithArray = command instanceof Array;
 					let commandArg = fields.cmdArg;
-					//console.log(commandArg);
+					console.log(commandArg);
 					//console.log(fields.cmdArg);
 					let tablename = "";
 					let querySQL = "";
@@ -917,6 +919,8 @@
 					let yearParam = undefined;
 					let monthParam = undefined;
 					let dayParam = undefined;
+					let skip_authentification = false;
+					let tempResult = false; 
 					
 					if (commandArg === "offices" || (dealingWithArray && commandArg[0] === "offices"))
 					{
@@ -994,61 +998,181 @@
 						console.log(thirdQuerySQL);
 					
 					}
-					
+					else if(commandArg === "reasonsforabsences" || (dealingWithArray && commandArg[0] === "reasonsforabsences"))
+					{
+						let day ;
+						let startDay ;
+						let endDay ;
+						let reason ;
+						let IDEmployee ;
+						let Year;
+						skip_authentification = true;
+						console.log(fields);
+						if(dealingWithArray)
+						{
+							day = fields["Jour"];
+							day =(day != undefined)? new Date(day[0]): undefined;	
+							startDay = fields["Début"];
+							startDay =(startDay != undefined)? new Date(startDay[0]): undefined;
+							endDay = fields["Fin"];
+							endDay =(endDay != undefined)? new Date(endDay[0]): undefined;
+							reason = fields["raison"][0];
+							IDEmployee = fields["IDEmployee"][0];
+							Year = fields["Année"][0];
+						}
+						else
+						{
+							day = fields["Jour"];day =(day != undefined)? new Date(day): undefined;
+							startDay = fields["Début"];startDay =(startDay != undefined)? new Date(startDay): undefined;
+							endDay = fields["Fin"];endDay =(endDay != undefined)? new Date(endDay): undefined;
+							reason = fields["raison"];
+							IDEmployee = fields["IDEmployee"];
+							Year = fields["Année"];
+						}
+						
+						let tempuserAuthentification = {ID:urlObject.authID,Prenom:urlObject.authPrenom,Nom:urlObject.authNom,genre:urlObject.authgenre,naissance:urlObject.authnaissance,pass:urlObject.authpass};
+						tempResult = await forced_authentification_query(tempuserAuthentification,undefined);
+						
+						if(tempResult)
+						{
+							querySQL = "select \"Etat de l'individu\" from \"manuel des tables d'entrées et de sorties\" where Année= "+Year+";";
+							let res = await faire_un_simple_query(querySQL);
+							console.log(querySQL);
+							if(res.second != false && res.second instanceof Array )
+							{
+									tablename = "\""+res.first[0][res.second[0].name]+"\"";
+									let values = "";
+											
+									if(day != undefined)
+									{
+										values = (reason == "mission")?",true,false,false,false)":(reason == "congès")?",false,true,false,false)":(reason == "maladie")?",false,false,true,false)":false;
+										let updateArray = (reason == "mission")?[true,false,false,false]:(reason == "congès")?[false,true,false,false]:(reason == "maladie")?[false,false,true,false]:[false,false,false,false];
+										if(values != false && current.getDay() != 6 && current.getDay() != 0 || type == "mission")
+										{
+											let queryvalues = "('"+IDEmployee+"','"+((day.getMonth()+1)+"-"+day.getDate()+"-"+day.getFullYear())+"'"+values;
+											querySQL = "insert into "+tablename+" values "+queryvalues+" ON CONFLICT (IdIndividu,Date) DO Update Set absence ="+updateArray[0]+",maladie = "+updateArray[1]+",mission="+updateArray[2]+",congès="+updateArray[3]+";"; 
+										}
+									}
+									if(startDay != undefined && endDay != undefined)
+									{
+										let current = startDay;
+										values = (reason == "mission")?",true,false,false,false)":(reason == "congès")?",false,true,false,false)":(reason == "maladie")?",false,false,true,false)":false;
+										
+										while(values != false && current <= endDay  )
+										{
+											let updateArray = (reason == "mission")?[true,false,false,false]:(reason == "congès")?[false,true,false,false]:(reason == "maladie")?[false,false,true,false]:[false,false,false,false];
+												
+											if(current.getDay() != 6 && current.getDay() != 0 || type == "mission")
+											{
+												if(values != false)
+												{
+													let queryvalues = "('"+IDEmployee+"','"+((startDay.getMonth()+1)+"-"+startDay.getDate()+"-"+startDay.getFullYear())+"'"+values;
+													querySQL += "insert into "+tablename+" values "+queryvalues+" ON CONFLICT (IdIndividu,Date) DO Update Set absence ="+updateArray[0]+",maladie = "+updateArray[1]+",mission="+updateArray[2]+",congès="+updateArray[3]+";\n"; 
+												}
+											}
+											
+											if(current.getDate() == (new Date(current.getYear(),current.getMonth(),0)).getDate())
+											{
+												if(current.getMonth() == 11)
+												{
+													current = new Date(current.getFullYear()+1,0,1);
+												}
+												else
+												{
+													current = new Date(current.getFullYear(),(current.getMonth()+1),1);
+												}
+											}
+											else
+											{
+												current = new Date(current.getFullYear(),(current.getMonth()),current.getDate()+1);
+												console.log(current);
+											}
+										}
+									}
+							}
+						}
+						
+					}
+
 					let tempuserAuthentification = {ID:urlObject.authID,Prenom:urlObject.authPrenom,Nom:urlObject.authNom,genre:urlObject.authgenre,naissance:urlObject.authnaissance,pass:urlObject.authpass};
-					let tempResult = await forced_authentification_query(tempuserAuthentification,undefined);
+					if(skip_authentification == false)
+						tempResult = await forced_authentification_query(tempuserAuthentification,undefined);
 					
 					//console.log(tempuserAuthentification);
 					//console.log(tempResult);
 					//console.log(querySQL);
 					//console.log("-----------------------Result of authentification----------------------");
 					
-					if(tempResult.second != false)
+					if(tempResult != false)
 					{
 						try
 						{
+							console.log(querySQL);
 							let aresult = await faire_un_simple_query(querySQL);
-							console.log("aresult.second "+(aresult.second != false)+" "+aresult.second);
+							console.log(aresult);
+							console.log("aresult.second "+(aresult.second != false || (aresult.second instanceof Array))+" "+aresult.second);
 							if(aresult.second != false || (aresult.second instanceof Array))
 							{
 								let userTimeObject = undefined;
 								let userOfficeObject = undefined;
 								let userAdditionObject = undefined;
-								//console.log(commandArg[0]);
+								console.log(commandArg[0]);
 								//console.log(commandArg);
 								//console.log(dealingWithArray);
-								if (commandArg === "offices" || (dealingWithArray && commandArg[0] === "offices"))
+								if (commandArg === "reasonsforabsences" || (dealingWithArray && commandArg[0] === "reasonsforabsences"))
 								{
-									userOfficeObject = urlObject;
-									//let okresult = //console.log("after offices getDataForAdmin");
-									//console.log("res writable ended is " +res.writableEnded);
-							 		//console.log(primaryObject.container);
-									
-									if(res.writableEnded)
-											return;
-									res.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
-																,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
-																,"Access-Control-Max-Age":'86400'
-																,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
-																});
-									
-									res.write(JSON.stringify({customtext:"OK"}));
-										//console.log("no problems");
-									res.end();
-									await getDataForAdmin(undefined,userOfficeObject,undefined,undefined,undefined,undefined,undefined);
-									
-									/*	
-									if(okresult)
-									{
+									console.log("Passed reasonsforabsences");
+									let userPresenceObject = urlObject;
+									userPresenceObject.day = day;
+										userPresenceObject.startDay = startDay;
+										userPresenceObject.endDay = endDay;
+										console.log("Inside response");
 										
-									}
-									else
-									{
-										dummyResponse(res,"Error");
-										//console.log("errors problems");
-									}*/
-									
+										if(res.writableEnded)
+												return;
+										res.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+																	,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
+																	,"Access-Control-Max-Age":'86400'
+																	,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
+																	});
+										
+										res.write(JSON.stringify({customtext:"OK"}));
+											//console.log("no problems");
+										res.end();
+										await getDataForAdmin(undefined,undefined,undefined,userPresenceObject,undefined,undefined,undefined);
 								}
+								
+								if(commandArg === "offices" || (dealingWithArray && commandArg[0] === "offices") )
+								{
+										//let okresult = //console.log("after offices getDataForAdmin");
+										//console.log("res writable ended is " +res.writableEnded);
+										//console.log(primaryObject.container);
+										
+										if(res.writableEnded)
+												return;
+										res.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+																	,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
+																	,"Access-Control-Max-Age":'86400'
+																	,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
+																	});
+										
+										res.write(JSON.stringify({customtext:"OK"}));
+											//console.log("no problems");
+										res.end();
+										await getDataForAdmin(undefined,userOfficeObject,undefined,undefined,undefined,undefined,undefined);
+										
+										/*	
+										if(okresult)
+										{
+											
+										}
+										else
+										{
+											dummyResponse(res,"Error");
+											//console.log("errors problems");
+										}*/
+								}
+								
 
 								if(commandArg === "employees" || (dealingWithArray && commandArg[0] === "employees"))
 								{
@@ -1702,7 +1826,28 @@
 				
 				if(primaryObject !== undefined)
 					data = primaryObject;
-				
+					
+				let stopDate = undefined;
+				if(empHoursObj != undefined)
+				{
+					if(empHoursObj["day"] != undefined)
+					{
+						stopDate = empHoursObj["day"];	
+					}
+					else 
+					{
+						if(empHoursObj["startDay"] != undefined)
+						{
+							stopDate = empHoursObj["startDay"];
+						}
+							
+						if(empHoursObj["endDay"] != undefined)
+						{
+							stopDate = empHoursObj["endDay"];
+						}
+					}
+				}
+
 				try
 				{
 					let totalQuery = "";
@@ -1751,6 +1896,10 @@
 					ayear = dateNow.getFullYear();
 					//console.log(day+"-"+amonth+"-"+ayear);
 					let dateToday = new Date(ayear,amonth,day);
+					if(stopDate == undefined)
+					{
+						stopDate = dateToday;
+					}
 					amonth += 1;
 					//console.log("new date today is "+ dateToday.toLocaleString());
 					
@@ -1889,7 +2038,7 @@
 
 							if(paramyear == undefined)
 							{
-								if(currentDateOfYear > dateToday )
+								if(currentDateOfYear > stopDate )
 								{
 									//console.log("breaking");
 									break;
@@ -1940,10 +2089,40 @@
 							
 							let testCount = (parammonth == undefined)? 0: parammonth;
 							if(empHoursObj != undefined)
-								testCount = empHoursObj.date.getMonth();
+							{	
+								if(empHoursObj["startDay"] != undefined || empHoursObj["endDay"] != undefined || empHoursObj["day"] != undefined)
+								{
+									testCount = dateToday.getMonth();
+									
+									if (empHoursObj["day"] != undefined && empHoursObj["day"] < dateToday)
+									{
+										testCount = empHoursObj["day"].getMonth();
+									}
+									else if(empHoursObj["startDay"] != undefined && empHoursObj["startDay"] < dateToday)
+									{
+										testCount = empHoursObj["startDay"].getMonth();
+									}
+									else if (empHoursObj["endDay"] != undefined && empHoursObj["endDay"] < dateToday)
+									{
+										testCount = empHoursObj["endDay"].getMonth();
+									}
+								}
+								else 
+								{
+									testCount = empHoursObj.date.getMonth();									
+								}
+							}
+								
 							let going_yearly_count = (parammonth == undefined)? 12: parammonth + 1;
 							if(empHoursObj != undefined)
-								going_yearly_count = empHoursObj.date.getMonth()+1;
+							{
+								if(empHoursObj["startDay"] != undefined || empHoursObj["endDay"] != undefined || empHoursObj["day"] != undefined)
+								{
+									going_yearly_count = stopDay.getMonth()+1;
+								}
+								else
+									going_yearly_count = empHoursObj.date.getMonth()+1;
+							}
 							//console.log("Test count "+testCount+" year_count "+going_yearly_count);
 							
 							while( testCount < going_yearly_count )
@@ -1981,7 +2160,7 @@
 									testCount++;
 								}
 								
-								if(parammonth == undefined && currentDateOfYear > dateToday )
+								if(parammonth == undefined && currentDateOfYear > stopDate )
 								{
 									//console.log(currentDateOfYear+" > to "+ dateToday);
 									//console.log("breaking");
@@ -2004,6 +2183,21 @@
 								if(empHoursObj != undefined)
 								{
 									start_day = empHoursObj.date.getDate();
+									if(empHoursObj["startDay"] != undefined || empHoursObj["endDay"] != undefined || empHoursObj["day"] != undefined)
+									{
+										if (empHoursObj["day"] != undefined && empHoursObj["day"] < dateToday)
+										{
+											start_day = empHoursObj["day"].getDate();
+										}
+										else if(empHoursObj["startDay"] != undefined && empHoursObj["startDay"] < dateToday)
+										{
+											start_day = empHoursObj["startDay"].getDate();
+										}
+										else if (empHoursObj["endDay"] != undefined && empHoursObj["endDay"] < dateToday)
+										{
+											start_day = empHoursObj["endDay"].getDate();
+										}
+									}
 								}
 
 								let monthly =  
@@ -2078,7 +2272,10 @@
 									nombre_de_jours = paramday;
 								if( empHoursObj != undefined ) 
 								{
-									nombre_de_jours  = empHoursObj.date.getDate();
+									if(empHoursObj["startDay"] == undefined && empHoursObj["endDay"] == undefined && empHoursObj["day"] == undefined)
+									{
+										nombre_de_jours  = empHoursObj.date.getDate();
+									}
 								}
 
 								//console.log(" What is the result of the comparison " + value);
@@ -2159,9 +2356,9 @@
 										}
 									}
 
-									if(currentDateOfYear > dateToday )
+									if(currentDateOfYear > stopDate)
 									{	
-										console.log(currentDateOfYear+" > to "+ dateToday);
+										console.log(currentDateOfYear+" > to "+ stopDate);
 										console.log("breaking");
 										break;
 									}
@@ -2969,9 +3166,9 @@
 													}
 													
 													
-												}
+												}//end of hoursSection
 												
-												
+												//start of presenceSection
 												if( secondresult.first[0].length == 0 && secondresult.first[1].length == 0 && basicDateComparison(dateNowOther ,currentDateOfYear) > 0)
 												{
 													employeeContentModel.absence = true;
@@ -2984,7 +3181,7 @@
 												else if(!employeeContentModel.presence && !retard && !criticallylate 
 													&& ((dateNowOther.getUTCHours() == 8 && dateNowOther.getUTCMinutes() > 30)
 													|| ((dateNowOther.getUTCHours() == 8 && dateNowOther.getUTCMinutes() == 30 && dateNowOther.getUTCSeconds() > 0)) 
-													|| (dateNowOther.getUTCHours() > 8) ) )
+													|| (dateNowOther.getUTCHours() > 8) ) && basicDateComparison(dateNowOther ,currentDateOfYear) >= 0)//not more thant today
 												{
 														
 														

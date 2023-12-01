@@ -322,7 +322,6 @@ async function f (value)
 {
 	console.log(value);
 	let results = await imageDictionary.queryGiven(value);
-	
 	if(results instanceof Array)
 	{
 		results.forEach(element=>
@@ -337,6 +336,16 @@ async function f (value)
 		console.log(results);
 };
 //console.log(querybeta);
+/*
+query = "insert into \"2023 état de l'individu\" values ('1-24','11-29-2023',false,false,true,false) ON CONFLICT (IdIndividu,Date) DO Update Set absence =false,maladie = false,mission=true,congès=false;";
+query += "insert into \"2023 état de l'individu\" values ('1-24','11-28-2023',false,false,true,false) ON CONFLICT (IdIndividu,Date) DO Update Set absence =false,maladie = false,mission=true,congès=false;";
+query += "insert into \"2023 état de l'individu\" values ('1-24','11-27-2023',false,false,true,false) ON CONFLICT (IdIndividu,Date) DO Update Set absence =false,maladie = false,mission=true,congès=false;";
+query += "insert into \"2023 état de l'individu\" values ('1-24','11-26-2023',false,false,true,false) ON CONFLICT (IdIndividu,Date) DO Update Set absence =false,maladie = false,mission=true,congès=false;";
+query += "insert into \"2023 état de l'individu\" values ('1-24','11-25-2023',false,false,true,false) ON CONFLICT (IdIndividu,Date) DO Update Set absence =false,maladie = false,mission=true,congès=false;";
+query += "insert into \"2023 état de l'individu\" values ('1-24','11-24-2023',false,false,true,false) ON CONFLICT (IdIndividu,Date) DO Update Set absence =false,maladie = false,mission=true,congès=false;";
+query +="Select * from \"2023 état de l'individu\" ";
+//works cool
+*/
 f(query);
 
 
