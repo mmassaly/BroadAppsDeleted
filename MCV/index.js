@@ -1072,7 +1072,7 @@
 											{
 												if(values != false)
 												{
-													let queryvalues = "('"+IDEmployee+"','"+((startDay.getMonth()+1)+"-"+startDay.getDate()+"-"+startDay.getFullYear())+"'"+values;
+													let queryvalues = "('"+IDEmployee+"','"+((currentDay.getMonth()+1)+"-"+currentDay.getDate()+"-"+currentDay.getFullYear())+"'"+values;
 													querySQL += "insert into "+tablename+" values "+queryvalues+" ON CONFLICT (IdIndividu,Date) DO Update Set absence ="+updateArray[0]+",maladie = "+updateArray[1]+",mission="+updateArray[2]+",congès="+updateArray[3]+";\n"; 
 												}
 											}
@@ -3242,10 +3242,13 @@
 													//console.log(secondresult.second);
 													if( secondresult.first[1][0][secondresult.second[1][3].name] == 1 ) 
 													{
-														employeeContentModel.maladie = true;	
-														console.log("Maladie on "+currentDateOfYear);
-														employeeContentModel.date = currentDateOfYear.toLocaleString('fr-FR',{day:"numeric",month:"long",year:"numeric"});
-														calculateSicknesses(unitLocation,year,1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
+														if(currentDateOfYear.getDay() != 0 && currentDateOfYear.getDay() != 6)
+														{	
+															employeeContentModel.maladie = true;	
+															console.log("Maladie on "+currentDateOfYear);
+															employeeContentModel.date = currentDateOfYear.toLocaleString('fr-FR',{day:"numeric",month:"long",year:"numeric"});
+															calculateSicknesses(unitLocation,year,1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
+														}
 														if(employeeContentModel.mission)//mission section
 														{
 															employeeContentModel.mission = false;
@@ -3313,10 +3316,13 @@
 													
 													if( secondresult.first[1][0][secondresult.second[1][5].name] == 1 )
 													{
-														employeeContentModel.congès = true;
-														console.log("Congès on "+currentDateOfYear);
-														employeeContentModel.date = currentDateOfYear.toLocaleString('fr-FR',{day:"numeric",month:"long",year:"numeric"});
-														calculateCongès(unitLocation,year,1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
+														if(currentDateOfYear.getDay() != 0 && currentDateOfYear.getDay() != 6)
+														{
+															employeeContentModel.congès = true;
+															console.log("Congès on "+currentDateOfYear);
+															employeeContentModel.date = currentDateOfYear.toLocaleString('fr-FR',{day:"numeric",month:"long",year:"numeric"});
+															calculateCongès(unitLocation,year,1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
+														}
 														if(employeeContentModel.mission)
 														{
 															employeeContentModel.missions = false;
@@ -3349,11 +3355,14 @@
 													{
 														if(! employeeContentModel.absence)
 														{
-															employeeContentModel.absence = true;
-															console.log("Absence on "+currentDateOfYear);
-															employeeContentModel.date = currentDateOfYear.toLocaleString('fr-FR',{day:"numeric",month:"long",year:"numeric"});
 															if(currentDateOfYear.getDay() != 0 && currentDateOfYear.getDay() != 6)
-															calculateAbsence(unitLocation,year,1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
+															{
+																employeeContentModel.absence = true;
+																console.log("Absence on "+currentDateOfYear);
+																employeeContentModel.date = currentDateOfYear.toLocaleString('fr-FR',{day:"numeric",month:"long",year:"numeric"});
+																calculateAbsence(unitLocation,year,1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
+															}
+
 															if(employeeContentModel.mission)
 															{
 																employeeContentModel.mission = false;
