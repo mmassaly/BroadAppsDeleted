@@ -1836,6 +1836,7 @@
 				let stopDate = undefined;
 				if(empHoursObj != undefined)
 				{
+					console.log("Employee hours");
 					console.log(empHoursObj);
 					if(empHoursObj["day"] != undefined)
 					{
@@ -1856,6 +1857,7 @@
 							empHoursObj["date"] = stopDate;
 						}
 					}
+					console.log("Stop date "+stopdate);
 				}
 
 				try
@@ -1973,7 +1975,6 @@
 						}																																		
 						else if (empHoursObj != undefined)
 						{
-							console.log(empHoursObj);
 							query = "Select * from \"manuel des tables d'entrées et de sorties\" where Année = "+empHoursObj.date.getFullYear()+";";
 						}
 						
