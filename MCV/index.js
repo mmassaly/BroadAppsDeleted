@@ -1843,15 +1843,15 @@
 					}
 					else 
 					{
-						if(empHoursObj["startDay"] != undefined)
+						if(empHoursObj["Début"] != undefined)
 						{
-							stopDate = empHoursObj["startDay"];
+							stopDate = empHoursObj["Début"];
 							empHoursObj["date"] = stopDate;
 						}
 							
-						if(empHoursObj["endDay"] != undefined)
+						if(empHoursObj["Fin"] != undefined)
 						{
-							stopDate = empHoursObj["endDay"];
+							stopDate = empHoursObj["Fin"];
 							empHoursObj["date"] = stopDate;
 						}
 					}
