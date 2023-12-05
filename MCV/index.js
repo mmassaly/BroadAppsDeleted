@@ -1836,6 +1836,7 @@
 				let stopDate = undefined;
 				if(empHoursObj != undefined)
 				{
+					console.log(empHoursObj);
 					if(empHoursObj["day"] != undefined)
 					{
 						stopDate = empHoursObj["day"];
