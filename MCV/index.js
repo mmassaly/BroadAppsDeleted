@@ -2104,7 +2104,7 @@
 							let testCount = (parammonth == undefined)? 0: parammonth;
 							if(empHoursObj != undefined)
 							{	
-								if(empHoursObj["startDay"] != undefined || empHoursObj["endDay"] != undefined || empHoursObj["day"] != undefined)
+								if(empHoursObj["Début"] != undefined || empHoursObj["Fin"] != undefined || empHoursObj["day"] != undefined)
 								{
 									testCount = dateToday.getMonth();
 									
@@ -2112,13 +2112,13 @@
 									{
 										testCount = empHoursObj["day"].getMonth();
 									}
-									else if(empHoursObj["startDay"] != undefined && empHoursObj["startDay"] < dateToday)
+									else if(empHoursObj["Début"] != undefined && empHoursObj["Début"] < dateToday)
 									{
-										testCount = empHoursObj["startDay"].getMonth();
+										testCount = empHoursObj["Début"].getMonth();
 									}
-									else if (empHoursObj["endDay"] != undefined && empHoursObj["endDay"] < dateToday)
+									else if (empHoursObj["Fin"] != undefined && empHoursObj["Fin"] < dateToday)
 									{
-										testCount = empHoursObj["endDay"].getMonth();
+										testCount = empHoursObj["Fin"].getMonth();
 									}
 								}
 								else 
@@ -2130,7 +2130,7 @@
 							let going_yearly_count = (parammonth == undefined)? 12: parammonth + 1;
 							if(empHoursObj != undefined)
 							{
-								if(empHoursObj["startDay"] != undefined || empHoursObj["endDay"] != undefined || empHoursObj["day"] != undefined)
+								if(empHoursObj["Début"] != undefined || empHoursObj["Fin"] != undefined || empHoursObj["day"] != undefined)
 								{
 									going_yearly_count = stopDate.getMonth()+1;
 								}
@@ -2197,7 +2197,7 @@
 								if(empHoursObj != undefined)
 								{
 									start_day = empHoursObj.date.getDate();
-									if(empHoursObj["startDay"] != undefined || empHoursObj["endDay"] != undefined || empHoursObj["day"] != undefined)
+									if(empHoursObj["Début"] != undefined || empHoursObj["Fin"] != undefined || empHoursObj["day"] != undefined)
 									{
 										if (empHoursObj["day"] != undefined && empHoursObj["day"] < dateToday)
 										{
@@ -2207,17 +2207,17 @@
 												start_day = dateToday;
 											}
 										}
-										else if(empHoursObj["startDay"] != undefined && empHoursObj["startDay"] < dateToday)
+										else if(empHoursObj["Début"] != undefined && empHoursObj["Début"] < dateToday)
 										{
-											start_day = empHoursObj["startDay"].getDate();
+											start_day = empHoursObj["Début"].getDate();
 											if(start_day > dateToday)
 											{
 												start_day = dateToday;
 											}
 										}
-										else if (empHoursObj["endDay"] != undefined && empHoursObj["endDay"] < dateToday)
+										else if (empHoursObj["Fin"] != undefined && empHoursObj["Fin"] < dateToday)
 										{
-											start_day = empHoursObj["endDay"].getDate();
+											start_day = empHoursObj["Fin"].getDate();
 											if(start_day > dateToday)
 											{
 												start_day = dateToday;
@@ -2298,7 +2298,7 @@
 									nombre_de_jours = paramday;
 								if( empHoursObj != undefined ) 
 								{
-									if(empHoursObj["startDay"] == undefined && empHoursObj["endDay"] == undefined && empHoursObj["day"] == undefined)
+									if(empHoursObj["Début"] == undefined && empHoursObj["Fin"] == undefined && empHoursObj["day"] == undefined)
 									{
 										nombre_de_jours  = empHoursObj.date.getDate();
 									}
@@ -3229,7 +3229,7 @@
 														try{
 														calculateAbsence(unitLocation,year,1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);										
 														}catch(ex){console.log(ex);}
-													} 
+												} 
 												
 												if(secondresult.first[1].length > 0)
 												{
