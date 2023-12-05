@@ -1072,7 +1072,7 @@
 											{
 												if(values != false)
 												{
-													let queryvalues = "('"+IDEmployee+"','"+((currentDay.getMonth()+1)+"-"+currentDay.getDate()+"-"+currentDay.getFullYear())+"'"+values;
+													let queryvalues = "('"+IDEmployee+"','"+((current.getMonth()+1)+"-"+current.getDate()+"-"+current.getFullYear())+"'"+values;
 													querySQL += "insert into "+tablename+" values "+queryvalues+" ON CONFLICT (IdIndividu,Date) DO Update Set absence ="+updateArray[0]+",maladie = "+updateArray[1]+",mission="+updateArray[2]+",congès="+updateArray[3]+";\n"; 
 												}
 											}
