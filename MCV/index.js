@@ -1837,7 +1837,7 @@
 				if(empHoursObj != undefined)
 				{
 					console.log("Employee hours"+"\nStop date "+stopdate);
-					console.log(empHoursObj);
+					//console.log(empHoursObj);
 					
 					if(empHoursObj["day"] != undefined)
 					{
