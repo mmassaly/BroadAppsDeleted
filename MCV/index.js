@@ -419,7 +419,7 @@
 								
 								forced_authentification_query_login(urlObject.userAuthentification,result).then((ares)=>
 								{
-										//console.log(ares);
+										console.log(ares);
 										if(JSON.stringify(ares.first) == "false" && JSON.stringify(ares.second) == "false" )
 										{
 											resultb.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
@@ -1836,8 +1836,6 @@
 				let stopDate = undefined;
 				if(empHoursObj != undefined)
 				{
-					console.log("Employee hours"+"\nStop date "+stopdate);
-					//console.log(empHoursObj);
 					
 					if(empHoursObj["day"] != undefined)
 					{
@@ -1855,10 +1853,15 @@
 						if(empHoursObj["endDay"] != undefined)
 						{
 							stopDate = empHoursObj["endDay"];
-							empHoursObj["date"] = stopDate;
+							if(empHoursObj["date"] == undefined)
+							{
+								empHoursObj["date"] = empHoursObj["endDay"];
+							}
 						}
 					}
-					
+
+					console.log("Stop date");
+					console.log(stopDate);
 				}
 
 				try
@@ -2015,7 +2018,7 @@
 							
 							query += "Select * FROM";
 							query += " \""+state+"\" as A";
-							query += (param_year_month_day != undefined)?(" WHERE A.Date ='"+param_year_month_day+"'"):(empObj != undefined)?" WHERE Idindividu = '"+empObj.ID+"'":(empHoursObj != undefined)? " WHERE IdIndividu = '"+empHoursObj.userAuthentification.ID+"' AND A.Date ='"+empHoursObj.date.getFullYear()+"-"+(empHoursObj.date.getMonth()+1)+"-"+empHoursObj.date.getDate()+"'":"";
+							query += (param_year_month_day != undefined)?(" WHERE A.Date ='"+param_year_month_day+"'"):(empObj != undefined)?" WHERE Idindividu = '"+empObj.ID+"'":(empHoursObj != undefined)? " WHERE IdIndividu = '"+empHoursObj.userAuthentification.ID+((empHoursObj.startDay == undefined && empHoursObj.endDay == undefined)?("' AND Date ='"+empHoursObj.date.getFullYear()+"-"+(empHoursObj.date.getMonth()+1)+"-"+empHoursObj.date.getDate()+"'"):(empHoursObj.startDay != undefined && empHoursObj.endDay == undefined)?("' AND Date >='"+empHoursObj.startDay.getFullYear()+"-"+(empHoursObj.startDay.getMonth()+1)+"-"+empHoursObj.startDay.getDate()+"'"):("' AND Date >='"+empHoursObj.startDay.getFullYear()+"-"+(empHoursObj.startDay.getMonth()+1)+"-"+empHoursObj.startDay.getDate()+"' AND Date <='"+empHoursObj.endDay.getFullYear()+"-"+(empHoursObj.endDay.getMonth()+1)+"-"+empHoursObj.endDay.getDate()+"'")):"";
 							query += " ORDER BY A.Date ASC;";
 						
 							query += "Select Case WHEN MIN(\""+table+"\".Entrées) >= '10:00:00' then 1 "; 
@@ -2023,9 +2026,11 @@
 							query += "Case WHEN  MIN(\""+table+"\".Entrées) > '8:30:00' then 1 ";
 							query += "WHEN MIN(\""+table+"\".Entrées) <= '8:30:00' then 0 END as CaseTwo,";
 							query += "MIN(\""+table+"\".Entrées), Date ,Idindividu FROM \""+table+"\"";
-							query += (param_year_month_day != undefined)?" WHERE Date ='"+param_year_month_day+"'":(empHoursObj== undefined)? ((empObj != undefined)?" WHERE Idindividu = '"+empObj.ID+"'":""):" WHERE Idindividu = '"+empHoursObj.userAuthentification.ID+"' AND Date ='"+empHoursObj.date.getFullYear()+"-"+(empHoursObj.date.getMonth()+1)+"-"+empHoursObj.date.getDate()+"'";
+							query += (param_year_month_day != undefined)?" WHERE Date ='"+param_year_month_day+"'":(empHoursObj== undefined)? ((empObj != undefined)?" WHERE Idindividu = '"+empObj.ID+"'":""):" WHERE Idindividu = '"+empHoursObj.userAuthentification.ID+((empHoursObj.startDay == undefined && empHoursObj.endDay == undefined)?("' AND Date ='"+empHoursObj.date.getFullYear()+"-"+(empHoursObj.date.getMonth()+1)+"-"+empHoursObj.date.getDate()+"'"):(empHoursObj.startDay != undefined && empHoursObj.endDay == undefined)?(" AND Date >='"+empHoursObj.startDay.getFullYear()+"-"+(empHoursObj.startDay.getMonth()+1)+"-"+empHoursObj.startDay.getDate()+"'"):("' AND Date >='"+empHoursObj.startDay.getFullYear()+"-"+(empHoursObj.startDay.getMonth()+1)+"-"+empHoursObj.startDay.getDate()+"' AND Date <='"+empHoursObj.endDay.getFullYear()+"-"+(empHoursObj.endDay.getMonth()+1)+"-"+empHoursObj.endDay.getDate()+"'"));
 							query += " GROUP BY Date, Idindividu ORDER BY Date ASC;";
 							
+							/*When employee hours object is used for fulfilling missions
+						and the like the date must be changing not fixed to one value.*/
 							query += "Select * FROM";
 							query += " \""+table+"\" as A";
 							query += (empObj == undefined)?((empHoursObj == undefined)?"":" where A.Idindividu ='"+empHoursObj.userAuthentification.ID+"'"):" where A.Idindividu ='"+empObj.ID+"'";
@@ -2156,7 +2161,7 @@
 								let startDateOfMonth = new Date(year,monthCounts-1,1);
 								//console.log(year);
 								//console.log(startDateOfMonth);
-								currentDateOfYear = new Date(year,monthCounts-1,(paramday == undefined)?(empHoursObj != undefined? empHoursObj.date.getDate():1):paramday);
+								currentDateOfYear = new Date(year,monthCounts-1,(paramday == undefined)?(empHoursObj != undefined? empHoursObj.date.getDate():1):paramday);//I put lower date element of empHours's brace inside date to remain consistent.
 								//console.log(currentDateOfYear);
 								
 								if(paramyear != undefined && parammonth != undefined && paramday != undefined)
@@ -2205,30 +2210,20 @@
 										if (empHoursObj["day"] != undefined && empHoursObj["day"] < dateToday)
 										{
 											start_day = empHoursObj["day"].getDate();
-											if(start_day > dateToday)
-											{
-												start_day = dateToday;
-											}
 										}
 										else if(empHoursObj["startDay"] != undefined && empHoursObj["startDay"] < dateToday)
 										{
 											start_day = empHoursObj["startDay"].getDate();
-											if(start_day > dateToday)
-											{
-												start_day = dateToday;
-											}
 										}
 										else if (empHoursObj["endDay"] != undefined && empHoursObj["endDay"] < dateToday)
 										{
-											start_day = empHoursObj["endDay"].getDate();
-											if(start_day > dateToday)
-											{
-												start_day = dateToday;
-											}
+											start_day = empHoursObj["endDay"].getDate(); 
 										}
 									}
-								}
 
+									
+								}
+								
 								let monthly =  
 								{
 									month: testCount,
@@ -2303,7 +2298,7 @@
 								{
 									if(empHoursObj["startDay"] == undefined && empHoursObj["endDay"] == undefined && empHoursObj["day"] == undefined)
 									{
-										nombre_de_jours  = empHoursObj.date.getDate();
+										nombre_de_jours  = stopDate.getDate();
 									}
 								}
 
@@ -2324,6 +2319,11 @@
 								while( start_day <= nombre_de_jours)
 								{
 									currentDateOfYear = new Date(year,monthCounts-1,start_day);
+									if(empHoursObj)
+									{
+										//console.log("Employee Hours...");
+										//console.log(currentDateOfYear);console.log(bresult);
+									}
 									
 									if( monthIndex == 9 )
 									{
@@ -2575,20 +2575,9 @@
 									}
 									
 									
-									
-									if(empObj == undefined)
-									{
-										postgresqueryArg = [officeID,year,year];
-									}
-									else
-									{
-										postgresqueryArg = [officeID,year,year,empObj.ID];
-									}
-									
 									if(resultTwo.second == false ) 
 									{
 										base_init_exiting = true;
-										dummyResponseSimple(response);
 										return false;
 									}
 
@@ -2676,7 +2665,8 @@
 															sicknessdates:{count:0,other:[]},
 															retarddates:{count:0,other:[]},
 															criticalretarddates:{count:0,other:[]},
-															overallretarddates:{count:0,other:[]}
+															overallretarddates:{count:0,other:[]},
+															weeks:[]
 														},
 														{
 															month:"Février",
@@ -2687,7 +2677,8 @@
 															sicknessdates:{count:0,other:[]},
 															retarddates:{count:0,other:[]},
 															criticalretarddates:{count:0,other:[]},
-															overallretarddates:{count:0,other:[]}
+															overallretarddates:{count:0,other:[]},
+															weeks:[]
 														},
 														{
 															month:"Mars",
@@ -2698,7 +2689,8 @@
 															sicknessdates:{count:0,other:[]},
 															retarddates:{count:0,other:[]},
 															criticalretarddates:{count:0,other:[]},
-															overallretarddates:{count:0,other:[]}
+															overallretarddates:{count:0,other:[]},
+															weeks:[]
 														},
 														{
 															month:"Avril",
@@ -2709,7 +2701,8 @@
 															sicknessdates:{count:0,other:[]},
 															retarddates:{count:0,other:[]},
 															criticalretarddates:{count:0,other:[]},
-															overallretarddates:{count:0,other:[]}
+															overallretarddates:{count:0,other:[]},
+															weeks:[]
 														},
 														{
 															month:"Mai",
@@ -2720,7 +2713,8 @@
 															sicknessdates:{count:0,other:[]},
 															retarddates:{count:0,other:[]},
 															criticalretarddates:{count:0,other:[]},
-															overallretarddates:{count:0,other:[]}
+															overallretarddates:{count:0,other:[]},
+															weeks:[]
 														},
 														{
 															month:"Juin",
@@ -2731,7 +2725,8 @@
 															sicknessdates:{count:0,other:[]},
 															retarddates:{count:0,other:[]},
 															criticalretarddates:{count:0,other:[]},
-															overallretarddates:{count:0,other:[]}
+															overallretarddates:{count:0,other:[]},
+															weeks:[]
 														},
 														{
 															month:"Juillet",
@@ -2742,7 +2737,8 @@
 															sicknessdates:{count:0,other:[]},
 															retarddates:{count:0,other:[]},
 															criticalretarddates:{count:0,other:[]},
-															overallretarddates:{count:0,other:[]}
+															overallretarddates:{count:0,other:[]},
+															weeks:[]
 														},
 														{
 															month:"Août",
@@ -2753,7 +2749,8 @@
 															sicknessdates:{count:0,other:[]},
 															retarddates:{count:0,other:[]},
 															criticalretarddates:{count:0,other:[]},
-															overallretarddates:{count:0,other:[]}
+															overallretarddates:{count:0,other:[]},
+															weeks:[]
 														},
 														{
 															month:"Septembre",
@@ -2764,7 +2761,8 @@
 															sicknessdates:{count:0,other:[]},
 															retarddates:{count:0,other:[]},
 															criticalretarddates:{count:0,other:[]},
-															overallretarddates:{count:0,other:[]}
+															overallretarddates:{count:0,other:[]},
+															weeks:[]
 														},
 														{
 															month:"Octobre",
@@ -2775,7 +2773,8 @@
 															sicknessdates:{count:0,other:[]},
 															retarddates:{count:0,other:[]},
 															criticalretarddates:{count:0,other:[]},
-															overallretarddates:{count:0,other:[]}
+															overallretarddates:{count:0,other:[]},
+															weeks:[]
 														},
 														{
 															month:"Novembre",
@@ -2786,7 +2785,8 @@
 															sicknessdates:{count:0,other:[]},
 															retarddates:{count:0,other:[]},
 															criticalretarddates:{count:0,other:[]},
-															overallretarddates:{count:0,other:[]}
+															overallretarddates:{count:0,other:[]},
+															weeks:[]
 														},
 														{
 															month:"Décembre",
@@ -2797,7 +2797,8 @@
 															sicknessdates:{count:0,other:[]},
 															retarddates:{count:0,other:[]},
 															criticalretarddates:{count:0,other:[]},
-															overallretarddates:{count:0,other:[]}
+															overallretarddates:{count:0,other:[]},
+															weeks:[]
 														}]
 												};
 
@@ -2865,14 +2866,14 @@
 											if(aresult.second == false ) 
 											{	
 												base_init_exiting = true;
-												dummyResponseSimple(response);
+												dummyResponseSimple(response);console.log(2855);
 												return false;
 											}
 
 											if(bresult.second == false ) 
 											{
 												base_init_exiting = true;
-												dummyResponseSimple(response);
+												dummyResponseSimple(response);console.log(2861);
 												return false;
 											}
 
@@ -2880,7 +2881,7 @@
 											if(cresult.second == false ) 
 											{
 												base_init_exiting = true;
-												dummyResponseSimple(response);
+												dummyResponseSimple(response);console.log(2870);
 												return false;
 											}
 
@@ -3403,7 +3404,7 @@
 											else
 											{	
 												baseInit = false;
-												base_init_exiting = true;
+												base_init_exiting = true;console.log(3393);
 												//console.log("Quitting");
 												if (!(response === undefined))
 												dummyResponseSimple(response);
@@ -3413,7 +3414,7 @@
 									}
 									else
 									{	
-										base_init_exiting = true;
+										base_init_exiting = true;console.log(3403);
 										//console.log("Quitting");
 										if (!(response === undefined))
 										dummyResponseSimple(response);
@@ -3424,12 +3425,11 @@
 									weekDayIndex = weekDayIndex+1;
 									++k;
 									astart = true;
-									if(empHoursObj != undefined)
+									if(empHoursObj && empHoursObj["day"] == undefined && empHoursObj["endDay"] == undefined && empHoursObj["startDay"] == undefined )
 										break;	
 								}	
-								
-								if(empHoursObj != undefined)
-									break;	
+								if(empHoursObj && empHoursObj["day"] == undefined && empHoursObj["endDay"] == undefined && empHoursObj["startDay"] == undefined )
+										break;	
 							}
 							
 						}
@@ -4051,6 +4051,31 @@
 		return obj;
 	}
 	
+	function initializeWeekforEmployeesPrivateReport(nodupTemp,ID,monthIndex,weekIndex)
+	{
+		if(nodupTemp.empDic[ID].months[monthIndex].weeks.length <= weekIndex)
+		{
+			let indexCount = nodupTemp.empDic[ID].months[monthIndex].weeks.length;
+			while(nodupTemp.empDic[ID].months[monthIndex].weeks.length <= weekIndex)
+			{
+				nodupTemp.empDic[ID].months[monthIndex].weeks.push(
+				{
+					index: indexCount,
+					missiondates:{count:0,other:[]},
+					presencedates:{count:0,other:[]},
+					vacationdates:{count:0,other:[]},
+					absencedates:{count:0,other:[]},
+					sicknessdates:{count:0,other:[]},
+					retarddates:{count:0,other:[]},
+					criticalretarddates:{count:0,other:[]},
+					overallretarddates:{count:0,other:[]}
+				});
+				indexCount = nodupTemp.empDic[ID].months[monthIndex].weeks.length;
+			}
+		}
+		
+		
+	}
 
 	function calculateCongès(unitLocation,year,offset,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex)
 	{
@@ -4076,7 +4101,9 @@
 			command = { paths:[{path:"container",index:location_index},{path:"yearsContent",index:yearIndex},{path:"months",index:monthIndex},{path:"weeks",index:weekIndex},{path:"days",index:weekDayIndex}], commandObj:{command:((offset>0)?"push":"remove"),path:"congèsdates",value:employeeContentModel} };
 			pushCommands(command);
 			nodupTemp.empDic[employeeContentModel.ID].vacationdates.count += offset;
-			nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].vacationsdates.count += offset;
+			nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].vacationdates.count += offset;
+			initializeWeekforEmployeesPrivateReport(nodupTemp,employeeContentModel.ID,monthIndex,weekIndex);
+			nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].weeks[weekIndex].vacationdates.count += offset;
 		}
 
 		if(offset > -1)
@@ -4086,7 +4113,8 @@
 				nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].congèsdates.push(employeeContentModel);
 				nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].empDicofVacances[employeeContentModel.ID] = employeeContentModel;
 				nodupTemp.empDic[employeeContentModel.ID].vacationdates.other.push(employeeContentModel.date);
-				nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].vacationdates.other.push(employeeContentModel.date);		
+				nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].vacationdates.other.push(employeeContentModel.date);
+				nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].weeks[weekIndex].vacationdates.other.push(employeeContentModel.date);
 			}
 		}
 		else
@@ -4107,6 +4135,11 @@
 				if(temp_index > -1)
 					tempValue.splice(temp_index,1);
 				
+				tempValue =	nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].weeks[weekIndex].vacationdates.other;
+				temp_index = tempValue.indexOf(employeeContentModel.date);
+				if(temp_index > -1)
+					tempValue.splice(temp_index,1);
+
 				nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].empDicofVacances[employeeContentModel.ID] = undefined;
 				
 			}
@@ -4139,6 +4172,8 @@
 			pushCommands(command);
 			nodupTemp.empDic[employeeContentModel.ID].presencedates.count += offset;
 			nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].presencedates.count += offset;
+			initializeWeekforEmployeesPrivateReport(nodupTemp,employeeContentModel.ID,monthIndex,weekIndex);
+			nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].weeks[weekIndex].presencedates.count += offset;
 		}
 
 		if(offset > 0)
@@ -4148,7 +4183,8 @@
 				nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].presencedates.push(employeeContentModel);
 				nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].empDicofPresences[employeeContentModel.ID] = employeeContentModel;
 				nodupTemp.empDic[employeeContentModel.ID].presencedates.other.push(employeeContentModel.date);
-				nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].presencedates.other.push(employeeContentModel.date);		
+				nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].presencedates.other.push(employeeContentModel.date);
+				nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].weeks[weekIndex].presencedates.other.push(employeeContentModel.date);
 			}
 		}
 		else
@@ -4168,7 +4204,12 @@
 				temp_index = tempValue.indexOf(employeeContentModel.date);
 				if(temp_index > -1)
 					tempValue.splice(temp_index,1);
-
+				
+				tempValue =	nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].weeks[weekIndex].presencedates.other;
+				temp_index = tempValue.indexOf(employeeContentModel.date);
+				if(temp_index > -1)
+					tempValue.splice(temp_index,1)
+				
 				nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].empDicofPresences[employeeContentModel.ID] = undefined;
 				
 			}
@@ -4201,6 +4242,8 @@
 			pushCommands(command);
 			nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].sicknessdates.count += offset;
 			nodupTemp.empDic[employeeContentModel.ID].sicknessdates.count += offset;
+			initializeWeekforEmployeesPrivateReport(nodupTemp,employeeContentModel.ID,monthIndex,weekIndex);
+			nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].weeks[weekIndex].sicknessdates.count += offset;
 		}
 
 		if(offset>0)
@@ -4211,6 +4254,7 @@
 				nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].empDicofSicknesses[employeeContentModel.ID] = employeeContentModel;
 				nodupTemp.empDic[employeeContentModel.ID].sicknessdates.other.push(employeeContentModel.date);
 				nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].sicknessdates.other.push(employeeContentModel.date);
+				nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].weeks[weekIndex].sicknessesdates.other.push(employeeContentModel.date);
 			}
 		}
 		else
@@ -4231,6 +4275,11 @@
 				if(temp_index > -1)
 					tempValue.splice(temp_index,1);
 				
+				tempValue =	nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].weeks[weekIndex].sicknessdates.other;
+				temp_index = tempValue.indexOf(employeeContentModel.date);
+				if(temp_index > -1)
+					tempValue.splice(temp_index,1)
+
 				nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].empDicofSicknesses[employeeContentModel.ID] = undefined;
 				
 			}
@@ -4271,6 +4320,15 @@
 			//console.log(nodupTemp.empDic);		
 			nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].absencedates.count += offset;
 			nodupTemp.empDic[employeeContentModel.ID].absencedates.count += offset;
+			initializeWeekforEmployeesPrivateReport(nodupTemp,employeeContentModel.ID,monthIndex,weekIndex);
+			try
+			{
+				nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].weeks[weekIndex].absencedates.count += offset;
+			}
+			catch(ex)
+			{
+				console.log(ex); console.log(nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].weeks[weekIndex]); console.log(weekIndex);
+			}
 		}
 
 		if(offset > 0)
@@ -4281,6 +4339,7 @@
 				nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].absencesdates.push(employeeContentModel);
 				nodupTemp.empDic[employeeContentModel.ID].absencedates.other.push(employeeContentModel.date);
 				nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].absencedates.other.push(employeeContentModel.date);
+				nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].weeks[weekIndex].absencedates.other.push(employeeContentModel.date);
 			}
 		}
 		else
@@ -4308,6 +4367,11 @@
 				temp_index = tempValue.indexOf(employeeContentModel.date);
 				if(temp_index > -1)
 					tempValue.splice(temp_index,1);
+
+				tempValue =	nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].weeks[weekIndex].absencedates.other;
+				temp_index = tempValue.indexOf(employeeContentModel.date);
+				if(temp_index > -1)
+					tempValue.splice(temp_index,1)
 
 				nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].empDicofAbsences[employeeContentModel.ID] = undefined;
 				
@@ -4343,8 +4407,12 @@
 			nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].retarddates.count += offset;
 			nodupTemp.empDic[employeeContentModel.ID].retarddates.count += offset;
 			
+			initializeWeekforEmployeesPrivateReport(nodupTemp,employeeContentModel.ID,monthIndex,weekIndex);
+			nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].weeks[weekIndex].retarddates.count += offset;
+			
 			nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].overallretarddates.count += offset;
 			nodupTemp.empDic[employeeContentModel.ID].overallretarddates.count += offset;
+			nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].weeks[weekIndex].overallretarddates.count += offset;
 		}
 		
 		if(offset>0)
@@ -4355,9 +4423,11 @@
 				nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].retardsdates.push(employeeContentModel);
 				nodupTemp.empDic[employeeContentModel.ID].retarddates.other.push(employeeContentModel.date);
 				nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].retarddates.other.push(employeeContentModel.date);
-				
+				nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].weeks[weekIndex].retarddates.other.push(employeeContentModel.date);
+
 				nodupTemp.empDic[employeeContentModel.ID].overallretarddates.other.push(employeeContentModel.date);
 				nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].overallretarddates.other.push(employeeContentModel.date);
+				nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].weeks[weekIndex].overallretarddates.other.push(employeeContentModel.date);
 			}
 		}
 		else
@@ -4372,22 +4442,37 @@
 				let temp_index = tempValue.indexOf(employeeContentModel.date);
 				if(temp_index > -1)
 					tempValue.splice(temp_index,1);
-						
+				
 				tempValue = nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].retarddates.other; 
 				temp_index = tempValue.indexOf(employeeContentModel.date);
 				if(temp_index > -1)
 					tempValue.splice(temp_index,1);
-
+				
+				tempValue = nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].weeks[weekIndex].retarddates.other; 
+				temp_index = tempValue.indexOf(employeeContentModel.date);
+				if(temp_index > -1)
+					tempValue.splice(temp_index,1);
+				
 				tempValue = nodupTemp.empDic[employeeContentModel.ID].overallretarddates.other;
 				temp_index = tempValue.indexOf(employeeContentModel.date);
 				if(temp_index > -1)
 					tempValue.splice(temp_index,1);
 						
+				tempValue = nodupTemp.empDic[employeeContentModel.ID].overallretarddates.weeks[weekIndex].other;
+				temp_index = tempValue.indexOf(employeeContentModel.date);
+				if(temp_index > -1)
+					tempValue.splice(temp_index,1);
+
 				tempValue = nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].overallretarddates.other; 
 				temp_index = tempValue.indexOf(employeeContentModel.date);
 				if(temp_index > -1)
 					tempValue.splice(temp_index,1);
 				
+				tempValue = nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].weeks[weekIndex].overallretarddates.other; 
+				temp_index = tempValue.indexOf(employeeContentModel.date);
+				if(temp_index > -1)
+					tempValue.splice(temp_index,1);
+
 				nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].empDicofRetards[employeeContentModel.ID] = undefined;
 			}
 		}	
@@ -4435,6 +4520,10 @@
 
 			nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].overallretarddates.count += offset;
 			nodupTemp.empDic[employeeContentModel.ID].overallretarddates.count += offset;
+			
+			initializeWeekforEmployeesPrivateReport(nodupTemp,employeeContentModel.ID,monthIndex,weekIndex);
+			nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].weeks[weekIndex].criticalretarddates.count += offset;
+			nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].weeks[weekIndex].overallretarddates.count += offset;
 		}
 
 		if(offset > 0)
@@ -4443,10 +4532,14 @@
 			{
 				nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].empDicofRetards[employeeContentModel.ID] = employeeContentModel;
 				nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].retardsdates.push(employeeContentModel);
+
 				nodupTemp.empDic[employeeContentModel.ID].criticalretarddates.other.push(employeeContentModel.date);
 				nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].criticalretarddates.other.push(employeeContentModel.date);
+				nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].weeks[weekIndex].criticalretarddates.other.push(employeeContentModel.date);
+
 				nodupTemp.empDic[employeeContentModel.ID].overallretarddates.other.push(employeeContentModel.date);
 				nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].overallretarddates.other.push(employeeContentModel.date);
+				nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].weeks[weekIndex].overallretarddates.other.push(employeeContentModel.date);
 			}
 		}
 		else
@@ -4456,13 +4549,18 @@
 				let tempValue = nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].retardsdates;
 				if(tempValue.indexOf(employeeContentModel) > -1)
 					tempValue.splice(tempValue.indexOf(employeeContentModel),1);
-				
+					
 				tempValue = nodupTemp.empDic[employeeContentModel.ID].criticalretarddates.other;
-				let temp_index = tempValue.indexOf(employeeContentModel.date);
+				temp_index = tempValue.indexOf(employeeContentModel.date);
 				if(temp_index > -1)
 					tempValue.splice(temp_index,1);
-						
+				
 				tempValue = nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].criticalretarddates.other; 
+				temp_index = tempValue.indexOf(employeeContentModel.date);
+				if(temp_index > -1)
+					tempValue.splice(temp_index,1);
+
+				tempValue = nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].weeks[weekIndex].criticalretarddates.other;
 				temp_index = tempValue.indexOf(employeeContentModel.date);
 				if(temp_index > -1)
 					tempValue.splice(temp_index,1);
@@ -4471,7 +4569,12 @@
 				temp_index = tempValue.indexOf(employeeContentModel.date);
 				if(temp_index > -1)
 					tempValue.splice(temp_index,1);
-						
+				
+				tempValue = nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].weeks[weekIndex].overallretarddates.other;
+				temp_index = tempValue.indexOf(employeeContentModel.date);
+				if(temp_index > -1)
+					tempValue.splice(temp_index,1);
+
 				tempValue = nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].overallretarddates.other; 
 				temp_index = tempValue.indexOf(employeeContentModel.date);
 				if(temp_index > -1)
@@ -4509,6 +4612,9 @@
 			pushCommands(command);
 			nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].missiondates.count += offset;
 			nodupTemp.empDic[employeeContentModel.ID].missiondates.count += offset;
+			
+			initializeWeekforEmployeesPrivateReport(nodupTemp,employeeContentModel.ID,monthIndex,weekIndex);
+			nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].weeks[weekIndex].missiondates.count += offset;
 		}
 
 		if(offset > 0)
@@ -4519,6 +4625,7 @@
 				nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].missionsdates.push(employeeContentModel);
 				nodupTemp.empDic[employeeContentModel.ID].missiondates.other.push(employeeContentModel.date);
 				nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].missiondates.other.push(employeeContentModel.date);
+				nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].weeks[weekIndex].missiondates.other.push(employeeContentModel.date);
 			}
 		}
 		else
@@ -4528,6 +4635,7 @@
 				let tempValue = nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].missionsdates;
 				if(tempValue.indexOf(employeeContentModel) > -1)
 					tempValue.splice(tempValue.indexOf(employeeContentModel),1);
+				
 
 				tempValue = nodupTemp.empDic[employeeContentModel.ID].missiondates.other;
 				let temp_index = tempValue.indexOf(employeeContentModel.date);
@@ -4538,9 +4646,8 @@
 				temp_index = tempValue.indexOf(employeeContentModel.date);
 				if(temp_index > -1)
 					tempValue.splice(temp_index,1);
-
 				
-					nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].empDicofMissions[employeeContentModel.ID]= undefined;
+				nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].empDicofMissions[employeeContentModel.ID]= undefined;
 			}
 		}
 
