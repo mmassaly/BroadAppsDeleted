@@ -4531,6 +4531,7 @@
 			if(!found)
 			{
 				nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].empDicofRetards[employeeContentModel.ID] = employeeContentModel;
+				nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].empDicofCritical[employeeContentModel.ID] = employeeContentModel;
 				nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].retardsdates.push(employeeContentModel);
 
 				nodupTemp.empDic[employeeContentModel.ID].criticalretarddates.other.push(employeeContentModel.date);
@@ -4581,6 +4582,7 @@
 					tempValue.splice(temp_index,1);
 
 				nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].empDicofRetards[employeeContentModel.ID] = undefined;
+				nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].empDicofCritical[employeeContentModel.ID] = undefined;
 				
 			}
 		}						
