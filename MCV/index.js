@@ -4504,13 +4504,17 @@
 			let command = { paths:[{path:"container",index:location_index},{path:"yearsContent",index:yearIndex}], commandObj:{command:((offset> 0)?"inc":"dec"),path:"retardsCritical"} };
 			pushCommands(command);
 			nodupTemp.retards += offset;
+			nodupTemp.retardsCritical += offset;
 			nodupTemp.months[monthIndex].retards += offset;
+			nodupTemp.months[monthIndex].retardsCritical += offset;
 			command = { paths:[{path:"container",index:location_index},{path:"yearsContent",index:yearIndex},{path:"months",index:monthIndex}], commandObj:{command:((offset> 0)?"inc":"dec"),path:"retardsCritical"} };
 			pushCommands(command);
-			nodupTemp.months[monthIndex].weeks[weekIndex].retards += offset;;
+			nodupTemp.months[monthIndex].weeks[weekIndex].retards += offset;
+			nodupTemp.months[monthIndex].weeks[weekIndex].retardsCritical += offset;
 			command = { paths:[{path:"container",index:location_index},{path:"yearsContent",index:yearIndex},{path:"months",index:monthIndex},{path:"weeks",index:weekIndex}], commandObj:{command:((offset> 0)?"inc":"dec"),path:"retardsCritical"} };
 			pushCommands(command);
-			nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].retards += offset;;
+			nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].retards += offset;
+			nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].retardsCritical += offset;
 			command = { paths:[{path:"container",index:location_index},{path:"yearsContent",index:yearIndex},{path:"months",index:monthIndex},{path:"weeks",index:weekIndex},{path:"days",index:weekDayIndex}], commandObj:{command:((offset> 0)?"inc":"dec"),path:"retardsCritical"} };
 			pushCommands(command);
 			command = { paths:[{path:"container",index:location_index},{path:"yearsContent",index:yearIndex},{path:"months",index:monthIndex},{path:"weeks",index:weekIndex},{path:"days",index:weekDayIndex}], commandObj:{command:((offset> 0)?"push":"remove"),path:"retardsCriticaldates",value:employeeContentModel} };
@@ -4533,6 +4537,7 @@
 				nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].empDicofRetards[employeeContentModel.ID] = employeeContentModel;
 				nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].empDicofCritical[employeeContentModel.ID] = employeeContentModel;
 				nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].retardsdates.push(employeeContentModel);
+				nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].retardsCriticaldates.push(employeeContentModel);
 
 				nodupTemp.empDic[employeeContentModel.ID].criticalretarddates.other.push(employeeContentModel.date);
 				nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].criticalretarddates.other.push(employeeContentModel.date);
@@ -4548,6 +4553,10 @@
 			if(found)
 			{
 				let tempValue = nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].retardsdates;
+				if(tempValue.indexOf(employeeContentModel) > -1)
+					tempValue.splice(tempValue.indexOf(employeeContentModel),1);
+				
+				tempValue = nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].retardsCriticaldates;
 				if(tempValue.indexOf(employeeContentModel) > -1)
 					tempValue.splice(tempValue.indexOf(employeeContentModel),1);
 					
