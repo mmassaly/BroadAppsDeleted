@@ -3198,6 +3198,22 @@
 													
 												}//end of hoursSection
 												
+												/*console.log(currentDateOfYear);
+												if(!employeeContentModel.presence && !employeeContentModel.absence && !employeeContentModel.mission
+													&& !employeeContentModel.congès && !employeeContentModel.sicknesses)
+												{
+													console.log(true);
+													console.log(secondresult.first[0].length == 0 && secondresult.first[1].length == 0);
+													console.log(dateNowOther); console.log(currentDateOfYear);
+													console.log(basicDateComparison(dateNowOther ,currentDateOfYear) > 0);
+													console.log((currentDateOfYear.getDay() != 0 && currentDateOfYear.getDay() != 6));
+													if(!(secondresult.first[0].length == 0 && secondresult.first[1].length == 0))
+													{
+														console.log(secondresult.first[0]);
+														console.log(secondresult.first[1]);
+													}
+												} test conditionel d'entree passed for absence dates*/
+
 												//start of presenceSection
 												if( secondresult.first[0].length == 0 && secondresult.first[1].length == 0 && basicDateComparison(dateNowOther ,currentDateOfYear) > 0)
 												{
@@ -3206,7 +3222,7 @@
 													absence = true;
 													employeeContentModel.date = currentDateOfYear.toLocaleString('fr-FR',{day:"numeric",month:"long",year:"numeric"});
 													if(currentDateOfYear.getDay() != 0 && currentDateOfYear.getDay() != 6)
-													calculateAbsence(unitLocation,year,1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
+														calculateAbsence(unitLocation,year,1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
 												}
 												else if(!employeeContentModel.presence && !retard && !criticallylate 
 													&& ((dateNowOther.getUTCHours() == 8 && dateNowOther.getUTCMinutes() > 30)
@@ -4849,12 +4865,12 @@
 	
 	function basicDateComparison(dateOne,dateTwo)
 	{
-			if(dateOne.getYear() > dateTwo.getYear()) return 1;
-			if(dateOne.getYear() < dateTwo.getYear()) return -1;
+			if(dateOne.getFullYear() > dateTwo.getFullYear()) return 1;
+			if(dateOne.getFullYear() < dateTwo.getFullYear()) return -1;
 			if(dateOne.getMonth() > dateTwo.getMonth()) return 1;
 			if(dateOne.getMonth() < dateTwo.getMonth()) return -1;
-			if(dateOne.getDay()> dateTwo.getDay()) return 1;
-			if(dateOne.getDay()< dateTwo.getDay()) return -1;
+			if(dateOne.getDate()> dateTwo.getDate()) return 1;
+			if(dateOne.getDate()< dateTwo.getDate()) return -1;
 			return 0;
 	}
 	
