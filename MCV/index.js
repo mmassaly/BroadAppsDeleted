@@ -2455,6 +2455,7 @@
 											vacations:0,
 											absences: 0,
 											retards: 0,
+											simpleRetards: 0,
 											sicknesses: 0,
 											presence: 0,
 											retardsCritical: 0
@@ -4412,11 +4413,11 @@
 		{
 			let command = { paths:[{path:"container",index:location_index},{path:"yearsContent",index:yearIndex}], commandObj:{command:((offset> 0)?"inc":"dec"),path:"retards"} };
 			pushCommands(command);
-			nodupTemp.retards++;
+			nodupTemp.retards += offset;
 		
 			command = { paths:[{path:"container",index:location_index},{path:"yearsContent",index:yearIndex}], commandObj:{command:((offset> 0)?"inc":"dec"),path:"simpleRetards"} };
 			pushCommands(command);
-			nodupTemp.simpleRetards++;
+			nodupTemp.simpleRetards += offset;
 
 			nodupTemp.months[monthIndex].retards += offset;
 			command = { paths:[{path:"container",index:location_index},{path:"yearsContent",index:yearIndex},{path:"months",index:monthIndex}], commandObj:{command:((offset> 0)?"inc":"dec"),path:"retards"} };
