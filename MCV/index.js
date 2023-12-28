@@ -2098,6 +2098,7 @@
 									vacations:0,
 									absences: 0,
 									retards: 0,
+									simpleRetards: 0,
 									sicknesses: 0,
 									presence: 0,
 									retardsCritical: 0
@@ -2235,6 +2236,7 @@
 									vacations:0,
 									absences: 0,
 									retards: 0,
+									simpleRetards: 0,
 									sicknesses: 0,
 									presence: 0,
 									retardsCritical: 0
@@ -2543,6 +2545,8 @@
 										sicknesses: 0,
 										sicknessesdates: [],
 										retards: 0,
+										simpleRetardsdates: [],
+										simpleRetards: 0,
 										retardsdates:[],
 										retardsCritical: 0,
 										retardsCriticaldates:[],
@@ -4409,17 +4413,34 @@
 			let command = { paths:[{path:"container",index:location_index},{path:"yearsContent",index:yearIndex}], commandObj:{command:((offset> 0)?"inc":"dec"),path:"retards"} };
 			pushCommands(command);
 			nodupTemp.retards++;
+		
+			command = { paths:[{path:"container",index:location_index},{path:"yearsContent",index:yearIndex}], commandObj:{command:((offset> 0)?"inc":"dec"),path:"simpleRetards"} };
+			pushCommands(command);
+			nodupTemp.simpleRetards++;
+
 			nodupTemp.months[monthIndex].retards += offset;
 			command = { paths:[{path:"container",index:location_index},{path:"yearsContent",index:yearIndex},{path:"months",index:monthIndex}], commandObj:{command:((offset> 0)?"inc":"dec"),path:"retards"} };
 			pushCommands(command);
+
+			nodupTemp.months[monthIndex].simpleRetards += offset;
+			command = { paths:[{path:"container",index:location_index},{path:"yearsContent",index:yearIndex},{path:"months",index:monthIndex}], commandObj:{command:((offset> 0)?"inc":"dec"),path:"simpleRetards"} };
+			pushCommands(command);
+			
 			nodupTemp.months[monthIndex].weeks[weekIndex].retards += offset;
 			command = { paths:[{path:"container",index:location_index},{path:"yearsContent",index:yearIndex},{path:"months",index:monthIndex},{path:"weeks",index:weekIndex}], commandObj:{command:((offset> 0)?"inc":"dec"),path:"retards"} };
 			pushCommands(command);
-			nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].retards += offset;
-			command = { paths:[{path:"container",index:location_index},{path:"yearsContent",index:yearIndex},{path:"months",index:monthIndex},{path:"weeks",index:weekIndex},{path:"days",index:weekDayIndex}], commandObj:{command:((offset> 0)?"inc":"dec"),path:"retards"} };
+
+			nodupTemp.months[monthIndex].weeks[weekIndex].simpleRetards += offset;
+			command = { paths:[{path:"container",index:location_index},{path:"yearsContent",index:yearIndex},{path:"months",index:monthIndex},{path:"weeks",index:weekIndex}], commandObj:{command:((offset> 0)?"inc":"dec"),path:"simpleRetards"} };
 			pushCommands(command);
+			
+			nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].simpleRetards += offset;
+			command = { paths:[{path:"container",index:location_index},{path:"yearsContent",index:yearIndex},{path:"months",index:monthIndex},{path:"weeks",index:weekIndex},{path:"days",index:weekDayIndex}], commandObj:{command:((offset> 0)?"inc":"dec"),path:"simpleRetards"} };
+			pushCommands(command);
+			
 			command = { paths:[{path:"container",index:location_index},{path:"yearsContent",index:yearIndex},{path:"months",index:monthIndex},{path:"weeks",index:weekIndex},{path:"days",index:weekDayIndex}], commandObj:{command:((offset> 0)?"push":"remove"),path:"retardsdates",value:employeeContentModel} };
 			pushCommands(command);
+			
 			nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].retarddates.count += offset;
 			nodupTemp.empDic[employeeContentModel.ID].retarddates.count += offset;
 			
@@ -4437,6 +4458,7 @@
 			{
 				nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].empDicofRetards[employeeContentModel.ID] = employeeContentModel;
 				nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].retardsdates.push(employeeContentModel);
+				nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].simpleRetardsdates.push(employeeContentModel);
 				nodupTemp.empDic[employeeContentModel.ID].retarddates.other.push(employeeContentModel.date);
 				nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].retarddates.other.push(employeeContentModel.date);
 				nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].weeks[weekIndex].retarddates.other.push(employeeContentModel.date);
@@ -4451,6 +4473,10 @@
 			if(found)
 			{
 				let tempValue = nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].retardsdates;
+				if(tempValue.indexOf(employeeContentModel) > -1)
+					tempValue.splice(tempValue.indexOf(employeeContentModel),1);
+
+				tempValue = nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].simpleRetardsdates;
 				if(tempValue.indexOf(employeeContentModel) > -1)
 					tempValue.splice(tempValue.indexOf(employeeContentModel),1);
 
