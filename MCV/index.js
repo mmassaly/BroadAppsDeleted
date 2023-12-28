@@ -4433,7 +4433,11 @@
 			nodupTemp.months[monthIndex].weeks[weekIndex].simpleRetards += offset;
 			command = { paths:[{path:"container",index:location_index},{path:"yearsContent",index:yearIndex},{path:"months",index:monthIndex},{path:"weeks",index:weekIndex}], commandObj:{command:((offset> 0)?"inc":"dec"),path:"simpleRetards"} };
 			pushCommands(command);
-			
+				
+			nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].retards += offset;
+			command = { paths:[{path:"container",index:location_index},{path:"yearsContent",index:yearIndex},{path:"months",index:monthIndex},{path:"weeks",index:weekIndex},{path:"days",index:weekDayIndex}], commandObj:{command:((offset> 0)?"inc":"dec"),path:"retards"} };
+			pushCommands(command);
+
 			nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].simpleRetards += offset;
 			command = { paths:[{path:"container",index:location_index},{path:"yearsContent",index:yearIndex},{path:"months",index:monthIndex},{path:"weeks",index:weekIndex},{path:"days",index:weekDayIndex}], commandObj:{command:((offset> 0)?"inc":"dec"),path:"simpleRetards"} };
 			pushCommands(command);
