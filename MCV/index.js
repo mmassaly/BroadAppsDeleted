@@ -1983,12 +1983,39 @@
 						}
 						
 						let result_ = await faire_un_simple_query(query);
+						let to_complete = false;
+						console.log(ayear);
+
+						if(result_.first instanceof Array)
+						{	
+							let temp_results = FilterElementNotFoundFunction(result_,"Année",ayear);
+							if(temp_results.first.length == 0)
+							{
+								to_complete = true;
+							}
+						}
+						else if(result.first == undefined)
+						{
+							to_complete = true;
+						}
+						
+						if(to_complete)
+						{
+							let aquery = "create table \""+ayear+" entrées et sorties\" (IDIndividu varchar(255),Date Date,Entrées Time NOT NULL,Sorties VARCHAR(10) DEFAULT NULL, PRIMARY KEY(Date,Entrées,IDIndividu));\n";
+							aquery += "create table \""+ayear+" état de l'individu\"  (IDIndividu varchar(255),Date Date,Absence BOOLEAN,Maladie BOOLEAN,Mission BOOLEAN,Congès BOOLEAN,PRIMARY KEY(Date,IDIndividu));\n";
+							aquery +=" insert into \"manuel des tables d'entrées et de sorties\" values("+ayear+","+"$$"+ayear+" état de l'individu$$" +","+"$$"+ayear+" entrées et sorties$$);\n";
+							await faire_un_simple_query(aquery);
+							result_ = await faire_un_simple_query(query);
+						}
+						
 						if(result_.second == false && !(result_.second instanceof Array)) 
 						{
 							dummyResponseSimple(response);
 							return false;
 						}
 						//console.log(query);
+						
+
 						let monthCounts = 0;
 						if( (parammonth === undefined) === false)
 						{
@@ -4845,6 +4872,27 @@
 			let dateComparison = element[column].toLocaleString('fr-FR',{day:"numeric",month:"numeric",year:"numeric"}).split("/");
 			
 			if(Number(dateReceived[2]) == Number(dateComparison[2]) && Number(dateReceived[1]) == Number(dateComparison[1]) && Number(dateReceived[0]) == Number(dateComparison[0]) )
+			{
+				arrayElements.first.push(objArray.first[count]);
+				arrayElements.second = objArray.second;
+			}
+			++count;
+		});
+				
+		return arrayElements;
+	}
+	
+	function FilterElementNotFoundFunction(objArray,column,value)
+	{
+		let arrayElements = {first:[], second:[]};
+		let count = 0;
+		
+		objArray.first.forEach((element)=>
+		{
+			let valueReceived  = value;
+			let valueComparison = element[column];
+			
+			if(value == valueComparison)
 			{
 				arrayElements.first.push(objArray.first[count]);
 				arrayElements.second = objArray.second;
