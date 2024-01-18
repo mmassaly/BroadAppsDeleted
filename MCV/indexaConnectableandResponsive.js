@@ -1,4 +1,5 @@
-	var http = require("http");
+	var net = require("node:net");
+	const { Buffer } = require('node:buffer');
 	var url = require("url");
 	var postgres = require('pg');
 	var formidable = require('formidable');
@@ -6,6 +7,7 @@
 	var vercelBlob = require("@vercel/blob");
 	var {GlobalsForcedFolding} = require('./Extra.js');	
 	var {ImageFilesContainer} = require('./queryTests.js');
+	const {SplitLongString,store_values} = require('./Test.js');
 	let globalForcedFoldingPrime = undefined;
 	let imageDictionary = new ImageFilesContainer();
 	let connection = undefined;
@@ -21,19 +23,34 @@
 	//"SET @@lc_time_names = 'fr_FR';"
 	let charging_percentage = 0; 	
 	let base_init_exiting = false;
-	
+	let hostname = "localhost";
+	var connectiontoServer;
+	var connectiontoServerOther;
+	var connectiontoServeratThirdPort;
 	var connectedguys =
 	[	
 	];
 	var hoursLocker = undefined;
+	var socketConnectionListDics = {'X':[],'Y':[],'G':[],'L':[]};
 	
 	var filesdirectories = 
 	[
 		{command:'update employee',path:'../Project Timing/my-app/src/assets/images/'}
 	];
 	
+	
+	var ACKS = {};
+	
 	let d = new Date(Date.now());
 	console.log(d.getHours()+" "+d.getMinutes()+" "+d.getSeconds());
+	
+	function clear()
+	{
+		Object.keys(socketConnectionListDics).forEach((element)=>
+		{
+			socketConnectionListDics[element].splice(0,socketConnectionListDics[element].length);
+		});
+	}
 	
 	function caller()
 	{
@@ -65,8 +82,271 @@
 					ofUpdate();
 			},1000);
 	}
+	
+	let start = new Date();
+	var prev = 0;
+	
+	function watch()
+	{
+			try
+			{
+				connectiontoServer = net.createConnection({ port: 3010 ,host:hostname}, () => {
+				  // 'connect' listener.
+				  console.log('connected to server!');
+				  prev = 0;
+				});
+				
+				connectiontoServer.on('data', (data) => 
+				{
+					try
+					{
+						let receivedDataStr = data.toString();
+						let receivedData = JSON.parse(receivedDataStr);
+						//console.log(receivedData);
+						netPost(receivedData,connectiontoServer);
+					}
+					catch(ex)
+					{
+						//console.log(ex);
+						//console.log(data.toString());
+					}
+				});
 
+				connectiontoServer.on('error',(err)=>{ if ( Math.floor ((new Date()-start)/(1000*30)) > prev ) {console.log("Connection abruptly interrupted"); prev = Math.floor ((new Date()-start)/(1000*30));};setTimeout(watch,500);});
+				connectiontoServer.on('end', () => 
+				{
+					console.log('disconnected from server');
+					setTimeout(watch,500);
+				});
+			}catch(ex){console.log(ex);}
+			
+	}
+	watch();
 
+	
+	function watchOther()
+	{
+			try
+			{
+				connectiontoServerOther = net.createConnection({ port: 3011 ,host:hostname}, () => {
+				  // 'connect' listener.
+				  console.log('connected to server at another port!');
+				});
+				
+				connectiontoServerOther.on('data', (data) => 
+				{
+					try
+					{
+						let receivedDataStr = data.toString();
+						//console.log("Received someting into other server");
+						let index = 0;
+						receivedDataStr.split("ACK-----").forEach((element)=>{
+							if(index != 0)
+							{
+								//console.log("ACK received");
+								ACKS[element] = true;
+							}
+							++index;
+						});	
+					}
+					catch(ex)
+					{
+						console.log(ex);
+						//console.log(data.toString());
+					}
+				});
+
+				connectiontoServerOther.on('error',(err)=>{ clear(); setTimeout(watchOther,500);;});
+				connectiontoServerOther.on('end', () => 
+				{
+					console.log('disconnected from server');
+					clear();
+					setTimeout(watchOther,500);
+				});
+			}
+			catch(ex)
+			{
+				console.log(ex);
+			}
+	}
+	watchOther();
+	
+	
+	
+	function watchACKFormServer()
+	{
+			try
+			{
+				connectiontoACKFormServer = net.createConnection({ port: 3013 ,host:hostname}, () => {
+				  // 'connect' listener.
+				  console.log('connected to formAckServer!');
+				});
+				
+				connectiontoACKFormServer.on('data', (data) => 
+				{
+				});
+
+				connectiontoACKFormServer.on('error',(err)=>{  setTimeout(watchACKFormServer,500);});
+				connectiontoACKFormServer.on('end', () => 
+				{
+					console.log('disconnected from server');
+					setTimeout(watchACKFormServer,500);
+				});
+			}
+			catch(ex)
+			{
+				console.log(ex);
+			}
+	}
+	watchACKFormServer();
+
+	function watchSendFormServer()
+	{
+			try
+			{
+				connectiontoServeratThirdPort = net.createConnection({ port: 3012 ,host:hostname}, () => {
+				  // 'connect' listener.
+				  console.log('Client connected to sendFormServer!');
+				});
+				
+				connectiontoServeratThirdPort.on('data', (data) => 
+				{
+					try
+					{
+						console.log("Received form data................");
+						console.log(data);
+						connectiontoACKFormServer.write("ACK-----"+data,()=>{console.log("ACK Flushed");});
+						processSocketConnectionRequest(data.toString(),connectiontoServer);
+					}
+					catch(ex)
+					{
+						console.log(ex);
+						//console.log(data.toString());
+					}
+				});
+
+				connectiontoServeratThirdPort.on('error',(err)=>{ setTimeout(watchSendFormServer,500);});
+				connectiontoServeratThirdPort.on('end', () => 
+				{
+					console.log('disconnected from server');
+					setTimeout(watchFormServer,500);
+				});
+			}
+			catch(ex)
+			{
+				console.log(ex);
+			}
+	}
+	watchSendFormServer();
+
+	function processSocketConnectionRequest(data,client_connected)
+	{
+		let elements_box = store_values(data);
+		//console.log(data);
+		elements_box.forEach((all_elements)=>
+		{
+			//console.log(all_elements);
+			let box = all_elements[0];
+			let pos = Number(all_elements[1]);
+			let part_no = Number(all_elements[2]);
+			let count = Number(all_elements[3]);
+			let str = all_elements[4];
+			
+			/*
+			console.log("Box: "+ box);
+			console.log("Position no: "+ pos);
+			console.log("Part no: "+ part_no);
+			console.log("Length of part:"+str.length);
+			*/
+			
+			let dataObject = 
+			{
+				Box: box,
+				Pos:pos,
+				Part_No:part_no,
+				Count: count,
+				Content: str
+			}
+			
+			
+			if(socketConnectionListDics[box] == undefined)
+				socketConnectionListDics[box] = [];
+			socketConnectionListDics[box].push(dataObject);
+			
+			if( part_no + 1 == count )
+			{
+				reassembleDataObjects(box,pos,count);	
+			}
+			
+		});
+	}
+	
+	async function reassembleDataObjects(box,pos,countParam)
+	{
+		let elements_in_order = [];
+		let count = 0;
+		
+		socketConnectionListDics[box].forEach((element)=>
+		{
+			if(element.Pos == pos)
+			{
+				elements_in_order.push(element);
+				let index = count;
+				while(index > 0 && element.Part_No < elements_in_order[index-1].Part_No)
+				{
+					let swap = elements_in_order[index-1];
+					elements_in_order[index-1] = element;
+					elements_in_order[index] = swap;
+					--index;
+				}
+				++count;
+			}
+		});
+		
+		if( count == countParam )
+		{
+			
+			let str = "";
+			let reassembledObject = undefined;
+			
+			elements_in_order.forEach((element)=>
+			{
+				str += element.Content;
+			});
+			
+			try
+			{
+			
+				reassembledObject = JSON.parse(str);
+				elements_in_order.forEach((element)=>
+				{
+					let temp_index = socketConnectionListDics[box].indexOf(element);
+					if(temp_index != -1 && element.Pos == socketConnectionListDics[box][temp_index].Pos)
+					{
+						socketConnectionListDics[box].splice(temp_index,1);
+					}
+				});
+				netPost(reassembledObject,connectiontoServer);
+			}
+			catch(ex)
+			{
+				console.log(ex);
+				console.log("------------------Unassemblable string object--------------------");
+				console.log(ex.message);
+				console.log("------------------Unassemblable string object closing tag--------------------");
+				return;
+			}
+			
+		}
+		else
+		{
+			setTimeout(()=>
+			{
+				reassembleDataObjects(box,pos,countParam);
+			},500);
+		}
+	}
+	
 	function ofUpdate()
 	{
 		current = new Date(Date.now());
@@ -120,215 +400,49 @@
 	}
 	
 	let sleep = true;
-
 	
-	var server = http.createServer(function(req,res)
+	function netPost(data,server)
 	{
-		console.log(req.method);
-		//console.log(req.url);
-		
-		if (req.method === 'OPTIONS') 
-		{
-			console.log('!OPTIONS');
-			// IE8 does not allow domains to be specified, just the *
-			//headers["Access-Control-Allow-Origin"] = req.headers.origin;
-			res.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
-				,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
-				,"Access-Control-Max-Age":'86400'
-				,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
-			});
-			res.end();
-		}
-		else if(req.method === 'GET')
-		{
-			//console.log("Inside request method "+req.method);
-			//console.log(req.url);
-			//console.log(req.method);
-			//console.log(url.parse(req.url));
-			callIndex++;
-			//console.log("Call index is "+callIndex);
-			var imageType = "";
-			if(req.url.endsWith(".jpeg"))
-				imageType = "jpeg";
-			if(req.url.endsWith(".png"))
-				imageType = "png";
-			if(req.url.endsWith(".jpg"))
-				imageType = "jpg";
-			
-			if(req.url.endsWith(".jpeg") ||req.url.endsWith(".png") || req.url.endsWith(".jpg") || req.url.endsWith(".ico"))
-			{
-				var imageUrlReprocessed = req.url.substring(1,req.url.length).replaceAll("%20"," ");
-				imageUrlReprocessed = decodeURI(imageUrlReprocessed);
-				console.log("You bot are making an image request processed to be "+imageUrlReprocessed);
-				
-				let responseb = res;
-				fs.exists(imageUrlReprocessed,async function(exists)
-				{
-					//console.log("exists = "+exists);
-					if(exists)
-					{
-						fs.readFile(imageUrlReprocessed,function(err,data)
-						{
-							if(err)
-							{
-								//console.log(err);
-								responseb.end();
-							}
-							else if(data)
-							{
-								responseb.writeHeader(200,{"Content-Type":"image/"+imageType});
-								responseb.write(data);
-								responseb.end();
-							}
-						});
-					}
-					else
-					{
-						try
-						{
-							
-							imageDictionary.findUrlBufferValue("https://msa-pointage-server.vercel.app/"+imageUrlReprocessed).then((result)=>{
-								responseb.writeHeader(200,{"Content-Type":"image/"+imageType});
-								console.log(result);
-								responseb.write(result);
-								responseb.end();
-							}
-							,(err)=>
-							{
-								responseb.writeHeader(200,{"Content-Type":"image/"+imageType});
-								console.log(err);
-								responseb.write(err);
-								responseb.end();
-							});
-						}
-						catch(ex)
-						{
-							console.log(ex);
-							responseb.end();
-						}
-						
-						//console.log("Image file does not exist.");
-					}
-				});
-			}
-			else
-			{
-				//console.log("Down here");
-				if(req.url.endsWith("MCV"))
-				{
-					//console.log("Before MCV file");
-					fs.readFile("SelfDescription.htm",function(err,data)
-					{
-						if(data != undefined)
-						{
-							res.writeHeader(200,{"Content-Type":"text/html"});
-							res.write(data);
-							res.end();
-						}
-						else if(err != undefined)
-						{
-							res.writeHeader(200,{"Content-Type":"text/html"});
-							res.end();
-						}
-					});
-				}
-				else if(req.url.endsWith("Download/pointage-apk"))
-				{
-					console.log("inside Download");
-					let resb = res;
-					fs.readFile("File/app-pointage-msa.apk",(error,data)=>
-					{
-						if(error)
-						{
-							console.log(error);
-							resb.writeHead(500,{"Content-Type":"application/vnd.android.package-archive"});
-							resb.end();
-						}
-						else
-						{
-							console.log(data);
-							resb.writeHead(200,{"Content-Type":"application/vnd.android.package-archive"});
-							resb.write(data);
-							resb.end();
-							console.log("Done sending apk...");
-						}
-					});
-				}
-				else
-				{
-					var imageUrlReprocessed = "icons/outline_home_black_24dp.png";	
-					fs.exists(imageUrlReprocessed,function(exists)
-					{
-						if(exists)
-						{
-							fs.readFile(imageUrlReprocessed,function(err,data)
-							{
-								if(err)
-								{
-									//console.log(err);
-									res.end();
-								}
-								else if(data)
-								{
-									res.writeHeader(200,{"Content-Type":"image/"+imageType});
-									res.write(data);
-									res.end();
-								}
-							});
-						}
-						else
-						{
-							res.end();
-							//console.log("Image file does not exist.");
-						}
-					});
-				}
-			}
-		}
-		else if(req.method === 'POST')
-		{
 				callIndex++;
 				//console.log("Call index is "+callIndex);
 				//console.log("Charging pourcentage "+ charging_percentage+"...");
 				//console.log("Base init has "+((base_init_exiting == true)?"exited" :"not exited"));
-				var reqData = "";
-				if(req.url == "/form")
+				console.log(data);
+					
+				if(data.url == "/form")
 				{
 					//console.log("incomming request but primary object is "+primaryObject);
-					formidableFileUpload(req,"../Project Timing/my-app/src/assets/images/",res);
+					formidableFileUpload(data,"../Project Timing/my-app/src/assets/images/",server);
 				}
 				else
 				{
-						let result = res;
-						req.on("data",function(data)
-						{
-							reqData += data;
-						}).on("end",()=>
-						{
 							//console.log("incomming request but primary object is "+primaryObject);
 							if(primaryObject == undefined)
 							{
 								//console.log("Your response should be with the 200 code");
-								result.writeHeader(200,{"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+								data.statusCode = 200;
+								data.resHeaders = {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
 									,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
 									,"Access-Control-Max-Age":'86400'
 									,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
-								});
-								result.write(JSON.stringify({first: undefined,res:"Call index is "+callIndex+"\n"
-								+"Charging pourcentage "+ charging_percentage+"",third:true,text:"Still Charging",charging:true}));
-								result.end();
+								};
+								
+								let dataoneServerStr = JSON.stringify({first: undefined,res:"Call index is "+callIndex+"\n"
+								+"Charging pourcentage "+ charging_percentage+"",third:true,text:"Still Charging",charging:true,Box:data.Box,Pos:data.Pos,statusCode:data.statusCode,resHeaders:data.resHeaders});
+								//server.write(dataoneServerStr);
+								sectioned_sending(server,dataoneServerStr,data.Box,data.Pos)
 								return;
 							} 
 							//console.log(reqData);
 							let urlObject = undefined;
 							try
 							{
-								urlObject = JSON.parse(reqData);	
+								urlObject = data;	
 							}
 							catch(ex)
 							{
 								//console.log(ex);
-								dummyResponseSimple(result);
+								dummyResponseSimpleOther(server,data.Box,data.Pos);
 								return;
 							}
 
@@ -339,7 +453,7 @@
 							if(urlObject == undefined)
 							{
 								//console.log("Undefined urlObject");
-								dummyResponseSimple(result);
+								dummyResponseSimpleOther(server,data.Box,data.Pos);
 								return;
 							}
 
@@ -354,13 +468,13 @@
 								if(commandArg == undefined)
 								{
 									//console.log("undefined commandArg");
-									dummyResponseSimple(result);
+									dummyResponseSimpleOther(server,data.Box,data.Pos);
 									return;
 								}
 								else if(commandArg !== "hours")
 								{
 									//console.log("undefined commandArg");
-									dummyResponseSimple(result);
+									dummyResponseSimpleOther(server,data.Box,data.Pos);
 									return;
 								}
 								
@@ -368,7 +482,7 @@
 								if(userAuthentification == undefined) 
 								{
 									//console.log("undefined userAuthentification");
-									dummyResponseSimple(result);
+									dummyResponseSimpleOther(server,data.Box,data.Pos);
 									return;
 								}
 								else
@@ -381,7 +495,7 @@
 									|| userAuthentification.naissance == undefined || userAuthentification.pass == undefined)
 								{
 									console.log("undefined credentials");
-									dummyResponseSimple(result);
+									dummyResponseSimpleOther(server,data.Box,data.Pos);
 									return;
 								}
 								else
@@ -397,9 +511,11 @@
 									let resultc = resultb;
 									urlObject.date = new Date(urlObject.date);
 									await insertEntryandExitIntoEmployees(userAuthentification.ID,urlObject.date,urlObject.start,urlObject.end,urlObject,resultb)	
-									resultc.writeHeader(200,{"Content-Type": "application/json"});
-									resultc.write(JSON.stringify({OK:200}));
-									resultc.end();
+									data.statusCode = 200;
+									data.resHeaders = {"Content-Type": "application/json"};
+									data.OK = 200;
+									//server.write(JSON.stringify(data));
+									sectioned_sending(server,JSON.stringify(data),data.Box,data.Pos)
 									await hoursToEmp(undefined,urlObject);
 									hoursLocker[urlObject.userAuthentification.ID].inside = true;
 									urlObject.day = undefined; urlObject.startDay = undefined; urlObject.endDay = undefined;
@@ -409,26 +525,29 @@
 								,(ex) =>
 								{
 									console.log(ex);
-									dummyResponseSimple(resultb);
+									dummyResponseSimpleOther(server,data.Box,data.Pos);
 									return;
 								});
 							}
 							if(command === "login")
 							{	
-								let resultb = result;
 								
-								forced_authentification_query_login(urlObject.userAuthentification,result).then((ares)=>
+								forced_authentification_query_login(urlObject.userAuthentification,undefined).then((ares)=>
 								{
 										console.log(ares);
 										if(JSON.stringify(ares.first) == "false" && JSON.stringify(ares.second) == "false" )
 										{
-											resultb.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+											data.url = undefined;
+											data.statusCode = 200;
+											data.resHeaders = {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
 											,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
 											,"Access-Control-Max-Age":'86400'
-											,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"});
+											,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"};
 											console.log("Sending response");
-											resultb.write(JSON.stringify(ares));
-											resultb.end();
+											ares.Box =  data.Box; ares.Pos = data.Pos; ares.url = data.url ; ares.statusCode = data.statusCode;
+											ares.resHeaders = data.resHeaders;
+											sectioned_sending(server,JSON.stringify(ares),data.Box,data.Pos)
+											//server.write(JSON.stringify(ares));
 											return;
 										}
 										
@@ -475,27 +594,36 @@
 												
 												if(ares.first)
 												{
-													resultb.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+													console.log("Sending response");
+															
+													data.url = undefined;
+													data.statusCode = 200;
+													data.resHeaders = {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
 													,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
 													,"Access-Control-Max-Age":'86400'
 													,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
-													});
+													};
 													console.log("Sending response");
-													resultb.write(JSON.stringify(ares));
-													resultb.end();
+													ares.Box =  data.Box; ares.Pos = data.Pos; ares.url = data.url ; ares.statusCode = data.statusCode;
+													ares.resHeaders = data.resHeaders;
+													//server.write(JSON.stringify(ares));
+													sectioned_sending(server,JSON.stringify(ares),data.Box,data.Pos)
 												}
 												else if(ares.second || ares.third || ares.fourth)
 												{
 													
-													resultb.writeHead(200,{"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+													data.url = undefined;
+													data.statusCode = 200;
+													data.resHeaders = {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
 													,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
 													,"Access-Control-Max-Age":'86400'
 													,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
-													});
-
-													resultb.write(JSON.stringify(ares));
-													resultb.end();
-													
+													};
+													console.log("Sending response");
+													ares.Box =  data.Box; ares.Pos = data.Pos; ares.url = data.url ; ares.statusCode = data.statusCode;
+													ares.resHeaders = data.resHeaders;
+													//server.write(JSON.stringify(ares));
+													sectioned_sending(server,JSON.stringify(ares),data.Box,data.Pos)
 												}
 												else
 												{
@@ -507,14 +635,14 @@
 										,(ex)=>
 										{
 											console.log(ex);
-											dummyResponse(resultb,ex);
+											dummyResponse(server,ex);
 											return;
 										});
 									}
 									,(ex2)=>
 									{
 										console.log(ex2);
-										dummyResponse(resultb,ex2);
+										dummyResponse(server,ex2);
 										return;
 									});
 							}
@@ -524,7 +652,7 @@
 								if(commandArg == undefined)
 								{
 									//console.log("undefined commandArg");
-									dummyResponseSimple(result);
+									dummyResponseSimpleOther(server,data.Box,data.Pos);
 									return;
 								}
 								else
@@ -536,7 +664,7 @@
 								if(userAuthentification == undefined) 
 								{
 									console.log("undefined userAuthentification");
-									dummyResponseSimple(result);
+									dummyResponseSimpleOther(server,data.Box,data.Pos);
 									return;
 								}
 								else
@@ -550,7 +678,7 @@
 									{
 										console.log(userAuthentification);
 										console.log("undefined credentials");
-										dummyResponseSimple(result);
+										dummyResponseSimpleOther(server,data.Box,data.Pos);
 										return;
 									} 
 									else
@@ -564,14 +692,13 @@
 								{
 									let sqlConnection = connection;
 									console.log("Trying to authenticate");
-									let resultc = result;
+								
 									
 									forced_authentification_query(userAuthentification,undefined).then((tempResult)=>
 									{
 											if(tempResult)
 											{
 												console.log("This guy is authenticated");
-												let resultd = resultc;
 												check_super_admin(userAuthentification,sqlConnection,undefined).then((othertempResult)=>
 												{
 													console.log("Inside checking admin type");
@@ -579,14 +706,27 @@
 													{
 														console.log("This guy is a primary admin");
 														console.log("responding");
-														resultd.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+														data.url = undefined;
+														data.statusCode = 200;
+														data.resHeaders = {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
 														,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
 														,"Access-Control-Max-Age":'86400'
 														,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
-														});
-														//console.log(primaryObject);
-														resultd.write(JSON.stringify(primaryObject));
-														resultd.end();
+														};
+														
+														let newPrimary = JSON.parse(JSON.stringify(primaryObject));
+														newPrimary.url = data.url; newPrimary.statusCode = data.statusCode; newPrimary.resHeaders = data.resHeaders;
+														newPrimary.Box = data.Box; newPrimary.Pos = data.Pos;
+														console.log("Sending response");
+														let value = undefined;
+														try
+														{
+															value = JSON.stringify(newPrimary);
+															//console.log(server.write(Buffer.from(value)));
+															sectioned_sending(server,value,data.Box,data.Pos)
+														}
+														catch(ex){console.log(ex);/*server.write(newPrimary);*/}
+														
 														/*getDataForAdminThreeArgs(undefined,undefined).then((getresult)=>{
 															console.log(getresult);
 															if(getresult == false)
@@ -622,16 +762,22 @@
 															nowVisible: true,
 															otherVisible : false
 														};
-																
 														
-														resultd.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+														data.url = undefined;
+														data.statusCode = 200;
+														data.resHeaders = {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
 														,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
 														,"Access-Control-Max-Age":'86400'
 														,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
-														});
-																
-														resultd.write(JSON.stringify(tempData));
-														resultd.end();
+														};
+														
+														let newPrimary = JSON.parse(JSON.stringify(tempData));
+														newPrimary.url = data.url; newPrimary.statusCode = data.statusCode; newPrimary.resHeaders = data.resHeaders;
+														newPrimary.Box = data.Box; newPrimary.Pos = data.Pos;
+														console.log("Sending response");
+														//server.write(Buffer.from(JSON.stringify(newPrimary)));
+														sectioned_sending(server,JSON.stringify(newPrimary),data.Box,data.Pos)		
+														
 														
 														/*getDataForAdminThreeArgs(undefined,undefined).then((primaryObject)=>{
 															if(primaryObject == false)
@@ -673,7 +819,7 @@
 														{
 															if(primaryObject == undefined)
 															{
-																dummyResponseSimple(resultc);
+																dummyResponseSimpleOther(server,data.Box,data.Pos);
 															}
 															else
 															{
@@ -692,13 +838,20 @@
 																	otherVisible : false
 																};
 																
-																resultd.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
-																	,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
-																	,"Access-Control-Max-Age":'86400'
-																	,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
-																});
-																resultd.write(JSON.stringify(tempData));
-																resultd.end();
+																data.url = undefined;
+																data.statusCode = 200;
+																data.resHeaders = {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+																,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
+																,"Access-Control-Max-Age":'86400'
+																,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
+																};
+																
+																let newPrimary = JSON.parse(JSON.stringify(tempData));
+																newPrimary.url = data.url; newPrimary.statusCode = data.statusCode; newPrimary.resHeaders = data.resHeaders;
+																newPrimary.Box = data.Box; newPrimary.Pos = data.Pos;
+																console.log("Sending response");
+																//server.write(Buffer.from(JSON.stringify(newPrimary)));
+																sectioned_sending(server,JSON.stringify(newPrimary),data.Box,data.Pos)
 															}
 															
 															/*
@@ -729,20 +882,26 @@
 																let command = getCommandGivenID(userAuthentification.ID);
 																//console.log("-------------------Passed Command----------------------")
 																//console.log(command);
-																resultc.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+																data.statusCode = 200;
+																data.resHeaders = {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
 																,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
 																,"Access-Control-Max-Age":'86400'
 																,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
-																});
-																resultd.write(JSON.stringify(command));
-																resultd.end();
+																};
+																
+																let something = JSON.parse(JSON.stringify(command));
+																something.url = data.url; something.statusCode = data.statusCode; something.resHeaders = data.resHeaders;
+																something.Box = data.Box; something.Pos = data.Pos;
+																console.log("Sending response");
+																//server.write(JSON.stringify(something));
+																sectioned_sending(server,JSON.stringify(something),data.Box,data.Pos)
 																return;
 														}
 													}
 													else
 													{
 														//console.log("No answer");
-														dummyResponseSimple(resultd);
+														dummyResponseSimpleOther(server,data.Box,data.Pos);
 													}	
 												},(error)=>
 												{
@@ -751,7 +910,7 @@
 											}
 											else
 											{
-												dummyResponseSimple(resultd);
+												dummyResponseSimpleOther(server,data.Box,data.Pos);
 												return;
 											}
 										} ,
@@ -763,24 +922,26 @@
 								else
 								{
 									//console.log("You are at area with response 500");
-									result.writeHead(500, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
-												,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
-												,"Access-Control-Max-Age":'86400'
-												,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
-												});
-									result.end();
+									data.statusCode = 500;
+									data.resHeaders = {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+										,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
+										,"Access-Control-Max-Age":'86400'
+										,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
+									};
+																
+									console.log("Sending response");
+									//server.write(JSON.stringify(data));
+									sectioned_sending(server,JSON.stringify(data),data.Box,data.Pos);							
 								}
-							}	
-						});
+							}						
 					}
-				}
-			});
-	
+	}
+
+
 	function whileFunction(startingTag)
 	{
 		try
 		{
-			server.listen(3034)
 			try
 			{
 				add_all_users();
@@ -867,25 +1028,27 @@
 	
 	async function formidableFileUpload(req,path,res)
 	{
-		var form = new formidable.IncomingForm();
-		//console.log("Inside formidable");
-    	await form.parse(req, async function (err, fields, files) 
-		{
-			
-			let command = fields.command;
+		let fields = req.fields;
+		let files = req.files;
+		console.log(req);
+		console.log("Inside formidableFileUpload");
+		let box = req.Box;
+		let pos = req.Pos;
+	
+		let command = fields.command;
 			//console.log(fields);
 			//console.log(command);
 			//console.log(files);
-			let filesDup = files;
+		let filesDup = files;
 			//console.log(filesDup);
 			
-			if(filesDup.imgfile instanceof Array)
-				filesDup = filesDup.imgfile[0];
+		if(filesDup.imgfile instanceof Array)
+			filesDup = filesDup.imgfile[0];
 			//console.log(filesDup);
 			
 
-			let mp = new Map();
-			let urlObject = undefined;
+		let mp = new Map();
+		let urlObject = undefined;
 
 			if(command instanceof Array)
 			{
@@ -904,7 +1067,7 @@
 			blob.contentDisposition;
 			blob.contentType;
 			*/
-			
+			console.log(command);
 			if(command === "update" || (command instanceof Array && command[0] === "update"))
 			{
 					let dealingWithArray = command instanceof Array;
@@ -1007,6 +1170,7 @@
 						let reason ;
 						let IDEmployee ;
 						let Year;
+						let IDOffice;
 						skip_authentification = true;
 						console.log(fields);
 						
@@ -1021,6 +1185,7 @@
 							reason = fields["raison"][0];
 							IDEmployee = fields["IDEmployee"][0];
 							Year = fields["Année"][0];
+							IDOffice = fields["IDOffice"][0];
 						}
 						else
 						{
@@ -1030,12 +1195,16 @@
 							reason = fields["raison"];
 							IDEmployee = fields["IDEmployee"];
 							Year = fields["Année"];
+							IDOffice = fields["IDOffice"];
 						}
 						
 						userPresenceObject.day = day;
 						userPresenceObject.startDay = startDay;
 						userPresenceObject.endDay = endDay;
-									
+						userPresenceObject.ID = IDEmployee;
+						userPresenceObject.IDOffice = IDOffice;
+						userPresenceObject.year =  Year;
+						
 						let tempuserAuthentification = {ID:urlObject.authID,Prenom:urlObject.authPrenom,Nom:urlObject.authNom,genre:urlObject.authGenre,naissance:urlObject.authnaissance,pass:urlObject.authpass};
 						tempResult = await forced_authentification_query(tempuserAuthentification,undefined);
 						
@@ -1104,6 +1273,7 @@
 					if(skip_authentification == false)
 						tempResult = await forced_authentification_query(tempuserAuthentification,undefined);
 					userPresenceObject.userAuthentification = tempuserAuthentification;
+					userPresenceObject.userAuthentification.ID = userPresenceObject.ID;
 					//console.log(tempuserAuthentification);
 					//console.log(tempResult);
 					//console.log(querySQL);
@@ -1136,15 +1306,17 @@
 										return;
 									}
 
-									res.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+									req.Box = box;
+									req.Pos = pos;
+									req.statusCode = 200;
+									req.resHeaders = {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
 																	,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
 																	,"Access-Control-Max-Age":'86400'
 																	,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
-																	});
-										
-									res.write(JSON.stringify({customtext:"OK"}));
-									console.log("no problems");
-									res.end();
+																	};
+									req.customtext = "OK";
+									//server.write(JSON.stringify(req));									
+									sectioned_sending(res,JSON.stringify(req),req.Box,req.Pos)
 									await getDataForAdmin(undefined,undefined,undefined,userPresenceObject,undefined,undefined,undefined);
 								}
 								
@@ -1154,18 +1326,18 @@
 										//console.log("res writable ended is " +res.writableEnded);
 										//console.log(primaryObject.container);
 										
-										if(res.writableEnded)
-												return;
-										res.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+									req.Box = box;
+									req.Pos = pos;
+									req.statusCode = 200;
+									req.resHeaders = {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
 																	,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
 																	,"Access-Control-Max-Age":'86400'
 																	,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
-																	});
-										
-										res.write(JSON.stringify({customtext:"OK"}));
-											//console.log("no problems");
-										res.end();
-										await getDataForAdmin(undefined,userOfficeObject,undefined,undefined,undefined,undefined,undefined);
+																	};
+									req.customtext = "OK";
+									//server.write(JSON.stringify(req));
+									sectioned_sending(res,JSON.stringify(req),req.Box,req.Pos)
+									await getDataForAdmin(undefined,userOfficeObject,undefined,undefined,undefined,undefined,undefined);
 										
 										/*	
 										if(okresult)
@@ -1189,15 +1361,18 @@
 										if(cresult.second != false || cresult.second instanceof Array)
 										{
 											let dresult = await faire_un_simple_query(url_query);
-											res.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
-																	,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
-																	,"Access-Control-Max-Age":'86400'
-																	,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
-																	});
+											req.Box = box;
+											req.Pos = pos;
+											req.statusCode = 200;
+											req.resHeaders = {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+																			,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
+																			,"Access-Control-Max-Age":'86400'
+																			,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
+															 };
+											req.customtext = "OK";
+											//server.write(JSON.stringify(req));									
+											sectioned_sending(res,JSON.stringify(req),req.Box,req.Pos)
 											
-											res.write(JSON.stringify({customtext:"OK"}));
-											res.end();
-												
 											if (dresult.second != false || dresult.second instanceof Array)
 											{
 												userAdditionObject = urlObject;
@@ -1207,19 +1382,21 @@
 											}
 											else
 											{
-												dummyResponse(res,"Erreur Interne.");	
+												dummyResponseSimpleOtherWithDesc(res,"Erreur Interne.",req.Box,req.Pos);
 												console.log(dresult.first);	
 											}
 										}
 										else
 										{
-											dummyResponse(res,"Erreur Interne.");	
+											dummyResponseSimpleOtherWithDesc(res,"Erreur Interne.",req.Box,req.Pos);
+											//dummyResponse(res,"Erreur Interne.");	
 											//console.log(cresult.first);	
 										}
 									}
 									else
 									{
-										dummyResponse(res,"IDExistant");
+										dummyResponseSimpleOtherWithDesc(res,"ID Existant.",req.Box,req.Pos);
+										//dummyResponse(res,"IDExistant");
 										//console.log(bresult.first);
 									}
 								}
@@ -1227,19 +1404,20 @@
 							else
 							{
 								//console.log(aresult.first);
-								dummyResponse(res,"IDExistant");
+								//dummyResponse(res,"IDExistant");
+								dummyResponseSimpleOtherWithDesc(res,"ID Existant.",req.Box,req.Pos);
 							}
 						}catch(ex)
 						{
-							//console.log(ex);
-							dummyResponse(res,"IDExistant");
+							console.log(ex);
+							dummyResponseSimpleOtherWithDesc(res,"ID Existant.",req.Box,req.Pos);
 						}
 					}
 					else
 					{
 						await fs.unlink(filesDup.filepath,function(err,data)
 						{});
-						dummyResponse(res,"error");
+						dummyResponseSimpleOtherWithDesc(res,"Error.",req.Box,req.Pos);
 					}
 				}
 				else
@@ -1250,11 +1428,10 @@
 						await fs.unlink(filesDup.filepath,function(err,data)
 						{});
 					}
-					dummyResponse(res,"Authentification error");
+					dummyResponseSimpleOtherWithDesc(res,"Erreur d'authentification.",req.Box,req.Pos);
+										
 				}
-			});
-			
-			
+		
 	}
 	
 	async function exigencebasededonnée()
@@ -1657,39 +1834,130 @@
 			
 			
 			
-			function dummyResponseSimple(res)
+			function dummyResponseSimple(server)
 			{
-				if(res === undefined || res.writableEnded)
+				if(server === undefined || server.writableEnded)
 					return;
-				res.writeHead(500, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+				
+			}	
+		
+			function dummyResponseSimpleOther(server,box,pos)
+			{
+				if(server === undefined || server.writableEnded)
+					return;
+				let responseObjectStr = JSON.stringify(
+				{
+					statusCode: 500,
+					resHeaders: {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
 					,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
 					,"Access-Control-Max-Age":'86400'
 					,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
-					});
-				res.write(JSON.stringify(
+					},
+					XLength : 0,
+					YLength : 0,
+					error: true,
+					Box: box,
+					Pos: pos,
+					desc: "wrong credentials for such request"
+				});
+				//server.write(responseObjectStr);
+				sectioned_sending(server,responseObjectStr,box,pos);
+			}	
+			
+			function dummyResponseSimpleOtherWithDesc(server,desc,box,pos)
+			{
+				if(server === undefined || server.writableEnded)
+					return;
+				let responseObjectStr = JSON.stringify(
 				{
+					statusCode: 500,
+					resHeaders: {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+					,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
+					,"Access-Control-Max-Age":'86400'
+					,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
+					},
+					XLength : 0,
+					YLength : 0,
+					error: true,
+					Box: box,
+					Pos: pos,
+					desc: desc
+				});
+				//server.write(responseObjectStr);
+				sectioned_sending(server,responseObjectStr,box,pos);
+			}
+			
+			function dummyResponse(server,ares)
+			{
+				if(server === undefined || server.writableEnded)
+					return;
+				let value = {
+					statusCode: 500,
+					responseHeader: {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+					,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
+					,"Access-Control-Max-Age":'86400'
+					,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
+					},
 					XLength : 0,
 					YLength : 0,
 					error: true,
 					desc: "wrong credentials for such request"
+				};
+	
+				if(typeof ares == 'object')
+				{
+					ares.statusCode = value.statusCode;
+					ares.res = value.responseHeader;
+					ares.XLength = value.XLength;
+					ares.YLength = value.YLength;
+					ares.error = value.error;
+					ares.desc = value.desc;
 				}
-				));
-				res.end();
+				else
+				{
+					ares = value;
+				}
+				//server.write(JSON.stringify(ares));
+				sectioned_sending(server,JSON.stringify(ares),box,pos);
 			}	
-
-			function dummyResponse(res,ares)
+			
+			
+			function dummyResponseOther(server,ares,box,pos)
 			{
-				if(res === undefined || res.writableEnded)
+				if(server === undefined || server.writableEnded)
 					return;
-				res.writeHead(500, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+				let value = {
+					statusCode: 500,
+					responseHeader: {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
 					,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
 					,"Access-Control-Max-Age":'86400'
 					,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
-					});
-				res.write(JSON.stringify(ares));
-				res.end();
+					},
+					XLength : 0,
+					YLength : 0,
+					error: true,
+					desc: "wrong credentials for such request"
+				};
+	
+				if(typeof ares == 'object')
+				{
+					ares.statusCode = value.statusCode;
+					ares.res = value.responseHeader;
+					ares.XLength = value.XLength;
+					ares.YLength = value.YLength;
+					ares.error = value.error;
+					ares.desc = value.desc;
+					ares.Box = box;
+					ares.Pos = pos;
+				}
+				else
+				{
+					ares = value;
+				}
+				//server.write(JSON.stringify(ares));
+				sectioned_sending(server,JSON.stringify(ares),box,pos);
 			}	
-
+			
 			function createEmployeeDailyObject(stringsStuff,imgsrc,missionBoolean,vacationBoolean,absenceBoolean,retardBoolean,maladieBoolean,criticalretardBoolean,presenceBoolean,dateValue)
 			{
 				let employeeContentModel 
@@ -1831,7 +2099,7 @@
 					otherVisible : false
 				};	
 				
-				if(primaryObject !== undefined)
+				if( primaryObject !== undefined )
 					data = primaryObject;
 					
 				let stopDate = undefined;
@@ -1840,11 +2108,14 @@
 					
 					if(empHoursObj["day"] != undefined)
 					{
+					
 						stopDate = empHoursObj["day"];
 						empHoursObj["date"] = stopDate;
+					
 					}
 					else 
 					{
+
 						if(empHoursObj["startDay"] != undefined)
 						{
 							stopDate = empHoursObj["startDay"];
@@ -1854,15 +2125,17 @@
 						if(empHoursObj["endDay"] != undefined)
 						{
 							stopDate = empHoursObj["endDay"];
-							if(empHoursObj["date"] == undefined)
+							if( empHoursObj["date"] == undefined )
 							{
 								empHoursObj["date"] = empHoursObj["endDay"];
 							}
 						}
+					
 					}
 
 					console.log("Stop date");
 					console.log(stopDate);
+					
 				}
 
 				try
@@ -1879,6 +2152,10 @@
 					{
 						query = "Select * from \"location du bureau\" where \"location du bureau\".ID = "+empObj.officeID+" ORDER BY Id;";
 					}
+					else if (empHoursObj != undefined && empHoursObj.IDOffice != undefined ) 
+					{
+						query = "Select * from \"location du bureau\" where \"location du bureau\".ID = "+empHoursObj.IDOffice+" ORDER BY Id;";
+					} 
 					
 					
 					let checkfornewCommand = false;
@@ -1974,7 +2251,7 @@
 						let locationvalue = "";
 						query = "Select * from \"manuel des tables d'entrées et de sorties\";";
 						
-						if( !( paramyear === undefined  )) 
+						if( !( paramyear === undefined  ) ) 
 						{
 							query = "Select * from \"manuel des tables d'entrées et de sorties\" where Année = "+paramyear+";";
 						}																																		
@@ -1989,7 +2266,6 @@
 						if(result_.first instanceof Array)
 						{	
 							let temp_results = FilterElementNotFoundFunction(result_,"année",ayear);
-							console.log(temp_results);
 							if(temp_results.first.length == 0)
 							{
 								to_complete = true;
@@ -2033,10 +2309,12 @@
 						{
 							monthCounts = prevMonthCounts;
 							unitLocation.yearIndex = l; 
-							let year = result_.first[l][result_.second[0].name];
+							let year = result_.first[l][result_.second[0].name];;
 							let state = result_.first[l][result_.second[1].name];
 							let table = result_.first[l][result_.second[2].name];
 							let param_year_month_day = (paramday != undefined && parammonth != undefined && paramyear != undefined)?paramyear+"-"+parammonth+"-"+paramday : undefined;
+							//console.log(result_.first[l]);
+							
 							
 							let query = "Select * from individu inner join appartenance";
 							query += " ON appartenance.IDIndividu =  individu.ID";
@@ -2072,7 +2350,7 @@
 							let threeResults = await faire_un_simple_query(query);
 							let resultTwo = threeResults[0];
 							let aresult = threeResults[2];
-							let bresult = threeResults[1];
+							let bresult = threeResults[1];console.log(bresult);
 							let cresult = threeResults[3];
 							let currentDateOfYear =  new Date(year,monthCounts,(paramday == undefined)?(empHoursObj != undefined? empHoursObj.date.getDate():1):paramday);		
 							let weekIndex = -1;
@@ -2251,7 +2529,7 @@
 								var astart = false;
 								let startDateOfMonth = new Date(year,monthCounts-1,1);
 								//console.log(year);
-								//console.log(startDateOfMonth);
+								console.log(startDateOfMonth);
 								currentDateOfYear = new Date(year,monthCounts-1,(paramday == undefined)?(empHoursObj != undefined? empHoursObj.date.getDate():1):paramday);//I put lower date element of empHours's brace inside date to remain consistent.
 								//console.log(currentDateOfYear);
 								
@@ -2444,12 +2722,12 @@
 										console.log("<=?"+( Math.floor((start_day + offset)/ 7) + 1));
 									} */
 									
-									let aresultFiltered = FilterDateNotFoudFunction(aresult,"date",currentDateOfYear.getDate()+"-"+(currentDateOfYear.getMonth()+1)+"-"+currentDateOfYear.getFullYear());
-									let bresultFiltered = FilterDateNotFoudFunction(bresult,"date",currentDateOfYear.getDate()+"-"+(currentDateOfYear.getMonth()+1)+"-"+currentDateOfYear.getFullYear());
-									
+									let aresultFiltered = FilterDateNotFoundFunction(aresult,"date",currentDateOfYear.getDate()+"-"+(currentDateOfYear.getMonth()+1)+"-"+currentDateOfYear.getFullYear());
+									let bresultFiltered = FilterDateNotFoundFunction(bresult,"date",currentDateOfYear.getDate()+"-"+(currentDateOfYear.getMonth()+1)+"-"+currentDateOfYear.getFullYear());
+									//console.log(bresultFiltered);
 									//console.log("bresultFiltered  by date "+currentDateOfYear.getDate()+"-"+(currentDateOfYear.getMonth()+1)+"-"+currentDateOfYear.getYear());
 									//console.log(bresultFiltered);
-									let cresultFiltered = FilterDateNotFoudFunction(cresult,"date",currentDateOfYear.getDate()+"-"+(currentDateOfYear.getMonth()+1)+"-"+currentDateOfYear.getFullYear());
+									let cresultFiltered = FilterDateNotFoundFunction(cresult,"date",currentDateOfYear.getDate()+"-"+(currentDateOfYear.getMonth()+1)+"-"+currentDateOfYear.getFullYear());
 		
 									//console.log(currentDateOfYear);
 									
@@ -2596,7 +2874,7 @@
 									//console.log(currentDateOfYear);
 									
 									if( currentmonth == amonth
-										&& currentday == day && currentYear == year)
+										&& currentday == day && currentYear == ayear)
 									{	
 										nowDate = currentDateOfYear;
 										nowDateStr = day+"-"+amonth+"-"+ayear;
@@ -2988,6 +3266,7 @@
 											let bresultFilteredb = FilterNotFoundEqualsFunction(bresultFiltered,"idindividu",IDIndividu);
 											let cresultFilteredb = FilterNotFoundEqualsFunction(cresultFiltered,"idindividu",IDIndividu);
 											let date2 = new Date();
+											//console.log(bresultFilteredb);
 											//console.log("done filtering "+ (date2 -date)%1000);
 		
 											secondresult.first.push(aresultFilteredb.first);
@@ -4924,7 +5203,7 @@
 		return arrayElements;
 	}
 	
-	function FilterDateNotFoudFunction(objArray,column,value)
+	function FilterDateNotFoundFunction(objArray,column,value)
 	{
 		let arrayElements = {first:[], second:[]};
 		let count = 0;
@@ -5080,15 +5359,85 @@
 		return returnValue;
 	}
 	
-	
-	
-	
-	
-	
-	
-	
-	
-	
+	function sectioned_sending(server,content,Box,pos)
+	{
+		let values = SplitLongString(content,Box,pos);
+		console.log("Sending "+values.length+" parts");
+		verify(server,values,0,content,Box,pos,0);
+	}
+
+	function sendFunction(values,server,content,Box,pos,countparam)
+	{
+		if(countparam < values.length)
+		{
+			/*if( values[countparam].length < 2000)
+				console.log(values);*/
+			//console.log(values[countparam].length);
+			//console.log();
+			//console.log("Part no " + countparam);
+			//console.log("Length of part is "+values[countparam].length);
+			
+			server.write(values[countparam],()=> {
+				//console.log("Part no " + countparam+" flushed.");
+			});
+		}
+	}
+
+	function mSubstring(str,start,end)
+	{
+		let value = "";
+		let index = 0;
+
+		while(index < end)
+		{
+			value += str[start+index];
+			++index;
+		}
+		return value;
+	}	
+
+	function verify (server,values,count,content,Box,pos,countparam)
+	{
+		//console.log(count+" "+countparam+" values "+values.length);
+		if(countparam == 0)
+		{
+			console.log("Starting to send...");
+		}
+		if(countparam == values.length)
+		{
+			console.log("Done sending");
+			return;
+		}
+		
+		console.log("Server is undefined is " + (server == undefined) );
+		if(server != undefined)
+			console.log("Server is closed is " + (server.closed) );
+		
+		
+		if(server != undefined && server.closed)
+			return;
+		if(server == undefined )
+				return;
+
+		if(ACKS[values[countparam]] == undefined && count < 50 )
+		{			
+			setTimeout(verify,1,server,values,++count,content,Box,pos,countparam);
+		}
+		else if (ACKS[values[countparam]] == undefined)
+		{
+			sendFunction(values, server, content, Box, pos,countparam);
+			verify(server,values,0,content,Box,pos,countparam);
+		}
+		else 
+		{
+			ACKS[values[countparam]] = undefined;
+			delete ACKS[values[countparam]];
+			//console.log("ACK received");
+			sendFunction(values, server, content, Box, pos,++countparam);
+			verify(server,values,0,content,Box,pos,countparam);
+		}
+	}
+
 	
 	
 	
