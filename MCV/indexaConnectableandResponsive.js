@@ -23,7 +23,7 @@
 	//"SET @@lc_time_names = 'fr_FR';"
 	let charging_percentage = 0; 	
 	let base_init_exiting = false;
-	let hostname = "localhost";
+	let hostname = "https://vercel-order-transmitter.vercel.app";
 	var connectiontoServer;
 	var connectiontoServerOther;
 	var connectiontoServeratThirdPort;

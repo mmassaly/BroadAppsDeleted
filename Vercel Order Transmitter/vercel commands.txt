@@ -1,0 +1,2 @@
+vercel env pull -(pull environment variables).
+vercel --prod -(produce project).

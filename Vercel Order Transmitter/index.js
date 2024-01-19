@@ -492,7 +492,7 @@
 	  console.log(err.msg);
 	});
 
-	formACKserver.listen(3013, () => {
+	formACKserver.listen(process.env.PORT4, () => {
 	  console.log('third server bound');
 	});
 	
@@ -530,7 +530,7 @@
 	  console.log(err.msg);
 	});
 
-	sendFormServer.listen(3012, () => {
+	sendFormServer.listen(process.env.PORT3, () => {
 	  console.log('server bound');
 	});
 
@@ -561,7 +561,7 @@
 	  console.log(err.msg);
 	});
 
-	otherserver.listen(3011, () => {
+	otherserver.listen(process.env.PORT2, () => {
 	  console.log('second server bound');
 	});
 	
@@ -609,7 +609,7 @@
 	  console.log(err.msg);
 	});
 
-	server.listen(3010, () => {
+	server.listen(process.env.PORT1, () => {
 	  console.log('server bound');
 	});
 	
@@ -661,7 +661,7 @@
 		}
 	});
 	
-	httpServer.listen(3008);
+	httpServer.listen(process.env.PORT5);
 
 	async function processRequest(data,req,res)
 	{
