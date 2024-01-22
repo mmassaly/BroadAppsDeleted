@@ -23,11 +23,85 @@
 	var httpslength = 0;
 	var formshttpsLength = 0;
 	var ACKS = {};
+	var mainServerHTTP = undefined;
+	var mainServerHTTPConnectionsLists = {'X':[],'Y':[],'G':[],'L':[]};
+	var lengthofHTTPConnectionsLists = 0;
+	var all_http = true;
 	
-	/*setInterval(()=>
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	var dopePWD = dopePWD = "UIOJJirofjoijjjkjvjhhjkjoihifdddsreduhftygjufyihre7hdtjo;gs4wyjs65ugr7oknf";
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	setInterval(()=>
 	{
-		
-	},1000);*/
+		Object.keys(mainServerHTTPConnectionsLists).forEach((keyelement)=>
+		{
+			let initialValue = [];
+			try{
+				mainServerHTTPConnectionsLists[keyelement].forEach((value)=>
+				{
+					if(value.writableEnded)
+					{
+						initialValue.push(value);
+					}
+				});
+				initialValue.forEach((value)=>
+				{
+					let index = -1;
+					index = mainServerHTTPConnectionsLists[keyelement].indexOf(value);
+					if(index != -1)
+					mainServerHTTPConnectionsLists[keyelement].splice(index,1);
+				});
+			}
+			catch(ex)
+			{
+				console.log(ex);
+				console.log("Node .js is a crasher....");
+			}
+		});
+	},2000);
 	
 	function setMain()
 	{
@@ -403,6 +477,75 @@
 		});
 	}
 	
+	function eachElement()
+	{
+		let keys = Object.keys(mainServerHTTPConnectionsLists);
+		let values = [];
+		keys.forEach( (xValue)=>
+		{
+			mainServerHTTPConnectionsLists[xValue].forEach((individual)=>
+			{
+				let value = Object.assign({},individual);
+				value.req = undefined;
+				value.res = undefined;
+				values.push(value);
+			});
+		});
+		return values;
+	}
+	
+	function findElementInsideListsDictionaryHTTP (xValue,countValue,statusCode,contentType,receivedData)
+	{
+		let index = -1;
+		let count = 0;
+		console.log(receivedData.url);
+		console.log("Sending request possibly....")	;
+		console.log(xValue);
+		console.log(countValue);
+		mainServerHTTPConnectionsLists[xValue].forEach((individual)=>
+		{
+			
+			console.log("Individual Pos "+individual.Pos);
+			if(individual.Pos == countValue)
+			{	
+				try
+				{
+					receivedData.Box = undefined; receivedData.Pos = undefined;	
+					receivedData.statusCode = undefined; receivedData.resHeaders = undefined;
+					
+					if(!individual.res.writableEnded)
+					{	
+						individual.res.writeHead(statusCode,contentType);
+						individual.res.write(JSON.stringify(receivedData));
+						individual.res.end();
+						
+						if(individual.req.url == '/form')
+							console.log("form response sent...");
+						else
+							console.log("response sent to client....");
+						
+					}
+					index = count;
+				}
+				catch(ex)
+				{
+					console.log(ex);
+				}
+			}
+			++count;
+		});	 
+		
+		if(index !=-1)
+		{
+			(mainServerHTTPConnectionsLists[xValue]).splice(index,1);
+		}
+		else
+		{
+			console.log((receivedData.url == '/form')?"form response not not not sent...........":"response not not not sent to Client...");
+		}
+	}
+	
+	
 	function findElementInsideListsDictionary (xValue,countValue,statusCode,contentType,receivedData)
 	{
 		let index = -1;
@@ -430,7 +573,8 @@
 						
 						if(individual.req.url == '/form')
 							console.log("form response sent...");
-						console.log("response sent to client....");
+						else
+							console.log("response sent to client....");
 					}
 					index = count;
 				}
@@ -492,9 +636,9 @@
 	  console.log(err.msg);
 	});
 
-	formACKserver.listen(process.env.PORT4, () => {
+	/* formACKserver.listen(process.env.PORT4, () => {
 	  console.log('third server bound');
-	});
+	}); */
 	
 	
 	const sendFormServer = net.createServer((c) => {
@@ -530,9 +674,9 @@
 	  console.log(err.msg);
 	});
 
-	sendFormServer.listen(process.env.PORT3, () => {
+	/* sendFormServer.listen(process.env.PORT3, () => {
 	  console.log('server bound');
-	});
+	}); */
 
 	
 	const otherserver = net.createServer((c) => {
@@ -561,9 +705,9 @@
 	  console.log(err.msg);
 	});
 
-	otherserver.listen(process.env.PORT2, () => {
+	/* otherserver.listen(process.env.PORT2, () => {
 	  console.log('second server bound');
-	});
+	}); */
 	
 	
 	const server = net.createServer((c) => {
@@ -609,13 +753,13 @@
 	  console.log(err.msg);
 	});
 
-	server.listen(process.env.PORT1, () => {
+	/* server.listen(process.env.PORT1, () => {
 	  console.log('server bound');
 	});
-	
+	 */
 	const httpServer = http.createServer((request,result)=>
 	{
-		let dataStr = '';
+		let dataStr = '';let reqStr = '';
 		if (request.method === 'OPTIONS') 
 		{
 			console.log('!OPTIONS');
@@ -630,10 +774,81 @@
 		}	
 		if(request.method == 'POST')
 		{
-			if(request.url == '/form')
+			console.log(request.url);
+			if(request.url == "/test")
+			{
+				result.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+							,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
+							,"Access-Control-Max-Age":'86400'
+							,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
+				});
+				result.write(JSON.stringify({a:"OK"}));
+				result.end();
+			}
+			else if( request.url == '/localServer'+dopePWD)
+			{
+				request.on('data',(content)=>
+				{
+					reqStr += content;
+				});
+				
+				request.on('end',()=>
+				{
+					
+					let stack = JSON.parse(reqStr);
+					if( !(stack.giveUpdates == true))
+					{
+						console.log(stack);console.log(",,,,,,,,,,,,,,");
+						findElementInsideListsDictionaryHTTP ( stack.Box,stack.Pos,stack.statusCode,
+						stack.resHeaders?stack.resHeaders:stack.resHeader,stack,result);
+						result.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+							,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
+							,"Access-Control-Max-Age":'86400'
+							,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
+						});
+						result.end();
+					}
+					else
+					{
+						let dataToForward = eachElement();
+						
+						result.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+							,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
+							,"Access-Control-Max-Age":'86400'
+							,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
+						});
+						result.write(JSON.stringify(dataToForward));
+						result.end();
+					}
+				
+				});
+			}
+			else if(request.url == '/form')
 			{
 				console.log(request);
-				processRequest("",request,result);	
+				if(!all_http)
+				{
+					processRequest("",request,result);	
+				}
+				else
+				{
+					processRequestHttp("",request,result);
+				}
+				
+				setTimeout((response)=>
+				{
+					if(response.writableEnded == false)
+					{
+						response.writeHead(500, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+							,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
+							,"Access-Control-Max-Age":'86400'
+							,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
+						});
+						response.write(JSON.parse({res:"Timeout"}));
+						response.end();
+					}
+				},15000,result);
+				
 			}
 			else
 			{
@@ -641,6 +856,7 @@
 				{
 					dataStr += content;
 				});
+				
 				request.on('end',()=>
 				{
 					/* result.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
@@ -651,8 +867,73 @@
 					result.write("{\"OK\":200}");
 					result.end(); */
 					console.log(dataStr);
-					processRequest(dataStr,request,result);
-				})
+					let valueObj = JSON.parse(dataStr);
+					if(valueObj.url == "/test")
+					{
+						result.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+								,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
+								,"Access-Control-Max-Age":'86400'
+									,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
+						});
+						result.write(JSON.stringify({a:"OK"}));
+						result.end();
+					}
+					else if(valueObj.url == '/localServer'+dopePWD)
+					{
+						
+						if( !(valueObj.giveUpdates == true))
+						{
+							console.log(valueObj);console.log(",,,,,,,,,,,,,,");
+							findElementInsideListsDictionaryHTTP ( valueObj.Box,valueObj.Pos,valueObj.statusCode,
+							valueObj.resHeaders?valueObj.resHeaders:valueObj.resHeader,valueObj,result);
+							result.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+								,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
+								,"Access-Control-Max-Age":'86400'
+								,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
+							});
+							result.end();
+						}
+						else
+						{
+							let dataToForward = eachElement();
+							
+							result.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+								,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
+								,"Access-Control-Max-Age":'86400'
+								,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
+							});
+							result.write(JSON.stringify(dataToForward));
+							result.end();
+						}
+										
+					}
+					else
+					{
+						if(!all_http)
+						{
+							processRequest(dataStr,request,result);
+						}
+						else
+						{
+							processRequestHttp(dataStr,request,result);
+						}
+					}
+				});
+				
+				setTimeout((response)=>
+				{
+					if(response.writableEnded == false)
+					{
+						response.writeHead(500, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+							,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
+							,"Access-Control-Max-Age":'86400'
+							,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
+						});
+						response.write(JSON.stringify({res:"Timeout"}));
+						response.end();
+					}
+				},15000,result);
+				
 			}
 		}
 		else if(request.method == 'GET')
@@ -661,7 +942,8 @@
 		}
 	});
 	
-	httpServer.listen(process.env.PORT5);
+	httpServer.listen(3008);
+	console.log(httpServer._connectionKey);
 
 	async function processRequest(data,req,res)
 	{
@@ -688,6 +970,34 @@
 		{
 			formidableFileUpload(req,res);
 		}
+	}
+	
+	async function processRequestHttp(data,req,res) 
+	{
+			
+		if(req.url != '/form')
+		{
+			let objectCorrespondance = JSON.parse(data);
+			stockUpDataHTTP(objectCorrespondance,req,res);
+			console.log("Data has been stored");
+		}
+		else 
+		{
+			formidableFileUploadHttp(req,res);
+		}
+	}
+	
+	function stockUpDataHTTP(objectCorrespondance,req,res) 
+	{
+		let value  = circle_value_correspondance[circle_count % (circle_value_correspondance.length)];
+		objectCorrespondance.req = req;
+		objectCorrespondance.res = res;
+		objectCorrespondance.Box = value;
+		objectCorrespondance.Pos = lengthofHTTPConnectionsLists++;
+		mainServerHTTPConnectionsLists[value].push(objectCorrespondance);
+		++circle_count;
+		/* objectCorrespondance.req = req;
+		objectCorrespondance.res = res;	 */
 	}
 	
 	function completeAssign(target, ...sources) {
@@ -804,6 +1114,7 @@
 				console.log("------------------Unassemblable string object closing tag--------------------");
 				return;
 			}
+			
 			findElementInsideListsDictionary(box,pos,reassembledObject.statusCode,reassembledObject.resHeaders?reassembledObject.resHeaders:reassembledObject.resHeader,reassembledObject)
 		}
 		else
@@ -884,8 +1195,22 @@
 			objectCorrespondance.req = req;
 			objectCorrespondance.res = res;
 		});
-		
 	}
+	
+	async function formidableFileUploadHttp(req,res)
+	{
+		var form = new formidable.IncomingForm();
+		console.log("Inside formidable HTTP");
+		
+		form.parse(req, function (err, fields, files) 
+		{
+			console.log(fields); console.log(files);
+			var objectCorrespondance;
+			objectCorrespondance = {url: '/form',fields: fields,files:files};
+			stockUpDataHTTP(objectCorrespondance,req,res) 
+		});
+	}
+	
 	
 	function sectioned_sending(client,content,Box,pos,res)
 	{
@@ -989,3 +1314,65 @@
 		res.write(JSON.stringify({customtext:text}));
 		res.end();
 	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	dopePWD = "UIOJJirofjoijjjkjvjhhjkjoihifdddsreduhftygjufyihre7hdtjo;gs4wyjs65ugr7oknf";

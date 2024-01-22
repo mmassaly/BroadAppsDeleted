@@ -1,4 +1,5 @@
 	var net = require("node:net");
+	var http = require("http");
 	const { Buffer } = require('node:buffer');
 	var url = require("url");
 	var postgres = require('pg');
@@ -23,7 +24,8 @@
 	//"SET @@lc_time_names = 'fr_FR';"
 	let charging_percentage = 0; 	
 	let base_init_exiting = false;
-	let hostname = "https://vercel-order-transmitter.vercel.app";
+	let hostname = "vercel-order-transmitter.vercel.app";
+	//hostname = "localhost";
 	var connectiontoServer;
 	var connectiontoServerOther;
 	var connectiontoServeratThirdPort;
@@ -32,6 +34,39 @@
 	];
 	var hoursLocker = undefined;
 	var socketConnectionListDics = {'X':[],'Y':[],'G':[],'L':[]};
+	var allHttpNoWebSockets = true;
+	let dupPWD = "UIOJJirofjoijjjkjvjhhjkjoihifdddsreduhftygjufyihre7hdtjo;gs4wyjs65ugr7oknf";;
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	
 	var filesdirectories = 
 	[
@@ -112,7 +147,7 @@
 					}
 				});
 
-				connectiontoServer.on('error',(err)=>{ if ( Math.floor ((new Date()-start)/(1000*30)) > prev ) {console.log("Connection abruptly interrupted"); prev = Math.floor ((new Date()-start)/(1000*30));};setTimeout(watch,500);});
+				connectiontoServer.on('error',(err)=>{ if ( Math.floor ((new Date()-start)/(1000*30)) > prev ) {console.log(err);console.log("Connection abruptly interrupted"); prev = Math.floor ((new Date()-start)/(1000*30));};setTimeout(watch,500);});
 				connectiontoServer.on('end', () => 
 				{
 					console.log('disconnected from server');
@@ -121,9 +156,144 @@
 			}catch(ex){console.log(ex);}
 			
 	}
-	watch();
+	//watch();
+	async function httpWatch()
+	{
+		try
+		{
+			console.log("Problems here");
+			let requestData = {giveUpdates:true,url:'/localServer'+dupPWD};
+			let requestStr = JSON.stringify(requestData);
+			
+			/*let requestData = {giveUpdates:true,url:'/localServer'+dupPWD};
+			let requestStr = JSON.stringify(requestData);
+			const req = http.request( {hostname:hostname,port:3008,method: 'POST',path:'/localServer'+dupPWD,headers: {
+				'Content-Type': 'application/json',
+				'Content-Length': Buffer.byteLength(requestStr)
+			  }}, (res)=> 
+			{
+				let data = "";
+				res.on('data', (chunk) => {
+					data += chunk;
+				});
+				
+				res.on('end', () => {
+					let readObject = JSON.parse(data);
+					if(readObject instanceof Array)
+					{
+						readObject.forEach((elementObject)=>{
+							netPost(elementObject,undefined);
+						});
+					}
+					else
+					{
+						netPost(readObject,undefined);
+					}
+					console.log('No more data in response.');
+					setTimeout(httpWatch,1000);
+				});
+				
+				
+			});
+			
+			req.on('error', (e) => {
+			  console.error(`problem with request: ${e.message}`);
+			  setTimeout(httpWatch,1500);
+			});
+			
+			req.write(requestStr);
+			req.end();*/
+			postData("https://vercel-order-transmitter.vercel.app", requestData,false).then((data) => {
+				console.log(data); // JSON data parsed by `data.json()` call
+				let readObject = data;
+				if(readObject instanceof Array)
+				{
+					readObject.forEach((elementObject)=>{
+					netPost(elementObject,undefined);
+					});
+				}
+				else
+				{
+					netPost(readObject,undefined);
+				}
+				console.log('No more data in response.');
+				setTimeout(httpWatch,1000);
+			});
+		}catch(ex)
+		{
+			console.log(ex);
+		}
+	}
+	
+	
+	function httpRequestServerInnocent(requestData)
+	{
+		requestData.innocent = true;
+		let requestStr = JSON.stringify(requestData);
+		/*const req = http.request({hostname:hostname,port:3008,method: 'POST',path:'/localServer'+dupPWD,headers: {
+			'Content-Type': 'application/json',
+			'Content-Length': Buffer.byteLength(requestStr)
+		  }},(res)=>
+		{
+			res.on('data', (chunk) => {
+			});
+					
+			res.on('end', () => {
+				if(res.statusCode == 404 || res.statusCode == 500)	
+					setTimeout(httpRequestServerInnocent,1500,requestData);
+			});
+		});
+		req.on('error', (e) => {
+			  console.error(`problem with request: ${e.message}`);
+			  setTimeout(httpRequestServerInnocent,1500,requestData);
+		});
+		
+		req.write(requestStr);
+		req.end();
+		*/
+		requestData.url =  "/localServer"+dupPWD;
+		requestData.answer = 42;
+		postData("https://vercel-order-transmitter.vercel.app", requestData,true).then((data) => {
+			console.log(data); // JSON data parsed by `data.json()` call
+		});
+	}
+	
+	async function postData(url = "https://vercel-order-transmitter.vercel.app", data = {},subrequest) 
+	{
+		try
+		{
+		  // Default options are marked with *
+		  const response = await fetch(url, {
+			method: "POST", // *GET, POST, PUT, DELETE, etc.
+			mode: "cors", // no-cors, *cors, same-origin
+			cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
+			credentials: "same-origin", // include, *same-origin, omit
+			headers: {
+			  "Content-Type": "application/json",
+			  // 'Content-Type': 'application/x-www-form-urlencoded',
+			},
+			redirect: "follow", // manual, *follow, error
+			referrerPolicy: "no-referrer", // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
+			body: JSON.stringify(data), // body data type must match "Content-Type" header
+		  });
+		  //return response.json(); // parses JSON response into native JavaScript objects
+		  let resp = response.json();
+		  
+		  if( (resp.statusCode == 404 || resp.statusCode == 500)	&& subrequest )
+			setTimeout(httpRequestServerInnocent,1500,data);
+		  
+			return resp;
+		}
+		catch(ex)
+		{
+			console.log("Error occured during fetching....");
+			console.log(ex);
+			return await postData(url , data ,subrequest); 
+		}
+	}
 
 	
+		
 	function watchOther()
 	{
 			try
@@ -169,7 +339,7 @@
 				console.log(ex);
 			}
 	}
-	watchOther();
+	//watchOther();
 	
 	
 	
@@ -198,7 +368,7 @@
 				console.log(ex);
 			}
 	}
-	watchACKFormServer();
+	//watchACKFormServer();
 
 	function watchSendFormServer()
 	{
@@ -237,7 +407,7 @@
 				console.log(ex);
 			}
 	}
-	watchSendFormServer();
+	//watchSendFormServer();
 
 	function processSocketConnectionRequest(data,client_connected)
 	{
@@ -950,7 +1120,8 @@
 					await getDataForAdminThreeArgs(undefined,undefined);
 				};
 				func();
-				//console.log(startingTag);
+				httpWatch();
+				console.log(startingTag);
 				ofUpdate();
 				setTimeout(each5Minutes,300000);
 				//'fr-FR',
@@ -1448,7 +1619,7 @@
 		}
 		catch(ex)
 		{
-			console.log("Erreur");
+			console.log("Erreur impossible de se connecter a postgres");
 			//console.log(postgresConnection);
 			console.log(ex);
 			return new Promise ((resolve,reject) => 
@@ -5361,10 +5532,23 @@
 	
 	function sectioned_sending(server,content,Box,pos)
 	{
-		let values = SplitLongString(content,Box,pos);
-		console.log("Sending "+values.length+" parts");
-		verify(server,values,0,content,Box,pos,0);
+		if( !allHttpNoWebSockets )
+		{
+			let values = SplitLongString(content,Box,pos);
+			console.log("Sending "+values.length+" parts");
+			verify(server,values,0,content,Box,pos,0);
+		}
+		else 
+		{
+			if(typeof content == 'string')
+				httpRequestServerInnocent(JSON.parse(content));
+			else
+				httpRequestServerInnocent(content);
+		}
 	}
+	
+	
+	
 
 	function sendFunction(values,server,content,Box,pos,countparam)
 	{
@@ -5462,4 +5646,12 @@
 	
 	
 	
+	
+	
+	
+	
+	
+	
 	let blob_stuff = "vercel_blob_rw_AhayNnM8BUTRk7li_Pirrs7p4aeFH5cnD9hONM9peBfDhxd";
+	
+	
