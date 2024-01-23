@@ -1007,6 +1007,7 @@
 						let reason ;
 						let IDEmployee ;
 						let Year;
+						let IDOffice;
 						skip_authentification = true;
 						console.log(fields);
 						
@@ -1021,6 +1022,7 @@
 							reason = fields["raison"][0];
 							IDEmployee = fields["IDEmployee"][0];
 							Year = fields["Année"][0];
+							IDOffice = fields["IDOffice"][0];
 						}
 						else
 						{
@@ -1030,12 +1032,16 @@
 							reason = fields["raison"];
 							IDEmployee = fields["IDEmployee"];
 							Year = fields["Année"];
+							IDOffice = fields["IDOffice"];
 						}
 						
 						userPresenceObject.day = day;
 						userPresenceObject.startDay = startDay;
 						userPresenceObject.endDay = endDay;
-									
+						userPresenceObject.ID = IDEmployee;
+						userPresenceObject.IDOffice = IDOffice;
+						userPresenceObject.year =  Year;
+						
 						let tempuserAuthentification = {ID:urlObject.authID,Prenom:urlObject.authPrenom,Nom:urlObject.authNom,genre:urlObject.authGenre,naissance:urlObject.authnaissance,pass:urlObject.authpass};
 						tempResult = await forced_authentification_query(tempuserAuthentification,undefined);
 						
@@ -2595,8 +2601,9 @@
 									//console.log(amonth); console.log(day); console.log(ayear);
 									//console.log(currentDateOfYear);
 									
+									
 									if( currentmonth == amonth
-										&& currentday == day && currentYear == year)
+										&& currentday == day && currentYear == ayear)
 									{	
 										nowDate = currentDateOfYear;
 										nowDateStr = day+"-"+amonth+"-"+ayear;
@@ -2611,7 +2618,6 @@
 										unitLocation.dayIndex = weekDayIndex;
 										unitLocation.weekIndex = weekNo-1;
 									}
-									
 									
 									
 									let options = { year: "numeric", month: "long", day: "numeric"};

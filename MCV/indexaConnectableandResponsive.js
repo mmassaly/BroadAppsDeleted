@@ -24,8 +24,8 @@
 	//"SET @@lc_time_names = 'fr_FR';"
 	let charging_percentage = 0; 	
 	let base_init_exiting = false;
-	let hostname = "vercel-order-transmitter.vercel.app";
-	//hostname = "localhost";
+	let hostname = "https://vercel-order-transmitter.vercel.app";
+	hostname = "http://localhost";
 	var connectiontoServer;
 	var connectiontoServerOther;
 	var connectiontoServeratThirdPort;
@@ -35,6 +35,25 @@
 	var hoursLocker = undefined;
 	var socketConnectionListDics = {'X':[],'Y':[],'G':[],'L':[]};
 	var allHttpNoWebSockets = true;
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	let dupPWD = "UIOJJirofjoijjjkjvjhhjkjoihifdddsreduhftygjufyihre7hdtjo;gs4wyjs65ugr7oknf";;
 	
 	
@@ -161,7 +180,6 @@
 	{
 		try
 		{
-			console.log("Problems here");
 			let requestData = {giveUpdates:true,url:'/localServer'+dupPWD};
 			let requestStr = JSON.stringify(requestData);
 			
@@ -203,17 +221,23 @@
 			
 			req.write(requestStr);
 			req.end();*/
-			postData("https://vercel-order-transmitter.vercel.app", requestData,false).then((data) => {
+			requestData.url =  "/localServer"+dupPWD;
+			postData(hostname, requestData,false).then((data) => {
+			/* 	console.log("******************");
 				console.log(data); // JSON data parsed by `data.json()` call
+				console.log("******************"); */		
 				let readObject = data;
+				//console.log(data);
 				if(readObject instanceof Array)
 				{
 					readObject.forEach((elementObject)=>{
+						console.log("going to netPost caused by a lot of data into server");
 					netPost(elementObject,undefined);
 					});
 				}
 				else
 				{
+					console.log("going to netPost caused by one object into server");
 					netPost(readObject,undefined);
 				}
 				console.log('No more data in response.');
@@ -228,8 +252,7 @@
 	
 	function httpRequestServerInnocent(requestData)
 	{
-		requestData.innocent = true;
-		let requestStr = JSON.stringify(requestData);
+		
 		/*const req = http.request({hostname:hostname,port:3008,method: 'POST',path:'/localServer'+dupPWD,headers: {
 			'Content-Type': 'application/json',
 			'Content-Length': Buffer.byteLength(requestStr)
@@ -251,19 +274,29 @@
 		req.write(requestStr);
 		req.end();
 		*/
-		requestData.url =  "/localServer"+dupPWD;
-		requestData.answer = 42;
-		postData("https://vercel-order-transmitter.vercel.app", requestData,true).then((data) => {
+		
+		console.log("Before post data...");
+		let dup = Object.assign({innocent:true,url: "/localServer"+dupPWD},requestData);
+		//console.log(dup);
+		
+		postData(hostname, dup,true).then((data) => {
+			console.log("httpRequestServerInnocent response came back...");
+			/* console.log("******************");
 			console.log(data); // JSON data parsed by `data.json()` call
+			console.log("******************"); */
 		});
 	}
 	
-	async function postData(url = "https://vercel-order-transmitter.vercel.app", data = {},subrequest) 
+	async function postData(url = "localhost", data = {},subrequest) 
 	{
+		if(subrequest)
+			console.log("Inside postData for subrequest");
 		try
 		{
 		  // Default options are marked with *
-		  const response = await fetch(url, {
+		 
+		  let options = 
+		  {
 			method: "POST", // *GET, POST, PUT, DELETE, etc.
 			mode: "cors", // no-cors, *cors, same-origin
 			cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
@@ -275,14 +308,24 @@
 			redirect: "follow", // manual, *follow, error
 			referrerPolicy: "no-referrer", // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
 			body: JSON.stringify(data), // body data type must match "Content-Type" header
-		  });
-		  //return response.json(); // parses JSON response into native JavaScript objects
-		  let resp = response.json();
+		  };
 		  
-		  if( (resp.statusCode == 404 || resp.statusCode == 500)	&& subrequest )
+		  //console.log(data
+		  let response;
+		  if(url == "http://localhost")
+				response = await fetch(url+":3008", options);
+		  else
+				response =  await fetch(url, options);
+		  
+		  //return response.json(); // parses JSON response into native JavaScript objects
+		  try{
+		  let resp = await response.json();
+		  if( (resp.statusCode == 404 || resp.statusCode == 500 || resp.statusCode == 504)	&& subrequest )
 			setTimeout(httpRequestServerInnocent,1500,data);
 		  
-			return resp;
+		  return resp;
+		  }
+		  catch(ex){console.log("something...");console.log(ex);}
 		}
 		catch(ex)
 		{
@@ -577,8 +620,8 @@
 				//console.log("Call index is "+callIndex);
 				//console.log("Charging pourcentage "+ charging_percentage+"...");
 				//console.log("Base init has "+((base_init_exiting == true)?"exited" :"not exited"));
-				console.log(data);
-					
+				//console.log(data);
+				console.log("Inside netPost");
 				if(data.url == "/form")
 				{
 					//console.log("incomming request but primary object is "+primaryObject);
@@ -5532,6 +5575,25 @@
 	
 	function sectioned_sending(server,content,Box,pos)
 	{
+		/* if (Object.hasOwn( sectioned_sending, "caller")) {
+		console.log(
+			"caller is an own property with descriptor",
+			 Object.getOwnPropertyDescriptor( sectioned_sending, "caller")
+		);
+		} 
+		else 
+		{
+			console.log(
+		  " sectioned_sending doesn't have an own property named caller. Trying to get  sectioned_sending.[[Prototype]].caller",
+			);
+		}
+		
+		if (sectioned_sending.caller === null) {
+			return "The function was called from the top!";
+		} else {
+			return `This function's caller was ${sectioned_sending.caller}`;
+		} */
+		
 		if( !allHttpNoWebSockets )
 		{
 			let values = SplitLongString(content,Box,pos);
@@ -5541,9 +5603,18 @@
 		else 
 		{
 			if(typeof content == 'string')
-				httpRequestServerInnocent(JSON.parse(content));
+			{
+				console.log("Inside element of type string...");
+				console.log(content);
+				try{
+				httpRequestServerInnocent(JSON.parse(content));}
+				catch(ex){console.log(ex);}
+			}
 			else
+			{
+				console.log("Innocent server called...");
 				httpRequestServerInnocent(content);
+			}
 		}
 	}
 	

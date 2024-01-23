@@ -481,8 +481,10 @@
 	{
 		let keys = Object.keys(mainServerHTTPConnectionsLists);
 		let values = [];
+		
 		keys.forEach( (xValue)=>
 		{
+			console.log("................"+mainServerHTTPConnectionsLists[xValue].length);
 			mainServerHTTPConnectionsLists[xValue].forEach((individual)=>
 			{
 				let value = Object.assign({},individual);
@@ -512,7 +514,7 @@
 				{
 					receivedData.Box = undefined; receivedData.Pos = undefined;	
 					receivedData.statusCode = undefined; receivedData.resHeaders = undefined;
-					
+					receivedData.url = undefined;
 					if(!individual.res.writableEnded)
 					{	
 						individual.res.writeHead(statusCode,contentType);
@@ -760,6 +762,8 @@
 	const httpServer = http.createServer((request,result)=>
 	{
 		let dataStr = '';let reqStr = '';
+		console.log("request received");
+		
 		if (request.method === 'OPTIONS') 
 		{
 			console.log('!OPTIONS');
@@ -806,6 +810,7 @@
 							,"Access-Control-Max-Age":'86400'
 							,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
 						});
+						result.write(JSON.stringify({ok:'OK'}));
 						result.end();
 					}
 					else
@@ -880,9 +885,10 @@
 					}
 					else if(valueObj.url == '/localServer'+dopePWD)
 					{
-						
+						console.log("Server found");
 						if( !(valueObj.giveUpdates == true))
 						{
+							console.log("Updates received...");
 							console.log(valueObj);console.log(",,,,,,,,,,,,,,");
 							findElementInsideListsDictionaryHTTP ( valueObj.Box,valueObj.Pos,valueObj.statusCode,
 							valueObj.resHeaders?valueObj.resHeaders:valueObj.resHeader,valueObj,result);
@@ -891,12 +897,14 @@
 								,"Access-Control-Max-Age":'86400'
 								,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
 							});
+							result.write(JSON.stringify({ok:'OK'}));
 							result.end();
 						}
 						else
 						{
+							console.log("Updates asked for");
 							let dataToForward = eachElement();
-							
+							console.log("Number of updates awaiting "+dataToForward.length);
 							result.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
 								,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
 								,"Access-Control-Max-Age":'86400'
@@ -904,11 +912,20 @@
 							});
 							result.write(JSON.stringify(dataToForward));
 							result.end();
-						}
-										
+						}				
 					}
 					else
 					{
+						/*
+							result.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+								,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
+								,"Access-Control-Max-Age":'86400'
+								,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
+							});
+							
+							result.write(JSON.stringify({res:"Fuck YU! OK!"}));
+							result.end();
+						*/	
 						if(!all_http)
 						{
 							processRequest(dataStr,request,result);
@@ -996,6 +1013,7 @@
 		objectCorrespondance.Pos = lengthofHTTPConnectionsLists++;
 		mainServerHTTPConnectionsLists[value].push(objectCorrespondance);
 		++circle_count;
+		console.log("Elements number "+mainServerHTTPConnectionsLists[value].length);
 		/* objectCorrespondance.req = req;
 		objectCorrespondance.res = res;	 */
 	}
