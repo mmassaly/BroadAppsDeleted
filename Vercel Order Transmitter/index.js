@@ -102,6 +102,7 @@
 			}
 		});
 	},2000);
+
 	
 	function setMain()
 	{
@@ -490,7 +491,10 @@
 				let value = Object.assign({},individual);
 				value.req = undefined;
 				value.res = undefined;
-				values.push(value);
+				if(value.done == undefined || value.done === false)
+				{
+					values.push(value);
+				}
 			});
 		});
 		return values;
@@ -498,15 +502,17 @@
 	
 	function findElementInsideListsDictionaryHTTP (xValue,countValue,statusCode,contentType,receivedData)
 	{
+		
 		let index = -1;
 		let count = 0;
 		console.log(receivedData.url);
 		console.log("Sending request possibly....")	;
 		console.log(xValue);
 		console.log(countValue);
+		let returnValue = false;
+		if(statusCode != undefined && contentType != undefined)
 		mainServerHTTPConnectionsLists[xValue].forEach((individual)=>
 		{
-			
 			console.log("Individual Pos "+individual.Pos);
 			if(individual.Pos == countValue)
 			{	
@@ -515,8 +521,25 @@
 					receivedData.Box = undefined; receivedData.Pos = undefined;	
 					receivedData.statusCode = undefined; receivedData.resHeaders = undefined;
 					receivedData.url = undefined;
-					if(!individual.res.writableEnded)
+					
+					if(individual.done === true)
+					{
+						returnValue = true;
+					}
+					else if(individual.statusCode == undefined) 
+					{
+					/*individual.statusCode = statusCode;
+					individual.contentType = contentType;
+					individual.receivedData = receivedData;*/
+					//the above is not working
+					Object.assign(individual, {statusCode:statusCode,contentType:contentType,receivedData:receivedData});
+					console.log("statusCode..."+statusCode +"added...............for Box: "+xValue+"...Pos:"+countValue);
+					console.log(mainServerHTTPConnectionsLists[xValue][count].statusCode);
+					/*if(!individual.res.writableEnded)
 					{	
+						individual.statusCode = statusCode;
+						individual.contentType = contentType;
+						individual.receivedData = receivedData;
 						individual.res.writeHead(statusCode,contentType);
 						individual.res.write(JSON.stringify(receivedData));
 						individual.res.end();
@@ -525,9 +548,10 @@
 							console.log("form response sent...");
 						else
 							console.log("response sent to client....");
-						
+					}*/
+					
+						index = count;
 					}
-					index = count;
 				}
 				catch(ex)
 				{
@@ -537,13 +561,15 @@
 			++count;
 		});	 
 		
-		if(index !=-1)
+		if(returnValue)
 		{
-			(mainServerHTTPConnectionsLists[xValue]).splice(index,1);
+			/*(mainServerHTTPConnectionsLists[xValue]).splice(index,1);*/
+			return {clientDone:true,index: index,Box: xValue,Pos:countValue};
 		}
 		else
 		{
 			console.log((receivedData.url == '/form')?"form response not not not sent...........":"response not not not sent to Client...");
+			return {clientDone:false};
 		}
 	}
 	
@@ -591,10 +617,12 @@
 		if(index !=-1)
 		{
 			((receivedData.url == '/form')? formshttpsListDics[xValue] : httpsListDics[xValue]).splice(index,1);
+			return true;
 		}
 		else
 		{
 			console.log((receivedData.url == '/form')?"form response not not not sent...........":"response not not not sent to Client...");
+			return false;
 		}
 	}
 	
@@ -802,16 +830,31 @@
 					let stack = JSON.parse(reqStr);
 					if( !(stack.giveUpdates == true))
 					{
-						console.log(stack);console.log(",,,,,,,,,,,,,,");
-						findElementInsideListsDictionaryHTTP ( stack.Box,stack.Pos,stack.statusCode,
+						console.log(stack);
+						console.log(",,,,,,,,,,,,,,");
+						let findResponse = findElementInsideListsDictionaryHTTP ( stack.Box,stack.Pos,stack.statusCode,
 						stack.resHeaders?stack.resHeaders:stack.resHeader,stack,result);
-						result.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
-							,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
-							,"Access-Control-Max-Age":'86400'
-							,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
-						});
-						result.write(JSON.stringify({ok:'OK'}));
-						result.end();
+						if(findResponse.clientDone)
+						{
+							result.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+								,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
+								,"Access-Control-Max-Age":'86400'
+								,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
+							});
+							result.write(JSON.stringify({ok:'OK'}));
+							result.end();
+							mainServerHTTPConnectionsLists[findResponse.Box].splice(findResponse.index,1);
+						}
+						else
+						{
+							result.writeHead(500, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+									,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
+									,"Access-Control-Max-Age":'86400'
+									,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
+								});
+							result.write(JSON.stringify({ok:'OK'}));
+							result.end();
+						}
 					}
 					else
 					{
@@ -830,14 +873,31 @@
 			}
 			else if(request.url == '/form')
 			{
-				console.log(request);
 				if(!all_http)
 				{
 					processRequest("",request,result);	
+					result.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+							,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
+							,"Access-Control-Max-Age":'86400'
+							,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
+						});
+					result.write(JSON.stringify({res:"OK"}));
+					result.end();
 				}
 				else
 				{
-					processRequestHttp("",request,result);
+					processRequestHttp("",request,result).then((data)=>{
+						if(data.done !== true)
+						{
+							result.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+								,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
+								,"Access-Control-Max-Age":'86400'
+								,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
+							});
+							result.write(JSON.stringify({comeBack:true,Box: data.Box,Pos: data.Pos}));
+							result.end();
+						}
+					});
 				}
 				
 				setTimeout((response)=>
@@ -871,7 +931,8 @@
 					});
 					result.write("{\"OK\":200}");
 					result.end(); */
-					console.log(dataStr);
+					//console.log(dataStr);
+					console.log("Value object received");
 					let valueObj = JSON.parse(dataStr);
 					if(valueObj.url == "/test")
 					{
@@ -883,22 +944,45 @@
 						result.write(JSON.stringify({a:"OK"}));
 						result.end();
 					}
-					else if(valueObj.url == '/localServer'+dopePWD)
+					else if(valueObj.overallurl == '/localServer'+dopePWD)
 					{
 						console.log("Server found");
 						if( !(valueObj.giveUpdates == true))
 						{
 							console.log("Updates received...");
-							console.log(valueObj);console.log(",,,,,,,,,,,,,,");
-							findElementInsideListsDictionaryHTTP ( valueObj.Box,valueObj.Pos,valueObj.statusCode,
+							console.log(valueObj);
+							console.log(",,,,,,,,,,,,,,");
+							
+							if(valueObj.url == "/form")
+							{
+								console.log(valueObj);
+							}
+							
+							let findResponse = findElementInsideListsDictionaryHTTP ( valueObj.Box,valueObj.Pos,valueObj.statusCode,
 							valueObj.resHeaders?valueObj.resHeaders:valueObj.resHeader,valueObj,result);
-							result.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
-								,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
-								,"Access-Control-Max-Age":'86400'
-								,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
-							});
-							result.write(JSON.stringify({ok:'OK'}));
-							result.end();
+							if(findResponse.clientDone)
+							{
+								console.log("Element found");
+								result.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+									,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
+									,"Access-Control-Max-Age":'86400'
+									,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
+								});
+								result.write(JSON.stringify({ok:'OK'}));
+								result.end();
+								mainServerHTTPConnectionsLists[findResponse.Box].splice(findResponse.index,1);
+							}
+							else
+							{
+								console.log("Element not found");
+								result.writeHead(500, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+									,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
+									,"Access-Control-Max-Age":'86400'
+									,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
+								});
+								result.write(JSON.stringify({ok:'OK'}));
+								result.end();
+							}
 						}
 						else
 						{
@@ -932,25 +1016,25 @@
 						}
 						else
 						{
-							processRequestHttp(dataStr,request,result);
+							console.log("Client sent requests");
+							console.log(dataStr);
+							processRequestHttp(dataStr,request,result).then((data)=>{
+								if(data.done !== true)
+								{
+									result.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+											,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
+											,"Access-Control-Max-Age":'86400'
+											,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
+										});
+									result.write(JSON.stringify({comeBack:true,Box: data.Box,Pos: data.Pos}));
+									result.end();
+								}
+							});
 						}
 					}
 				});
 				
-				setTimeout((response)=>
-				{
-					if(response.writableEnded == false)
-					{
-						response.writeHead(500, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
-							,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
-							,"Access-Control-Max-Age":'86400'
-							,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
-						});
-						response.write(JSON.stringify({res:"Timeout"}));
-						response.end();
-					}
-				},15000,result);
-				
+			
 			}
 		}
 		else if(request.method == 'GET')
@@ -991,21 +1075,105 @@
 	
 	async function processRequestHttp(data,req,res) 
 	{
-			
 		if(req.url != '/form')
 		{
 			let objectCorrespondance = JSON.parse(data);
-			stockUpDataHTTP(objectCorrespondance,req,res);
+			let returnValue = stockUpDataHTTP(objectCorrespondance,req,res);
 			console.log("Data has been stored");
+			return returnValue;
 		}
 		else 
 		{
-			formidableFileUploadHttp(req,res);
+			return await formidableFileUploadHttp(req,res);
+		}
+	}
+	
+	function findDataHTTP(objectCorrespondance,req,res) 
+	{
+		//console.log(objectCorrespondance);
+		let comeBack = objectCorrespondance.comeBack == true || (objectCorrespondance.fields != undefined && (objectCorrespondance.fields["comeBack"] != undefined 
+		&& ( (objectCorrespondance.fields["comeBack"] instanceof Array && (objectCorrespondance.fields["comeBack"][0] === true || objectCorrespondance.fields["comeBack"][0] === 'true') ) || objectCorrespondance.fields["comeBack"] == true
+		|| objectCorrespondance.fields["comeBack"] === 'true')));
+		let insideFields = (objectCorrespondance.fields == undefined)?false : true;
+		
+		let boxValue = (insideFields)?((objectCorrespondance.fields["Box"] instanceof Array)? objectCorrespondance.fields["Box"][0]:objectCorrespondance.fields["Box"]) :objectCorrespondance.Box;
+		let posValue = (insideFields)?((objectCorrespondance.fields["Pos"] instanceof Array)? objectCorrespondance.fields["Pos"][0]:objectCorrespondance.fields["Pos"]) :objectCorrespondance.Pos;
+		
+		if( comeBack )
+		{
+			let tempFound = false; let baseFound = false;let written_and_done = false; let index_found = -1;let count = 0;
+			mainServerHTTPConnectionsLists[ boxValue].forEach((element)=>
+			{
+				++count;
+				if(element.Pos == posValue)
+				{
+					baseFound = true;	
+					element.req = req; element.res = res;
+					if(!element.res.writableEnded && element.statusCode != undefined)
+					{
+						tempFound = true;
+						index_found = count;
+						res.writeHead(element.statusCode,element.contentType);
+						res.write(JSON.stringify(element.receivedData));
+						res.end();
+						Object.assign(element, {done : true});
+						console.log("Element has been found with statusCode...............");
+					}
+					else if(element.res.writableEnded)
+					{
+						written_and_done = true;
+						console.log("Element has been found but response has already been written...............");
+					}
+					else
+					{
+						console.log("Element has been found without statusCode...............");
+					}
+				}
+			});
+			
+			
+			if(tempFound)
+			{
+				console.log("Server has found the client's old request and response flushed.......");
+				return {Box: boxValue, Pos: posValue,done:true};
+			}
+			else if(baseFound)
+			{
+				console.log("Server has  found the client's old request but response cannot be flushed.......");
+				return {Box: boxValue, Pos: posValue,done:false,written_and_done: written_and_done};
+			}
+			else
+			{
+				console.log("Server has not found the client's old request and response cannot be flushed.......");
+				return false;
+			}
 		}
 	}
 	
 	function stockUpDataHTTP(objectCorrespondance,req,res) 
 	{
+		
+		console.log("ComeBack is "+ (objectCorrespondance.comeBack == true || (objectCorrespondance.fields != undefined && (objectCorrespondance.fields["comeBack"] != undefined 
+		&& ( (objectCorrespondance.fields["comeBack"] instanceof Array && (objectCorrespondance.fields["comeBack"][0] === true || objectCorrespondance.fields["comeBack"][0] === 'true') ) || objectCorrespondance.fields["comeBack"] == true ||
+		 objectCorrespondance.fields["comeBack"] === 'true'))) ));
+		
+		if( objectCorrespondance.comeBack == true || (objectCorrespondance.fields != undefined && (objectCorrespondance.fields["comeBack"] != undefined 
+		&& ( (objectCorrespondance.fields["comeBack"] instanceof Array && (objectCorrespondance.fields["comeBack"][0] === true || objectCorrespondance.fields["comeBack"][0] === 'true') ) || objectCorrespondance.fields["comeBack"] == true
+		|| objectCorrespondance.fields["comeBack"] === 'true'))) )
+		{
+			let result = findDataHTTP(objectCorrespondance,req,res);
+			console.log("Result is ");
+			console.log(result);
+			
+			if(result !== false)
+			{
+				return result;
+			}
+		}
+		
+		if( objectCorrespondance.fields != undefined )
+			console.log(objectCorrespondance);
+		
 		let value  = circle_value_correspondance[circle_count % (circle_value_correspondance.length)];
 		objectCorrespondance.req = req;
 		objectCorrespondance.res = res;
@@ -1014,8 +1182,10 @@
 		mainServerHTTPConnectionsLists[value].push(objectCorrespondance);
 		++circle_count;
 		console.log("Elements number "+mainServerHTTPConnectionsLists[value].length);
+		
 		/* objectCorrespondance.req = req;
 		objectCorrespondance.res = res;	 */
+		return {Box: objectCorrespondance.Box, Pos: objectCorrespondance.Pos,done: false};
 	}
 	
 	function completeAssign(target, ...sources) {
@@ -1219,14 +1389,16 @@
 	{
 		var form = new formidable.IncomingForm();
 		console.log("Inside formidable HTTP");
+		let returnValue = undefined;
+		let fields = undefined; let files = undefined;
+		[fields,files]= await form.parse(req);
 		
-		form.parse(req, function (err, fields, files) 
-		{
-			console.log(fields); console.log(files);
-			var objectCorrespondance;
-			objectCorrespondance = {url: '/form',fields: fields,files:files};
-			stockUpDataHTTP(objectCorrespondance,req,res) 
-		});
+		//console.log(fields); console.log(files);
+		var objectCorrespondance;
+		objectCorrespondance = {url: '/form',fields: fields,files:files};
+		returnValue = stockUpDataHTTP(objectCorrespondance,req,res) 
+		
+		return returnValue;
 	}
 	
 	

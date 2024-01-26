@@ -35,7 +35,7 @@
 	var hoursLocker = undefined;
 	var socketConnectionListDics = {'X':[],'Y':[],'G':[],'L':[]};
 	var allHttpNoWebSockets = true;
-	
+	var httpElementsToAdd = [];
 	
 	
 	
@@ -106,6 +106,30 @@
 		});
 	}
 	
+	setInterval(()=>
+	{
+		let to_delete = [];
+		httpElementsToAdd.forEach(element=>
+		{
+			console.log(element.astartTime);
+			if(new Date() - element.astartTime > 30000)
+			{
+				to_delete.push(element);
+			} 
+		});
+		console.log("To delete length "+ to_delete.length);
+		console.log("old length is "+httpElementsToAdd.length);
+		to_delete.forEach(element=>
+		{
+			let index = httpElementsToAdd.indexOf(element);
+			if(index != -1)
+			{
+				httpElementsToAdd.splice(index,1);
+			}
+		});
+		console.log("new length is "+httpElementsToAdd.length);
+	},30000);
+	
 	function caller()
 	{
 		
@@ -170,7 +194,7 @@
 				connectiontoServer.on('end', () => 
 				{
 					console.log('disconnected from server');
-					setTimeout(watch,500);
+					setTimeout(watch,50);
 				});
 			}catch(ex){console.log(ex);}
 			
@@ -221,8 +245,8 @@
 			
 			req.write(requestStr);
 			req.end();*/
-			requestData.url =  "/localServer"+dupPWD;
-			postData(hostname, requestData,false).then((data) => {
+			requestData.overallurl =  "/localServer"+dupPWD;
+			postData(hostname, requestData,false,undefined).then((data) => {
 			/* 	console.log("******************");
 				console.log(data); // JSON data parsed by `data.json()` call
 				console.log("******************"); */		
@@ -230,15 +254,73 @@
 				//console.log(data);
 				if(readObject instanceof Array)
 				{
+					if(data.length == 0 && httpElementsToAdd.length > 0)
+					{
+						httpElementsToAdd.splice(0,httpElementsToAdd.length);
+					}
 					readObject.forEach((elementObject)=>{
-						console.log("going to netPost caused by a lot of data into server");
-					netPost(elementObject,undefined);
+						if(elementObject.Box != undefined && elementObject.Pos != undefined)
+						{
+							let found = false;
+							let found_element = undefined;
+							console.log("Element Box is "+elementObject.Box+" Pos is "+elementObject.Pos);
+								
+							for (let i = 0; i < httpElementsToAdd.length; ++i)
+							{ 
+								let httpElement = httpElementsToAdd[i];
+								console.log("Box is "+httpElement.Box+" Pos is "+httpElement.Pos);
+								if(httpElement.Box == elementObject.Box && httpElement.Pos == elementObject.Pos)
+								{
+									found = true; found_element = httpElement;
+								}
+							}
+							if(found == false)
+							{
+								console.log("going to netPost caused by a lot of data into server");
+								httpElementsToAdd.push({Box: elementObject.Box, Pos: elementObject.Pos,astartTime: new Date()});
+								netPost(elementObject,undefined);
+							}
+							else
+							{
+								//sectioned_sending(undefined,found_element,undefined,undefined);
+							}
+							
+						}
+						
 					});
 				}
 				else
 				{
-					console.log("going to netPost caused by one object into server");
-					netPost(readObject,undefined);
+					try{
+					let found = false;
+					let found_element = undefined;
+					console.log("Element Box is "+readObject.Box+" Pos is "+readObject.Pos);	
+					for (let i = 0; i < httpElementsToAdd.length; ++i)
+					{ 
+						let httpElement = httpElementsToAdd[i];
+						console.log("Box is "+httpElement.Box+" Pos is "+httpElement.Pos);
+								
+						if(httpElement.Box == readObject.Box && httpElement.Pos == readObject.Pos)
+						{
+							found = true;
+							found_element = httpElement;
+							break;
+						}
+					}
+					if(found == false)
+					{
+						console.log("going to netPost caused by one object into server");
+						netPost(readObject,undefined);
+					}
+					else
+					{
+						//sectioned_sending(undefined,found_element,undefined,undefined);
+					}
+					}
+					catch(ex)
+					{
+						console.log(ex);
+					}
 				}
 				console.log('No more data in response.');
 				setTimeout(httpWatch,1000);
@@ -250,9 +332,22 @@
 	}
 	
 	
-	function httpRequestServerInnocent(requestData)
+	function httpRequestServerInnocent(requestData,call_count)
 	{
-		
+		console.log(requestData["MaxCalls"]);
+		console.log(requestData["url"]);
+		if(requestData["MaxCalls"] == undefined)
+		{
+			requestData["MaxCalls"] = 20; 
+		}
+		else if (requestData["MaxCalls"] == 0)
+		{
+			return;
+		}
+		else
+		{
+			requestData["MaxCalls"]--;
+		}
 		/*const req = http.request({hostname:hostname,port:3008,method: 'POST',path:'/localServer'+dupPWD,headers: {
 			'Content-Type': 'application/json',
 			'Content-Length': Buffer.byteLength(requestStr)
@@ -276,10 +371,15 @@
 		*/
 		
 		console.log("Before post data...");
-		let dup = Object.assign({innocent:true,url: "/localServer"+dupPWD},requestData);
+		let dup = requestData;
+		//console.log(requestData);
+		if(requestData["innocent"] == undefined)
+		{
+			dup = Object.assign({innocent:true,overallurl: "/localServer"+dupPWD},requestData);
+		}
 		//console.log(dup);
 		
-		postData(hostname, dup,true).then((data) => {
+		postData(hostname, dup,true,call_count).then((data) => {
 			console.log("httpRequestServerInnocent response came back...");
 			/* console.log("******************");
 			console.log(data); // JSON data parsed by `data.json()` call
@@ -287,7 +387,7 @@
 		});
 	}
 	
-	async function postData(url = "localhost", data = {},subrequest) 
+	async function postData(url = "http://localhost", data = {},subrequest,call_count) 
 	{
 		if(subrequest)
 			console.log("Inside postData for subrequest");
@@ -318,12 +418,37 @@
 				response =  await fetch(url, options);
 		  
 		  //return response.json(); // parses JSON response into native JavaScript objects
-		  try{
-		  let resp = await response.json();
-		  if( (resp.statusCode == 404 || resp.statusCode == 500 || resp.statusCode == 504)	&& subrequest )
-			setTimeout(httpRequestServerInnocent,1500,data);
-		  
-		  return resp;
+		  try
+		  {
+			  let resp = await response.json();
+			  
+			  console.log("done waiting..................subrequest is "+subrequest);
+			  console.log("resp statusCode "+response.status+" call_count "+call_count);
+			  if(call_count > 0 && (response.status == 404 || response.status == 500 || response.status == 504)	&& subrequest )
+			  {
+					console.log("calling 800 after timeout...");
+					console.log("MaxCalls..."+data["MaxCalls"]);
+					setTimeout(httpRequestServerInnocent,500,data,--call_count);
+			  }
+			  else if( call_count == 0 && subrequest && response.status == 200)
+			  { //alternatively, remove instantly or setTimeout for remove after 16 while you deal with server seconds....
+					let index = findElementintoHttpElements(data.Box,data.Pos);
+					if(index >= 0)
+						httpElementsToAdd.splice(index,1);
+			  }
+			  else if (response.status == 200 && subrequest)
+			  {//alternatively, remove instantly or setTimeout for remove after 16 while you deal with server seconds....
+				    if(data["url"] == "/form")
+					{
+						console.log("form sent.........");
+						//console.log(data);
+					}
+					let index = findElementintoHttpElements(data.Box,data.Pos);
+					if(index >= 0)
+						httpElementsToAdd.splice(index,1);
+			  }
+			  
+			  return resp;
 		  }
 		  catch(ex){console.log("something...");console.log(ex);}
 		}
@@ -622,6 +747,12 @@
 				//console.log("Base init has "+((base_init_exiting == true)?"exited" :"not exited"));
 				//console.log(data);
 				console.log("Inside netPost");
+				if (Object.hasOwn( netPost, "caller")) 
+				{
+					console.log(
+					"caller is an own property with descriptor",
+					 Object.getOwnPropertyDescriptor( netPost, "caller"));
+				}
 				if(data.url == "/form")
 				{
 					//console.log("incomming request but primary object is "+primaryObject);
@@ -1242,6 +1373,7 @@
 	
 	async function formidableFileUpload(req,path,res)
 	{
+		let netStartDate = new Date();
 		let fields = req.fields;
 		let files = req.files;
 		console.log(req);
@@ -1499,6 +1631,8 @@
 						{
 							console.log(querySQL);
 							let aresult = await faire_un_simple_query(querySQL);
+							let currentDate = new Date();
+							console.log("Time to stop is "+(currentDate - netStartDate));
 							console.log(aresult);
 							console.log("aresult.second "+(aresult.second != false || (aresult.second instanceof Array))+" "+aresult.second);
 							if(aresult.second != false || (aresult.second instanceof Array))
@@ -1514,7 +1648,7 @@
 									console.log("Passed reasonsforabsences");
 									console.log("Inside response");
 										
-									if(res.writableEnded)
+									if(res !== undefined && res.writableEnded)
 									{	
 										console.log("Response writable ended ..."+res.writableEnded);	
 										return;
@@ -1550,7 +1684,10 @@
 																	};
 									req.customtext = "OK";
 									//server.write(JSON.stringify(req));
-									sectioned_sending(res,JSON.stringify(req),req.Box,req.Pos)
+									console.log("form flushed");
+									console.log(req);
+									sectioned_sending(res,JSON.stringify(req),req.Box,req.Pos);
+									
 									await getDataForAdmin(undefined,userOfficeObject,undefined,undefined,undefined,undefined,undefined);
 										
 										/*	
@@ -2563,6 +2700,7 @@
 							//console.log(empHoursObj);
 							let threeResults = await faire_un_simple_query(query);
 							let resultTwo = threeResults[0];
+							console.log(resultTwo);
 							let aresult = threeResults[2];
 							let bresult = threeResults[1];console.log(bresult);
 							let cresult = threeResults[3];
@@ -3177,11 +3315,12 @@
 											let end = resultTwo.first[m][resultTwo.second[8].name];
 											let profession = resultTwo.first[m][resultTwo.second[6].name];
 											let IDBureau = resultTwo.first[m][resultTwo.second[10].name];
-											//console.log("Inside m which is "+m);
-											//console.log(IDIndividu);
-											//console.log(debut);
-											//console.log(end);
-											//console.log(profession);
+											/*console.log("Inside m which is "+m);
+											console.log(IDIndividu);
+											console.log(debut);
+											console.log(end);
+											console.log(profession);
+											console.log("Unit location "+unitLocation.ID +" == IDBureau "+ IDBureau );*/
 											if(unitLocation.ID != IDBureau)
 												continue;
 											
@@ -3438,10 +3577,10 @@
 														}
 													}
 												}
-
+	
 												if(existing_element == false)
 												{
-													//console.log("New Element added");
+													console.log("New Element added");
 													let command = { paths:[{path:"container",index:location_index},{path:"yearsContent",index:yearIndex},{path:"employees",index:yearContentModel.employees.length}], commandObj:{command:"push",value:days} };
 													pushCommands(command);
 													yearContentModel.employees.push(employeeDescribed);
@@ -5601,24 +5740,62 @@
 			verify(server,values,0,content,Box,pos,0);
 		}
 		else 
-		{
+		{	
 			if(typeof content == 'string')
 			{
-				console.log("Inside element of type string...");
-				console.log(content);
-				try{
-				httpRequestServerInnocent(JSON.parse(content));}
+				console.log("Inside element of type string... called netPost again...");
+				//console.log(content);
+				try
+				{
+					let object = JSON.parse(content);
+				addElementDuetoHTTPMethods (object.Box,object.Pos,object);
+				httpRequestServerInnocent(object,20);}
 				catch(ex){console.log(ex);}
 			}
 			else
 			{
 				console.log("Innocent server called...");
-				httpRequestServerInnocent(content);
+				httpElementsToAdd.push(content);
+				addElementDuetoHTTPMethods (content.Box,content.Pos,content);
+				httpRequestServerInnocent(content,20);
 			}
 		}
 	}
 	
+	function findElementintoHttpElements(box,pos)
+	{
+		let index = -1;
+		let count = 0;
+		httpElementsToAdd.forEach((el)=>
+		{
+			if(el.Box == box && el.Pos == pos)
+			{
+				index = count;
+			}
+			++count;
+		});
+		return index;
+	}
 	
+	function addElementDuetoHTTPMethods (box,pos,otherObject)
+	{
+		let index = -1;
+		let count = 0;
+		httpElementsToAdd.forEach((el)=>
+		{
+			if(el.Box == box && el.Pos == pos)
+			{
+				index = count;
+				httpElementsToAdd[box] = Object.assign({},httpElementsToAdd[count]);
+			}
+			++count;
+		});
+		if(index == -1)
+		{
+			httpElementsToAdd[box].push(otherObject);
+		}
+		return index;
+	}
 	
 
 	function sendFunction(values,server,content,Box,pos,countparam)
