@@ -25,7 +25,7 @@
 	let charging_percentage = 0; 	
 	let base_init_exiting = false;
 	let hostname = "https://vercel-order-transmitter.vercel.app";
-	hostname = "http://localhost";
+	//hostname = "http://localhost";
 	var connectiontoServer;
 	var connectiontoServerOther;
 	var connectiontoServeratThirdPort;
@@ -294,6 +294,11 @@
 					try{
 					let found = false;
 					let found_element = undefined;
+					
+					console.log("Read object...");
+					console.log(readObject);
+					console.log("Read object...");
+					
 					console.log("Element Box is "+readObject.Box+" Pos is "+readObject.Pos);	
 					for (let i = 0; i < httpElementsToAdd.length; ++i)
 					{ 
@@ -428,7 +433,7 @@
 			  {
 					console.log("calling 800 after timeout...");
 					console.log("MaxCalls..."+data["MaxCalls"]);
-					setTimeout(httpRequestServerInnocent,500,data,--call_count);
+					setTimeout(httpRequestServerInnocent,1000,data,--call_count);
 			  }
 			  else if( call_count == 0 && subrequest && response.status == 200)
 			  { //alternatively, remove instantly or setTimeout for remove after 16 while you deal with server seconds....
@@ -5749,7 +5754,7 @@
 				{
 					let object = JSON.parse(content);
 				addElementDuetoHTTPMethods (object.Box,object.Pos,object);
-				httpRequestServerInnocent(object,20);}
+				httpRequestServerInnocent(object,6);}
 				catch(ex){console.log(ex);}
 			}
 			else
@@ -5757,7 +5762,7 @@
 				console.log("Innocent server called...");
 				httpElementsToAdd.push(content);
 				addElementDuetoHTTPMethods (content.Box,content.Pos,content);
-				httpRequestServerInnocent(content,20);
+				httpRequestServerInnocent(content,6);
 			}
 		}
 	}
