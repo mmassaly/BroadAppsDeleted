@@ -440,14 +440,14 @@
 						}
 						
 						console.log('No more data in response.');
-						setTimeout(postRequestHTTPWatch,1000);
+						//setTimeout(postRequestHTTPWatch,1000);
 					}
 					catch(ex)
 					{
 						console.log("Something");
 						console.log(ex);
 						console.log('No more data in response.');
-						setTimeout(postRequestHTTPWatch,1000);
+						//setTimeout(postRequestHTTPWatch,1000);
 					}
 				});
 				
@@ -456,7 +456,7 @@
 			
 			req.on('error', (e) => {
 			  console.error(`problem with request: ${e.message}`);
-			  setTimeout(postRequestHTTPWatch,1500);
+			  //setTimeout(postRequestHTTPWatch,1500);
 			});
 			
 			req.write(requestStr);
@@ -507,7 +507,7 @@
 						  {
 								console.log("calling 800 after timeout...");
 								console.log("MaxCalls..."+data["MaxCalls"]);
-								setTimeout(postRequestHTTPSubRequestWatch,(call_count <= 2)?1200:800,reqdata,--call_count);
+								setTimeout(postRequestHTTPSubRequestWatch,(call_count <= 2)?150:100,reqdata,--call_count);
 						  }
 						  else if( call_count == 0 &&  response.statusCode == 200)
 						  { //alternatively, remove instantly or setTimeout for remove after 16 while you deal with server seconds....
@@ -1504,6 +1504,7 @@
 				func();
 				//httpWatch();
 				postRequestHTTPWatch();
+				setInterval(postRequestHTTPWatch,1000);
 				console.log(startingTag);
 				ofUpdate();
 				setTimeout(each5Minutes,300000);
@@ -5969,7 +5970,7 @@
 				httpElementsToAdd.push(content);
 				addElementDuetoHTTPMethods (content.Box,content.Pos,content);
 				//httpRequestServerInnocent(content,6);
-				postRequestHTTPSubRequestWatch(content,4);
+				postRequestHTTPSubRequestWatch(content,5);
 			}
 		}
 	}
