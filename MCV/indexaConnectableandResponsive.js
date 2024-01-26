@@ -1,5 +1,5 @@
 	var net = require("node:net");
-	var http = require("http");
+	var http = require("https");
 	const { Buffer } = require('node:buffer');
 	var url = require("url");
 	var postgres = require('pg');
@@ -25,7 +25,8 @@
 	let charging_percentage = 0; 	
 	let base_init_exiting = false;
 	let hostname = "https://vercel-order-transmitter.vercel.app";
-	//hostname = "http://localhost";
+	hostname = "vercel-order-transmitter.vercel.app";
+	//hostname = "localhost";
 	var connectiontoServer;
 	var connectiontoServerOther;
 	var connectiontoServeratThirdPort;
@@ -209,7 +210,7 @@
 			
 			/*let requestData = {giveUpdates:true,url:'/localServer'+dupPWD};
 			let requestStr = JSON.stringify(requestData);
-			const req = http.request( {hostname:hostname,port:3008,method: 'POST',path:'/localServer'+dupPWD,headers: {
+			const req = http.request( {hostname:hostname,method: 'POST',headers: {
 				'Content-Type': 'application/json',
 				'Content-Length': Buffer.byteLength(requestStr)
 			  }}, (res)=> 
@@ -336,23 +337,224 @@
 		}
 	}
 	
+	function postRequestHTTPWatch()
+	{
+		let requestData = {giveUpdates:true,url:'/localServer'+dupPWD};
+		requestData.overallurl =  "/localServer"+dupPWD;
+		let requestStr = JSON.stringify(requestData);
+		
+		const req = http.request( {hostname:hostname,method: 'POST',headers: {
+				'Content-Type': 'application/json',
+				'Content-Length': Buffer.byteLength(requestStr)
+			  }}, (res)=> 
+			{
+				let data = "";
+				res.on('data', (chunk) => {
+					data += chunk;
+				});
+				
+				res.on('end', () => {
+					try
+					{
+						console.log(res.statusCode);
+						console.log(res.status);
+						
+						let readObject = JSON.parse(data);
+						
+						//console.log(data);
+						if(readObject instanceof Array)
+						{
+							if(data.length == 0 && httpElementsToAdd.length > 0)
+							{
+								httpElementsToAdd.splice(0,httpElementsToAdd.length);
+							}
+							readObject.forEach((elementObject)=>{
+								if(elementObject.Box != undefined && elementObject.Pos != undefined)
+								{
+									let found = false;
+									let found_element = undefined;
+									console.log("Element Box is "+elementObject.Box+" Pos is "+elementObject.Pos);
+										
+									for (let i = 0; i < httpElementsToAdd.length; ++i)
+									{ 
+										let httpElement = httpElementsToAdd[i];
+										console.log("Box is "+httpElement.Box+" Pos is "+httpElement.Pos);
+										if(httpElement.Box == elementObject.Box && httpElement.Pos == elementObject.Pos)
+										{
+											found = true; found_element = httpElement;
+										}
+									}
+									if(found == false)
+									{
+										console.log("going to netPost caused by a lot of data into server");
+										httpElementsToAdd.push({Box: elementObject.Box, Pos: elementObject.Pos,astartTime: new Date()});
+										netPost(elementObject,undefined);
+									}
+									else
+									{
+										//sectioned_sending(undefined,found_element,undefined,undefined);
+									}
+									
+								}
+								
+							});
+						}
+						else
+						{
+							try
+							{
+								let found = false;
+								let found_element = undefined;
+								
+								console.log("Read object...");
+								console.log(readObject);
+								console.log("Read object...");
+								
+								console.log("Element Box is "+readObject.Box+" Pos is "+readObject.Pos);	
+								for (let i = 0; i < httpElementsToAdd.length; ++i)
+								{ 
+									let httpElement = httpElementsToAdd[i];
+									console.log("Box is "+httpElement.Box+" Pos is "+httpElement.Pos);
+											
+									if(httpElement.Box == readObject.Box && httpElement.Pos == readObject.Pos)
+									{
+										found = true;
+										found_element = httpElement;
+										break;
+									}
+								}
+								if(found == false)
+								{
+									console.log("going to netPost caused by one object into server");
+									netPost(readObject,undefined);
+								}
+								else
+								{
+									//sectioned_sending(undefined,found_element,undefined,undefined);
+								}
+							}
+							catch(ex)
+							{
+								console.log(ex);
+							}
+						}
+						
+						console.log('No more data in response.');
+						setTimeout(postRequestHTTPWatch,1000);
+					}
+					catch(ex)
+					{
+						console.log("Something");
+						console.log(ex);
+						console.log('No more data in response.');
+						setTimeout(postRequestHTTPWatch,1000);
+					}
+				});
+				
+				
+			});
+			
+			req.on('error', (e) => {
+			  console.error(`problem with request: ${e.message}`);
+			  setTimeout(postRequestHTTPWatch,1500);
+			});
+			
+			req.write(requestStr);
+			req.end()
+	}
+	
+	function postRequestHTTPSubRequestWatch(reqdata={},call_count)
+	{
+		let dup = reqdata;
+		//console.log(reqdata);
+		//console.log("reqdata is type of "+(typeof reqdata));
+		
+		if( reqdata["innocent"] == undefined )
+		{
+			dup = Object.assign({innocent:true,overallurl: "/localServer"+dupPWD},reqdata);
+		}
+		
+		let requestStr = JSON.stringify(dup);
+		
+		const req = http.request( {hostname:hostname ,method: 'POST',headers: {
+				'Content-Type': 'application/json',
+				'Content-Length': Buffer.byteLength(requestStr)
+			  }}, (response)=> 
+			{
+				let data = "";
+				response.on('data', (chunk) => {
+					data += chunk;
+				});
+				
+				response.on('end', () => {
+					try{
+						let resp = JSON.parse(data);
+								
+						console.log("done waiting..................inside subrequest");
+						console.log("resp statusCode "+response.status+" call_count "+call_count);
+						console.log("resp statusCode "+response.statusCode+" call_count "+call_count);
+						   
+					}
+					catch(ex)
+					{
+						console.log("Error from server");
+						console.log(response.statusCode);
+						console.log(response.statusText);
+						console.log(ex);
+					}	
+					
+					if(call_count > 0 && (response.statusCode == 404 || response.statusCode == 500 || response.statusCode == 504)	)
+						  {
+								console.log("calling 800 after timeout...");
+								console.log("MaxCalls..."+data["MaxCalls"]);
+								setTimeout(postRequestHTTPSubRequestWatch,(call_count <= 2)?1200:800,reqdata,--call_count);
+						  }
+						  else if( call_count == 0 &&  response.statusCode == 200)
+						  { //alternatively, remove instantly or setTimeout for remove after 16 while you deal with server seconds....
+								let index = findElementintoHttpElements(reqdata.Box,reqdata.Pos);
+								if(index >= 0)
+									httpElementsToAdd.splice(index,1);
+						  }
+						  else if (response.statusCode == 200 )
+						  {//alternatively, remove instantly or setTimeout for remove after 16 while you deal with server seconds....
+								if(data["url"] == "/form")
+								{
+									console.log("form sent.........");
+									//console.log(data);
+								}
+								let index = findElementintoHttpElements(reqdata.Box,reqdata.Pos);
+								if(index >= 0)
+									httpElementsToAdd.splice(index,1);
+						  }
+						  else if ( call_count == 0)
+						  {
+							  let index = findElementintoHttpElements(reqdata.Box,reqdata.Pos);
+								if(index >= 0)
+									httpElementsToAdd.splice(index,1);
+						  }
+					
+			    });
+			});
+				req.on('error', (e) => {
+					console.error(`problem with request: ${e.message}`);
+					if( call_count == 0)
+					{
+						let index = findElementintoHttpElements(reqdata.Box,reqdata.Pos);
+						if(index >= 0)
+							httpElementsToAdd.splice(index,1);
+					}
+					setTimeout(postRequestHTTPSubRequestWatch,1500,reqdata,--call_count);
+				});
+			
+				req.write(requestStr);
+				req.end()
+	}
 	
 	function httpRequestServerInnocent(requestData,call_count)
 	{
-		console.log(requestData["MaxCalls"]);
+		console.log("call_count.............."+call_count);
 		console.log(requestData["url"]);
-		if(requestData["MaxCalls"] == undefined)
-		{
-			requestData["MaxCalls"] = 20; 
-		}
-		else if (requestData["MaxCalls"] == 0)
-		{
-			return;
-		}
-		else
-		{
-			requestData["MaxCalls"]--;
-		}
+		
 		/*const req = http.request({hostname:hostname,port:3008,method: 'POST',path:'/localServer'+dupPWD,headers: {
 			'Content-Type': 'application/json',
 			'Content-Length': Buffer.byteLength(requestStr)
@@ -382,6 +584,7 @@
 		{
 			dup = Object.assign({innocent:true,overallurl: "/localServer"+dupPWD},requestData);
 		}
+		
 		//console.log(dup);
 		
 		postData(hostname, dup,true,call_count).then((data) => {
@@ -1299,7 +1502,8 @@
 					await getDataForAdminThreeArgs(undefined,undefined);
 				};
 				func();
-				httpWatch();
+				//httpWatch();
+				postRequestHTTPWatch();
 				console.log(startingTag);
 				ofUpdate();
 				setTimeout(each5Minutes,300000);
@@ -5753,8 +5957,10 @@
 				try
 				{
 					let object = JSON.parse(content);
-				addElementDuetoHTTPMethods (object.Box,object.Pos,object);
-				httpRequestServerInnocent(object,6);}
+					addElementDuetoHTTPMethods (object.Box,object.Pos,object);
+					//httpRequestServerInnocent(object,6);
+					postRequestHTTPSubRequestWatch(object,4);
+				}
 				catch(ex){console.log(ex);}
 			}
 			else
@@ -5762,7 +5968,8 @@
 				console.log("Innocent server called...");
 				httpElementsToAdd.push(content);
 				addElementDuetoHTTPMethods (content.Box,content.Pos,content);
-				httpRequestServerInnocent(content,6);
+				//httpRequestServerInnocent(content,6);
+				postRequestHTTPSubRequestWatch(content,4);
 			}
 		}
 	}
