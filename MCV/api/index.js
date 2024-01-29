@@ -4196,26 +4196,28 @@
 
 	function calculateCongès(unitLocation,year,offset,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex)
 	{
-		let nodupTempAlpha = unitLocation.content.yearsContent[yearIndex];
+		let nodupTempAlpha = getYear(unitLocation,year);
 		let nodupTemp = nodupTempAlpha.first;
 		let found = false;
-		nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].congèsdates.forEach((element)=>{if(dummyIDComparison(element,employeeContentModel)){result = true;}});
+		nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].vacationsdates.forEach((element)=>{if(dummyIDComparison(element,employeeContentModel)){result = true;}});
+		//console.log("Month index "+monthIndex+" Weeks index "+weekIndex+" years Index "+ yearIndex+" year is "+ year);
+		//console.log(nodupTemp.months[monthIndex].weeks);
 		
 		if(!found && offset > 0 || found && offset < 0)
 		{
-			nodupTemp.congès += offset;
+			nodupTemp.vacations += offset;
 			let command = { paths:[{path:"container",index:location_index},{path:"yearsContent",index:yearIndex}], commandObj:{command:((offset>0)?"inc":"dec"),path:"congès"} };
 			pushCommands(command);
-			nodupTemp.months[monthIndex] += offset;
+			nodupTemp.months[monthIndex].vacations += offset;
 			command = { paths:[{path:"container",index:location_index},{path:"yearsContent",index:yearIndex},{path:"months",index:monthIndex}], commandObj:{command:((offset>0)?"inc":"dec"),path:"congès"} };
 			pushCommands(command);
-			nodupTemp.months[monthIndex].weeks[weekIndex]+= offset;
+			nodupTemp.months[monthIndex].weeks[weekIndex].vacations += offset;
 			command = { paths:[{path:"container",index:location_index},{path:"yearsContent",index:yearIndex},{path:"months",index:monthIndex},{path:"weeks",index:weekIndex}], commandObj:{command:((offset>0)?"inc":"dec"),path:"congès"} };
 			pushCommands(command);
-			nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].congès+= offset;
+			nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].vacations += offset;
 			command = { paths:[{path:"container",index:location_index},{path:"yearsContent",index:yearIndex},{path:"months",index:monthIndex},{path:"weeks",index:weekIndex},{path:"days",index:weekDayIndex}], commandObj:{command:((offset>0)?"inc":"dec"),path:"congès"} };
 			pushCommands(command);
-			command = { paths:[{path:"container",index:location_index},{path:"yearsContent",index:yearIndex},{path:"months",index:monthIndex},{path:"weeks",index:weekIndex},{path:"days",index:weekDayIndex}], commandObj:{command:((offset>0)?"push":"remove"),path:"congèsdates",value:employeeContentModel} };
+			command = { paths:[{path:"container",index:location_index},{path:"yearsContent",index:yearIndex},{path:"months",index:monthIndex},{path:"weeks",index:weekIndex},{path:"days",index:weekDayIndex}], commandObj:{command:((offset>0)?"push":"remove"),path:"vacationsdates",value:employeeContentModel} };
 			pushCommands(command);
 			nodupTemp.empDic[employeeContentModel.ID].vacationdates.count += offset;
 			nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].vacationdates.count += offset;
@@ -4227,7 +4229,7 @@
 		{
 			if(!found)
 			{
-				nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].congèsdates.push(employeeContentModel);
+				nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].vacationsdates.push(employeeContentModel);
 				nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].empDicofVacances[employeeContentModel.ID] = employeeContentModel;
 				nodupTemp.empDic[employeeContentModel.ID].vacationdates.other.push(employeeContentModel.date);
 				nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].vacationdates.other.push(employeeContentModel.date);
@@ -4238,7 +4240,7 @@
 		{
 			if(found)
 			{
-				let tempValue = nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].congèsdates;
+				let tempValue = nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].vacationsdates;
 				if(tempValue.indexOf(employeeContentModel) > -1)
 					tempValue.splice(tempValue.indexOf(employeeContentModel),1);
 				
