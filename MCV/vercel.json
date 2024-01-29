@@ -13,12 +13,12 @@
 			"dest":"index.js"
 		}
 	],
-	"functions": {
+	"functions": [
 		"app/*.js": {
 		  "maxDuration": 300, 
 		  "memory": 2000
 		}
-	}
+	]
 }
 
 
