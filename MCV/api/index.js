@@ -1037,7 +1037,7 @@
 						
 						userPresenceObject.day = day;
 						userPresenceObject.startDay = startDay;
-						userPresenceObject.endDay = endDay;
+						userPresenceObject.endDay = new Date(endDay.getFullYear(),endDay.getMonth(),endDay.getDate()-1);
 						userPresenceObject.ID = IDEmployee;
 						userPresenceObject.IDOffice = IDOffice;
 						userPresenceObject.year =  Year;
@@ -1059,7 +1059,8 @@
 									{
 										values = (reason == "mission")?",false,false,true,false)":(reason == "congès")?",false,false,false,true)":(reason == "maladie")?",true,false,false,false)":false;
 										let updateArray = (reason == "mission")?[false,false,true,false]:(reason == "congès")?[false,false,false,true]:(reason == "maladie")?[true,false,false,false]:[false,false,false,false];
-										if(values != false && current.getDay() != 6 && current.getDay() != 0 || reason == "mission")
+										//old current.getDay() != 6 && current.getDay() != 0 || reason == "mission"
+										if(values != false && current.getDay() != 6 && current.getDay() != 0 )
 										{
 											let queryvalues = "('"+IDEmployee+"','"+((day.getMonth()+1)+"-"+day.getDate()+"-"+day.getFullYear())+"'"+values;
 											querySQL = "insert into "+tablename+" values "+queryvalues+" ON CONFLICT (IdIndividu,Date) DO Update Set absence ="+updateArray[0]+",maladie = "+updateArray[1]+",mission="+updateArray[2]+",congès="+updateArray[3]+";"; 
@@ -1073,8 +1074,8 @@
 											
 										while(values != false && current <= endDay  )
 										{
-											
-											if(current.getDay() != 6 && current.getDay() != 0 || reason == "mission")
+											//old current.getDay() != 6 && current.getDay() != 0 || reason == "mission"
+											if(current.getDay() != 6 && current.getDay() != 0 )
 											{
 												if(values != false)
 												{
