@@ -21,6 +21,7 @@
 	//"SET @@lc_time_names = 'fr_FR';"
 	let charging_percentage = 0; 	
 	let base_init_exiting = false;
+	export const maxDuration = 300;
 	
 	var connectedguys =
 	[	
