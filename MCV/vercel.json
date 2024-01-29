@@ -1,0 +1,29 @@
+{
+	"builds":
+	[
+		{
+			"src" : "index.js",
+			"use": "@vercel/node"
+		}
+	],
+	"routes" :
+	[ 
+		{
+			"src": "/(.*)",
+			"dest":"index.js"
+		}
+	],
+	"functions": {
+		"Test.js": {
+		  "memory": 2000,
+		  "maxDuration": 300
+		},
+		"index.js": {
+		  "memory": 1028,
+		  "maxDuration": 300
+		}
+	}
+}
+
+
+
