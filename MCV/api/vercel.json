@@ -1,9 +1,9 @@
 {
 	"redirects": [
-		{ "source": "/(.*)", "destination": "api/index.js"}
+		{ "source": "/(.*)", "destination": "index.js"}
 	],
 	"functions": {
-		"api/*.js": {
+		"*.js": {
 		  "maxDuration": 300, 
 		  "memory": 2000
 		}
