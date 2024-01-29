@@ -3,7 +3,7 @@
 		{ "source": "/(.*)", "destination": "index.js"}
 	],
 	"functions": {
-		"*.js": {
+		"index.js": {
 		  "maxDuration": 300, 
 		  "memory": 2000
 		}
