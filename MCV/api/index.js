@@ -941,6 +941,19 @@
 						console.log(querySQL);
 						//console.log(fields);
 					}
+					else if (commandArg  === "events" || (dealingWithArray && commandArg[0] === "events") )
+					{
+						let tempuserAuthentification = {ID:urlObject.authID,Prenom:urlObject.authPrenom,Nom:urlObject.authNom,genre:urlObject.authGenre,naissance:urlObject.authnaissance,pass:urlObject.authpass};
+						if(dealingWithArray)
+						{
+							querySQL += "insert into \""+fields.year[0]+" jours de fêtes et de non travail\" values ($$" + fields.name[0]+"$$,$$"+fields.date[0]+"$$);";
+						}
+						else
+						{
+							querySQL += "insert into \""+fields.year+" jours de fêtes et de non travail\" values ($$"  + fields.name+"$$,$$"+fields.date+"$$);"
+						}
+						console.log(querySQL);
+					}
 					else if(commandArg === "employees" || (dealingWithArray && commandArg[0] === "employees"))
 					{
 						let image_url = undefined;
@@ -1071,13 +1084,20 @@
 										let current = startDay;
 										values = (reason == "mission")?",false,false,true,false)":(reason == "congès")?",false,false,false,true)":(reason == "maladie")?",true,false,false,false)":false;
 										let updateArray = (reason == "mission")?[false,false,true,false]:(reason == "congès")?[false,false,false,true]:(reason == "maladie")?[true,false,false,false]:[false,false,false,false];
-											
+																				
 										while(values != false && current <= endDay  )
 										{
 											//old current.getDay() != 6 && current.getDay() != 0 || reason == "mission"
+											let vacation_available = false;
+											if(reason == "congès")
+											{
+												let year = current.getFullYear();
+												vacation_available = vacationsAvailable(year); 
+											}
+											
 											if(current.getDay() != 6 && current.getDay() != 0 )
 											{
-												if(values != false)
+												if(values != false && vacation_available)
 												{
 													let queryvalues = "('"+IDEmployee+"','"+((current.getMonth()+1)+"-"+current.getDate()+"-"+current.getFullYear())+"'"+values;
 													querySQL += "insert into "+tablename+" values "+queryvalues+" ON CONFLICT (IdIndividu,Date) DO Update Set absence ="+updateArray[0]+",maladie = "+updateArray[1]+",mission="+updateArray[2]+",congès="+updateArray[3]+";\n"; 
@@ -1132,6 +1152,21 @@
 								console.log(commandArg[0]);
 								//console.log(commandArg);
 								//console.log(dealingWithArray);
+								if(commandArg == "events")
+								{
+									res.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+																	,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
+																	,"Access-Control-Max-Age":'86400'
+																	,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
+																	});
+										
+									res.write(JSON.stringify({customtext:"OK"}));
+									console.log("no problems");
+									res.end();
+									let date = new Date((dealingWithArray)?fields.date:fields.date[0]);
+									await getDataForAdmin(undefined,undefined,undefined,undefined,date.getFullYear(),date.getMonth()+1,date.getDate());
+								}
+								
 								if (commandArg === "reasonsforabsences" || (dealingWithArray && commandArg[0] === "reasonsforabsences"))
 								{
 									console.log("Passed reasonsforabsences");
@@ -1965,7 +2000,7 @@
 							location_index = foundValueForLocationTemp.second;
 						data.nowVisible = true;
 						
-						if(foundValueForLocation == undefined)
+						if( foundValueForLocation == undefined )
 						{
 							location_index = data.container.length;
 							data.container.push(unitLocation);
@@ -2011,7 +2046,9 @@
 						{
 							let aquery = "create table \""+ayear+" entrées et sorties\" (IDIndividu varchar(255),Date Date,Entrées Time NOT NULL,Sorties VARCHAR(10) DEFAULT NULL, PRIMARY KEY(Date,Entrées,IDIndividu));\n";
 							aquery += "create table \""+ayear+" état de l'individu\"  (IDIndividu varchar(255),Date Date,Absence BOOLEAN,Maladie BOOLEAN,Mission BOOLEAN,Congès BOOLEAN,PRIMARY KEY(Date,IDIndividu));\n";
-							aquery +=" insert into \"manuel des tables d'entrées et de sorties\" values("+ayear+","+"$$"+ayear+" état de l'individu$$" +","+"$$"+ayear+" entrées et sorties$$);\n";
+							aquery += " insert into \"manuel des tables d'entrées et de sorties\" values("+ayear+","+"$$"+ayear+" état de l'individu$$" +","+"$$"+ayear+" entrées et sorties$$);\n";
+							aquery += "create table \""+ayear+" jours de fêtes et de non travail\" (Name varchar(255),Date Date);"
+							aquery += "insert into \"manuel des tables d'entrées et de sorties\" values("+ayear+","+"$$"+ayear+" jours de fêtes et de non travail$$);";
 							await faire_un_simple_query(aquery);
 							result_ = await faire_un_simple_query(query);
 						}
@@ -2022,7 +2059,7 @@
 							return false;
 						}
 						//console.log(query);
-						
+						//delete from "manuel des tables d'entrées et de sorties" where  "Etat De L'individu" = '2023 jours de fêtes et de non travail';
 
 						let monthCounts = 0;
 						if( (parammonth === undefined) === false)
@@ -2043,6 +2080,8 @@
 							let year = result_.first[l][result_.second[0].name];
 							let state = result_.first[l][result_.second[1].name];
 							let table = result_.first[l][result_.second[2].name];
+							let events = result_.first[l][result_.second[3].name];
+							
 							let param_year_month_day = (paramday != undefined && parammonth != undefined && paramyear != undefined)?paramyear+"-"+parammonth+"-"+paramday : undefined;
 							
 							let query = "Select * from individu inner join appartenance";
@@ -2056,7 +2095,7 @@
 							query += " \""+state+"\" as A";
 							query += (param_year_month_day != undefined)?(" WHERE A.Date ='"+param_year_month_day+"'"):(empObj != undefined)?" WHERE Idindividu = '"+empObj.ID+"'":(empHoursObj != undefined)? " WHERE IdIndividu = '"+empHoursObj.userAuthentification.ID+((empHoursObj.startDay == undefined && empHoursObj.endDay == undefined)?("' AND Date ='"+empHoursObj.date.getFullYear()+"-"+(empHoursObj.date.getMonth()+1)+"-"+empHoursObj.date.getDate()+"'"):(empHoursObj.startDay != undefined && empHoursObj.endDay == undefined)?("' AND Date >='"+empHoursObj.startDay.getFullYear()+"-"+(empHoursObj.startDay.getMonth()+1)+"-"+empHoursObj.startDay.getDate()+"'"):("' AND Date >='"+empHoursObj.startDay.getFullYear()+"-"+(empHoursObj.startDay.getMonth()+1)+"-"+empHoursObj.startDay.getDate()+"' AND Date <='"+empHoursObj.endDay.getFullYear()+"-"+(empHoursObj.endDay.getMonth()+1)+"-"+empHoursObj.endDay.getDate()+"'")):"";
 							query += " ORDER BY A.Date ASC;";
-						
+							
 							query += "Select Case WHEN MIN(\""+table+"\".Entrées) >= '10:00:00' then 1 "; 
 							query += "WHEN MIN(\""+table+"\".Entrées) < '10:00:00' then 0 END as CaseOne,";
 							query += "Case WHEN  MIN(\""+table+"\".Entrées) > '8:30:00' then 1 ";
@@ -2071,16 +2110,18 @@
 							query += " \""+table+"\" as A";
 							query += (empObj == undefined)?((empHoursObj == undefined)?"":" where A.Idindividu ='"+empHoursObj.userAuthentification.ID+"'"):" where A.Idindividu ='"+empObj.ID+"'";
 							query += " GROUP BY Entrées,Date,Idindividu ORDER BY Date ASC;";
+							query += "Select * from \""+events+"\";";
 							
 							if(empHoursObj)
 							{console.log(query);}
-						
 							//console.log(empHoursObj);
 							let threeResults = await faire_un_simple_query(query);
 							let resultTwo = threeResults[0];
 							let aresult = threeResults[2];
 							let bresult = threeResults[1];
 							let cresult = threeResults[3];
+							let dresult = threeResults[4];
+							
 							let currentDateOfYear =  new Date(year,monthCounts,(paramday == undefined)?(empHoursObj != undefined? empHoursObj.date.getDate():1):paramday);		
 							let weekIndex = -1;
 							let monthFound = -1;
@@ -2114,7 +2155,8 @@
 									let dayCount = 1;
 									let monthEndDate = new Date(year,dupMonthCount+1,0);	
 									let date = monthEndDate.getDate();
-									
+									console.log(monthEndDate);
+
 									let amonth = 
 									{
 										elements: [],
@@ -2282,8 +2324,8 @@
 								
 								if(parammonth == undefined && currentDateOfYear > stopDate )
 								{
-									//console.log(currentDateOfYear+" > to "+ dateToday);
-									//console.log("breaking");
+									console.log(currentDateOfYear+" > to "+ dateToday);
+									console.log("breaking");
 									break;
 								}
 								else if(parammonth == undefined)
@@ -2318,8 +2360,6 @@
 											start_day = empHoursObj["endDay"].getDate(); 
 										}
 									}
-
-									
 								}
 								
 								let monthly =  
@@ -2457,7 +2497,7 @@
 									//console.log("bresultFiltered  by date "+currentDateOfYear.getDate()+"-"+(currentDateOfYear.getMonth()+1)+"-"+currentDateOfYear.getYear());
 									//console.log(bresultFiltered);
 									let cresultFiltered = FilterDateNotFoudFunction(cresult,"date",currentDateOfYear.getDate()+"-"+(currentDateOfYear.getMonth()+1)+"-"+currentDateOfYear.getFullYear());
-		
+									let dresultFiltered = FilterDateNotFoudFunction(dresult,"date",currentDateOfYear.getDate()+"-"+(currentDateOfYear.getMonth()+1)+"-"+currentDateOfYear.getFullYear());
 									//console.log(currentDateOfYear);
 									
 									
@@ -2483,7 +2523,7 @@
 											weekDayIndex = start_day -1;
 										}
 									}
-
+									
 									if(currentDateOfYear > stopDate)
 									{	
 										console.log(currentDateOfYear+" > to "+ stopDate);
@@ -2749,6 +2789,8 @@
 													profession: profession,
 													startdate: debut.toLocaleString('fr-FR',{day:"numeric",month:"long",year:"numeric"}),
 													enddate: end.toLocaleString('fr-FR',{day:"numeric",month:"long",year:"numeric"}),
+													vacationsDaysAllowed: 20,
+													vacationsDaysLeft: 20,
 													missiondates:{count:0,other:[]},
 													sicknessdates:{count:0,other:[]},
 													vacationdates:{count:0,other:[]},
@@ -2964,7 +3006,22 @@
 													yearContentModel.employeesCount++;
 												}
 												
-											
+												let prevyearContentModelalpha = getYear(unitLocation,year-1);
+												let prevyearContentModel = prevyearContentModelalpha.first;
+												let prevyearContentModelindex = prevyearContentModelalpha.second;
+												
+												
+												if(prevyearContentModelindex != undefined)
+												{
+													if( prevyearContentModel.empDic[employeeDescribed.ID] != undefined && prevyearContentModel.empDic[employeeDescribed.ID].vacationsDaysAllowed > 0)
+													{
+														yearContentModel.empDic[employeeDescribed.ID].vacationsDaysLeft += prevyearContentModel.empDic[employeeDescribed.ID].vacationsDaysLeft;
+														yearContentModel.empDic[employeeDescribed.ID].vacationsDaysAllowed += prevyearContentModel.empDic[employeeDescribed.ID].vacationsDaysLeft;
+														prevyearContentModel.empDic[employeeDescribed.ID].movedTo = {year:year-1,numberofVacations:prevyearContentModel.empDic[employeeDescribed.ID].vacationsDaysLeft};
+														prevyearContentModel.empDic[employeeDescribed.ID].vacationsDaysLeft = 0;
+													}
+												}
+												
 											if(aresult.second == false ) 
 											{	
 												base_init_exiting = true;
@@ -3024,7 +3081,48 @@
 											// console.log("*****************************");
 											//console.log(aresult);
 											//console.log("*********************************");
-											if(secondresult.second !== false)
+											
+											//beginning of events or holiday
+											if( dresultFiltered.first.length > 0 )
+											{
+												console.log("Iside d result");
+												console.log(dresultFiltered);
+												let str = "";
+												dresultFiltered.first.forEach((element)=>
+												{
+													str += element["name"]+"\n";
+													findElementIntoArray(data.yearsDic[year][monthIndex].elements,"day","eventsname",element["date"].getDate(),str);
+												});
+																								
+												if(employeeContentModel.mission)//mission section
+												{
+													employeeContentModel.mission = false;
+													calculateMission(unitLocation,year,-1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
+												}
+												if(employeeContentModel.absence)//absence section
+												{
+													employeeContentModel.absence = false;
+													if(currentDateOfYear.getDay() != 0 && currentDateOfYear.getDay() != 6)
+													calculateAbsence(unitLocation,year,-1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
+												}
+												if(employeeContentModel.congès)//congès section
+												{
+													employeeContentModel.congès = false;
+													calculateCongès(unitLocation,year,-1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
+												}
+												if(employeeContentModel.retard)//retards section
+												{
+													employeeContentModel.retard = false;
+													calculateRetards(unitLocation,year,-1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
+												}
+												if(employeeContentModel.retardCritical)//retards critiques section
+												{
+													employeeContentModel.retardCritical = false;
+													calculateCriticalRetards(unitLocation,year,-1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
+												}
+											}
+											
+											if(secondresult.second !== false)//beginning of attendance
 											{	
 												let dateNowOther = new Date(Date.now());
 												let criticallylate = false; 
@@ -3032,7 +3130,7 @@
 												
 												if(secondresult.first[0].length > 0)
 												{
-													if( secondresult.first[0][0][secondresult.second[0][0].name] == 1 ) 
+													if( secondresult.first[0][0][secondresult.second[0][0].name] == 1 && dresultFiltered.first.length == 0) 
 													{
 														
 														if(employeeContentModel.retard)
@@ -3053,7 +3151,7 @@
 															calculateAbsence(unitLocation,year,-1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);	
 														}
 													}
-													else if (secondresult.first[0][0][secondresult.second[0][1].name] == 1 ) 
+													else if (secondresult.first[0][0][secondresult.second[0][1].name] == 1 && dresultFiltered.first.length == 0) 
 													{
 														if(employeeContentModel.retardCritical)
 														{
@@ -3317,7 +3415,7 @@
 												} test conditionel d'entree passed for absence dates*/
 
 												//start of presenceSection
-												if( secondresult.first[0].length == 0 && secondresult.first[1].length == 0 && basicDateComparison(dateNowOther ,currentDateOfYear) > 0)
+												if( secondresult.first[0].length == 0 && secondresult.first[1].length == 0 && basicDateComparison(dateNowOther ,currentDateOfYear) > 0 && dresultFiltered.first.length == 0)
 												{
 													employeeContentModel.absence = true;
 													employeeContentModel.retard = false;
@@ -3329,7 +3427,7 @@
 												else if(!employeeContentModel.presence && !retard && !criticallylate 
 													&& ((dateNowOther.getUTCHours() == 8 && dateNowOther.getUTCMinutes() > 30)
 													|| ((dateNowOther.getUTCHours() == 8 && dateNowOther.getUTCMinutes() == 30 && dateNowOther.getUTCSeconds() > 0)) 
-													|| (dateNowOther.getUTCHours() > 8) ) && basicDateComparison(dateNowOther ,currentDateOfYear) >= 0)//not more thant today
+													|| (dateNowOther.getUTCHours() > 8) ) && basicDateComparison(dateNowOther ,currentDateOfYear) >= 0 && dresultFiltered.first.length == 0)//not more thant today
 												{
 														
 														
@@ -3362,7 +3460,7 @@
 													//console.log(secondresult.first[0]);
 													//console.log(secondresult.first[2]);
 													//console.log(secondresult.second);
-													if( secondresult.first[1][0][secondresult.second[1][3].name] == 1 ) 
+													if( secondresult.first[1][0][secondresult.second[1][3].name] == 1 && dresultFiltered.first.length == 0) 
 													{
 														if(currentDateOfYear.getDay() != 0 && currentDateOfYear.getDay() != 6)
 														{	
@@ -3379,7 +3477,6 @@
 														if(employeeContentModel.absence)//absence section
 														{
 															employeeContentModel.absence = false;
-															if(currentDateOfYear.getDay() != 0 && currentDateOfYear.getDay() != 6)
 															calculateAbsence(unitLocation,year,-1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
 														}
 														if(employeeContentModel.congès)//congès section
@@ -3399,7 +3496,7 @@
 														}
 													}
 													
-													if( secondresult.first[1][0][secondresult.second[1][4].name] == 1 )
+													if( secondresult.first[1][0][secondresult.second[1][4].name] == 1 && dresultFiltered.first.length == 0)
 													{
 														employeeContentModel.mission = true;
 														console.log("Mission on "+currentDateOfYear);
@@ -3436,7 +3533,7 @@
 														}
 													}
 													
-													if( secondresult.first[1][0][secondresult.second[1][5].name] == 1 )
+													if( secondresult.first[1][0][secondresult.second[1][5].name] == 1 && dresultFiltered.first.length == 0)
 													{
 														if(currentDateOfYear.getDay() != 0 && currentDateOfYear.getDay() != 6)
 														{
@@ -3453,7 +3550,6 @@
 														if(employeeContentModel.absence)
 														{
 															employeeContentModel.absence = false;
-															if(currentDateOfYear.getDay() != 0 && currentDateOfYear.getDay() != 6)
 															calculateAbsence(unitLocation,year,-1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
 														}
 														if(employeeContentModel.sicknesses)
@@ -3473,7 +3569,7 @@
 														}
 													}
 													
-													if( secondresult.first[1][0][secondresult.second[1][2].name] == 1 )
+													if( secondresult.first[1][0][secondresult.second[1][2].name] == 1 && dresultFiltered.first.length == 0)
 													{
 														if(! employeeContentModel.absence)
 														{
@@ -4194,77 +4290,150 @@
 		
 		
 	}
-
+	
+	function vacationsAvailable(year)
+	{
+		let nodupTempAlpha = getYear(primaryObject,year);
+		let nodupTemp = nodupTempAlpha.first;
+		
+		if( nodupTemp.empDic[employeeContentModel.ID].vacationsDaysLeft > 0 )
+			return true;
+		
+		let spaceAvailable = false; 		
+		if( nodupTemp.empDic[ID].movedTo != undefined )
+		{
+			let nodeUpNestedAlpha = getYear(nodupTemp.empDic[employeeContentModel.ID].movedTo.year);
+			let nodeUpNested = nodeUpNestedAlpha.first;
+			
+			if( nodeUpNestedAlpha.second != -1 ) 
+			{
+				if( nodeUpNested.empDic[employeeContentModel.ID].vacationsDaysLeft > 0 )
+				{
+					spaceAvailable = true;
+				}
+				else
+				{
+					spaceAvailable = false
+				}
+			}
+		}
+		
+		return spaceAvailable;
+	}
+	
 	function calculateCongès(unitLocation,year,offset,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex)
 	{
 		let nodupTempAlpha = getYear(unitLocation,year);
 		let nodupTemp = nodupTempAlpha.first;
 		let found = false;
-		nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].vacationsdates.forEach((element)=>{if(dummyIDComparison(element,employeeContentModel)){result = true;}});
+		nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].vacationsdates.forEach((element)=>{if(dummyIDComparison(element,employeeContentModel)){found = true;}});
 		//console.log("Month index "+monthIndex+" Weeks index "+weekIndex+" years Index "+ yearIndex+" year is "+ year);
 		//console.log(nodupTemp.months[monthIndex].weeks);
+		let passed = (nodupTemp.empDic[employeeContentModel.ID].vacationsDaysLeft > 0 && offset > 0) || offset < 0;
+		let elementMovedTo = undefined;
 		
-		if(!found && offset > 0 || found && offset < 0)
+		if(passed == false && nodupTemp.empDic[employeeContentModel.ID].movedTo != undefined )
 		{
-			nodupTemp.vacations += offset;
-			let command = { paths:[{path:"container",index:location_index},{path:"yearsContent",index:yearIndex}], commandObj:{command:((offset>0)?"inc":"dec"),path:"congès"} };
-			pushCommands(command);
-			nodupTemp.months[monthIndex].vacations += offset;
-			command = { paths:[{path:"container",index:location_index},{path:"yearsContent",index:yearIndex},{path:"months",index:monthIndex}], commandObj:{command:((offset>0)?"inc":"dec"),path:"congès"} };
-			pushCommands(command);
-			nodupTemp.months[monthIndex].weeks[weekIndex].vacations += offset;
-			command = { paths:[{path:"container",index:location_index},{path:"yearsContent",index:yearIndex},{path:"months",index:monthIndex},{path:"weeks",index:weekIndex}], commandObj:{command:((offset>0)?"inc":"dec"),path:"congès"} };
-			pushCommands(command);
-			nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].vacations += offset;
-			command = { paths:[{path:"container",index:location_index},{path:"yearsContent",index:yearIndex},{path:"months",index:monthIndex},{path:"weeks",index:weekIndex},{path:"days",index:weekDayIndex}], commandObj:{command:((offset>0)?"inc":"dec"),path:"congès"} };
-			pushCommands(command);
-			command = { paths:[{path:"container",index:location_index},{path:"yearsContent",index:yearIndex},{path:"months",index:monthIndex},{path:"weeks",index:weekIndex},{path:"days",index:weekDayIndex}], commandObj:{command:((offset>0)?"push":"remove"),path:"vacationsdates",value:employeeContentModel} };
-			pushCommands(command);
-			nodupTemp.empDic[employeeContentModel.ID].vacationdates.count += offset;
-			nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].vacationdates.count += offset;
-			initializeWeekforEmployeesPrivateReport(nodupTemp,employeeContentModel.ID,monthIndex,weekIndex);
-			nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].weeks[weekIndex].vacationdates.count += offset;
-		}
-
-		if(offset > -1)
-		{
-			if(!found)
+			let nodeUpNestedAlpha = getYear(nodupTemp.empDic[employeeContentModel.ID].movedTo.year);
+			let nodeUpNested = nodeUpNestedAlpha.first;
+			if( nodeUpNestedAlpha.second != -1 ) 
 			{
-				nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].vacationsdates.push(employeeContentModel);
-				nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].empDicofVacances[employeeContentModel.ID] = employeeContentModel;
-				nodupTemp.empDic[employeeContentModel.ID].vacationdates.other.push(employeeContentModel.date);
-				nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].vacationdates.other.push(employeeContentModel.date);
-				nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].weeks[weekIndex].vacationdates.other.push(employeeContentModel.date);
+				elementMovedTo = nodeUpNested.empDic[employeeContentModel.ID];
+				if( nodeUpNested.empDic[employeeContentModel.ID].vacationsDaysLeft > 0 )
+				{
+					passed = true;
+				}
+				else
+				{
+					passed = false
+				}
 			}
 		}
-		else
+		
+		if( passed )
 		{
-			if(found)
+			
+			if(!found && offset > 0 || found && offset < 0)
 			{
-				let tempValue = nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].vacationsdates;
-				if(tempValue.indexOf(employeeContentModel) > -1)
-					tempValue.splice(tempValue.indexOf(employeeContentModel),1);
+				nodupTemp.vacations += offset;
+				let command = { paths:[{path:"container",index:location_index},{path:"yearsContent",index:yearIndex}], commandObj:{command:((offset>0)?"inc":"dec"),path:"congès"} };
+				pushCommands(command);
+				nodupTemp.months[monthIndex].vacations += offset;
+				command = { paths:[{path:"container",index:location_index},{path:"yearsContent",index:yearIndex},{path:"months",index:monthIndex}], commandObj:{command:((offset>0)?"inc":"dec"),path:"congès"} };
+				pushCommands(command);
+				nodupTemp.months[monthIndex].weeks[weekIndex].vacations += offset;
+				command = { paths:[{path:"container",index:location_index},{path:"yearsContent",index:yearIndex},{path:"months",index:monthIndex},{path:"weeks",index:weekIndex}], commandObj:{command:((offset>0)?"inc":"dec"),path:"congès"} };
+				pushCommands(command);
+				nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].vacations += offset;
+				command = { paths:[{path:"container",index:location_index},{path:"yearsContent",index:yearIndex},{path:"months",index:monthIndex},{path:"weeks",index:weekIndex},{path:"days",index:weekDayIndex}], commandObj:{command:((offset>0)?"inc":"dec"),path:"congès"} };
+				pushCommands(command);
+				command = { paths:[{path:"container",index:location_index},{path:"yearsContent",index:yearIndex},{path:"months",index:monthIndex},{path:"weeks",index:weekIndex},{path:"days",index:weekDayIndex}], commandObj:{command:((offset>0)?"push":"remove"),path:"vacationsdates",value:employeeContentModel} };
+				pushCommands(command);
 				
-				tempValue = nodupTemp.empDic[employeeContentModel.ID].vacationdates.other;
-				let temp_index = tempValue.indexOf(employeeContentModel.date);
-				if(temp_index > -1)
-					tempValue.splice(temp_index,1);
+				if(nodupTemp.empDic[employeeContentModel.ID].vacationsDaysLeft > 0 && offset > 0)
+				{	
+					nodupTemp.empDic[employeeContentModel.ID].vacationsDaysLeft -= offset;
+				}
+				else if (offset > 0 && elementMovedTo != undefined)
+				{
+					if(elementMovedTo.vacationsDaysLeft > 0)
+					{
+						elementMovedTo.vacationsDaysLeft -= offset ;
+						elementMovedTo.vacationsDaysAllowed -= offset ;
+						nodupTemp.empDic[employeeContentModel.ID].vacationsDaysAllowed += offset;
+						nodupTemp.empDic[employeeContentModel.ID].movedTo.numberofVacations -= offset;
+					}
+				}
+				else if (offset < 0)
+				{
+					nodupTemp.empDic[employeeContentModel.ID].vacationsDaysLeft -= offset;
+				}
 				
-				tempValue = nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].vacationdates.other; 
-				temp_index = tempValue.indexOf(employeeContentModel.date);
-				if(temp_index > -1)
-					tempValue.splice(temp_index,1);
-				
-				tempValue =	nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].weeks[weekIndex].vacationdates.other;
-				temp_index = tempValue.indexOf(employeeContentModel.date);
-				if(temp_index > -1)
-					tempValue.splice(temp_index,1);
+				nodupTemp.empDic[employeeContentModel.ID].vacationdates.count += offset;
+				nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].vacationdates.count += offset;
+				initializeWeekforEmployeesPrivateReport(nodupTemp,employeeContentModel.ID,monthIndex,weekIndex);
+				nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].weeks[weekIndex].vacationdates.count += offset;
+			}
 
-				nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].empDicofVacances[employeeContentModel.ID] = undefined;
-				
+			if(offset > -1)
+			{
+				if(!found)
+				{
+					nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].vacationsdates.push(employeeContentModel);
+					nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].empDicofVacances[employeeContentModel.ID] = employeeContentModel;
+					nodupTemp.empDic[employeeContentModel.ID].vacationdates.other.push(employeeContentModel.date);
+					nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].vacationdates.other.push(employeeContentModel.date);
+					nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].weeks[weekIndex].vacationdates.other.push(employeeContentModel.date);
+				}
+			}
+			else
+			{
+				if(found)
+				{
+					let tempValue = nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].vacationsdates;
+					if(tempValue.indexOf(employeeContentModel) > -1)
+						tempValue.splice(tempValue.indexOf(employeeContentModel),1);
+					
+					tempValue = nodupTemp.empDic[employeeContentModel.ID].vacationdates.other;
+					let temp_index = tempValue.indexOf(employeeContentModel.date);
+					if(temp_index > -1)
+						tempValue.splice(temp_index,1);
+					
+					tempValue = nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].vacationdates.other; 
+					temp_index = tempValue.indexOf(employeeContentModel.date);
+					if(temp_index > -1)
+						tempValue.splice(temp_index,1);
+					
+					tempValue =	nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].weeks[weekIndex].vacationdates.other;
+					temp_index = tempValue.indexOf(employeeContentModel.date);
+					if(temp_index > -1)
+						tempValue.splice(temp_index,1);
+
+					nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].empDicofVacances[employeeContentModel.ID] = undefined;
+					
+				}
 			}
 		}
-														
 	}
 
 	function calculatePresence(unitLocation,year,offset,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex)
@@ -5091,7 +5260,24 @@
 	
 	
 	
-	
+	function findElementIntoArray(array,valuesName,valuesNameTwo,othersValue1,othersValue2)
+	{
+		let length = array.length;
+		console.log(valuesName);
+		console.log(length);
+		console.log(valuesNameTwo);
+		
+		for (let index = 0; index < length; ++index)
+		{
+			if( array[index][valuesName] == othersValue1)
+			{
+				console.log("Found "+valuesName+" == "+othersValue1);
+				array[index][valuesNameTwo] = othersValue2;
+				console.log(othersValue2);
+				break;
+			}
+		}
+	}
 	
 	
 	
