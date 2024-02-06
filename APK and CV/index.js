@@ -94,7 +94,8 @@
 			}
 			else
 			{
-				//console.log("Down here");
+				console.log("Down here");
+				console.log(req.url);
 				if(req.url.endsWith("MCV"))
 				{
 					//console.log("Before MCV file");
