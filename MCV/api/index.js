@@ -4022,7 +4022,23 @@
 						deleteElement(tempDeleteStack,dayContent.retardsCriticaldates);
 						tempDeleteStack = [];
 						
-						/*
+						for(let itemLength = 0; itemLength < dayContent.simpleRetardsdates.length; ++itemLength) 
+						{
+							let empdaily = dayContent.simpleRetardsdates[itemLength];
+							if(empdaily.ID != ID)
+							{
+								dayContent.simpleRetards--;
+								weekContent.simpleRetards--;
+								monthContent.simpleRetards--;
+								yearContentElement.simpleRetards--;
+								tempDeleteStack.push(empdaily);
+							}
+						}
+						
+						deleteElement(tempDeleteStack,dayContent.simpleRetardsdates);
+						tempDeleteStack = [];
+
+						
 						tempDeleteStack = findElementsNotEquivalentToValueIntoDic(ID,empdaily,"employeeHours");
 						deleteKeysElementsIntoDic(tempDeleteStack,empdaily,empdaily.empHours);
 						
@@ -4048,7 +4064,7 @@
 						deleteKeysElementsIntoDic(tempDeleteStack,empdaily.empDicofVacances);	
 						
 						tempDeleteStack = [];
-						*/
+						
 						
 					}
 					
