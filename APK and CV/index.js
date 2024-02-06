@@ -1,28 +1,6 @@
 	var http = require("http");
 	var url = require("url");
-	var postgres = require('pg');
-	var formidable = require('formidable');
-	var fs = require('fs');
-	var vercelBlob = require("@vercel/blob");
-	var {GlobalsForcedFolding} = require('./Extra.js');	
-	var {ImageFilesContainer} = require('./queryTests.js');
-	var kvPackage = require('@vercel/kv');
-	let globalForcedFoldingPrime = undefined;
-	let imageDictionary = new ImageFilesContainer();
-	let connection = undefined;
-	let precedentDate = new Date(Date.now());
-	let todaysDate = new Date(Date.now());
-	let primaryObject = undefined;
-	let baseInit = false;
-	let schema = "";
-	let current= todaysDate;
-	let addUser_In_use = false; 
-	let commands = [];
-	let callIndex = 0;
-	//"SET @@lc_time_names = 'fr_FR';"
-	let charging_percentage = 0; 	
-	let base_init_exiting = false;
-	//run
+	
 	
 	
 	var server = http.createServer(function(req,res)
