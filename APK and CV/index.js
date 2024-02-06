@@ -192,6 +192,7 @@
 		{
 			res.end();	
 		}
+	}
 	);
 	
 	server.listen(3034);
