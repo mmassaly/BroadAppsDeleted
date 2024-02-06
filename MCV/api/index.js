@@ -3935,7 +3935,10 @@
 								monthContent.absences--;
 								yearContentElement.absences--;
 								tempDeleteStack.push(empdaily);
+								let othertempDeleteStack = findElementsNotEquivalentToValueIntoDic(ID,empdaily,"empDicofAbsences");
+								deleteKeysElementsIntoDic(othertempDeleteStack,empdaily.empDicofAbsences.absences);
 							}
+							
 						}
 						
 						deleteElement(tempDeleteStack,dayContent.absencesdates);
@@ -3952,10 +3955,31 @@
 								monthContent.missions--;
 								yearContentElement.missions--;
 								tempDeleteStack.push(empdaily);
+								let othertempDeleteStack = findElementsNotEquivalentToValueIntoDic(ID,empdaily,"empDicofMissions");
+								deleteKeysElementsIntoDic(othertempDeleteStack,empdaily.empDicofMissions);
 							}
 						}
 						
 						deleteElement(tempDeleteStack,dayContent.missionsdates);
+						tempDeleteStack = [];
+						
+						for(let itemLength = 0; itemLength < dayContent.vacationsdates.length; ++itemLength) 
+						{
+							let empdaily = dayContent.vacationsdates[itemLength];
+							
+							if(empdaily.ID != ID)
+							{
+								dayContent.vacances--;
+								weekContent.vacances--;
+								monthContent.vacances--;
+								yearContentElement.vacances--;
+								tempDeleteStack.push(empdaily);
+								let othertempDeleteStack = findElementsNotEquivalentToValueIntoDic(ID,empdaily,"empDicofVacances");
+								deleteKeysElementsIntoDic(othertempDeleteStack,empdaily.empDicofVacances);
+							}
+						}
+						
+						deleteElement(tempDeleteStack,dayContent.vacationsdates);
 						tempDeleteStack = [];
 
 						for(let itemLength = 0; itemLength < dayContent.presencedates.length; ++itemLength) 
@@ -3968,6 +3992,10 @@
 								monthContent.presence--;
 								yearContentElement.presence--;
 								tempDeleteStack.push(empdaily);
+								let othertempDeleteStack = findElementsNotEquivalentToValueIntoDic(ID,empdaily,"empDicofPresences");
+								deleteKeysElementsIntoDic(othertempDeleteStack,empdaily.empDicofPresences);
+								othertempDeleteStack = findElementsNotEquivalentToValueIntoDic(ID,empdaily,"employeeHours");
+								deleteKeysElementsIntoDic(othertempDeleteStack,empdaily,empdaily.empHours);
 							}
 						}
 						
@@ -3984,6 +4012,8 @@
 								monthContent.sicknesses--;
 								yearContentElement.sicknesses--;
 								tempDeleteStack.push(empdaily);
+								let othertempDeleteStack = findElementsNotEquivalentToValueIntoDic(ID,empdaily,"empDicofSicknesses");
+								deleteKeysElementsIntoDic(othertempDeleteStack,empdaily.empDicofSicknesses);
 							}
 						}
 						
@@ -4000,6 +4030,8 @@
 								monthContent.retards--;
 								yearContentElement.retards--;
 								tempDeleteStack.push(empdaily);
+								let othertempDeleteStack = findElementsNotEquivalentToValueIntoDic(ID,empdaily,"employeeHours");
+								deleteKeysElementsIntoDic(othertempDeleteStack,empdaily,empdaily.empHours);
 							}
 						}
 						
@@ -4016,6 +4048,8 @@
 								monthContent.retardsCritical--;
 								yearContentElement.retardsCritical--;
 								tempDeleteStack.push(empdaily);
+								let othertempDeleteStack = findElementsNotEquivalentToValueIntoDic(ID,empdaily,"empDicofCritical");
+								deleteKeysElementsIntoDic(othertempDeleteStack,empdaily.empDicofCritical);	
 							}
 						}
 						
@@ -4032,6 +4066,8 @@
 								monthContent.simpleRetards--;
 								yearContentElement.simpleRetards--;
 								tempDeleteStack.push(empdaily);
+								let othertempDeleteStack = findElementsNotEquivalentToValueIntoDic(ID,empdaily,"empDicofRetards");
+								deleteKeysElementsIntoDic(othertempDeleteStack,empdaily.empDicofRetards);
 							}
 						}
 						
@@ -4039,31 +4075,8 @@
 						tempDeleteStack = [];
 
 						
-						tempDeleteStack = findElementsNotEquivalentToValueIntoDic(ID,empdaily,"employeeHours");
-						deleteKeysElementsIntoDic(tempDeleteStack,empdaily,empdaily.empHours);
 						
-						tempDeleteStack = findElementsNotEquivalentToValueIntoDic(ID,empdaily,"empDicofAbsences");
-						deleteKeysElementsIntoDic(tempDeleteStack,empdaily.empDicofAbsences.absences);
 						
-						tempDeleteStack = findElementsNotEquivalentToValueIntoDic(ID,empdaily,"empDicofMissions");
-						deleteKeysElementsIntoDic(tempDeleteStack,empdaily.empDicofMissions);
-						
-						tempDeleteStack = findElementsNotEquivalentToValueIntoDic(ID,empdaily,"empDicofPresences");
-						deleteKeysElementsIntoDic(tempDeleteStack,empdaily.empDicofPresences);
-						
-						tempDeleteStack = findElementsNotEquivalentToValueIntoDic(ID,empdaily,"empDicofSicknesses");
-						deleteKeysElementsIntoDic(tempDeleteStack,empdaily.empDicofSicknesses);
-						
-						tempDeleteStack = findElementsNotEquivalentToValueIntoDic(ID,empdaily,"empDicofCritical");
-						deleteKeysElementsIntoDic(tempDeleteStack,empdaily.empDicofCritical);	
-						
-						tempDeleteStack = findElementsNotEquivalentToValueIntoDic(ID,empdaily,"empDicofRetards");
-						deleteKeysElementsIntoDic(tempDeleteStack,empdaily.empDicofRetards);
-						
-						tempDeleteStack = findElementsNotEquivalentToValueIntoDic(ID,empdaily,"empDicofVacances");
-						deleteKeysElementsIntoDic(tempDeleteStack,empdaily.empDicofVacances);	
-						
-						tempDeleteStack = [];
 						
 						
 					}
