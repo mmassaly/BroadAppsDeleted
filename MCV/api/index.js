@@ -39,6 +39,7 @@
 		{command:'update employee',path:'../Project Timing/my-app/src/assets/images/'}
 	];
 	
+	export const maxDuration = 300;
 	
 	
 	let d = new Date(Date.now());
