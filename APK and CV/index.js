@@ -174,5 +174,5 @@
 	}
 	);
 	
-	server.listen(3034);
+	server.listen(process.env.PORT || 3034);
 	console.log("Listening at port 3034.............");
