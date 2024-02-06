@@ -3960,7 +3960,7 @@
 
 						for(let itemLength = 0; itemLength < dayContent.presencedates.length; ++itemLength) 
 						{
-							let empdaily = dayContent.presencesdates[itemLength];
+							let empdaily = dayContent.presencedates[itemLength];
 							if(empdaily.ID != ID)
 							{
 								dayContent.presence--;
