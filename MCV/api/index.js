@@ -687,7 +687,6 @@
 														console.log("This guy is a secondary or a fouth kind of  admin");
 														let tempLocation = getLocation(primaryObject,userAuthentification.locationID);
 														tempLocation = Object.fromEntries(Object.entries(tempLocation.first));
-														
 														let tempData =
 														{
 															selected_name: 0,
@@ -864,7 +863,7 @@
 					console.log("PrimaryObject in KV's length is "+length);
 							if(length  == -1 || length  == undefined)
 							{		
-								await getDataForAdminThreeArgs(undefined,undefined);
+								await getDataForAdminFiveArgs();
 							}
 							else
 							{
@@ -912,13 +911,13 @@
 												primarydate.getFullYear() != (new Date()).getFullYear() )
 												{
 													primaryObject = undefined;
-													await getDataForAdminThreeArgs(undefined,undefined);	
+													await getDataForAdminFiveArgs();	
 												}
 											}catch(err)
 											{
 												console.log(err);
 												primaryObject = undefined;
-												await getDataForAdminThreeArgs(undefined,undefined);
+												await getDataForAdminFiveArgs();
 											}
 										}
 										catch(err)
@@ -932,7 +931,7 @@
 									
 									if(problem)
 									{				
-										await getDataForAdminThreeArgs(undefined,undefined);
+										await getDataForAdminFiveArgs();
 									}
 							}
 				};
@@ -1924,6 +1923,11 @@
 				return await getDataForAdmin(response,locationArgObj,empObj,undefined,undefined,undefined,undefined,false);
 			}
 			
+			async function getDataForAdminFiveArgs() 
+			{
+				return await getDataForAdmin(undefined,undefined,undefined,undefined,undefined,undefined,undefined,true);
+			}
+			
 			async function hoursToEmp(response,empHoursObj)
 			{
 				if(hoursLocker == undefined)
@@ -2013,6 +2017,7 @@
 			{
 				//console.log(" paramyear "+paramyear+" other paramday "+paramday+" other parammonth "+parammonth);
 				//console.log("Location argument "+locationArgObj+" employee argument "+empObj);
+				console.log("set date of today "+setDateofToday);
 				let primSet = false;
 				do
 				{
@@ -2819,7 +2824,7 @@
 										//console.log(currentDateOfYear);
 										//console.log(dateNow);
 										unitLocation.now = currentDateOfYear.toLocaleString('fr-FR',{day:"numeric",month:"long",year:"numeric"});
-										unitLocation.currentDate = currentDateOfYear();
+										unitLocation.currentDate = currentDateOfYear;
 										unitLocation.nowVisible = true;
 										unitLocation.yearIndex = l;
 										unitLocation.monthIndex = monthCounts-1;

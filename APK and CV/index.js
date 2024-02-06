@@ -69,7 +69,7 @@
 						try
 						{
 							
-							imageDictionary.findUrlBufferValue("https://msa-pointage-server.vercel.app/"+imageUrlReprocessed).then((result)=>{
+							imageDictionary.findUrlBufferValue("https://msa-pointage-server.onrender.com/"+imageUrlReprocessed).then((result)=>{
 								responseb.writeHeader(200,{"Content-Type":"image/"+imageType});
 								console.log(result);
 								responseb.write(result);
