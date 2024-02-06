@@ -3925,6 +3925,28 @@
 							weekContent.employeeHours[element] = undefined;
 						});
 						
+						
+						let othertempDeleteStack = findElementsNotEquivalentToValueIntoDic(ID,dayContent,"empDicofMissions");
+						deleteKeysElementsIntoDic(othertempDeleteStack,dayContent.empDicofMissions);
+						othertempDeleteStack = findElementsNotEquivalentToValueIntoDic(ID,dayContent,"empDicofAbsences");
+						deleteKeysElementsIntoDic(othertempDeleteStack,dayContent.empDicofAbsences);
+						othertempDeleteStack = findElementsNotEquivalentToValueIntoDic(ID,dayContent,"empDicofVacances");
+						deleteKeysElementsIntoDic(othertempDeleteStack,dayContent.empDicofVacances);
+						othertempDeleteStack = findElementsNotEquivalentToValueIntoDic(ID,dayContent,"empDicofPresences");
+						deleteKeysElementsIntoDic(othertempDeleteStack,dayContent.empDicofPresences);
+						othertempDeleteStack = findElementsNotEquivalentToValueIntoDic(ID,dayContent,"employeeHours");
+						deleteKeysElementsIntoDic(othertempDeleteStack,dayContent,dayContent.empHours);
+						othertempDeleteStack = findElementsNotEquivalentToValueIntoDic(ID,dayContent,"empDicofSicknesses");
+						deleteKeysElementsIntoDic(othertempDeleteStack,dayContent.empDicofSicknesses);	
+						othertempDeleteStack = findElementsNotEquivalentToValueIntoDic(ID,dayContent,"empDicofRetards");
+						deleteKeysElementsIntoDic(othertempDeleteStack,dayContent.empDicofRetards);
+						othertempDeleteStack = findElementsNotEquivalentToValueIntoDic(ID,dayContent,"employeeHours");
+						deleteKeysElementsIntoDic(othertempDeleteStack,dayContent,dayContent.empHours);
+						othertempDeleteStack = findElementsNotEquivalentToValueIntoDic(ID,dayContent,"empDicofCritical");
+						deleteKeysElementsIntoDic(othertempDeleteStack,dayContent.empDicofCritical);
+						
+						
+						
 						for(let itemLength = 0; itemLength < dayContent.absencesdates.length; ++itemLength) 
 						{
 							let empdaily = dayContent.absencesdates[itemLength];
@@ -3935,10 +3957,7 @@
 								monthContent.absences--;
 								yearContentElement.absences--;
 								tempDeleteStack.push(empdaily);
-								let othertempDeleteStack = findElementsNotEquivalentToValueIntoDic(ID,empdaily,"empDicofAbsences");
-								deleteKeysElementsIntoDic(othertempDeleteStack,empdaily.empDicofAbsences.absences);
-							}
-							
+							}	
 						}
 						
 						deleteElement(tempDeleteStack,dayContent.absencesdates);
@@ -3955,8 +3974,6 @@
 								monthContent.missions--;
 								yearContentElement.missions--;
 								tempDeleteStack.push(empdaily);
-								let othertempDeleteStack = findElementsNotEquivalentToValueIntoDic(ID,empdaily,"empDicofMissions");
-								deleteKeysElementsIntoDic(othertempDeleteStack,empdaily.empDicofMissions);
 							}
 						}
 						
@@ -3974,8 +3991,6 @@
 								monthContent.vacances--;
 								yearContentElement.vacances--;
 								tempDeleteStack.push(empdaily);
-								let othertempDeleteStack = findElementsNotEquivalentToValueIntoDic(ID,empdaily,"empDicofVacances");
-								deleteKeysElementsIntoDic(othertempDeleteStack,empdaily.empDicofVacances);
 							}
 						}
 						
@@ -3992,10 +4007,6 @@
 								monthContent.presence--;
 								yearContentElement.presence--;
 								tempDeleteStack.push(empdaily);
-								let othertempDeleteStack = findElementsNotEquivalentToValueIntoDic(ID,empdaily,"empDicofPresences");
-								deleteKeysElementsIntoDic(othertempDeleteStack,empdaily.empDicofPresences);
-								othertempDeleteStack = findElementsNotEquivalentToValueIntoDic(ID,empdaily,"employeeHours");
-								deleteKeysElementsIntoDic(othertempDeleteStack,empdaily,empdaily.empHours);
 							}
 						}
 						
@@ -4012,14 +4023,13 @@
 								monthContent.sicknesses--;
 								yearContentElement.sicknesses--;
 								tempDeleteStack.push(empdaily);
-								let othertempDeleteStack = findElementsNotEquivalentToValueIntoDic(ID,empdaily,"empDicofSicknesses");
-								deleteKeysElementsIntoDic(othertempDeleteStack,empdaily.empDicofSicknesses);
 							}
 						}
 						
 						deleteElement(tempDeleteStack,dayContent.sicknessesdates);
 						tempDeleteStack = [];
-
+						
+						
 						for(let itemLength = 0; itemLength < dayContent.retardsdates.length; ++itemLength) 
 						{
 							let empdaily = dayContent.retardsdates[itemLength];
@@ -4030,8 +4040,6 @@
 								monthContent.retards--;
 								yearContentElement.retards--;
 								tempDeleteStack.push(empdaily);
-								let othertempDeleteStack = findElementsNotEquivalentToValueIntoDic(ID,empdaily,"employeeHours");
-								deleteKeysElementsIntoDic(othertempDeleteStack,empdaily,empdaily.empHours);
 							}
 						}
 						
@@ -4047,9 +4055,7 @@
 								weekContent.retardsCritical--;
 								monthContent.retardsCritical--;
 								yearContentElement.retardsCritical--;
-								tempDeleteStack.push(empdaily);
-								let othertempDeleteStack = findElementsNotEquivalentToValueIntoDic(ID,empdaily,"empDicofCritical");
-								deleteKeysElementsIntoDic(othertempDeleteStack,empdaily.empDicofCritical);	
+								tempDeleteStack.push(empdaily);	
 							}
 						}
 						
@@ -4066,16 +4072,12 @@
 								monthContent.simpleRetards--;
 								yearContentElement.simpleRetards--;
 								tempDeleteStack.push(empdaily);
-								let othertempDeleteStack = findElementsNotEquivalentToValueIntoDic(ID,empdaily,"empDicofRetards");
-								deleteKeysElementsIntoDic(othertempDeleteStack,empdaily.empDicofRetards);
 							}
 						}
 						
 						deleteElement(tempDeleteStack,dayContent.simpleRetardsdates);
 						tempDeleteStack = [];
 
-						
-						
 						
 						
 						
@@ -4159,7 +4161,8 @@
 	function findElementsNotEquivalentToValueIntoDic(keyName,dicContainer,repertory)
 	{
 		let returnKeys = [];
-		
+		//console.log(repertory);
+		//console.log(dicContainer);
 		Object.keys(dicContainer[repertory]).forEach((key_element)=>
 		{
 			if(key_element != keyName)
