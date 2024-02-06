@@ -6,6 +6,7 @@
 	var vercelBlob = require("@vercel/blob");
 	var {GlobalsForcedFolding} = require('./Extra.js');	
 	var {ImageFilesContainer} = require('./queryTests.js');
+	var kvPackage = require('@vercel/kv');
 	let globalForcedFoldingPrime = undefined;
 	let imageDictionary = new ImageFilesContainer();
 	let connection = undefined;
@@ -22,47 +23,118 @@
 	let charging_percentage = 0; 	
 	let base_init_exiting = false;
 	//run
+	var kvURL = "https://legal-herring-37422.upstash.io";
+	var kvToken = "AZIuASQgYThlYjIyZTQtNzBhMS00MGI0LWJjNzgtOTUxMWYzNTFkOTlhNjhiMmZjZWRmZGQyNDBmYmI1NmIxMDYyNWIzNDI2OGE=";
 	var connectedguys =
 	[	
 	];
 	var hoursLocker = undefined;
-	
+	const kvUser = kvPackage.createClient({
+							url: kvURL,
+							token: kvToken,
+						});
+						
 	var filesdirectories = 
 	[
 		{command:'update employee',path:'../Project Timing/my-app/src/assets/images/'}
 	];
+	
+	
 	
 	let d = new Date(Date.now());
 	console.log(d.getHours()+" "+d.getMinutes()+" "+d.getSeconds());
 	
 	function caller()
 	{
-		
 		precedentDate = todaysDate;
 		todaysDate = new Date(Date.now());
 			
 		let dateTime = new Date();
 		console.log("This function must sleep for 1 seconds before starting");
 		
-		setTimeout(
-				function()
+			setTimeout(
+				async function()
 				{	
-					let currentDatedetails = getDateDetailsFromCorruptJavascript();
-					console.log("Done sleeping..............");
-					if(precedentDate.getYear() != todaysDate.getYear())
-					{
-						getDataForAdmin(undefined,undefined,undefined,undefined,currentDatedetails[2],undefined,undefined);
-					}
-					else if (precedentDate.getMonth() != todaysDate.getMonth())
-					{
-						getDataForAdmin(undefined,undefined,undefined,undefined,currentDatedetails[2],currentDatedetails[1],undefined);
-					}
-					else if(precedentDate.getDay() != todaysDate.getDay() )
-					{
-						getDataForAdmin(undefined,undefined,undefined,undefined,currentDatedetails[2],currentDatedetails[1],currentDatedetails[0]);
-					}
-					
-					ofUpdate();
+							let length = await kvUser.get("primaryObjectsLength");	
+							console.log("PrimaryObject in KV's length is "+length);
+							if(length  == -1 || length  == undefined || length  == -1)
+							{
+								let currentDatedetails = getDateDetailsFromCorruptJavascript();
+								console.log("Done sleeping..............");
+								if(precedentDate.getYear() != todaysDate.getYear())
+								{
+									getDataForAdmin(undefined,undefined,undefined,undefined,currentDatedetails[2],undefined,undefined,true);
+								}
+								else if (precedentDate.getMonth() != todaysDate.getMonth())
+								{
+									getDataForAdmin(undefined,undefined,undefined,undefined,currentDatedetails[2],currentDatedetails[1],undefined,true);
+								}
+								else if(precedentDate.getDay() != todaysDate.getDay() )
+								{
+									getDataForAdmin(undefined,undefined,undefined,undefined,currentDatedetails[2],currentDatedetails[1],currentDatedetails[0],true);
+								}
+							}
+							else
+							{
+								let allAddedUp = "";
+								let done = true;
+									
+									let problem = false;
+									let startTime = new Date();
+									for(let count = 0; count < length && !problem; ++count)
+									{
+										let tryCount = 0;
+										do 
+										{
+											++tryCount;
+											try 
+											{
+												let strElement = await kvUser.get("primaryObjects"+count);
+												allAddedUp += strElement;
+												problem = false;
+											}catch(err)
+											{
+												problem = true;
+											}
+										}
+										while(problem && tryCount < 2);
+									}
+									
+									if(problem == false)
+									{
+										try
+										{
+											primaryObject = JSON.parse(allAddedUp);
+											let dateTime = new Date();
+											console.log("primaryObject has been successfully initialized ");
+											console.log(((dateTime - startTime)/1000) +" seconds ...");
+										}
+										catch(err)
+										{
+											console.log(err.messge.substring(0,1000));
+											problem = true;
+										}
+									}
+									
+									if(problem)
+									{
+										let currentDatedetails = getDateDetailsFromCorruptJavascript();
+										console.log("Done sleeping..............");
+										if(precedentDate.getYear() != todaysDate.getYear())
+										{
+											getDataForAdmin(undefined,undefined,undefined,undefined,currentDatedetails[2],undefined,undefined,true);
+										}
+										else if (precedentDate.getMonth() != todaysDate.getMonth())
+										{
+											getDataForAdmin(undefined,undefined,undefined,undefined,currentDatedetails[2],currentDatedetails[1],undefined,true);
+										}
+										else if(precedentDate.getDay() != todaysDate.getDay() )
+										{
+											getDataForAdmin(undefined,undefined,undefined,undefined,currentDatedetails[2],currentDatedetails[1],currentDatedetails[0],true);
+										}
+									}
+							}
+				ofUpdate();
 			},1000);
 	}
 
@@ -403,7 +475,7 @@
 									await hoursToEmp(undefined,urlObject);
 									hoursLocker[urlObject.userAuthentification.ID].inside = true;
 									urlObject.day = undefined; urlObject.startDay = undefined; urlObject.endDay = undefined;
-									await getDataForAdmin(undefined,undefined,undefined,urlObject,undefined,undefined,undefined);
+									await getDataForAdmin(undefined,undefined,undefined,urlObject,undefined,undefined,undefined,false);
 									hoursLocker[urlObject.userAuthentification.ID].inside = false;
 								}
 								,(ex) =>
@@ -786,9 +858,85 @@
 				add_all_users();
 				var func = async()=>
 				{
-					await getDataForAdminThreeArgs(undefined,undefined);
+					let length = await kvUser.get("primaryObjectsLength");	
+							
+					console.log("PrimaryObject in KV's length is "+length);
+							if(length  == -1 || length  == undefined)
+							{		
+								await getDataForAdminThreeArgs(undefined,undefined);
+							}
+							else
+							{
+								let allAddedUp = "";
+								let done = true;
+									
+									let problem = false;
+									let startDate = new Date();
+									for(let count = 0; count < length && !problem; ++count)
+									{
+										let tryCount = 0;
+										do 
+										{
+											++tryCount;
+											try 
+											{
+												let strElement = await kvUser.get("primaryObjects"+count);
+												allAddedUp += strElement;
+												problem = false;
+											}catch(err)
+											{
+												problem = true;
+											}
+										}
+										while(problem && tryCount < 2);
+									}
+									
+									if(problem == false)
+									{
+										try
+										{
+											primaryObject = JSON.parse(allAddedUp);
+											let endDate = new Date()
+											console.log("primaryObject has been successfully initialized...after"+((endDate-startDate)/1000)+" seconds" );
+											try
+											{
+												console.log(primaryObject.container[primaryObject.selected_name]);
+												let primarydate = new Date(primaryObject.container[primaryObject.selected_name].currentDate);
+												
+												console.log(primarydate.getMonth());console.log((new Date()).getMonth());
+												console.log(primarydate.getDate());console.log((new Date()).getDate());
+												console.log(primarydate.getFullYear());console.log((new Date()).getFullYear());
+												
+												if(primarydate.getMonth() != (new Date()).getMonth() || primarydate.getDate() != (new Date()).getDate() ||
+												primarydate.getFullYear() != (new Date()).getFullYear() )
+												{
+													primaryObject = undefined;
+													await getDataForAdminThreeArgs(undefined,undefined);	
+												}
+											}catch(err)
+											{
+												console.log(err);
+												primaryObject = undefined;
+												await getDataForAdminThreeArgs(undefined,undefined);
+											}
+										}
+										catch(err)
+										{
+											console.log(err.message.substring(0,1000));
+											problem = true;
+											primaryObject = undefined;
+										}
+										console.log(primaryObject);
+									}
+									
+									if(problem)
+									{				
+										await getDataForAdminThreeArgs(undefined,undefined);
+									}
+							}
 				};
 				func();
+				
 				//console.log(startingTag);
 				ofUpdate();
 				setTimeout(each5Minutes,300000);
@@ -1164,7 +1312,7 @@
 									console.log("no problems");
 									res.end();
 									let date = new Date((dealingWithArray)?fields.date:fields.date[0]);
-									await getDataForAdmin(undefined,undefined,undefined,undefined,date.getFullYear(),date.getMonth()+1,date.getDate());
+									await getDataForAdmin(undefined,undefined,undefined,undefined,date.getFullYear(),date.getMonth()+1,date.getDate(),false);
 								}
 								
 								if (commandArg === "reasonsforabsences" || (dealingWithArray && commandArg[0] === "reasonsforabsences"))
@@ -1187,7 +1335,7 @@
 									res.write(JSON.stringify({customtext:"OK"}));
 									console.log("no problems");
 									res.end();
-									await getDataForAdmin(undefined,undefined,undefined,userPresenceObject,undefined,undefined,undefined);
+									await getDataForAdmin(undefined,undefined,undefined,userPresenceObject,undefined,undefined,undefined,false);
 								}
 								
 								if(commandArg === "offices" || (dealingWithArray && commandArg[0] === "offices") )
@@ -1207,7 +1355,7 @@
 										res.write(JSON.stringify({customtext:"OK"}));
 											//console.log("no problems");
 										res.end();
-										await getDataForAdmin(undefined,userOfficeObject,undefined,undefined,undefined,undefined,undefined);
+										await getDataForAdmin(undefined,userOfficeObject,undefined,undefined,undefined,undefined,undefined,false);
 										
 										/*	
 										if(okresult)
@@ -1245,7 +1393,7 @@
 												userAdditionObject = urlObject;
 												//let fs = require('fs');
 												//await fs.rename(filesDup.filepath, path + filesDup.originalFilename,function(err_){});
-												await getDataForAdmin(undefined,undefined,userAdditionObject,undefined,undefined,undefined,undefined);
+												await getDataForAdmin(undefined,undefined,userAdditionObject,undefined,undefined,undefined,undefined,false);
 											}
 											else
 											{
@@ -1767,12 +1915,12 @@
 			
 			async function getDataForAdminThreeArgs(response,locationArgObj)
 			{
-				 return await getDataForAdmin(response,locationArgObj,undefined,undefined,undefined,undefined,undefined);
+				 return await getDataForAdmin(response,locationArgObj,undefined,undefined,undefined,undefined,undefined,false);
 			}
 
 			async function getDataForAdminFourArgs(response,locationArgObj,empObj)
 			{
-				return await getDataForAdmin(response,locationArgObj,empObj,undefined,undefined,undefined,undefined);
+				return await getDataForAdmin(response,locationArgObj,empObj,undefined,undefined,undefined,undefined,false);
 			}
 			
 			async function hoursToEmp(response,empHoursObj)
@@ -1860,10 +2008,26 @@
 				
 			}
 			
-			async function getDataForAdmin(response,locationArgObj,empObj,empHoursObj,paramyear,parammonth,paramday)
+			async function getDataForAdmin(response,locationArgObj,empObj,empHoursObj,paramyear,parammonth,paramday,setDateofToday)
 			{
 				//console.log(" paramyear "+paramyear+" other paramday "+paramday+" other parammonth "+parammonth);
 				//console.log("Location argument "+locationArgObj+" employee argument "+empObj);
+				let primSet = false;
+				do
+				{
+					try
+					{
+						await kvUser.set("primaryObjectsLength",-1);
+						primSet = true;
+					}
+					catch(ex)
+					{
+						console.log(ex);
+						primSet = false;
+					}
+				}
+				while(!primSet);
+				
 				let data = 
 				{
 					selected_name: 0,
@@ -1987,6 +2151,7 @@
 							OfficeLongitude: officeLongitude,
 							yearsContent: [],
 							now: dateNow.toLocaleString('fr-FR',{day:"numeric",month:"long",year:"numeric"}),
+							currentDate: dateNow,
 							yearIndex: 0,
 							monthIndex: 0,
 							weekIndex: 0,
@@ -2644,7 +2809,7 @@
 									
 									
 									if( currentmonth == amonth
-										&& currentday == day && currentYear == ayear)
+										&& currentday == day && currentYear == ayear && setDateofToday)
 									{	
 										nowDate = currentDateOfYear;
 										nowDateStr = day+"-"+amonth+"-"+ayear;
@@ -2653,6 +2818,7 @@
 										//console.log(currentDateOfYear);
 										//console.log(dateNow);
 										unitLocation.now = currentDateOfYear.toLocaleString('fr-FR',{day:"numeric",month:"long",year:"numeric"});
+										unitLocation.currentDate = currentDateOfYear();
 										unitLocation.nowVisible = true;
 										unitLocation.yearIndex = l;
 										unitLocation.monthIndex = monthCounts-1;
@@ -3655,9 +3821,35 @@
 						primaryObject = data;
 					}
 					
+					console.log("added to kv");
 					//console.log("Location argument "+locationArgObj+" employee argument "+empObj);
 					//console.log(primaryObject);
-					
+					let splitelements = splitText(JSON.stringify(primaryObject), 900* 1024);
+					if( splitelements.length > 0)
+					{
+						let error = false;
+						do
+						{
+							try
+							{
+								let tempIndex = 0;
+								let allElements = "";
+								for(;tempIndex < splitelements.length ;++tempIndex)
+								{
+									await kvUser.set("primaryObjects"+tempIndex,splitelements[tempIndex]);
+									allElements += tempIndex,splitelements[tempIndex];
+								}
+								await kvUser.set("primaryObjectsLength",splitelements.length);
+								//JSON.parse(allElements);
+							}
+							catch(err)
+							{
+								console.log(err.message.substring(0,5000));
+								error = true;
+							}
+						}while(error);
+					}
+					console.log("done adding "+splitelements.length+" elements to KV ");
 					if (!(response === undefined))
 					{
 						response.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
@@ -5258,7 +5450,35 @@
 		return returnValue;
 	}
 	
-	
+	function splitText(textStr,count)
+	{
+		let returnValue = [];
+		let length = textStr.length;
+		let index = 0;
+		let value = "";
+		let set = false;
+		
+		while(index < length)
+		{
+			value += textStr[index];
+			if(value.length == count )
+			{
+				returnValue.push(value);
+				set = true;
+				value = "";
+			}
+			else
+				set = false;
+			++index;
+		}
+		
+		if(!set && value.length > 0)
+		{
+			returnValue.push(value);
+		}
+		
+		return returnValue;
+	}
 	
 	function findElementIntoArray(array,valuesName,valuesNameTwo,othersValue1,othersValue2)
 	{
