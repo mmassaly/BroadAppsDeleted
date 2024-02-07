@@ -858,8 +858,24 @@
 				add_all_users();
 				var func = async()=>
 				{
-					let length = await kvUser.get("primaryObjectsLength");	
-							
+					let length = -1;
+					let length_count = 0;
+					let errorBoolean = false;
+					
+					do
+					{
+						try
+						{
+							length = await kvUser.get("primaryObjectsLength");
+							errorBoolean = false;							
+						}
+						catch(err)
+						{
+							errorBoolean = true;
+							++length_count;
+						}
+					}while(errorBoolean && length_count <= 2);
+					
 					console.log("PrimaryObject in KV's length is "+length);
 							if(length  == -1 || length  == undefined)
 							{		
