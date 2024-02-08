@@ -2178,7 +2178,7 @@
 							OfficeLongitude: officeLongitude,
 							yearsContent: [],
 							now: dateNow.toLocaleString('fr-FR',{day:"numeric",month:"long",year:"numeric"}),
-							setIn:"begin",
+							setIn:"initialization",
 							currentDate: dateNow,
 							yearIndex: 0,
 							monthIndex: 0,
