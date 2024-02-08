@@ -2185,7 +2185,7 @@
 							weekIndex: 0,
 							dayIndex: 0,
 							nowVisible: false
-						};
+						};//done
 						
 						let foundValueForLocationTemp = getLocation(data,officeID);
 						foundValueForLocation = foundValueForLocationTemp.first;
