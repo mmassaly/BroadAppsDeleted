@@ -2845,7 +2845,7 @@
 										//console.log(nowDateStr);
 										//console.log(currentDateOfYear);
 										//console.log(dateNow);
-										unitLocation.now = currentDateOfYear.toLocaleString('fr-FR',{day:"numeric",month:"long",year:"numeric"});
+										unitLocation.now = currentDateOfYear.toLocaleString('fr-FR',{day:"numeric",month:"long"})+" "+currentDateOfYear.getFullYear();
 										unitLocation.setIn = "weekElement";
 										unitLocation.currentDate = currentDateOfYear;
 										unitLocation.nowVisible = true;
