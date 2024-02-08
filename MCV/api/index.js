@@ -2178,6 +2178,7 @@
 							OfficeLongitude: officeLongitude,
 							yearsContent: [],
 							now: dateNow.toLocaleString('fr-FR',{day:"numeric",month:"long",year:"numeric"}),
+							setIn:"begin",
 							currentDate: dateNow,
 							yearIndex: 0,
 							monthIndex: 0,
@@ -2845,6 +2846,7 @@
 										//console.log(currentDateOfYear);
 										//console.log(dateNow);
 										unitLocation.now = currentDateOfYear.toLocaleString('fr-FR',{day:"numeric",month:"long",year:"numeric"});
+										unitLocation.setIn = "weekElement";
 										unitLocation.currentDate = currentDateOfYear;
 										unitLocation.nowVisible = true;
 										unitLocation.yearIndex = l;
