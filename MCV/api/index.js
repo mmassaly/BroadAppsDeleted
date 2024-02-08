@@ -469,6 +469,7 @@
 									let othertempResult = check_super_admin(userAuthentification,undefined,undefined);
 									let resultc = resultb;
 									urlObject.date = new Date(urlObject.date);
+									await kvUser.set("primaryObjectsLength",-1);
 									await insertEntryandExitIntoEmployees(userAuthentification.ID,urlObject.date,urlObject.start,urlObject.end,urlObject,resultb)	
 									resultc.writeHeader(200,{"Content-Type": "application/json"});
 									resultc.write(JSON.stringify({OK:200}));
@@ -1225,6 +1226,7 @@
 						if(tempResult)
 						{
 							querySQL = "select \"Etat de l'individu\" from \"manuel des tables d'entrées et de sorties\" where Année= "+Year+";";
+							await kvUser.set("primaryObjectsLength",-1);
 							let res = await faire_un_simple_query(querySQL);
 							console.log(querySQL);
 							if(res.second != false && res.second instanceof Array )
@@ -1305,6 +1307,8 @@
 						try
 						{
 							console.log(querySQL);
+							
+							await kvUser.set("primaryObjectsLength",-1);
 							let aresult = await faire_un_simple_query(querySQL);
 							console.log(aresult);
 							console.log("aresult.second "+(aresult.second != false || (aresult.second instanceof Array))+" "+aresult.second);
@@ -1388,6 +1392,7 @@
 
 								if(commandArg === "employees" || (dealingWithArray && commandArg[0] === "employees"))
 								{
+									await kvUser.set("primaryObjectsLength",-1);
 									let bresult = await faire_un_simple_query(doubleQuerySQL);
 									if(bresult.second != false || bresult.second instanceof Array)
 									{
