@@ -2266,10 +2266,13 @@
 						}
 						
 						let prevMonthCounts = monthCounts;
+						
+						unitLocation.yearIndexes = [];
 						for (let l = 0; l < result_.first.length; ++l)
 						{
 							monthCounts = prevMonthCounts;
 							unitLocation.yearIndex = l; 
+							unitLocation.yearIndexes.push(l);
 							let year = result_.first[l][result_.second[0].name];
 							let state = result_.first[l][result_.second[1].name];
 							let table = result_.first[l][result_.second[2].name];
@@ -2845,7 +2848,7 @@
 										//console.log(nowDateStr);
 										//console.log(currentDateOfYear);
 										//console.log(dateNow);
-										unitLocation.now = currentDateOfYear.toLocaleString('fr-FR',{day:"numeric",month:"long"})+" "+currentDateOfYear.getFullYear();
+										unitLocation.now = currentDateOfYear.toLocaleString('fr-FR',{day:"numeric",month:"long",year:"numeric"});
 										unitLocation.setIn = "ElementSetInDaily "+currentDateOfYear.toLocaleString('fr-FR',{day:"numeric",month:"long",year:"numeric"});
 										unitLocation.currentDate = currentDateOfYear;
 										unitLocation.nowVisible = true;
