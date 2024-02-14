@@ -2365,7 +2365,6 @@
 									let startDay = dupCurrentDate.getDay();
 									startDay =(startDay == 0)? 6: startDay;
 									let backCount = 1;
-
 									while(backCount < startDay)
 									{
 										let day = 
@@ -2383,6 +2382,10 @@
 									while(dayCount <= date)
 									{
 										dupCurrentDate = new Date(year,dupMonthCount,dayCount);
+										let filteredValue = FilterDateNotFoudFunction(dresult,"date",dayCount+"-"+(dupMonthCount+1)+"-"+year);
+										
+										let str = "";
+										
 										let day = 
 										{
 											name: dupCurrentDate.toLocaleString('fr-FR',{day:"numeric"})+" "+dupCurrentDate.toLocaleString('fr-FR',{month:"long"}),
@@ -2392,6 +2395,14 @@
 											empty: false
 										}
 										amonth.elements.push(day);
+										
+										
+										dresultFiltered.first.forEach((element)=>
+										{
+											str += element["name"]+"\n";
+											day["eventsname"] = str;
+										});
+										
 										++dayCount;
 									}
 		
