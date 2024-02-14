@@ -2039,13 +2039,14 @@
 				//console.log(" paramyear "+paramyear+" other paramday "+paramday+" other parammonth "+parammonth);
 				//console.log("Location argument "+locationArgObj+" employee argument "+empObj);
 				console.log("set date of today "+setDateofToday);
-				let primSet = false;
+				let primSet = false; let count = 2;
 				do
 				{
 					try
 					{
 						await kvUser.set("primaryObjectsLength",-1);
 						primSet = true;
+						console.log("PrimaryObjectsLength is set");
 					}
 					catch(ex)
 					{
@@ -2053,7 +2054,7 @@
 						primSet = false;
 					}
 				}
-				while(!primSet);
+				while(!primSet && count-- >=0);
 				
 				let data = 
 				{
