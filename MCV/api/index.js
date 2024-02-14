@@ -2397,7 +2397,7 @@
 										amonth.elements.push(day);
 										
 										
-										dresultFiltered.first.forEach((element)=>
+										filteredValue.first.forEach((element)=>
 										{
 											str += element["name"]+"\n";
 											day["eventsname"] = str;
