@@ -1,4 +1,4 @@
-var { ImageFilesContainer } = require("C:\\Users\\Mamadou\\Documents\\GitHub\\BroadAppsDeleted\\MCV\\queryTests.js");
+var { ImageFilesContainer } = require("C:\\Users\\Mamadou\\Documents\\GitHub\\BroadAppsDeleted\\MCV\\api\\queryTests.js");
 let imageDictionary = new ImageFilesContainer();
 
 let query = "create or replace function c() returns table(id text)";
@@ -346,8 +346,24 @@ query += "insert into \"2023 état de l'individu\" values ('1-24','11-24-2023',f
 query +="Select * from \"2023 état de l'individu\" ";
 //works cool
 */
-f(query);
+//f("select * from \"2024 entrées et sorties\" where idindividu = '1-25';");
 
+let table = "2024 entrées et sorties";
+query = "";
+query += "Select Case WHEN MIN(\""+table+"\".Entrées) >= '10:00:00' then 1 "; 
+							query += "WHEN MIN(\""+table+"\".Entrées) < '10:00:00' then 0 END as CaseOne,";
+							query += "Case WHEN  MIN(\""+table+"\".Entrées) > '8:30:00' then 1 ";
+							query += "WHEN MIN(\""+table+"\".Entrées) <= '8:30:00' then 0 END as CaseTwo,";
+							query += "MIN(\""+table+"\".Entrées), Date ,Idindividu FROM \""+table+"\"";
+							query += (param_year_month_day != undefined)?" WHERE Date ='"+param_year_month_day+"'":(empHoursObj== undefined)? ((empObj != undefined)?" WHERE Idindividu = '"+empObj.ID+"'":""):" WHERE Idindividu = '"+empHoursObj.userAuthentification.ID+((empHoursObj.startDay == undefined && empHoursObj.endDay == undefined)?("' AND Date ='"+empHoursObj.date.getFullYear()+"-"+(empHoursObj.date.getMonth()+1)+"-"+empHoursObj.date.getDate()+"'"):(empHoursObj.startDay != undefined && empHoursObj.endDay == undefined)?(" AND Date >='"+empHoursObj.startDay.getFullYear()+"-"+(empHoursObj.startDay.getMonth()+1)+"-"+empHoursObj.startDay.getDate()+"'"):("' AND Date >='"+empHoursObj.startDay.getFullYear()+"-"+(empHoursObj.startDay.getMonth()+1)+"-"+empHoursObj.startDay.getDate()+"' AND Date <='"+empHoursObj.endDay.getFullYear()+"-"+(empHoursObj.endDay.getMonth()+1)+"-"+empHoursObj.endDay.getDate()+"'"));
+							query += " GROUP BY Date, Idindividu ORDER BY Date ASC;";
+query = "SELECT  * FROM individu inner join login on individu.ID = login.IDIndividu inner join "
+		query += "appartenance on individu.ID = appartenance.IDIndividu inner join \"location du bureau\" as A on A.ID = ";
+		query += "appartenance.IDBureau;"; 
+query = "delete from appartenance where idindividu = '1-26';";
+query += "delete from login where idindividu = '1-26';";
+query += "delete from individu where id = '1-26';";
+f(query);
 
 
 
