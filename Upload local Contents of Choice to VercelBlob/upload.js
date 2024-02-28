@@ -1,9 +1,8 @@
 var vercelBlob = require("@vercel/blob");
 var fs = require('fs');
 require ('dotenv').config();
-var paths = ['C:\\Users\\Mamadou\\Desktop\\WebPages\\Project Timing\\my-app\\src\\assets\\images'];
+var paths = ['C:\\Users\\Mamadou\\Documents\\GitHub\\BroadAppsDeleted\\Upload local Contents of Choice to VercelBlob\\images'];
 //paths = ['C:\\Users\\Mamadou\\Desktop\\WebPages\\Project Timing Phone\\TestProject\\platforms\\android\\app\\build\\outputs\\apk\\debug'];
-var directories = ["assets/images/profile-pictures/","apks/"];
 
 async function start(pathsofInterest)
 {
@@ -47,7 +46,7 @@ async function start(pathsofInterest)
 							{
 								if(file_ico != "json" && file_ico != "txt")
 								{
-									var directories = ["assets/images/profile-pictures/","apks/"];
+									var directories = ["assets/images/doudousindividuals/profile-pictures/","apks/"];
 									var commandContentTypes = ['image/'+file_ico,"application/vnd.android.package-archive"];
 									var txtNames = ["imagefileslocaldb.txt","apks.txt"];
 									console.log(element);

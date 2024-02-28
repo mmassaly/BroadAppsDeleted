@@ -72,6 +72,7 @@ insert into blobsholder (Url, bytesvalue) values
 alter table "login" add column UUID( varchar 256);
 alter table "login" add column SETUUID ( boolean );
 delete from "location du bureau" where Id = 33;
+alter table "DouDous correspondance" RENAME COLUMN Idproject to Id;
 
 
 delete from appartenance where idindividu = '1-26'
@@ -79,3 +80,39 @@ delete from login where idindividu = '1-26'
 delete from individu where id = '1-26'
 
 select * from information_schema.tables
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+create table "DouDous'individuals" (idindividu integer,prenom varchar(255),nom varchar(255),genre varchar(255), password varchar(255),superadmin boolean,"User" boolean,$$Image$$ text,Primary Key(idindividu)) ;
+insert into "DouDous'individuals" values ('1','Doudou','Seck','homme','doudouseck',true,false,$$https://ahaynnm8butrk7li.public.blob.vercel-storage.com/assets/images/profile-pictures/20240209_115129-8tKjo9Msn9VD8DdNpE1agojU0F7hMT.jpg$$);
+create table "DouDous correspondance" (idindividu integer,idproject integer);
+insert into "DouDous correspondance" values ('1','1');
+
+"SELECT COLUMN_NAME, DATA_TYPE, IS_NULLABLE, COLUMN_DEFAULT,TABLE_NAME FROM INFORMATION_SCHEMA.COLUMNS where TABLE_NAME = $$"+tempResult[1].first[i]+"$$;\n"
+
+create table "DouDous'bases" (ID integer,Name varchar(255),PRIMARY KEY(ID,Name));
+
+ALTER table "DouDous'individuals" ALTER COLUMN IdIndividu SET DATA TYPE  integer;
+
+delete from "Base plainte PAP" where Emprise = 'fndlfd;lfd';
+
+insert into "Base des plaintes" values ( //change date into fr mode 
+$$NULL$$,
+$$0001RIM$$,
+$$26/10/2022 00:00:00$$,
+$$IDRISSA MAMADOU$$,
+$$MASCULIN$$,
+$$ROSSO MAURITANIE$$,
+$$3180336285$$
+,$$GARDIEN$$
+,$$PERSONNEL VS ENTREPRISE$$
+,$$RESPECT DE LA REGLEMENTATION DU TRAVAIL$$
+,$$-RECLAMATION BULLETIN DE PAIE-REMBOUSEMENT JOURS FERIES-PAIEMENT DES HEURES SUPPLEMENTAIRES-RECLAMATION CARTE ASSURANCE$$
+,$$OUVERTURE DES DISCUSSIONS AVEC L'ENTREPRISE$$,
+$$MAMADOU MORANE GUEYE, SOCIO-ECONOMISTE UGP PONT ROSSO$$,
+$$RECEVABLE$$,
+$$PROBLEMES RECURRENTS AVEC L'ENTREPRISE, RECHERCHE SOLUTION DEFINITIVE$$,
+$$INSTRUIRE LA MISSION DE CONTRÔLE POUR ORGANISER DANS LES 48 HEURES UNE REUNION AVEC L'ENTREPRISE$$,
+$$MISSION DE CONTRÔLE$$,
+$$02/11/2022 00:00:00$$,
+$$REPONSES FAVORABLES DE L'ENTREPRISE (VOIR) PV$$,
+$$27/10/2022 00:00:00$$);

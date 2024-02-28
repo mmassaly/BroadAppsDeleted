@@ -363,6 +363,12 @@ query = "SELECT  * FROM individu inner join login on individu.ID = login.IDIndiv
 query = "delete from appartenance where idindividu = '1-26';";
 query += "delete from login where idindividu = '1-26';";
 query += "delete from individu where id = '1-26';";
+
+query = "SELECT COLUMN_NAME, DATA_TYPE, IS_NULLABLE, COLUMN_DEFAULT,TABLE_NAME FROM INFORMATION_SCHEMA.COLUMNS where TABLE_NAME = $$Base plainte PAP$$;";
+
+//query = "SELECT * from \"DouDous'individuals\";"; 
+query = "SELECT * from \"Base plainte PAP\"";
+query = "SELECT * FROM \"Base plainte PAP\" inner join  (Select IDIndividu,Prenom,Nom,Genre,Image from \"DouDous'individuals\") as A  on A.IDIndividu = \"Base plainte PAP\".IDIndividu;";
 f(query);
 
 
