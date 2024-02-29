@@ -1,0 +1,50 @@
+
+
+li:hover
+{
+	background-color: silver;
+	cursor:pointer;	
+}
+
+@media-screen (max-width: 800px)
+{
+	.leftshiftotoggleMenu
+	{
+		color:blue;
+		width: 100%;
+		position: fixed;
+		z-index: 1;
+		left: 0px;
+	}
+	ul 
+	{
+		display: none;
+	}
+	.leftshiftotoggleMenu div:hover ul 
+	{
+		cursor:pointer;
+		display: block;
+	}
+}
+
+
+@media-screen (min-width: 801px)
+{
+	.leftshiftotoggleMenu
+	{
+		color:blue;
+		max-width: 30%;
+		display: inline-block;
+	}
+	ul 
+	{
+		display: block;
+	}
+}
+
+.leftshiftotoggleMenu
+{
+	color:blue;
+}
+
+

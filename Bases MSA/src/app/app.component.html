@@ -1,0 +1,5 @@
+<div class="parent">
+<app-login-page *ngIf="loginToggle.toggle">
+</app-login-page>
+<router-outlet  *ngIf ="!loginToggle.toggle"></router-outlet>
+</div>
