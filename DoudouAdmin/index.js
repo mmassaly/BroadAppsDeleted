@@ -11,6 +11,7 @@ var connectedguys =
 
 let callIndex = 0;
 add_all_users();
+let blob_stuff = "vercel_blob_rw_AhayNnM8BUTRk7li_Pirrs7p4aeFH5cnD9hONM9peBfDhxd";
 
 var server = http.createServer(function(req,res)
 {
@@ -144,7 +145,7 @@ var server = http.createServer(function(req,res)
 												}
 												else
 												{
-													dummyResponse(resultb,"NOT LOGGED IN");
+													dummyResponse(resultb,{text:"NOT LOGGED IN"});
 												}
 
 											
@@ -295,7 +296,7 @@ async function formidableFileUpload(req,path,res)
 			//console.log(command);
 			//console.log(files);
 			let filesDup = files;
-			//console.log(filesDup);
+			console.log(filesDup);
 			
 			
 			//console.log(filesDup);
@@ -324,7 +325,8 @@ async function formidableFileUpload(req,path,res)
 				filesDup = filesDup.imgfile[0];
 			if( filesDup != undefined && filesDup.imgfile != undefined || ( filesDup.originalFilename != undefined) )
 			{
-								//console.log(fs.readFileSync(filesDup.filepath));
+				console.log("inside file reading");
+				//console.log(fs.readFileSync(filesDup.filepath));
 				try
 				{			
 					//not decodeURI for the originalFilename risk taken even if percentages are introduced however urls must be processed
@@ -338,6 +340,7 @@ async function formidableFileUpload(req,path,res)
 				}
 				catch(ex)
 				{
+					console.log(ex);
 					image_url = undefined;
 				}
 			}
@@ -478,17 +481,17 @@ async function formidableFileUpload(req,path,res)
 									base.bytable[tableId].rows.push(rows);
 									base.byId[tempuserAuthentification.ID][tableId].rows.push(rows);
 										
-									goodResponse(res, "Ajout passé");
+									goodResponse(res, {text:"Ajout passé"});
 									
 							}
 							else
 							{
-								dummyResponse(res,"Ajout impossible");
+								dummyResponse(res,{text:"Ajout impossible"});
 							}
 						}
 						else
 						{
-							dummyResponse(res,"Vous n'avez pas l'accés");
+							dummyResponse(res,{text:"Vous n'avez pas l'accés"});
 						}
 					}
 				}
@@ -515,7 +518,7 @@ async function formidableFileUpload(req,path,res)
 							}
 							else
 							{
-								valuesStr = "$$"+valueEq +"$$"+ valueStr;
+								valuesStr = "$$"+valueEq +"$$"+ valuesStr;
 							}
 							++count;
 						}
@@ -537,7 +540,7 @@ async function formidableFileUpload(req,path,res)
 					});
 					
 					valuesStr = "insert into \"" + table + "\" values (" + valuesStr+" );\n";
-					console.log(valueStr);
+					console.log(valuesStr);
 					let tempuserAuthentification = {ID:urlObject.authID[0],Prenom:urlObject.authPrenom[0],Nom:urlObject.authNom[0],genre:urlObject.authGenre[0],pass:urlObject.authpass[0]};
 					let tempResult = await forced_authentification_query(tempuserAuthentification,undefined);
 					//let tempResult = false;
@@ -555,17 +558,20 @@ async function formidableFileUpload(req,path,res)
 										
 							if( base.byId[elements_dic_other["ID"]][elements_dic_other["baseID"]] == undefined)
 							{
-								base.byId[elements_dic_other["ID"]][elements_dic_other["baseID"]] = {name: base.bytable[elements_dic_other["baseID"]].name,headers: base.bytable[elements_dic_other["baseID"]].headers,rows:base.bytable[elements_dic_other["baseID"]].rows}  ;
+								if(base.bytable[elements_dic_other["baseID"]] != undefined)
+								{
+									base.byId[elements_dic_other["ID"]][elements_dic_other["baseID"]] = {name: base.bytable[elements_dic_other["baseID"]].name,headers: base.bytable[elements_dic_other["baseID"]].headers,rows:[]}  ;
+								}
 							}
 							
-							goodResponse(res, "Liaison passée");
+							goodResponse(res, {text:"Liaison passée"});
 						}
 						else
-							dummyResponse(res,"Ajout impossible");
+							dummyResponse(res,{text:"Ajout impossible"});
 					}
 					else
 					{
-						dummyResponse(res,"Ajout impossible");
+						dummyResponse(res,{text:"Ajout impossible"});
 					}
 				}
 				else if(commandArg == "addindividual")
@@ -632,19 +638,24 @@ async function formidableFileUpload(req,path,res)
 						if( image_url == undefined )
 						{
 							image_url =  'https://70gxoz4jnkgivatx.public.blob.vercel-storage.com/assets/images/doudousindividuals/profile-pictures/humain-7SV4HWrHl7K7GzOEwhE6QeR0hTzBGa.png';	
-							if(count > 0)
-							{
-								valuesStr += ",$$"+image_url+"$$";
-							}
-							else
-							{
-								valuesStr += "$$"+image_url+"$$";
-							}
+							
 						}
+						
+						if(count > 0)
+						{
+							valuesStr += ",$$"+image_url+"$$";
+						}
+						else
+						{
+							valuesStr += "$$"+image_url+"$$";
+						}
+						
+						console.log(valuesStr);
+						console.log(values2Str);
+						
 						
 						valuesStr = "insert into \"" + table + "\" values (" + valuesStr+");\n";
 						valuesStr += "insert into \"" + table2 + "\" values (" + values2Str+");\n";
-						console.log(valuesStr);
 						
 						if(commandArg == "addindividual")
 						{
@@ -675,32 +686,35 @@ async function formidableFileUpload(req,path,res)
 											
 											if( base.byId[elements_dic_other["ID"]][elements_dic_other["baseID"]] == undefined)
 											{
-												base.byId[elements_dic_other["ID"]][elements_dic_other["baseID"]] = {name: base.bytable[elements_dic_other["baseID"]].name,headers: base.bytable[elements_dic_other["baseID"]].headers,rows:base.bytable[elements_dic_other["baseID"]].rows}  ;
+												if(base.bytable[elements_dic_other["baseID"]] != undefined)
+												{
+													base.byId[elements_dic_other["ID"]][elements_dic_other["baseID"]] = {name: base.bytable[elements_dic_other["baseID"]].name,headers: base.bytable[elements_dic_other["baseID"]].headers,rows:[]}  ;
+												}
 												console.log("Added to byId");
 												console.log(base.byId[elements_dic_other["ID"]]);
 											}
 											
 										}
-										goodResponse(res, "Ajout passé");
+										goodResponse(res, {text:"Ajout passé"});
 								}
 								else
 								{
-									dummyResponse(res,"Ajout impossible");
+									dummyResponse(res,{text:"Ajout impossible "});
 								}
 							}
 							else
 							{
-								dummyResponse(res,"Vous n'avez pas l'accés");
+								dummyResponse(res,{text:"Vous n'avez pas l'accés"});
 							}
 						}
 					}
 					else if(commandArg  == "del")
 					{
-						dummyResponse(res,"Not yet implemented");
+						dummyResponse(res,{text:"Not yet implemented"});
 					}
 					else
 					{
-						dummyResponse(res,"Vous n'avez pas l'accés");
+						dummyResponse(res,{text:"Vous n'avez pas l'accés"});
 					}
 				}
 			
@@ -949,6 +963,8 @@ async function add_all_users()
 			{
 				let table_name_temp = tempResult[0].first[0]["table_name"];
 				console.log("----------------------------------------------------------");
+				
+				console.log(tempResult[1].first.splice(0,1));
 				tempResult[1].first.forEach((el)=>
 				{
 					el["table_name"] = table_name_temp;
@@ -956,12 +972,12 @@ async function add_all_users()
 					console.log(el);
 					tempResult[0].first.push(el);
 				});
-				tempResult[1].first.splice(tempResult[1].first.length-1,1);
+				
+				console.log(tempResult[0].second.splice(0,1));		
 				tempResult[1].second.forEach((el)=>
 				{
 					tempResult[0].second.push(el);
 				});
-				tempResult[0].first.splice(tempResult[0].first.length-1,1);
 				tempResult = tempResult[0];
 			}
 		}
@@ -984,7 +1000,7 @@ async function add_all_users()
 		{
 			for(let j = 0; j < tempResult[i].first.length; ++j)
 			{
-				console.log("inside.....................");
+				console.log("inside....................."+tempResult[i].first[j]["table_name"]+" "+tempResult[i].first[j]["column_name"]);
 				holder[tempResult[i].first[j]["table_name"]].headers.push( {validate: (tempResult[i].first[j]["validate"] == undefined)?true:tempResult[i].first[j].validate , type: data_type_converter[tempResult[i].first[j]["data_type"]], name: tempResult[i].first[j]["column_name"]}) ; 	
 			}
 		}
@@ -1017,7 +1033,8 @@ async function add_all_users()
 			{
 				if( base.bytable[lastTempResult[2].first[i]["id"]] != undefined )
 				{
-					base.byId[lastTempResult[2].first[i]["idindividu"]][lastTempResult[2].first[i]["id"]] = base.bytable[lastTempResult[2].first[i]["id"]];
+					base.byId[lastTempResult[2].first[i]["idindividu"]][lastTempResult[2].first[i]["id"]] = { name: base.bytable[lastTempResult[2].first[i]["id"]].name,
+					headers: base.bytable[lastTempResult[2].first[i]["id"]].headers, rows: []  }; 
 				}
 			}
 		}
