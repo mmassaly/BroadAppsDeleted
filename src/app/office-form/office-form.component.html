@@ -1,0 +1,85 @@
+<div>
+
+<label for ="rd1" *ngIf = "data.userAuthentification.superadmin" >Ajouter un employé</label>
+<input type ="radio" name ="wello" id="rd1" value = "false" (change) = "toggle()"  *ngIf = "data.userAuthentification.superadmin" checked>
+<label for ="rd2" >Base de donnée</label>
+<input type ="radio" name ="wello" id="rd2"  (change) = "toggle()" value = "true"  >
+
+
+<div class = "leftshiftotoggleMenu">
+	<div *ngIf ="data.base.tables != undefined ">
+		<h1>Liste des bases</h1>
+		<ul>
+			<li *ngFor ="let key of objectKeysFunction(data.base.tables)" (click) = "setSelectedID(key)" >
+				{{data.base.tables[key]?.name}}
+			</li>
+		</ul>
+	</div>
+</div>
+<div  class="middlePage">
+<form *ngIf="!toggled && !data.userAuthentification.user" #fOne  ="ngForm" (ngSubmit)="submitFunction(fOne.value,fOne)" ngNativeValidate>
+	<h1>Formulaire d'ajout d'un nouvel employé</h1>
+	<button (click) = "clear([s1,s2,s3],[fn1,sn1,g1,s1,id2,pwd1,idemp])">Effacer</button><br><br>
+	<div class="formDivisionb">
+	<label for= "baseIDPrime"  >Attaché à la Base:</label>
+	<select #s1 name = "baseIDPrime"  (change) ="setSelectorValues(s1,s1.selectedIndex,[s1.value],[id2])" ngModel>
+		<option *ngFor="let container of objectKeysFunction(data.base.tables); let i = index" value="{{container}}">{{data.base.tables[container].name}}</option>
+	</select>
+	<label for = "baseID" >ID de la base:</label>
+	<input type = "number"  #id2   name = "baseID" [(ngModel)] = "modelDic.baseID" required ngModel>
+	<label for= "employeeID"  >ID de l'employé:</label>
+	<select #s2 name = "employeeID"  ngModel  (change) ="setSelectorValues(s2,s2.selectedIndex,[data.base.individuals[s2.value][1].first,data.base.individuals[s2.value][1].second,data.base.individuals[s2.value][1].gender,data.base.individuals[s2.value][1].pwd,data.base.individuals[s2.value][1].user?1:0,data.base.individuals[s2.value][1].ID],[fn1,sn1,g1,pwd1,s3,idemp])" >
+		<option *ngFor="let container of objectKeysFunction(data.base.individuals); let i = index" value="{{container}}">{{data.base.individuals[container][0]+" "+data.base.individuals[container][1].first+" "+data.base.individuals[container][1].second+"\n"+data.base.individuals[container][1].gender}}</option>
+	</select>
+	<label for = "ID">ID:</label>
+	<input type = "number" [(ngModel)] = "modelDic.ID" #idemp name = "ID" required ngModel>
+	<label for= "first" >Prénom:</label>
+	<input type = "text" #fn1  name="first" required ngModel>
+	<label for = "second" >Nom:</label>
+	<input type = "text" #sn1 name="second" required ngModel>
+	<label for = "gender" >Genre:</label>
+	<select name="gender" #g1 required ngModel>
+		<option value="Homme">Homme</option>
+		<option value="Femme">Femme</option>
+	</select>
+	<label for = "password" >Mot de passe:</label>
+	<input type = "password" #pwd1 name = "password" required ngModel>
+	<label for ="type1">Type de compte:</label>
+	<select #s3 name="type" id="type1" ngModel><option value ="1">Administrateur</option><option value="4">Utilisateur</option></select>
+	<label for = "imgname">Photo de profil:</label>
+	<input type = "file" name ="imgname" accept =".jpg,.jpeg,.png" (change)="fileUpload($event)" ngModel>
+	<button type="submit" >Soumettre</button>
+	<div name ="return" [ngStyle]= "{color: Color}" >{{responseString}}</div>
+	<!-- (mouseenter) = "ableInput(s1,s2,idemp,fn1,sn1,g1,pwd1,id2)" (mouseleave)="disableInput(s1,s2,idemp,fn1,sn1,g1,pwd1,id2)" -->
+	</div>
+</form>
+<form *ngIf="toggled" style ="overflow-x:auto;" #fTwo = "ngForm" (ngSubmit)="submitFunction(fTwo.value,fTwo)" ngNativeValidate>
+	<h1>Ajouter</h1>
+	<table *ngIf ="selectedID != '' && data.base.tables != undefined &&  data.base.tables[selectedID] != undefined && data.base.tables[selectedID].headers != undefined ">
+		<tr>
+			<th *ngFor = "let headerEntry of data.base.tables[selectedID].headers;let i=index" [ngClass]="i %2 ==0? 'even' : 'odd'" > {{headerEntry.name}} </th>
+			<th>Autre</th>
+		</tr>
+		<tr *ngFor = "let row of data.base.tables[selectedID].rows" >
+			<td *ngFor = "let rowValue of row" ><img *ngIf="rowValue.img" width="80px" height = "80px" src={{rowValue.value}}/>{{rowValue.img == false?rowValue.value:""}}</td>
+		</tr>
+		<tr *ngFor = "let row of onDisplay.elements;let b = index" > 
+			<td *ngFor="let headerEntry of data.base.tables[selectedID].headers;let i = index" >
+				{{type_correcter[headerEntry.type]}}
+				<input  *ngIf = "i < data.base.tables[selectedID].headers.length -6 && headerEntry.validate && !row.flipped" [appMngtype] = "headerEntry.type" name = {{headerEntry.name}}  [(ngModel)] ="row.values[i]"  required ngModel/>
+				<label *ngIf ="headerEntry.validate && row.flipped"> {{row.values[i]}} </label>
+				<input type ="headerEntry.type" *ngIf = "( i == data.base.tables[selectedID].headers.length -6 ) && headerEntry.validate && !row.flipped" name = {{headerEntry.name}} [(ngModel)] = "selectedID" disabled required ngModel>
+				<input type ="headerEntry.type" *ngIf = "( i == data.base.tables[selectedID].headers.length -5 ) && headerEntry.validate && !row.flipped" name = {{headerEntry.name}} [(ngModel)] = "data.userAuthentification.ID" disabled required ngModel>
+				<label *ngIf = "i == data.base.tables[selectedID].headers.length -4"> {{data.userAuthentification.Prenom}} </label>
+				<label *ngIf = "i == data.base.tables[selectedID].headers.length -3"> {{data.userAuthentification.Nom}} </label>
+				<label *ngIf = "i == data.base.tables[selectedID].headers.length -2"> {{data.userAuthentification.genre}} </label>
+				<img *ngIf = "i == data.base.tables[selectedID].headers.length -1" /> 
+			</td>
+			<td><button type ="submit" style = "margin-left:auto;margin-right:auto;" *ngIf = "!row.flipped" (mouseenter) = "flipOthers(b,true)" (mouseleave) = "flipOthers(b,false)"> Soumettre </button> <div [ngClass] = "row.class">{{row.responseString}}</div></td>
+		</tr>
+		<tr><td colspan= "*" style = "margin-left:auto;margin-right:auto;" ><td><button  (click) = "addUp(data.base.tables[selectedID].headers.length,selectedID,data.userAuthentification.ID)" >+</button></td></tr>
+	</table>
+</form>
+</div>
+</div>
+<!-- &&  numberReturn(s4.value) >= 0 -->
