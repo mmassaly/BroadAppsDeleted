@@ -90,6 +90,10 @@ insert into "DouDous correspondance" values ('1','1');
 "SELECT COLUMN_NAME, DATA_TYPE, IS_NULLABLE, COLUMN_DEFAULT,TABLE_NAME FROM INFORMATION_SCHEMA.COLUMNS where TABLE_NAME = $$"+tempResult[1].first[i]+"$$;\n"
 
 create table "DouDous'bases" (ID integer,Name varchar(255),PRIMARY KEY(ID,Name));
+drop table "DouDous'bases";
+create table "DouDous'bases" (ID serial PRIMARY KEY,Name varchar(255));
+insert into "DouDous'bases"(ID,Name)  values(DEFAULT,'Base plainte PAP');
+serial,bigserial
 
 ALTER table "DouDous'individuals" ALTER COLUMN IdIndividu SET DATA TYPE  integer;
 

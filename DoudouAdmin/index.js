@@ -8,11 +8,17 @@ var base = {individuals:{}, bytable:{},byId:{}};
 var connectedguys =
 [	
 ];
+var individuals_interest = []; 
 
 let callIndex = 0;
+var max = 0;
 add_all_users();
 let blob_stuff = "vercel_blob_rw_AhayNnM8BUTRk7li_Pirrs7p4aeFH5cnD9hONM9peBfDhxd";
-
+let data_type_converter = {'character varying':'text',date:'Date',text:'text',time:'Time',integer:'Integer',boolean:'Boolean',decimal:'Decimal','decimal(3,2)':'Decimal(3,2)','decimal(3,2)':'Decimal(4,2)','decimal(5,2)':'Decimal(5,2)','decimal(6,2)':'Decimal(6,2)'
+		,'decimal(7,2)':'Decimal(7,2)','decimal(8,2)':'Decimal(8,2)','decimal(9,2)':'Decimal(9,2)','decimal(9,2)':'Decimal(9,2)','decimal(10,2)':'Decimal(10,2)','decimal(11,2)':'Decimal(11,2)'
+		,'decimal(12,2)':'Decimal(12,2)','decimal(13,2)':'Decimal(13,2)','decimal(14,2)':'Decimal(14,2)','decimal(15,2)':'Decimal(15,2)','decimal(16,2)':'Decimal(16,2)'
+		,'decimal(17,2)':'Decimal(17,2)','decimal(18,2)':'Decimal(18,2)','decimal(19,2)':'Decimal(19,2)','decimal(20,2)':'Decimal(20,2)','decimal(21,2)':'Decimal(21,2)'};
+//msa-beesas		
 var server = http.createServer(function(req,res)
 {
 	console.log(req.method);
@@ -355,6 +361,7 @@ async function formidableFileUpload(req,path,res)
 				let valuesStr = "";
 				let values2Str = "";
 				let valuesDouble = "";
+				let pkvalues = "";
 				let count = 0;
 				let count2 = 0;
 				let table = "";
@@ -363,8 +370,93 @@ async function formidableFileUpload(req,path,res)
 				let elements_dic_other = {};
 				
 				console.log(fields);
-				
-				if(commandArg == "addrows")
+				if(commandArg == "addbase")
+				{
+					let tableId = undefined;
+					let prev = ""; let baseTable ="";
+					Object.keys(fields).forEach(key=>
+					{
+						if(key != commandArg && key != command && key != "table" && key != "userAuthentification"  && key !="command" && key != "newBaseName" && key != "cmdArg"
+						 && key != "authID"  && key != "authPrenom"  && key != "authNom"  && key !="authGenre"  && key !="authpass")
+						{
+							
+							let valueEq = "";
+							if(fields[key] instanceof Array)
+							{
+								valueEq = fields[key][0];
+							}
+							else
+								valueEq = fields[key];
+							
+							if(count > 0 && (count+1) % 2 == 0)
+							{
+								let obj ={};
+								obj["validate"] = true;								
+								obj["type"] = valueEq;
+								obj["name"] = prev;
+								elements_dic.push(obj);
+								valuesStr += " "+valueEq;
+							}
+							else
+							{
+								valuesStr += ((count>0)?",":"")+"\""+valueEq+"\"";
+								prev = valueEq;
+								if(count > 0)
+									pkvalues += ",";
+								pkvalues += "\""+valueEq+"\"";
+								
+							}
+							++count;
+							
+						} 
+						else
+						{
+							
+							let valueEq = "";
+							if(fields[key] instanceof Array)
+							{
+								valueEq = fields[key][0];
+							}
+							else
+								valueEq = fields[key];
+								
+							if( key == "table" )
+								table = valueEq;
+							if( key == "newBaseName" )
+							{
+								baseTable = valueEq;
+							}
+						}
+					});
+						
+						let obj ={};
+						obj["validate"] = true;								
+						obj["type"] = "Integer";
+						obj["name"] = "id";
+						elements_dic.push(obj);
+						
+						let queryStr = "create table \""+baseTable+"\" ("+valuesStr+",id integer,idindividu integer, Primary KEY("+pkvalues+",id,idindividu))\n;";
+						queryStr += "insert into \""+table+"\" values (DEFAULT,$$"+baseTable+"$$)";
+						console.log(queryStr);
+						let tempuserAuthentification = {ID:urlObject.authID[0],Prenom:urlObject.authPrenom[0],Nom:urlObject.authNom[0],genre:urlObject.authGenre[0],pass:urlObject.authpass[0]};
+						let tempResult = await forced_authentification_query(tempuserAuthentification,undefined);
+						//let tempResult = false;
+					
+						if(tempResult != false)
+						{
+							let result = await faire_un_simple_query(queryStr);
+							if(result.second != false || (result.second instanceof Array))
+							{
+								base.bytable[max++] = {name:baseTable,headers:Array.prototype.concat(elements_dic,individuals_interest),rows:[]};
+								goodResponse(res, {text:"Base ajoutée",customtext:"OK"});
+							}
+						}
+						else
+						{
+							dummyResponse(res,{text:"Ajout impossible",customtext:"Error"});
+						}
+				}
+				else if(commandArg == "addrows" || commandArg == "modifyrows")
 				{
 					let tableId = undefined;
 					Object.keys(fields).forEach(key=>
@@ -420,8 +512,8 @@ async function formidableFileUpload(req,path,res)
 						
 					});
 
-					valueStr = "insert into \"" + table + "\" values (" + valuesStr+" );\n";
-					console.log(valueStr);
+					let query = "insert into \"" + table + "\" values (" + valuesStr+" );\n";
+					console.log(query);
 					console.log(commandArg);
 					console.log(tableId);
 					console.log(fields);
@@ -434,7 +526,20 @@ async function formidableFileUpload(req,path,res)
 						if(tempResult != false && tableId != undefined)
 						{
 							let result = await add(table,valuesStr);
-							
+							console.log(typeof result.first == 'object');
+							if(!(result.second instanceof Array))
+							{
+								console.log(result.first);
+								if(result.first.code  == '23505')
+								{
+									goodResponse(res, {text:"Ajout passé",customtext:"OK"});
+								}
+								else
+								{
+									dummyResponse(res,{text:"Ajout impossible",customtext:"error"});
+								}	
+							} 
+							else
 							if(result.second != false || (result.second instanceof Array))
 							{
 									console.log("--------------------base-------------------------");
@@ -449,7 +554,7 @@ async function formidableFileUpload(req,path,res)
 									
 									if(base.byId[tempuserAuthentification.ID][tableId] == undefined)
 									{
-										base.byId[tempuserAuthentification.ID][tableId] = {name:base.bytable[tableId].name,headers:base.bytable[tableId].headers,rows:base.bytable[tableId].rows};
+										base.byId[tempuserAuthentification.ID][tableId] = {name:base.bytable[tableId].name,headers:base.bytable[tableId].headers,rows:JSON.parse(JSON.stringify(base.bytable[tableId].rows))};
 									}
 									
 									
@@ -464,7 +569,6 @@ async function formidableFileUpload(req,path,res)
 									console.log(tempuserAuthentification.ID);
 									console.log(base.individuals);
 									
-									
 									b = {value:base.individuals[tempuserAuthentification.ID].first,img:false};//.prenom
 									rows.push(b);
 									
@@ -477,21 +581,24 @@ async function formidableFileUpload(req,path,res)
 									a = {value:base.individuals[tempuserAuthentification.ID]["image"], img: true};//["image"]
 									rows.push(a);
 									
-									
 									base.bytable[tableId].rows.push(rows);
+									
+									console.log(base.bytable[tableId].rows.length+"--------------------------");
 									base.byId[tempuserAuthentification.ID][tableId].rows.push(rows);
+									
+									console.log(base.bytable[tableId].rows.length+"--------------------------");
 										
-									goodResponse(res, {text:"Ajout passé"});
+									goodResponse(res, {text:"Ajout passé",customtext:"OK"});
 									
 							}
 							else
 							{
-								dummyResponse(res,{text:"Ajout impossible"});
+								dummyResponse(res,{text:"Ajout impossible",customtext:"Error"});
 							}
 						}
 						else
 						{
-							dummyResponse(res,{text:"Vous n'avez pas l'accés"});
+							dummyResponse(res,{text:"Vous n'avez pas l'accés",customtext:"Error"});
 						}
 					}
 				}
@@ -564,14 +671,14 @@ async function formidableFileUpload(req,path,res)
 								}
 							}
 							
-							goodResponse(res, {text:"Liaison passée"});
+							goodResponse(res, {text:"Liaison passée",customtext:"OK"});
 						}
 						else
-							dummyResponse(res,{text:"Ajout impossible"});
+							dummyResponse(res,{text:"Ajout impossible",customtext:"Error"});
 					}
 					else
 					{
-						dummyResponse(res,{text:"Ajout impossible"});
+						dummyResponse(res,{text:"Ajout impossible",customtext:"Error"});
 					}
 				}
 				else if(commandArg == "addindividual")
@@ -695,26 +802,26 @@ async function formidableFileUpload(req,path,res)
 											}
 											
 										}
-										goodResponse(res, {text:"Ajout passé"});
+										goodResponse(res, {text:"Ajout passé",customtext:"OK"});
 								}
 								else
 								{
-									dummyResponse(res,{text:"Ajout impossible "});
+									dummyResponse(res,{text:"Ajout impossible ",customtext:"Error"});
 								}
 							}
 							else
 							{
-								dummyResponse(res,{text:"Vous n'avez pas l'accés"});
+								dummyResponse(res,{text:"Vous n'avez pas l'accés",customtext:"Error"});
 							}
 						}
 					}
 					else if(commandArg  == "del")
 					{
-						dummyResponse(res,{text:"Not yet implemented"});
+						dummyResponse(res,{text:"Not yet implemented",customtext:"Error"});
 					}
 					else
 					{
-						dummyResponse(res,{text:"Vous n'avez pas l'accés"});
+						dummyResponse(res,{text:"Vous n'avez pas l'accés",customtext:"Error"});
 					}
 				}
 			
@@ -930,80 +1037,96 @@ async function add_all_users()
 		let query = "SELECT  * FROM \"DouDous'individuals\";";
 		query += "SELECT  * FROM \"DouDous'bases\";\n";
 		query += "SELECT  * FROM \"DouDous'bases\" inner join \"DouDous correspondance\" on \"DouDous'bases\".id = \"DouDous correspondance\".idproject inner join \"DouDous'individuals\" on \"DouDous'individuals\".idindividu = \"DouDous correspondance\".idindividu;";
+		query += "SELECT Max(ID)+1 AS NEWID FROM \"DouDous'bases\"";
 		
 		let tempResult = await faire_un_simple_query(query);
+		max = tempResult[3].first[0][tempResult[3].second[0].name];
+		
 		let lastTempResult = tempResult;
 		for(let i = 0; i < tempResult[0].first.length; ++i)
 		{
-				console.log(tempResult[0].first[i]);
-				let addResult = addUser(tempResult[0].first[i].idindividu,tempResult[0].first[i]["prenom"],tempResult[0].first[i].nom,
-								tempResult[0].first[i].genre,tempResult[0].first[i].password
-								,tempResult[0].first[i].superadmin,tempResult[0].first[i].User);
-				base.individuals[tempResult[0].first[i].idindividu] = addResult;
-				base.individuals[tempResult[0].first[i].idindividu].image = tempResult[0].first[i].image;
+			console.log(tempResult[0].first[i]);
+			let addResult = addUser(tempResult[0].first[i].idindividu,tempResult[0].first[i]["prenom"],tempResult[0].first[i].nom,
+				tempResult[0].first[i].genre,tempResult[0].first[i].password
+				,tempResult[0].first[i].superadmin,tempResult[0].first[i].User);
+			base.individuals[tempResult[0].first[i].idindividu] = addResult;
+			base.individuals[tempResult[0].first[i].idindividu].image = tempResult[0].first[i].image;
 		}
 		
 		var holder = {};
 		let query_two =  "";
 		query = "";
 		
+		query += "SELECT COLUMN_NAME, DATA_TYPE, IS_NULLABLE, COLUMN_DEFAULT,TABLE_NAME FROM INFORMATION_SCHEMA.COLUMNS";
+		query += " where TABLE_NAME = $$DouDous'individuals$$ AND ( Column_name ='prenom'  OR Column_name ='nom' OR Column_name ='genre'"
+		query += " OR Column_name ='image' OR Column_name ='idindividu');"			
+		
 		for(let i = 0; i < tempResult[1].first.length; ++i)
 		{
 			query += "SELECT COLUMN_NAME, DATA_TYPE, IS_NULLABLE, COLUMN_DEFAULT,TABLE_NAME FROM INFORMATION_SCHEMA.COLUMNS where TABLE_NAME = $$"+tempResult[1].first[i]['name']+"$$;\n";
-			query += "SELECT COLUMN_NAME, DATA_TYPE, IS_NULLABLE, COLUMN_DEFAULT,TABLE_NAME FROM INFORMATION_SCHEMA.COLUMNS where TABLE_NAME = $$DouDous'individuals$$ AND ( Column_name ='prenom'  OR Column_name ='nom' OR Column_name ='genre' OR Column_name ='image' OR Column_name ='idindividu');"
 			base.bytable[tempResult[1].first[i]["id"]] = {name: tempResult[1].first[i]["name"],headers:[],rows:[]}; 
 			holder[tempResult[1].first[i]["name"]] = base.bytable[tempResult[1].first[i]["id"]] ;
 			query_two += "SELECT * FROM \""+tempResult[1].first[i]['name']+"\" inner join  (Select IDIndividu,Prenom,Nom,Genre,Image from \"DouDous'individuals\") as A  on A.IDIndividu = \""+tempResult[1].first[i]['name']+"\".IDIndividu;\n";
 		}
 		
+		console.log(query);
 		tempResult = await faire_un_simple_query(query);
-		if(tempResult.length > 0 )
-		{
-			if(tempResult[0].first.length > 0)
-			{
-				let table_name_temp = tempResult[0].first[0]["table_name"];
-				console.log("----------------------------------------------------------");
-				
-				console.log(tempResult[1].first.splice(0,1));
-				tempResult[1].first.forEach((el)=>
-				{
-					el["table_name"] = table_name_temp;
-					el["validate"] = false;
-					console.log(el);
-					tempResult[0].first.push(el);
-				});
-				
-				console.log(tempResult[0].second.splice(0,1));		
-				tempResult[1].second.forEach((el)=>
-				{
-					tempResult[0].second.push(el);
-				});
-				tempResult = tempResult[0];
-			}
-		}
+		console.log(tempResult.length);
 		
-		console.log(query);console.log(query_two);
+		tempResult[0].first.forEach((el)=>
+		{
+				let value = {};
+				value['validate'] = false;
+				value.type = data_type_converter[el. data_type];
+				value.name =  el. column_name;
+				individuals_interest.push(value);
+		});	
+		
+		console.log(tempResult[0].second.splice(0,1));		
+		console.log(tempResult[0].first.splice(0,1));
+		
+		for(let count = 1; count < tempResult.length; ++count)
+		{ 
+			
+			let table_name_temp = tempResult[count].first[0]["table_name"];
+			console.log("----------------------------------------------------------");
+			console.log(table_name_temp);
+			
+			tempResult[0].first.forEach((el)=>
+			{
+				el["table_name"] = table_name_temp;
+				el["validate"] = false;
+				console.log(el);
+				tempResult[count].first.push(el);
+			});
+					
+			tempResult[0].second.forEach((el)=>
+			{
+				tempResult[count].second.push(el);
+			});
+			
+			let something_storage = tempResult[count];
+			if( !(something_storage instanceof Array) )
+			{
+				something_storage = [something_storage];
+			}
+			
+			for(let i = 0; i < something_storage.length; ++i)
+			{
+				for(let j = 0; j < something_storage[i].first.length; ++j)
+				{
+					console.log(something_storage[i].first[j]["table_name"]);
+					//]console.log("inside....................."+tempResult[i].first[j]["table_name"]+" "+tempResult[i].first[j]["column_name"]);
+					holder[something_storage[i].first[j]["table_name"]].headers.push( {validate: (something_storage[i].first[j]["validate"] == undefined)?true:something_storage[i].first[j].validate , type: data_type_converter[something_storage[i].first[j]["data_type"]], name: something_storage[i].first[j]["column_name"]}) ; 	
+				}
+			}
+		
+		}
+		//console.log(max);
+		//console.log(query);console.log(query_two);
+		console.log(query_two);
 		let otherResult = await faire_un_simple_query(query_two);
-		console.log(tempResult);
 		
-		let data_type_converter = {'character varying':'text',date:'Date',text:'text',time:'Time',integer:'Integer',boolean:'Boolean',decimal:'Decimal','decimal(3,2)':'Decimal(3,2)','decimal(3,2)':'Decimal(4,2)','decimal(5,2)':'Decimal(5,2)','decimal(6,2)':'Decimal(6,2)'
-		,'decimal(7,2)':'Decimal(7,2)','decimal(8,2)':'Decimal(8,2)','decimal(9,2)':'Decimal(9,2)','decimal(9,2)':'Decimal(9,2)','decimal(10,2)':'Decimal(10,2)','decimal(11,2)':'Decimal(11,2)'
-		,'decimal(12,2)':'Decimal(12,2)','decimal(13,2)':'Decimal(13,2)','decimal(14,2)':'Decimal(14,2)','decimal(15,2)':'Decimal(15,2)','decimal(16,2)':'Decimal(16,2)'
-		,'decimal(17,2)':'Decimal(17,2)','decimal(18,2)':'Decimal(18,2)','decimal(19,2)':'Decimal(19,2)','decimal(20,2)':'Decimal(20,2)','decimal(21,2)':'Decimal(21,2)'};
-		
-		if( !(tempResult instanceof Array) )
-		{
-			tempResult = [tempResult];
-		}
-		
-		for(let i = 0; i < tempResult.length; ++i)
-		{
-			for(let j = 0; j < tempResult[i].first.length; ++j)
-			{
-				console.log("inside....................."+tempResult[i].first[j]["table_name"]+" "+tempResult[i].first[j]["column_name"]);
-				holder[tempResult[i].first[j]["table_name"]].headers.push( {validate: (tempResult[i].first[j]["validate"] == undefined)?true:tempResult[i].first[j].validate , type: data_type_converter[tempResult[i].first[j]["data_type"]], name: tempResult[i].first[j]["column_name"]}) ; 	
-			}
-		}
 		let filter = ["prenom","nom","id","genre"];
 		//console.log(otherResult);
 		if( !(otherResult instanceof Array) )
@@ -1017,8 +1140,9 @@ async function add_all_users()
 		
 		for(let i = 0; i < otherResult.length; ++i)
 		{
+			let copy = JSON.parse(JSON.stringify(base.bytable));
 			orderQueryResultByColumnForVisibility (otherResult[i],"id",undefined,"rows","image",undefined,base.bytable,undefined,[]);
-			orderQueryResultByColumnForVisibility (otherResult[i],"idindividu","id","rows","image",base.bytable,base.byId,["name","headers"],[]);
+			orderQueryResultByColumnForVisibility (otherResult[i],"idindividu","id","rows","image",copy,base.byId,["name","headers"],[]);
 		}
 		
 		
@@ -1039,8 +1163,8 @@ async function add_all_users()
 			}
 		}
 		
-		console.log(base.byId);
-		console.log(base.bytable);
+		//console.log(base.byId);
+		//console.log(base.bytable);
 		//console.log(connectedguys);
 }
 
