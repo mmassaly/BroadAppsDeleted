@@ -1,10 +1,13 @@
 <div>
 
 <label for ="rd1" *ngIf = "data.userAuthentification.superadmin" >Ajouter un employé</label>
-<input type ="radio" name ="wello" id="rd1" value = "false" (change) = "toggle()"  *ngIf = "data.userAuthentification.superadmin" checked>
-<label for ="rd2" >Base de donnée</label>
-<input type ="radio" name ="wello" id="rd2"  (change) = "toggle()" value = "true"  >
-
+<input type ="radio" name ="wello" id="rd1" (change)="toggle(c1?c1:true,false,false)" [checked] = "c1" *ngIf = "data.userAuthentification.superadmin" >
+<label for ="rd2" *ngIf = "data.userAuthentification.superadmin">Base de donnée</label>
+<input type ="radio" name ="wello" id="rd2" (change)="toggle(false,c2?c2:true,false)" *ngIf = "data.userAuthentification.superadmin" >
+<label for ="rd2" *ngIf = "!data.userAuthentification.superadmin" checked>Base de donnée</label>
+<input type ="radio" name ="wello" id="rd2" (change)="toggle(false,c2?c2:true,false)" [checked] = "!c2" *ngIf = "!data.userAuthentification.superadmin" >
+<label for ="rd3" *ngIf = "data.userAuthentification.superadmin" >Ajouter une nouvelle base</label>
+<input type ="radio" name ="wello" id="rd3" *ngIf = "data.userAuthentification.superadmin" (click)="toggle(false,false,c3?c3:true)">
 
 <div class = "leftshiftotoggleMenu">
 	<div *ngIf ="data.base.tables != undefined ">
@@ -17,7 +20,7 @@
 	</div>
 </div>
 <div  class="middlePage">
-<form *ngIf="!toggled && !data.userAuthentification.user" #fOne  ="ngForm" (ngSubmit)="submitFunction(fOne.value,fOne)" ngNativeValidate>
+<form *ngIf="c1 && !data.userAuthentification.user" #fOne  ="ngForm" (ngSubmit)="submitFunction(fOne.value,fOne,$event)" ngNativeValidate>
 	<h1>Formulaire d'ajout d'un nouvel employé</h1>
 	<button (click) = "clear([s1,s2,s3],[fn1,sn1,g1,s1,id2,pwd1,idemp])">Effacer</button><br><br>
 	<div class="formDivisionb">
@@ -53,32 +56,75 @@
 	<!-- (mouseenter) = "ableInput(s1,s2,idemp,fn1,sn1,g1,pwd1,id2)" (mouseleave)="disableInput(s1,s2,idemp,fn1,sn1,g1,pwd1,id2)" -->
 	</div>
 </form>
-<form *ngIf="toggled" style ="overflow-x:auto;" #fTwo = "ngForm" (ngSubmit)="submitFunction(fTwo.value,fTwo)" ngNativeValidate>
+<form *ngIf="c2" style ="overflow-x:auto;" #fTwo = "ngForm" (ngSubmit)="submitFunction(fTwo.value,fTwo,$event)" ngNativeValidate>
 	<h1>Ajouter</h1>
+	<select [(ngModel)] = "displayID" name ="idDisplayer">
+		<option value="all">Ensemble</option>
+		<option *ngFor="let container of objectKeysFunction(data.base.individuals); let i = index" value="{{data.base.individuals[container][0]}}">
+		{{data.base.individuals[container][0]+" "+data.base.individuals[container][1].first+" "+data.base.individuals[container][1].second+"\n"+data.base.individuals[container][1].gender}}
+		</option>	
+	</select>
 	<table *ngIf ="selectedID != '' && data.base.tables != undefined &&  data.base.tables[selectedID] != undefined && data.base.tables[selectedID].headers != undefined ">
 		<tr>
 			<th *ngFor = "let headerEntry of data.base.tables[selectedID].headers;let i=index" [ngClass]="i %2 ==0? 'even' : 'odd'" > {{headerEntry.name}} </th>
 			<th>Autre</th>
 		</tr>
-		<tr *ngFor = "let row of data.base.tables[selectedID].rows" >
-			<td *ngFor = "let rowValue of row" ><img *ngIf="rowValue.img" width="80px" height = "80px" src={{rowValue.value}}/>{{rowValue.img == false?rowValue.value:""}}</td>
-		</tr>
+		<ng-template ngFor let-row [ngForOf]= "data.base.tables[selectedID].rows"  let-i = index >
+			<tr *ngIf="row[row.length-6].value == displayID || displayID == 'all' ">
+				<td *ngFor = "let rowValue of row" ><img *ngIf="rowValue.img" width="80px" height = "80px" src={{rowValue.value}}/>{{rowValue.img == false?rowValue.value:""}}</td>
+			</tr>
+		</ng-template>
 		<tr *ngFor = "let row of onDisplay.elements;let b = index" > 
-			<td *ngFor="let headerEntry of data.base.tables[selectedID].headers;let i = index" >
+			<td  *ngFor="let headerEntry of data.base.tables[selectedID].headers;let i = index" >
 				{{type_correcter[headerEntry.type]}}
-				<input  *ngIf = "i < data.base.tables[selectedID].headers.length -6 && headerEntry.validate && !row.flipped" [appMngtype] = "headerEntry.type" name = {{headerEntry.name}}  [(ngModel)] ="row.values[i]"  required ngModel/>
+				<input  *ngIf = "i < data.base.tables[selectedID].headers.length -6 && headerEntry.validate && !row.flipped" [appMngtype] = "fixType(headerEntry.type)" name = "{{headerEntry.name+b+i}}"  [(ngModel)] ="row.values[i]"  required ngModel/>
 				<label *ngIf ="headerEntry.validate && row.flipped"> {{row.values[i]}} </label>
-				<input type ="headerEntry.type" *ngIf = "( i == data.base.tables[selectedID].headers.length -6 ) && headerEntry.validate && !row.flipped" name = {{headerEntry.name}} [(ngModel)] = "selectedID" disabled required ngModel>
-				<input type ="headerEntry.type" *ngIf = "( i == data.base.tables[selectedID].headers.length -5 ) && headerEntry.validate && !row.flipped" name = {{headerEntry.name}} [(ngModel)] = "data.userAuthentification.ID" disabled required ngModel>
+				<input type ="fixType(headerEntry.type)" *ngIf = "( i == data.base.tables[selectedID].headers.length -6 ) && headerEntry.validate && !row.flipped" name = "{{headerEntry.name +b+i}}" [(ngModel)] = "selectedID" disabled required ngModel>
+				<input type ="fixType(headerEntry.type)" *ngIf = "( i == data.base.tables[selectedID].headers.length -5 ) && headerEntry.validate && !row.flipped" name = "{{headerEntry.name+b+i}}" [(ngModel)] = "data.userAuthentification.ID" disabled required ngModel>
 				<label *ngIf = "i == data.base.tables[selectedID].headers.length -4"> {{data.userAuthentification.Prenom}} </label>
 				<label *ngIf = "i == data.base.tables[selectedID].headers.length -3"> {{data.userAuthentification.Nom}} </label>
 				<label *ngIf = "i == data.base.tables[selectedID].headers.length -2"> {{data.userAuthentification.genre}} </label>
 				<img *ngIf = "i == data.base.tables[selectedID].headers.length -1" /> 
 			</td>
-			<td><button type ="submit" style = "margin-left:auto;margin-right:auto;" *ngIf = "!row.flipped" (mouseenter) = "flipOthers(b,true)" (mouseleave) = "flipOthers(b,false)"> Soumettre </button> <div [ngClass] = "row.class">{{row.responseString}}</div></td>
+			<td><div [ngClass] ="row.submitting?'movingCircle':'none'"> </div><button type ="submit" [ngClass] ="row.submitting?'none':'submitbutton'" name ="{{'b'+b}}" style = "margin-left:auto;margin-right:auto;"  *ngIf = "!row.flipped" (mouseenter) = "flipOthers(b,true,row)" (mouseleave) = "flipOthers(b,false,row)"> Soumettre </button> <div [ngClass] = "row.class">{{row.responseString}}</div></td>
 		</tr>
 		<tr><td colspan= "*" style = "margin-left:auto;margin-right:auto;" ><td><button  (click) = "addUp(data.base.tables[selectedID].headers.length,selectedID,data.userAuthentification.ID)" >+</button></td></tr>
 	</table>
+</form>
+<form *ngIf="c3"  #fThree  ="ngForm" (ngSubmit)="submitFunction(fThree.value,fThree,$event)" ngNativeValidate>
+	<label for= "newBaseName" >Nom de la nouvelle base:</label>
+	<input type = "text" #pn1  name="newBaseName" required ngModel/>
+	<div *ngFor="let element of baseColumns;let i = index" style="margin-top:10px;">
+		<label for ="{{'column'+i}}" style="margin-right:45px;">Nom de la colone</label>
+		<input name="{{'column'+i}}" type="text"  required ngModel/>
+		<select name="{{'typeofColumn'+i}}" sstyle="margin-left:5px;" required ngModel>
+			<option value="text">
+				Texte
+			</option>
+			<option value="varchar(256)">
+				Chaîne de carractères
+			</option>
+			<option value ="integer">
+				Nombre entier
+			</option>
+			<option value="Decimal(22,3)">
+				Nombre Décimal (19 avant virgule 3 après)
+			</option>
+			<option value ="Boolean">
+				Vrai ou Faux
+			</option>
+			<option value="date">
+				Date
+			</option>
+			<option value="Time">
+				Heures
+			</option>
+		</select>
+	</div>
+	<div>{{c3data.responseString}}</div>
+	<div [ngClass] ="c3data.submitting?'movingCircle':'none'"> </div>
+	<button type = "submit" [ngClass] = "c3data.submitting?'none':'display'"  style="margin-bottom:40px;">Soumettre</button>
+	<button (click)="addBase()">+</button>
 </form>
 </div>
 </div>

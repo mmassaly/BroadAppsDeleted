@@ -1,8 +1,40 @@
+div.movingCircle
+{
+	border-width: 5px;
+	border-style: solid;
+    	min-width: 40px;
+	min-height: 40px;
+	max-width: 40px;
+	max-height: 40px;
+	border-color: greenyellow green greenyellow green;
+	/*border-image: linear-gradient(to right,greenyellow,green);
+	border-image-slice: 1%; sucks!*/
+	border-radius: 50%;
+	margin: auto;
+	margin-bottom: 10px;
+	animation: 5s linear 0s infinite rotateAnimation;
+}
+.none
+{
+	display:none;
+}
+
+@keyframes rotateAnimation 
+{
+	from {
+    		transform: rotate(0deg);
+  	}
+  	to {
+    		transform: rotate(360deg);
+  	}
+}
 th
 {
 	background-color: blue;
 	border-radius: 5px;
 	color:white;
+	min-width: 120px;
+	max-width: 160px;
 }
 table
 {
@@ -17,6 +49,7 @@ li:active
 li
 {
 	display: inline-block;
+	margin-left: 40px;
 }
 div.formDivisiona, div.formDivisionb, div.formDivisionc
 {

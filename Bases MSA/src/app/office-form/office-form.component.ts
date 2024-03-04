@@ -12,6 +12,7 @@ import {DataStorageService} from '../data-storage-service/data-storage.service';
 export class OfficeFormComponent 
 {
 	public notLinking:boolean = true;
+	public displayID:string = "all";
 	public fileupload:any = undefined;
 	public responseString:string ="";
 	public Color:string = "silver";
@@ -27,46 +28,28 @@ export class OfficeFormComponent
 	public objectKeysFunction: Function = Object.keys;
 	public type_correcter: any = {"text":"Texte","password":"Mot de passe","Integer":"Nombre entier","Date":"Date"};
 	public modelDic:any = {ID:"",baseID:""};
+	public rowHovered: any = undefined;
+	public newBase:boolean = false;
+	public baseColumns: any[] = [{value:"",index:0,submitting:false}];
+	public dicSubmittedOnDisplay:any = {}; 
+	public c1:boolean = true;
+	public c2:boolean = false;
+	public c3:boolean = false;
+	public c3data:any = {submitting:false,responseString:"",response:false};
 	
 	constructor(private httpservice: HttpService,public data: DataStorageService)
 	{
 		setInterval(()=>{console.log(data);console.log("Toggle "+this.toggled+"....")},2000);
 	}
 	
-	public submitFunction(formvalue:any,form:any):void
+	public submitFunction(formvalue:any,form:any,source:any):void
 	{
 		let addindividual = this.notLinking;
-		if(this.toggled)
-		{
-			let formdata = new FormData();
-			
-			for (const [key, value] of Object.entries(formvalue)) 
-			{
-				formdata.append(key as string,value as string);
-			}
-			
-			if(formdata.get("id") == undefined)
-			{
-				formdata.append("id",this.selectedID);
-			}
-			
-			if(formdata.get("idindividu") == undefined)
-			{
-				formdata.append("idindividu",this.data.userAuthentification.ID);
-			}
-			
-			
-			formdata.append("table",this.data.base.tables[this.selectedID].name);
-			formdata.append("command","update");
-			formdata.append("cmdArg","addrows");
-			formdata.append("authID",this.data.userAuthentification.ID);
-			formdata.append("authPrenom",this.data.userAuthentification.Prenom);
-			formdata.append("authNom",this.data.userAuthentification.Nom);
-			formdata.append("authGenre",this.data.userAuthentification.genre);
-			formdata.append("authpass",this.data.userAuthentification.pass);
-			this.getRequestCallBack(this.httpservice,formdata,this);
-		}
-		else if(!this.toggled)
+		let current_row_hovered = this.rowHovered;
+		current_row_hovered.submitting = true;
+		console.log(source);
+		
+		if(this.c1)
 		{
 			//console.log(formvalue);
 			
@@ -101,11 +84,66 @@ export class OfficeFormComponent
 			formdata.append("authGenre",this.data.userAuthentification.genre);
 			formdata.append("authpass",this.data.userAuthentification.pass);
 			console.log(formdata);
-			this.getRequestCallBack(this.httpservice,formdata,this);
+			this.getRequestCallBack(this.httpservice,formdata,this,current_row_hovered);
+		}
+		else if(this.c2)
+		{
+			let formdata = new FormData();
+			
+			for (const [key, value] of Object.entries(formvalue)) 
+			{
+				if( key != "idDisplayer" )
+					formdata.append(key as string,value as string);
+					
+				console.log(key);
+				console.log(value);
+			}
+			
+			if(formdata.get("id") == undefined)
+			{
+				formdata.append("id",this.selectedID);
+			}
+			
+			if(formdata.get("idindividu") == undefined)
+			{
+				formdata.append("idindividu",this.data.userAuthentification.ID);
+			}
+			
+			formdata.append("table",this.data.base.tables[this.selectedID].name);
+			formdata.append("command","update");
+			formdata.append("cmdArg","addrows");
+			formdata.append("authID",this.data.userAuthentification.ID);
+			formdata.append("authPrenom",this.data.userAuthentification.Prenom);
+			formdata.append("authNom",this.data.userAuthentification.Nom);
+			formdata.append("authGenre",this.data.userAuthentification.genre);
+			formdata.append("authpass",this.data.userAuthentification.pass);
+			console.log(this.dicSubmittedOnDisplay[source.submitter.name]);
+			this.dicSubmittedOnDisplay[source.submitter.name].submitting = true;
+			this.getRequestCallBack(this.httpservice,formdata,this,this.dicSubmittedOnDisplay[source.submitter.name]);
+		}
+		else if (this.c3)
+		{
+			let formdata = new FormData();
+			this.c3data.submitting = true;
+			
+			for (const [key, value] of Object.entries(formvalue)) 
+			{
+				formdata.append(key as string,value as string);
+			}
+			
+			formdata.append("table","DouDous'bases");
+			formdata.append("command","update");
+			formdata.append("cmdArg","addbase");
+			formdata.append("authID",this.data.userAuthentification.ID);
+			formdata.append("authPrenom",this.data.userAuthentification.Prenom);
+			formdata.append("authNom",this.data.userAuthentification.Nom);
+			formdata.append("authGenre",this.data.userAuthentification.genre);
+			formdata.append("authpass",this.data.userAuthentification.pass);
+			this.getRequestCallBack(this.httpservice,formdata,this,this.c3data);
 		}
 	}
 	
-	getRequestCallBack(ahttpservice:HttpService,formvalue:FormData,officefc:OfficeFormComponent)
+	getRequestCallBack(ahttpservice:HttpService,formvalue:FormData,officefc:OfficeFormComponent,current_row_hovered:any)
 	{
 		officefc.submissionRequests++;
 		console.log("Why are you so stubbordn..."+officefc.submissionRequests);
@@ -132,26 +170,26 @@ export class OfficeFormComponent
 						formvalue.append("Pos",response.Pos.toString());
 					}
 					
-						if(officefc.submissionRequests < 100)
+					if(officefc.submissionRequests < 100)
+					{
+						officefc.responseString = "Le serveur est entrain de charger.Veuillez patienter"+((officefc.submissionRequests<= 30)?".":((officefc.submissionRequests<=60)?"..":((officefc.submissionRequests>60)?"...":"")));
+						/*if(officefc.submissionRequests % 50 == 0)
 						{
-							officefc.responseString = "Le serveur est entrain de charger.Veuillez patienter"+((officefc.submissionRequests<= 30)?".":((officefc.submissionRequests<=60)?"..":((officefc.submissionRequests>60)?"...":"")));
-							/*if(officefc.submissionRequests % 50 == 0)
+							let d2:Date = new Date();
+							let d1:Date = new Date();
+							while(d1.getTime() - d2.getTime() < 50)
 							{
-								let d2:Date = new Date();
-								let d1:Date = new Date();
-								while(d1.getTime() - d2.getTime() < 50)
-								{
-									d1 = new Date();
-								}
-							}*/
-							setTimeout(officefc.getRequestCallBack,750,officefc.httpservice,formvalue,officefc);
-						}
-						else
-						{
-							officefc.submissionRequests = 0;
-							//aparent.loginToggle.responseString = "Erreur au niveau du serveur veuillez réessayer plus tard.";
-							officefc.responseString = "Erreur au niveau du serveur. Veuillez réessayer encore.";
-						}
+								d1 = new Date();
+							}
+						}*/
+						setTimeout(officefc.getRequestCallBack,750,officefc.httpservice,formvalue,officefc);
+					}
+					else
+					{
+						officefc.submissionRequests = 0;
+						//aparent.loginToggle.responseString = "Erreur au niveau du serveur veuillez réessayer plus tard.";
+						officefc.responseString = "Erreur au niveau du serveur. Veuillez réessayer encore.";
+					}	
 				}
 				else if(response.third)
 				{
@@ -167,7 +205,7 @@ export class OfficeFormComponent
 									d1 = new Date();
 								}
 							}
-							officefc.getRequestCallBack(officefc.httpservice,formvalue,officefc);
+							officefc.getRequestCallBack(officefc.httpservice,formvalue,officefc,current_row_hovered);
 						}
 						else
 						{
@@ -181,24 +219,61 @@ export class OfficeFormComponent
 					officefc.responseString = "ajout échoué. L'ID choisit existe déja";
 				}
 				else if(response.customtext == "OK")
-					officefc.responseString = "ajout passé.";
+				{
+					if(!current_row_hovered)
+						officefc.responseString = "ajout passé.";
+					else
+					{
+						current_row_hovered.responseString = "ajout passé";
+						current_row_hovered.submitting = false;
+					}
+				}
 				else
-					officefc.responseString = response.text as string;
+				{
+					if(!current_row_hovered)
+						officefc.responseString = response.text as string;
+					else
+					{
+						if( response.customtext == "Error" )
+						{
+							current_row_hovered.responseString = response.text;
+						}
+						current_row_hovered.submitting = false;
+					}
+				}
 			}catch(ex){}
 		},(responseValue:HttpErrorResponse)=>
 		{
 			console.log(responseValue);
 			if (responseValue.status == 500)
 			{
-				officefc.responseString = "ajout échoué. L'ID choisit existe déja";
+				if(!current_row_hovered)
+					officefc.responseString = "ajout échoué.";
+				else
+				{
+					current_row_hovered.responseString = "ajout échoué.";
+					current_row_hovered.submitting = false;
+				}
 			}
 			else if (responseValue.status == 504)
 			{
-				officefc.responseString = "ajout échoué.Le serveur est entrain de charger..";
+				if(!current_row_hovered)
+					officefc.responseString = "ajout échoué.Le serveur est entrain de charger..";
+				else
+				{	
+					current_row_hovered.responseString = "ajout échoué.Le serveur est entrain de charger..";
+					current_row_hovered.submitting = false;
+				}
 			}
 			else
 			{
-				officefc.responseString = "ajout échoué. Il y a un problème de connection.";
+				if(!current_row_hovered)
+					officefc.responseString = "ajout échoué. Il y a un problème de connection.";
+				else
+				{
+					current_row_hovered.responseString = "ajout échoué. Il y a un problème de connection.";					
+					current_row_hovered.submitting = false;
+				}
 			}
 		});
 	}
@@ -303,9 +378,10 @@ export class OfficeFormComponent
 		{
 			this.onDisplay = {indexofSelection: 0, elements:[]}
 		}
-		
-		this.onDisplay.elements.push({values:values,responseString:"",class:"notdisplayed",done:false,index:this.onDisplay.elements.length,flipped:false});
+		let object_value:any = {values:values,responseString:"",class:"notdisplayed",done:false,index:this.onDisplay.elements.length,flipped:false,submitting:false};
+		this.onDisplay.elements.push(object_value);
 		this.onDisplay.indexofSelection = this.onDisplay.elements.length-1; 	
+		this.dicSubmittedOnDisplay["b"+(this.onDisplay.elements.length-1)] = object_value;
 	}
 	
 	deleteElement(givenindex:number)
@@ -343,14 +419,23 @@ export class OfficeFormComponent
 		this.selectedID  = key;
 	}
 	
-	toggle()
+	toggle(value1:boolean,value2:boolean,value3:boolean)
 	{
 		this.toggled = !this.toggled;
+		this.c1 = value1;
+		this.c2 = value2;
+		this.c3 = value3;
 	}
 	
-	flipOthers(indexPassed:number,flip:boolean)
+	flipOthers(indexPassed:number,flip:boolean,rowHovered:any)
 	{
 		console.log(indexPassed+"-----------------");
+		if(flip)
+		{
+			this.rowHovered = rowHovered;
+		}
+		
+		
 		this.onDisplay.elements.forEach((element,index)=>
 		{
 			console.log(index);
@@ -452,6 +537,27 @@ export class OfficeFormComponent
 		if(s2.selectedIndex != -1)
 		element2.disabled = true;
 	}
+	
+	reduceRowOfValuesbydisplayID(rowValuesArray:any[]):boolean
+	{
+		console.log(rowValuesArray);
+		return rowValuesArray.reduce((acc:boolean,curr:any)=> acc = acc || (curr.value == this.displayID || this.displayID == 'all'),false);
+	}
+	
+	addBase():void
+	{
+		let current_length = this.baseColumns.length;
+		let object_value = {value:"",index:this.baseColumns.length+1,submitting:false};
+		this.baseColumns.push(object_value);
+	}
+	
+	fixType(type:string):string
+	{
+		if(type == "Integer")
+		return "number"
+		
+		return type;
+	}
 }
 
 interface responsa 
@@ -472,6 +578,7 @@ interface rowInterface
 	done: boolean;
 	index: number;
 	flipped:boolean;
+	submitting:boolean;
 }
 
 interface AllRowsContainer
