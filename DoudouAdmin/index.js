@@ -1452,7 +1452,7 @@ function dummyResponseSimple(res)
 		res.write(JSON.stringify(
 		{
 			error: true,
-			desc: "Mauvaise combinaison ENTRE LE MOT DE PASSE ET DE L'IDENTIFICATION."
+			desc: "Mauvaise combinaison ENTRE LE MOT DE PASSE ET L'IDENTIFICATION."
 		}
 	));
 	res.end();
