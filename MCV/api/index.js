@@ -4029,10 +4029,14 @@
 							
 							if(empdaily.ID != ID)
 							{
-								dayContent.vacances--;
+								/* dayContent.vacanes--;
 								weekContent.vacances--;
 								monthContent.vacances--;
-								yearContentElement.vacances--;
+								yearContentElement.vacances--; */
+								dayContent.vacations--;
+								weekContent.vacations--;
+								monthContent.vacations--;
+								yearContentElement.vacations--;
 								tempDeleteStack.push(empdaily);
 							}
 						}
