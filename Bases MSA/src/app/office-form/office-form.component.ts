@@ -14,6 +14,7 @@ export class OfficeFormComponent
 	public notLinking:boolean = true;
 	public displayID:string = "all";
 	public fileupload:any = undefined;
+	public fileupload2:any = undefined;
 	public responseString:string ="";
 	public Color:string = "silver";
 	public submissionRequests:number = 0;
@@ -45,8 +46,6 @@ export class OfficeFormComponent
 	public submitFunction(formvalue:any,form:any,source:any):void
 	{
 		let addindividual = this.notLinking;
-		let current_row_hovered = this.rowHovered;
-		current_row_hovered.submitting = true;
 		console.log(source);
 		
 		if(this.c1)
@@ -62,6 +61,7 @@ export class OfficeFormComponent
 					{
 						formdata.append("imgfile",this.fileupload,this.fileupload.name);
 						formdata.append("imagename","assets/images/"+this.fileupload.name);
+						console.log(value);
 					}
 					else if( key == "type" )
 					{
@@ -83,8 +83,9 @@ export class OfficeFormComponent
 			formdata.append("authNom",this.data.userAuthentification.Nom);
 			formdata.append("authGenre",this.data.userAuthentification.genre);
 			formdata.append("authpass",this.data.userAuthentification.pass);
-			console.log(formdata);
-			this.getRequestCallBack(this.httpservice,formdata,this,current_row_hovered);
+			
+			console.log(formvalue);
+			//this.getRequestCallBack(this.httpservice,formdata,this,current_row_hovered);
 		}
 		else if(this.c2)
 		{
@@ -94,7 +95,7 @@ export class OfficeFormComponent
 			{
 				if( key != "idDisplayer" )
 					formdata.append(key as string,value as string);
-					
+				
 				console.log(key);
 				console.log(value);
 			}
@@ -128,7 +129,13 @@ export class OfficeFormComponent
 			
 			for (const [key, value] of Object.entries(formvalue)) 
 			{
-				formdata.append(key as string,value as string);
+				if(key == "imgname" && this.fileupload2 != undefined)
+				{
+					formdata.append("imgfile",this.fileupload2,this.fileupload2.name);
+					formdata.append("imagename","assets/images/"+this.fileupload2.name);
+				}
+				else 
+					formdata.append(key as string,value as string);
 			}
 			
 			formdata.append("table","DouDous'bases");
@@ -281,6 +288,11 @@ export class OfficeFormComponent
 	fileUpload(eventArgs:any):void
 	{
 		this.fileupload = eventArgs.target.files[0];
+	}
+	
+	fileUpload2(eventArgs:any):void
+	{
+		this.fileupload2 = eventArgs.target.files[0];
 	}
 	
 	selectValueChanged (value:HTMLSelectElement,value2:HTMLInputElement) : void

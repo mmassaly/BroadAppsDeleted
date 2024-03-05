@@ -14,7 +14,7 @@ export class HttpService {
   //urlport:string = "http://192.168.0.106:3034";
   //urlport:string = "http://localhost:3034";
   //urlport:string = "http://localhost:3008";
-	urlport:string ="https://broadappsdeleted.onrender.com"
+  urlport:string ="https://broadappsdeleted.onrender.com"
 
   request(url:string)
   {

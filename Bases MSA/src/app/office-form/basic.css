@@ -6,6 +6,11 @@ li:hover
 	cursor:pointer;	
 }
 
+li:hover li 
+{
+	display:inline-block;
+}
+
 @media-screen (max-width: 800px)
 {
 	.leftshiftotoggleMenu

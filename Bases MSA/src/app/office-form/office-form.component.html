@@ -2,11 +2,11 @@
 
 <label for ="rd1" *ngIf = "data.userAuthentification.superadmin" >Ajouter un employé</label>
 <input type ="radio" name ="wello" id="rd1" (change)="toggle(c1?c1:true,false,false)" [checked] = "c1" *ngIf = "data.userAuthentification.superadmin" >
-<label for ="rd2" *ngIf = "data.userAuthentification.superadmin">Base de donnée</label>
+<label for ="rd2" *ngIf = "data.userAuthentification.superadmin" style="margin-left:5px" >Base de donnée</label>
 <input type ="radio" name ="wello" id="rd2" (change)="toggle(false,c2?c2:true,false)" *ngIf = "data.userAuthentification.superadmin" >
-<label for ="rd2" *ngIf = "!data.userAuthentification.superadmin" checked>Base de donnée</label>
+<label for ="rd2" *ngIf = "!data.userAuthentification.superadmin" style="margin-left:5px" checked>Base de donnée</label>
 <input type ="radio" name ="wello" id="rd2" (change)="toggle(false,c2?c2:true,false)" [checked] = "!c2" *ngIf = "!data.userAuthentification.superadmin" >
-<label for ="rd3" *ngIf = "data.userAuthentification.superadmin" >Ajouter une nouvelle base</label>
+<label for ="rd3" *ngIf = "data.userAuthentification.superadmin" style="margin-left:5px" >Ajouter une nouvelle base</label>
 <input type ="radio" name ="wello" id="rd3" *ngIf = "data.userAuthentification.superadmin" (click)="toggle(false,false,c3?c3:true)">
 
 <div class = "leftshiftotoggleMenu">
@@ -14,6 +14,7 @@
 		<h1>Liste des bases</h1>
 		<ul>
 			<li *ngFor ="let key of objectKeysFunction(data.base.tables)" (click) = "setSelectedID(key)" >
+				<label style="display:none">{{key+" "}} </label>
 				{{data.base.tables[key]?.name}}
 			</li>
 		</ul>
@@ -50,14 +51,16 @@
 	<label for ="type1">Type de compte:</label>
 	<select #s3 name="type" id="type1" ngModel><option value ="1">Administrateur</option><option value="4">Utilisateur</option></select>
 	<label for = "imgname">Photo de profil:</label>
-	<input type = "file" name ="imgname" accept =".jpg,.jpeg,.png" (change)="fileUpload($event)" ngModel>
+	<input type = "file" name ="imgname" accept =".jpg,.jpeg,.png,.ico" (change)="fileUpload($event)" ngModel>
 	<button type="submit" >Soumettre</button>
 	<div name ="return" [ngStyle]= "{color: Color}" >{{responseString}}</div>
 	<!-- (mouseenter) = "ableInput(s1,s2,idemp,fn1,sn1,g1,pwd1,id2)" (mouseleave)="disableInput(s1,s2,idemp,fn1,sn1,g1,pwd1,id2)" -->
 	</div>
 </form>
 <form *ngIf="c2" style ="overflow-x:auto;" #fTwo = "ngForm" (ngSubmit)="submitFunction(fTwo.value,fTwo,$event)" ngNativeValidate>
-	<h1>Ajouter</h1>
+	<img width="80px" height = "80px" style="position:fixed;" *ngIf ="selectedID != '' && data.base.tables != undefined &&  data.base.tables[selectedID] != undefined && data.base.tables[selectedID].headers != undefined && data.base.tables[selectedID].image_url != undefined" src={{data.base.tables[selectedID].image_url}}/>
+	<h1 style="margin-top:80px" *ngIf ="selectedID != '' && data.base.tables != undefined &&  data.base.tables[selectedID] != undefined && data.base.tables[selectedID].headers != undefined && data.base.tables[selectedID].image_url != undefined">Ajouter</h1>
+	<h1 *ngIf ="selectedID == '' && data.base.tables == undefined ||  data.base.tables[selectedID] == undefined || data.base.tables[selectedID].headers == undefined || data.base.tables[selectedID].image_url == undefined">Ajouter</h1>
 	<select [(ngModel)] = "displayID" name ="idDisplayer">
 		<option value="all">Ensemble</option>
 		<option *ngFor="let container of objectKeysFunction(data.base.individuals); let i = index" value="{{data.base.individuals[container][0]}}">
@@ -92,12 +95,12 @@
 	</table>
 </form>
 <form *ngIf="c3"  #fThree  ="ngForm" (ngSubmit)="submitFunction(fThree.value,fThree,$event)" ngNativeValidate>
-	<label for= "newBaseName" >Nom de la nouvelle base:</label>
-	<input type = "text" #pn1  name="newBaseName" required ngModel/>
+	<label for= "newBaseName"  >Nom de la nouvelle base:</label>
+	<input type = "text"  #pn1  name="newBaseName" required ngModel/>
 	<div *ngFor="let element of baseColumns;let i = index" style="margin-top:10px;">
-		<label for ="{{'column'+i}}" style="margin-right:45px;">Nom de la colone</label>
+		<label for ="{{'column'+i}}" style="margin-right:45px;">Nom de la colone:</label>
 		<input name="{{'column'+i}}" type="text"  required ngModel/>
-		<select name="{{'typeofColumn'+i}}" sstyle="margin-left:5px;" required ngModel>
+		<select name="{{'typeofColumn'+i}}" style="margin-left:5px;" required ngModel>
 			<option value="text">
 				Texte
 			</option>
@@ -121,6 +124,8 @@
 			</option>
 		</select>
 	</div>
+	<label for = "imgname" style="margin-right:45px;margin-top:10px;">Icone de la base:</label>
+	<input type = "file" name ="imgname" accept = ".jpg,.jpeg,.png,.ico" (change)="fileUpload2($event)" ngModel>	
 	<div>{{c3data.responseString}}</div>
 	<div [ngClass] ="c3data.submitting?'movingCircle':'none'"> </div>
 	<button type = "submit" [ngClass] = "c3data.submitting?'none':'display'"  style="margin-bottom:40px;">Soumettre</button>

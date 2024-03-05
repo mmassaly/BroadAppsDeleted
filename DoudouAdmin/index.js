@@ -329,27 +329,7 @@ async function formidableFileUpload(req,path,res)
 			
 			if(filesDup.imgfile instanceof Array)
 				filesDup = filesDup.imgfile[0];
-			if( filesDup != undefined && filesDup.imgfile != undefined || ( filesDup.originalFilename != undefined) )
-			{
-				console.log("inside file reading");
-				//console.log(fs.readFileSync(filesDup.filepath));
-				try
-				{			
-					//not decodeURI for the originalFilename risk taken even if percentages are introduced however urls must be processed
-					const blob = await vercelBlob.put("assets/images/doudousindividuals/profile-pictures/"+decodeURI(filesDup.originalFilename),fs.readFileSync(filesDup.filepath),{
-						access: 'public',
-						contentType: filesDup.mimetype, 
-						token: blob_stuff
-					});
-									
-					image_url = decodeURI(blob.url);
-				}
-				catch(ex)
-				{
-					console.log(ex);
-					image_url = undefined;
-				}
-			}
+			
 			
 			console.log(command);
 			
@@ -372,12 +352,34 @@ async function formidableFileUpload(req,path,res)
 				console.log(fields);
 				if(commandArg == "addbase")
 				{
+					if( filesDup != undefined && filesDup.imgfile != undefined || ( filesDup.originalFilename != undefined) )
+					{
+						console.log("inside file reading");
+						//console.log(fs.readFileSync(filesDup.filepath));
+						try
+						{			
+							//not decodeURI for the originalFilename risk taken even if percentages are introduced however urls must be processed
+							const blob = await vercelBlob.put("assets/images/doudousbases/base-icon/"+decodeURI(filesDup.originalFilename),fs.readFileSync(filesDup.filepath),{
+								access: 'public',
+								contentType: filesDup.mimetype, 
+								token: blob_stuff
+							});
+											
+							image_url = decodeURI(blob.url);
+						}
+						catch(ex)
+						{
+							console.log(ex);
+							image_url = null;
+						}
+					}
+					
 					let tableId = undefined;
 					let prev = ""; let baseTable ="";
 					Object.keys(fields).forEach(key=>
 					{
 						if(key != commandArg && key != command && key != "table" && key != "userAuthentification"  && key !="command" && key != "newBaseName" && key != "cmdArg"
-						 && key != "authID"  && key != "authPrenom"  && key != "authNom"  && key !="authGenre"  && key !="authpass")
+						 && key != "authID"  && key != "authPrenom"  && key != "authNom"  && key !="authGenre"  && key !="authpass" && key != "imgfile" && key != "imagename" && key != "imgname")
 						{
 							
 							let valueEq = "";
@@ -436,7 +438,7 @@ async function formidableFileUpload(req,path,res)
 						elements_dic.push(obj);
 						
 						let queryStr = "create table \""+baseTable+"\" ("+valuesStr+",id integer,idindividu integer, Primary KEY("+pkvalues+",id,idindividu))\n;";
-						queryStr += "insert into \""+table+"\" values (DEFAULT,$$"+baseTable+"$$)";
+						queryStr += "insert into \""+table+"\" values (DEFAULT,$$"+baseTable+"$$,$$"+image_url+"$$);";
 						console.log(queryStr);
 						let tempuserAuthentification = {ID:urlObject.authID[0],Prenom:urlObject.authPrenom[0],Nom:urlObject.authNom[0],genre:urlObject.authGenre[0],pass:urlObject.authpass[0]};
 						let tempResult = await forced_authentification_query(tempuserAuthentification,undefined);
@@ -447,8 +449,12 @@ async function formidableFileUpload(req,path,res)
 							let result = await faire_un_simple_query(queryStr);
 							if(result.second != false || (result.second instanceof Array))
 							{
-								base.bytable[max++] = {name:baseTable,headers:Array.prototype.concat(elements_dic,individuals_interest),rows:[]};
+								base.bytable[max++] = {name:baseTable,headers:Array.prototype.concat(elements_dic,individuals_interest),rows:[],image_url:image_url};
 								goodResponse(res, {text:"Base ajoutée",customtext:"OK"});
+							}
+							else
+							{
+								dummyResponse(res,{text:result.first,customtext:"Error"});
 							}
 						}
 						else
@@ -604,6 +610,7 @@ async function formidableFileUpload(req,path,res)
 				}
 				else if(commandArg == "linkindividualtobase")
 				{
+					
 					Object.keys(fields).forEach(key=>
 					{
 						if(key != commandArg && (key == "ID" || key == "baseID") && key != "userAuthentification" && key != "table2"  && key !="command"  && key != "cmdArg"
@@ -685,6 +692,29 @@ async function formidableFileUpload(req,path,res)
 				{
 					let valueOne = "";
 					let valueTwo = "";
+					
+					if( filesDup != undefined && filesDup.imgfile != undefined || ( filesDup.originalFilename != undefined) )
+					{
+						console.log("inside file reading");
+						//console.log(fs.readFileSync(filesDup.filepath));
+						try
+						{			
+							//not decodeURI for the originalFilename risk taken even if percentages are introduced however urls must be processed
+							const blob = await vercelBlob.put("assets/images/doudousindividuals/profile-pictures/"+decodeURI(filesDup.originalFilename),fs.readFileSync(filesDup.filepath),{
+								access: 'public',
+								contentType: filesDup.mimetype, 
+								token: blob_stuff
+							});
+											
+							image_url = decodeURI(blob.url);
+						}
+						catch(ex)
+						{
+							console.log(ex);
+							image_url = undefined;
+						}
+					}
+					
 					Object.keys(fields).forEach(key=>
 					{
 							if(key != "table"  && key != "table2" && key != "userAuthentification" && key != "table2"  && key !="command"  && key != "cmdArg"
@@ -785,7 +815,6 @@ async function formidableFileUpload(req,path,res)
 											"gender":elements_dic_other["gender"],"pwd":elements_dic_other["password"],
 											"superadmin":elements_dic_other["type1"],"user":elements_dic_other["type2"]};
 											
-							
 											if( base.byId[elements_dic_other["ID"]] == undefined) 
 											{
 												base.byId[elements_dic_other["ID"]] = {};
@@ -1034,7 +1063,7 @@ async function faire_un_simple_query(queryString)
 
 async function add_all_users()
 {
-		let query = "SELECT  * FROM \"DouDous'individuals\";";
+		let query = "SELECT  * FROM \"DouDous'individuals\";\n";
 		query += "SELECT  * FROM \"DouDous'bases\";\n";
 		query += "SELECT  * FROM \"DouDous'bases\" inner join \"DouDous correspondance\" on \"DouDous'bases\".id = \"DouDous correspondance\".idproject inner join \"DouDous'individuals\" on \"DouDous'individuals\".idindividu = \"DouDous correspondance\".idindividu;";
 		query += "SELECT Max(ID)+1 AS NEWID FROM \"DouDous'bases\"";
@@ -1066,6 +1095,11 @@ async function add_all_users()
 			query += "SELECT COLUMN_NAME, DATA_TYPE, IS_NULLABLE, COLUMN_DEFAULT,TABLE_NAME FROM INFORMATION_SCHEMA.COLUMNS where TABLE_NAME = $$"+tempResult[1].first[i]['name']+"$$;\n";
 			base.bytable[tempResult[1].first[i]["id"]] = {name: tempResult[1].first[i]["name"],headers:[],rows:[]}; 
 			holder[tempResult[1].first[i]["name"]] = base.bytable[tempResult[1].first[i]["id"]] ;
+			let arrayFiltered = lastTempResult[1].first.filter((elem)=> elem.id == tempResult[1].first[i]["id"]);
+			if(arrayFiltered.length > 0)
+			{
+				base.bytable[tempResult[1].first[i]["id"]]["image_url"] = arrayFiltered[0]["image_url"];
+			}
 			query_two += "SELECT * FROM \""+tempResult[1].first[i]['name']+"\" inner join  (Select IDIndividu,Prenom,Nom,Genre,Image from \"DouDous'individuals\") as A  on A.IDIndividu = \""+tempResult[1].first[i]['name']+"\".IDIndividu;\n";
 		}
 		
@@ -1087,7 +1121,6 @@ async function add_all_users()
 		
 		for(let count = 1; count < tempResult.length; ++count)
 		{ 
-			
 			let table_name_temp = tempResult[count].first[0]["table_name"];
 			console.log("----------------------------------------------------------");
 			console.log(table_name_temp);
@@ -1418,10 +1451,8 @@ function dummyResponseSimple(res)
 		});
 		res.write(JSON.stringify(
 		{
-			XLength : 0,
-			YLength : 0,
 			error: true,
-			desc: "wrong credentials for such request"
+			desc: "Mauvaise combinaison ENTRE LE MOT DE PASSE ET DE L'IDENTIFICATION."
 		}
 	));
 	res.end();

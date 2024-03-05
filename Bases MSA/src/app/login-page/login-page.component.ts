@@ -136,6 +136,7 @@ export class LoginPageComponent
 		}
 		,(error) =>
 		{
+			aparent.responseText = error.error.desc;
 			console.log(error);
 		});
 		else
