@@ -4,8 +4,8 @@
 	var formidable = require('formidable');
 	var fs = require('fs');
 	var vercelBlob = require("@vercel/blob");
-	var {GlobalsForcedFolding} = require('./Extra.js');	
-	var {ImageFilesContainer} = require('./queryTests.js');
+	var {GlobalsForcedFolding} = require('./api/Extra.js');	
+	var {ImageFilesContainer} = require('./api/queryTests.js');
 	var kvPackage = require('@vercel/kv');
 	let globalForcedFoldingPrime = undefined;
 	let imageDictionary = new ImageFilesContainer();
@@ -13,10 +13,6 @@
 	let precedentDate = new Date(Date.now());
 	let todaysDate = new Date(Date.now());
 	let primaryObject = undefined;
-	var dataBaseData = 
-	{
-		logins: {first:[], second:[]}
-	};
 	let baseInit = false;
 	let schema = "";
 	let current= todaysDate;
@@ -60,12 +56,7 @@
 			setTimeout(
 				async function()
 				{	
-							let length = -1
-							try
-							{
-								length = await kvUser.get("primaryObjectsLength");	
-							}
-							catch(ex){}
+							let length = await kvUser.get("primaryObjectsLength");	
 							console.log("PrimaryObject in KV's length is "+length);
 							if(length  == -1 || length  == undefined || length  == -1)
 							{
@@ -479,7 +470,7 @@
 									let resultc = resultb;
 									urlObject.date = new Date(urlObject.date);
 									await kvUser.set("primaryObjectsLength",-1);
-									await insertEntryandExitIntoEmployees(userAuthentification.ID,urlObject.date,urlObject.start,urlObject.end,urlObject,resultb);	
+									await insertEntryandExitIntoEmployees(userAuthentification.ID,urlObject.date,urlObject.start,urlObject.end,urlObject,resultb)	
 									resultc.writeHeader(200,{"Content-Type": "application/json"});
 									resultc.write(JSON.stringify({OK:200}));
 									resultc.end();
@@ -860,8 +851,6 @@
 	
 	function whileFunction(startingTag)
 	{
-		console.log("While function started");
-					
 		try
 		{
 			server.listen(3034)
@@ -871,7 +860,6 @@
 				var func = async()=>
 				{
 					let length = -1;
-					let length2 = -1;
 					let length_count = 0;
 					let errorBoolean = false;
 					
@@ -880,7 +868,6 @@
 						try
 						{
 							length = await kvUser.get("primaryObjectsLength");
-							length2 = await kvUser.get("dataBaseDataLength");
 							errorBoolean = false;							
 						}
 						catch(err)
@@ -891,58 +878,42 @@
 					}while(errorBoolean && length_count <= 2);
 					
 					console.log("PrimaryObject in KV's length is "+length);
-					console.log(primaryObject);
-							if(length  == -1 || length  == undefined || length2 == -1 || length2  == undefined || errorBoolean)
+							if(length  == -1 || length  == undefined)
 							{		
 								await getDataForAdminFiveArgs();
 							}
 							else
 							{
-								let allAddedUp = ["",""];
+								let allAddedUp = "";
 								let done = true;
 									
 									let problem = false;
 									let startDate = new Date();
-									let names = ["primaryObjects","dataBaseData"];
-									let lengths = [length,length2];
-									
-									for(let index = 0; index < names.length && !problem; ++index)
+									for(let count = 0; count < length && !problem; ++count)
 									{
-										console.log("Index"+index);
-										console.log("Length"+lengths[index]);
-										for(let count = 0; count < lengths[index] && !problem; ++count)
+										let tryCount = 0;
+										do 
 										{
-											console.log("Count"+count);
-											let tryCount = 0;
-											do 
+											++tryCount;
+											try 
 											{
-												++tryCount;
-												try 
-												{
-													console.log(names[index]+count);
-													let strElement = await kvUser.get(names[index]+count);
-													allAddedUp[index] += strElement;
-													problem = false;
-												}catch(err)
-												{
-													problem = true;
-													console.log(err);
-													allAddedUp[index] = "";
-												}
+												let strElement = await kvUser.get("primaryObjects"+count);
+												allAddedUp += strElement;
+												problem = false;
+											}catch(err)
+											{
+												problem = true;
 											}
-											while(problem && tryCount < 2);
 										}
+										while(problem && tryCount < 2);
 									}
 									
 									if(problem == false)
 									{
 										try
 										{
-											dataBaseData = JSON.parse(allAddedUp[1]);
-											console.log(dataBaseData);
-											primaryObject = JSON.parse(allAddedUp[0]);
-											
-											let endDate = new Date();
+											primaryObject = JSON.parse(allAddedUp);
+											let endDate = new Date()
 											console.log("primaryObject has been successfully initialized...after"+((endDate-startDate)/1000)+" seconds" );
 											try
 											{
@@ -957,14 +928,12 @@
 												primarydate.getFullYear() != (new Date()).getFullYear() )
 												{
 													primaryObject = undefined;
-													dataBaseData = {};
 													await getDataForAdminFiveArgs();	
 												}
 											}catch(err)
 											{
 												console.log(err);
 												primaryObject = undefined;
-												dataBaseData = {};
 												await getDataForAdminFiveArgs();
 											}
 										}
@@ -973,7 +942,6 @@
 											console.log(err.message.substring(0,1000));
 											problem = true;
 											primaryObject = undefined;
-											dataBaseData = {};
 										}
 										console.log(primaryObject);
 									}
@@ -1036,47 +1004,6 @@
 		{
 			dummyResponseSimple(res);
 			return;
-		}
-		else
-		{
-				let data = dataBaseData[empHoursObj.officeID][date.getFullYear()].threeResults[3];
-				let filteredData = FilterElementNotFoundFunction(FilterElementNotFoundFunction(FilterDateNotFoudFunction(data,"date",date.getDate()+"-"+(date.getMonth()+1)+"-"+date.getFullYear()),"ID",ID),"Entrées",startTime);
-				if(filteredData.first.length > 0)
-				{
-					filteredData.first[0][filteredData.second[3]] = endTime;
-				}
-				else
-				{
-					data.first.push({idindividu:ID ,date: date, entrées: startTime ,sorties:endTime});
-					data.second.push([{name:"idindividu"},{name:"date"},{name:"entrées"},{name:"sorties"}]);
-					let data2 = dataBaseData[empHoursObj.officeID][date.getFullYear()].threeResults[2];
-					
-					filteredData = FilterDateNotFoudFunction(data2,"date",date.getDate()+"-"+(date.getMonth()+1)+"-"+date.getFullYear());
-					if(filteredData.first.length > 0)
-					{
-						let minimumHour = filteredData.first[0][filteredData.second[2]].split(":"); 
-						let startTimeSplit = startTime.split(":");
-						
-						if( Number(startTimeSplit[0]) == Number(minimumHour[0]) )
-						{
-							if( Number(startTimeSplit[1]) == Number(minimumHour[1]) )
-							{
-								if( Number(startTimeSplit[2]) < Number(minimumHour[2]) )
-								{
-									filteredData.first[0][filteredData.second[2]] = startTime;
-								} 
-							} 
-							else if ( Number(startTimeSplit[1]) < Number(minimumHour[1]) )
-							{
-								filteredData.first[0][filteredData.second[2]] = startTime;
-							}
-						}
-						else if( Number(startTimeSplit[0]) < Number(minimumHour[0]) )
-						{
-									filteredData.first[0][filteredData.second[2]] = startTime;
-						}
-					}
-				}
 		}
 
 		//console.log(empHoursObj);
@@ -1160,12 +1087,7 @@
 					let skip_authentification = false;
 					let tempResult = false; 
 					let userPresenceObject = {};
-					
-					let employeeContainer = {appartenance:{data:undefined,headers:undefined},login:{data:undefined,headers:undefined},individu:{data:undefined,headers:undefined}};
-					let officeContainer = {data:undefined ,headers:undefined };
-					let eventsContainer = {data:undefined ,headers:undefined };
-					let reasonsContainer = {data:[] ,headers:[] }; 
-					
+
 					if (commandArg === "offices" || (dealingWithArray && commandArg[0] === "offices"))
 					{
 						tablename = "\"location du bureau\"";
@@ -1174,16 +1096,12 @@
 							querySQL =  "insert into "+tablename+" values ('"+fields.ID+ "',$$" + fields.officeName+"$$,$$";
 							querySQL += fields.address +"$$,$$"+fields.region+"$$,'"+fields.latittude+"','"+fields.longitude;
 							querySQL += "');";
-							officeContainer.data = {id:fields.ID,"Nom du Bureau":fields.officeName,addresse:fields.address,région:fields.region,latitude:fields.latittude,longitude:fields.longitude};
-							officeContainer.headers = [[{name:"id"},{name:"Nom du Bureau"},{name:"addresse"},{name:"région"},{name:"latitude"},{name:"longitude"}]];
 						}
 						else
 						{
 							querySQL =  "insert into "+tablename+" values ('"+fields.ID[0]+ "',$$" +  fields.officeName[0]+"$$,$$";
 							querySQL += fields.address[0] +"$$,$$"+fields.region[0]+"$$,'"+fields.latittude[0]+"','"+fields.longitude[0];
 							querySQL += "');";
-							officeContainer.data = {id:fields.ID[0],"Nom du Bureau":fields.officeName[0],addresse:fields.address[0],région:fields.region[0],latitude:fields.latittude[0],longitude:fields.longitude[0]};
-							officeContainer.headers = [[{name:"id"},{name:"Nom du Bureau"},{name:"addresse"},{name:"région"},{name:"latitude"},{name:"longitude"}]];
 						}
 						console.log(querySQL);
 						//console.log(fields);
@@ -1194,16 +1112,11 @@
 						if(dealingWithArray)
 						{
 							querySQL += "insert into \""+fields.year[0]+" jours de fêtes et de non travail\" values ($$" + fields.name[0]+"$$,$$"+fields.date[0]+"$$);";
-							eventsContainer.data = {name: fields.name[0], date: new Date(fields.date[0]),location:undefined};
-							eventsContainer.headers = [{name:"name"},{name:"date"},{name:"location"}];
 						}
 						else
 						{
 							querySQL += "insert into \""+fields.year+" jours de fêtes et de non travail\" values ($$"  + fields.name+"$$,$$"+fields.date+"$$);"
-							eventsContainer.data = {name: fields.name, date: new Date(fields.date),location:undefined};
-							eventsContainer.headers = [{name:"name"},{name:"date"},{name:"location"}];
 						}
-						
 						console.log(querySQL);
 					}
 					else if(commandArg === "employees" || (dealingWithArray && commandArg[0] === "employees"))
@@ -1237,23 +1150,15 @@
 						
 						if(dealingWithArray)
 						{
-							console.log(fields);
 							//in place of image url fields.imagename[0]
 							tablename = "individu";
 							querySQL = "insert into "+tablename+" values ($$"+image_url+"$$,$$"+fields.ID[0]+"$$,$$"+fields.first[0]+"$$,$$";
 							querySQL += fields.second[0] +"$$,'"+fields.gender[0]+"','"+fields.birthdate[0]+"',$$"+fields.function[0]+"$$,'";
 							querySQL += fields.start[0]+"','"+fields.end[0]+"');";
-							employeeContainer.individu.data = {img:image_url,id:fields.ID[0],prenom:fields.first[0],nom:fields.second[0],genre:fields.gender[0],"Date de naissance":fields.gender[0],profession:fields["function"][0],
-							début:new Date(fields.start[0]),fin:new Date(fields.end[0]),idindividu:fields.ID[0],idbureau:fields.officeID[0],'Nom du Bureau':fields.officeName[0],addresse:fields.officeAddress[0],'région':fields.officeRegion[0],latitude:fields.officeLatitude[0],longitude:fields.officeLongitude[0]};
-							employeeContainer.individu.headers =  [{name:"img"},{name:"id"},{name:"prenom"},{name:"nom"},{name:"genre"},{name:"Date de naissance"},{name:"profession"},{name:"début"},{name:"fin"},{name:"idindividu"},{name:"idbureau"},{name:'Nom du Bureau'},{name:'addresse'},{name:'région'},{name:'latitude'},{name:'longitude'}];
 							tablename = "appartenance";
 							doubleQuerySQL = "insert into "+ tablename+" values ('"+fields.ID[0]+"',"+fields.officeID[0]+");";
 							tablename = "login";
 							thirdQuerySQL += "insert into "+tablename+" values ('"+fields.ID[0]+"',$$"+fields.password[0]+"$$,"+((fields.type[0] == 1)?true:false)+","+((fields.type[0] == 2)?true:false)+","+((fields.type[0] == 4)?true:false)+","+((fields.type[0] == 3)?true:false)+");";
-							employeeContainer.appartenance.data = {idindividu:fields.ID[0],idbureau:fields.officeID[0]};
-							employeeContainer.appartenance.headers =  [{name:"idindividu"},{name:"idbureau"}];
-							employeeContainer.login.data = {idindividu:fields.ID[0],password:fields.password[0],superadmin:((fields.type[0] == 1)?true:false),admin:((fields.type[0] == 2)?true:false),"User":((fields.type[0] == 4)?true:false),"Key Admin":((fields.type[0] == 3)?true:false)};
-							employeeContainer.login.headers = [{name:"idindividu"},{name:"password"},{name:"superadmin"},{name:"admin"},{name:"User"},{name:"Key Admin"},{name:"uuid"},{name:"setuuid"}]; 
 						}
 						else
 						{
@@ -1261,22 +1166,10 @@
 							querySQL = "insert into "+tablename+" values ($$"+image_url+"$$,'"+fields.ID+"',$$"+fields.first+"$$,'";
 							querySQL += fields.second +"','"+fields.gender+"','"+fields.birthdate+"',$$";
 							querySQL += fields["function"]+"$$,'"+fields.start+"','"+fields.end+"');";
-							
-							
-							employeeContainer.individu.data = {img:image_url,id:fields.ID,prenom:fields.first,nom:fields.second,genre:fields.gender,"Date de naissance":fields.gender,profession:fields["function"],
-							début:new Date(fields.start),fin:new Date(fields.end),idindividu:fields.ID ,idbureau:fields.officeID,'Nom du Bureau':fields.officeName,addresse:fields.officeAddress,'région':fields.officeRegion,latitude:fields.officeLatitude,longitude:fields.officeLongitude};
-							employeeContainer.individu.headers =  [{name:"img"},{name:"id"},{name:"prenom"},{name:"nom"},{name:"genre"},{name:"Date de naissance"},{name:"profession"},{name:"début"},{name:"fin"},{name:"idindividu"},{name:"idbureau"},{name:'Nom du Bureau'},{name:'addresse'},{name:'région'},{name:'latitude'},{name:'longitude'}];
-							
 							tablename = "appartenance";
 							doubleQuerySQL = "\ninsert into "+ tablename+" values ('"+fields.ID+"',"+fields.officeID+");";
 							tablename = "login";
 							thirdQuerySQL += "insert into "+tablename+" values ('"+fields.ID+"',$$"+fields.password+"$$,"+((fields.type == 1)?true:false)+","+((fields.type == 2)?true:false)+","+((fields.type == 4)?true:false)+","+((fields.type == 3)?true:false)+");";
-							
-							employeeContainer.appartenance.data = {idindividu:fields.ID,idbureau:fields.officeID};
-							employeeContainer.appartenance.headers =  [{name:"idindividu"},{name:"idbureau"}];
-							
-							employeeContainer.login.data = {idindividu:fields.ID,password:fields.password,superadmin:((fields.type == 1)?true:false),admin:((fields.type == 2)?true:false),"User":((fields.type == 4)?true:false),"Key Admin":((fields.type == 3)?true:false)};
-							employeeContainer.login.headers = [{name:"idindividu"},{name:"password"},{name:"superadmin"},{name:"admin"},{name:"User"},{name:"Key Admin"},{name:"uuid"},{name:"setuuid"}]; 	
 						} 
 						
 						console.log(querySQL);	
@@ -1350,10 +1243,6 @@
 										{
 											let queryvalues = "('"+IDEmployee+"','"+((day.getMonth()+1)+"-"+day.getDate()+"-"+day.getFullYear())+"'"+values;
 											querySQL = "insert into "+tablename+" values "+queryvalues+" ON CONFLICT (IdIndividu,Date) DO Update Set absence ="+updateArray[0]+",maladie = "+updateArray[1]+",mission="+updateArray[2]+",congès="+updateArray[3]+";"; 
-											
-											reasonsContainer.data.push({idindividu:IDEmployee},{date:day},{absence:updateArray[0]},{maladie:updateArray[1]},{mission:updateArray[2]},{congès:updateArray[3]});
-											reasonsContainer.headers.push([{name:"idindividu"},{name:"date"},{name:"absence"}
-											,{name:"maladie"},{name:"mission"},{name:"congès"}]);
 										}
 									}
 									if(startDay != undefined && endDay != undefined)
@@ -1378,10 +1267,6 @@
 												{
 													let queryvalues = "('"+IDEmployee+"','"+((current.getMonth()+1)+"-"+current.getDate()+"-"+current.getFullYear())+"'"+values;
 													querySQL += "insert into "+tablename+" values "+queryvalues+" ON CONFLICT (IdIndividu,Date) DO Update Set absence ="+updateArray[0]+",maladie = "+updateArray[1]+",mission="+updateArray[2]+",congès="+updateArray[3]+";\n"; 
-													
-													reasonsContainer.data.push({idindividu:IDEmployee},{date:current},{absence:updateArray[0]},{maladie:updateArray[1]},{mission:updateArray[2]},{congès:updateArray[3]});
-													reasonsContainer.headers.push([{name:"idindividu"},{name:"date"},{name:"absence"}
-													,{name:"maladie"},{name:"mission"},{name:"congès"}]);
 												}
 											}
 											
@@ -1437,16 +1322,6 @@
 								//console.log(dealingWithArray);
 								if(commandArg == "events")
 								{
-									let dateStr = (employeeContainer.individu.data.date.getDate())+"-"+(employeeContainer.individu.data.date.getMonth()+1)+"-"+(employeeContainer.individu.data.date.getFullYear());
-									
-									let elementsFound = FilterDateNotFoudFunction(FilterElementNotFoundFunction(dataBaseData[userPresenceObject.IDOffice][userPresenceObject.year].threeResults[4],"name",employeeContainer.individu.data.name ),"date",dateStr);
-									
-									if( !(elementsFound.first.length > 0) )
-									{
-										dataBaseData[userPresenceObject.IDOffice][userPresenceObject.year].threeResults[4].first.push(eventsContainer.data);
-										dataBaseData[userPresenceObject.IDOffice][userPresenceObject.year].threeResults[4].second.push(eventsContainer.headers);
-									}
-										
 									res.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
 																	,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
 																	,"Access-Control-Max-Age":'86400'
@@ -1464,28 +1339,13 @@
 								{
 									console.log("Passed reasonsforabsences");
 									console.log("Inside response");
-									
-									reasonsContainer.data.forEach((element)=> 
-									{
-										let dateStr = (element.date.getDate())+"-"+(element.date.getMonth()+1)+"-"+(element.date.getFullYear());
-									
-										FilterDateNotFoudFunction(FilterElementNotFoundFunction(dataBaseData[userPresenceObject.IDOffice][userPresenceObject.year].threeResults[1],"idindividu",element.idindividu),"date",dateStr).first.forEach((element2)=>
-										{
-											element2["absence"] = element["absence"];
-											element2["mission"] = element["mission"];
-											element2["maladie"] = element["maladie"];
-											element2["mission"] = element["mission"];
-											element2["congès"] = element["congès"];
-										});	
 										
-									});
-									
 									if(res.writableEnded)
 									{	
 										console.log("Response writable ended ..."+res.writableEnded);	
 										return;
 									}
-						
+
 									res.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
 																	,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
 																	,"Access-Control-Max-Age":'86400'
@@ -1503,13 +1363,6 @@
 										//let okresult = //console.log("after offices getDataForAdmin");
 										//console.log("res writable ended is " +res.writableEnded);
 										//console.log(primaryObject.container);
-										
-										if(resultedElements.first.length == 0 ) 
-										{
-											dataBaseData.offices.first.push(officeContainer.data);
-											dataBaseData.offices.second.push(officeContainer.headers);
-										}
-										console.log(dataBaseData.offices.first);
 										
 										if(res.writableEnded)
 												return;
@@ -1541,44 +1394,11 @@
 								{
 									await kvUser.set("primaryObjectsLength",-1);
 									let bresult = await faire_un_simple_query(doubleQuerySQL);
-									console.log(doubleQuerySQL);
-									
 									if(bresult.second != false || bresult.second instanceof Array)
 									{
-										
 										let cresult = await faire_un_simple_query(thirdQuerySQL);
 										if(cresult.second != false || cresult.second instanceof Array)
 										{
-											//login addition section
-											console.log(dataBaseData);
-											console.log(userPresenceObject);
-											elementsFound = FilterElementNotFoundFunction(dataBaseData.logins,"idindividu",employeeContainer.login.data.idindividu);
-											
-											if( !(elementsFound.first.length > 0) )
-											{
-												dataBaseData.logins.first.push(employeeContainer.login.data);
-												dataBaseData.logins.second.push(employeeContainer.login.headers);
-											}
-											
-											let currentYear = employeeContainer.individu.data["début"].getFullYear();
-											let startYear = currentYear;
-											let endYear = employeeContainer.individu.data["fin"].getFullYear();
-											console.log(dataBaseData[employeeContainer.appartenance.data.idbureau][currentYear].threeResults[0]);
-											while(currentYear <= endYear)
-											{
-												console.log(currentYear);
-												console.log(employeeContainer.appartenance.data);
-												elementsFound = FilterElementNotFoundFunction(dataBaseData[employeeContainer.appartenance.data.idbureau][currentYear].threeResults[0],"idindividu",employeeContainer.login.data.idindividu);
-										
-												if( !(elementsFound.first.length > 0) )
-												{
-													dataBaseData[employeeContainer.appartenance.data.idbureau][currentYear].threeResults[0].first.push(employeeContainer.individu.data);
-													dataBaseData[employeeContainer.appartenance.data.idbureau][currentYear].threeResults[0].second.push(employeeContainer.individu.headers);
-												}				
-												++currentYear;
-											}
-											
-											console.log(dataBaseData[employeeContainer.appartenance.data.idbureau][startYear].threeResults[0]);
 											let dresult = await faire_un_simple_query(url_query);
 											res.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
 																	,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
@@ -1611,19 +1431,18 @@
 									else
 									{
 										dummyResponse(res,"IDExistant");
-										console.log(bresult);
 										//console.log(bresult.first);
 									}
 								}
 							}
 							else
 							{
-								console.log(aresult.first);
+								//console.log(aresult.first);
 								dummyResponse(res,"IDExistant");
 							}
 						}catch(ex)
 						{
-							console.log(ex);
+							//console.log(ex);
 							dummyResponse(res,"IDExistant");
 						}
 					}
@@ -1769,25 +1588,19 @@
 	async function forced_authentification_query_login(userAuthentification,res)
 	{
 		
-		let returnValue = findUserShortOther(userAuthentification.ID,userAuthentification.pass,userAuthentification.phone,userAuthentification.uuid);
+		let returnValue = findUserShort(userAuthentification.ID,userAuthentification.pass);
 		
 		if( returnValue.found )
 		{
-			return {first:true,second:undefined,element:returnValue.element.userAuthentification,message:returnValue.message};
+			return {first:true,second:undefined,element:returnValue.element.userAuthentification};
 		}
 		
 		let query = "SELECT  * FROM individu inner join login on individu.ID = login.IDIndividu inner join "
 		query += "appartenance on individu.ID = appartenance.IDIndividu inner join \"location du bureau\" as A on A.ID = ";
 		query += "appartenance.IDBureau;"; 
 					
-		let tempResult = (dataBaseData.logins != undefined)? dataBaseData.logins:await faire_un_simple_query(query);
-		let message = undefined;
-		
-		if( dataBaseData.logins == undefined)
-		{
-			dataBaseData.logins = tempResult;
-		}
-		
+		let tempResult = await faire_un_simple_query(query);
+				
 		if(!(tempResult.second == false))
 		{	
 						if(tempResult.first.length == 0)
@@ -1800,67 +1613,23 @@
 						{
 							for(let i = 0; i < tempResult.first.length; ++i)
 							{
-								if( tempResult.first[i].idindividu == userAuthentification.ID && tempResult.first[i].password == userAuthentification.pass && (userAuthentification.phone && ( (tempResult.first[i].uuid == undefined && userAuthentification.uuid != undefined) || (tempResult.first[i].uuid != undefined && tempResult.first[i].uuid == userAuthentification.uuid))) ) 
+								if( tempResult.first[i].idindividu == userAuthentification.ID && tempResult.first[i].password == userAuthentification.pass) 
 								{
 									//console.log("This guy is logged in.");
 									let addResult = addUser(tempResult.first[i].idindividu,tempResult.first[i]["prenom"],tempResult.first[i].nom,
 										tempResult.first[i].genre,tempResult.first[i]['Date de naissance'].toLocaleString(undefined,{day:'numeric',month:'numeric',year:'numeric'}),tempResult.first[i]["début"],tempResult.first[i].fin
 										,tempResult.first[i].password,tempResult.first[i].idbureau,tempResult.first[i]['Nom du Bureau'],
 										tempResult.first[i].latitude,tempResult.first[i].longitude,tempResult.first[i].admin
-										,tempResult.first[i].superadmin,tempResult.first[i].User,tempResult.first[i]["Key Admin"],userAuthentification.uuid,tempResult.first[i]["setuuid"]);
+										,tempResult.first[i].superadmin,tempResult.first[i].User,tempResult.first[i]["Key Admin"]);
 									
-									if(  tempResult.first[i].uuid == undefined || tempResult.first[i].setuuid == true || tempResult.first[i].setuuid == undefined )
-									{
-										let updatePhoneQueries = "update login set UUID =" +$$userAuthentification.uuid$$+" where ID = "+userAuthentification.ID+";\n"
-										updatePhoneQueries += "update login set SETUUID =" +$$false$$+" where ID = "+userAuthentification.ID+";";	
-										let queryPerformed = false;
-										
-										let resultedData = FilterElementNotFoundFunction(dataBaseData.logins,"idindividu",ID);
-										if( resultedData.first.length >  0)
-										{
-											resultedData.first[0].uuid = userAuthentification.uuid;
-											resultedData.first[0].setuuid = false;
-										}
-										
-										try
-										{
-											let tempResult = await faire_un_simple_query(updatePhoneQueries);
-											if(tempResult.second == false)
-											{
-												queryPerformed = false;
-											}
-											else 
-											{
-												queryPerformed = true;
-											}
-										}
-										catch(error)
-										{
-											queryPerformed = false;
-											console.log(err);
-										}//not looped to solve a problem
-										
-									}
-
 									return {first:true,second:undefined,element:addResult.userAuthentification};
 								}
-								else if( tempResult.first[i].idindividu == userAuthentification.ID
-								&& tempResult.first[i].password == userAuthentification.pass
-								&& userAuthentification.phone )
-								{
-									if( tempResult.first[i].uuid != undefined && tempResult.first[i].uuid != userAuthentification.uuid )
-									{
-										message = "";
-										message += "Vous ne pouvez pas vous authentifier avec un différent téléphone de celui avec lequel vous avez débuté.\n"
-										+ "Voici deux options:\n 1)Pour pointez allez voir la responsable du pointage\n"
-										+"2)Pour remplacer le téléphone avec lequel vous vous êtes enregistré contactez l'admin RH à MSADAKAR via votre propre admin";
-									}
-								}
+
 							}
 							//console.log("This guy is not logged in");
 							if(res != undefined)
 								dummyResponseSimple(res);
-							return {first:false,second:undefined,third:false,message:message};
+							return {first:false,second:undefined,third:false};
 						}
 		}
 		else 
@@ -1942,68 +1711,8 @@
 			{
 				for(let loginGuysCount = 0; loginGuysCount < connectedguys.length;++loginGuysCount)
 				{
-					if(connectedguys[loginGuysCount].ID == ID && connectedguys[loginGuysCount].pwd == password )
+					if(connectedguys[loginGuysCount].ID == ID && connectedguys[loginGuysCount].pwd == password)
 					{
-						return {found:true,index:loginGuysCount,element:connectedguys[loginGuysCount]};
-					}
-				}
-				return {found:false,index:-1};
-			}
-			
-			function findUserShortOther(ID,password,phone,uuid)
-			{
-				for(let loginGuysCount = 0; loginGuysCount < connectedguys.length;++loginGuysCount)
-				{
-					if(connectedguys[loginGuysCount].ID == ID && connectedguys[loginGuysCount].pwd == password  )
-					{
-						let message = undefined;
-						if( phone && ((connectedguys[loginGuysCount].uuid == undefined && uuid != undefined ) || (connectedguys[loginGuysCount].uuid != uuid)  )
-							&& (connectedguys[loginGuysCount].setuuid == true || connectedguys[loginGuysCount].setuuid == undefined) )
-						{
-							connectedguys[loginGuysCount].setuuid = false;
-							connectedguys[loginGuysCount].uuid = uuid;
-							
-							let updatePhoneQueries = "update login set UUID =" +$$uuid$$+" where ID = "+ID+";\n"
-							updatePhoneQueries += "update login set SETUUID =" +$$false$$+" where ID = "+ID+";";	
-							let queryPerformed = false;
-							
-							let resultedData = FilterElementNotFoundFunction(dataBaseData.logins,"idindividu",ID);
-							if( resultedData.first.length >  0)
-							{
-								resultedData.first[0].uuid = uuid;
-								resultedData.first[0].setuuid = false;
-							}
-							
-							try
-							{
-								
-								let tempResult = faire_un_simple_query(updatePhoneQueries);
-								if(tempResult.second == false)
-								{
-									queryPerformed = false;
-								}
-								else
-								{
-									queryPerformed = true;
-								}
-								
-							}
-							catch(error)
-							{
-								queryPerformed = false;
-								console.log(err);
-							}//not looped to solve a problem
-						
-						}
-						else if (phone && (connectedguys[loginGuysCount].uuid != uuid) && connectedguys[loginGuysCount].setuuid == false  )
-						{
-							message = "";
-							message += "Vous ne pouvez pas vous authentifier avec un différent téléphone de celui avec lequel vous avez débuté.\n"
-										+ "Voici deux options:\n1)Pour pointez allez voir la responsable du pointage\n"
-										+"2)Pour remplacer le téléphone avec lequel vous vous êtes enregistré contactez l'admin RH à MSADAKAR via votre propre admin";
-							return {found:true,index:loginGuysCount,element:connectedguys[loginGuysCount],message: message};
-						} 
-						
 						return {found:true,index:loginGuysCount,element:connectedguys[loginGuysCount]};
 					}
 				}
@@ -2043,7 +1752,7 @@
 			function addUser (IDparam,firstparam,secondparam,genderparam,
 				birthdateparam,beginparam,endparam,pwdparam,
 				IDLoc,NameLoc,latitude,longitude,
-				adminparam,superadminparam,userparam,keyadminparam,uuid,setuuid)
+				adminparam,superadminparam,userparam,keyadminparam)
 			{
 				
 				let aconnecedGuy = 
@@ -2053,12 +1762,12 @@
 					locationID:IDLoc,locationName:NameLoc,lati:latitude,longi:longitude,
 					admin:adminparam,superadmin:superadminparam,user:userparam,"Key Admin":keyadminparam,
 					userAuthentification: {ID:IDparam,Prenom:firstparam,Nom:secondparam,genre:genderparam,naissance:birthdateparam,pass:pwdparam,
-					locationID:IDLoc,locationName:NameLoc,lati:latitude,longi:longitude,superadmin:superadminparam,admin:adminparam,user:userparam,"Key Admin":keyadminparam,Uuid:uuid,Setuuid:setuuid}
+					locationID:IDLoc,locationName:NameLoc,lati:latitude,longi:longitude,superadmin:superadminparam,admin:adminparam,user:userparam,"Key Admin":keyadminparam}
 					,commands:[]
 				};
 				
 				let findResult = !findUser(IDparam,firstparam,secondparam,genderparam,birthdateparam,beginparam,endparam,
-					pwdparam,IDLoc,NameLoc,adminparam,superadminparam,userparam,keyadminparam,uuid,setuuid);
+					pwdparam,IDLoc,NameLoc,adminparam,superadminparam,userparam,keyadminparam);
 				
 				if(!findResult.found)
 				{
@@ -2331,10 +2040,6 @@
 				//console.log("Location argument "+locationArgObj+" employee argument "+empObj);
 				console.log("set date of today "+setDateofToday);
 				let primSet = false; let count = 2;
-				let globals_initialization = true && ( empObj == undefined && empHoursObj == undefined 
-				&& (paramday == undefined && parammonth == undefined
-				&& paramyear == undefined) );
-							
 				do
 				{
 					try
@@ -2398,7 +2103,7 @@
 				{
 					let totalQuery = "";
 					let query = "Select * from \"location du bureau\" ORDER BY Id;";
-					
+
 					if(locationArgObj != undefined)
 					{
 						//console.log(locationArgObj);
@@ -2409,6 +2114,7 @@
 						query = "Select * from \"location du bureau\" where \"location du bureau\".ID = "+empObj.officeID+" ORDER BY Id;";
 					}
 					
+					
 					let checkfornewCommand = false;
 					if(locationArgObj != undefined || empObj != undefined || empHoursObj != undefined 
 					|| paramday != undefined || parammonth != undefined || paramday != undefined)
@@ -2416,7 +2122,7 @@
 						checkfornewCommand = true;
 					}
 
-					let result = (globals_initialization)?await faire_un_simple_query(query):dataBaseData.offices;
+					let result = await faire_un_simple_query(query);
 					if(result.second == false ) 
 					{
 						//console.log(result);
@@ -2444,6 +2150,10 @@
 					if(stopDate == undefined)
 					{
 						stopDate = dateToday;
+						if(!setDateofToday)
+						{
+							stopDate = new Date(paramyear,parammonth-1,paramday);
+						}
 					}
 					amonth += 1;
 					//console.log("new date today is "+ dateToday.toLocaleString());
@@ -2451,11 +2161,6 @@
 					//console.log("Date today is "+dateToday);
 					//console.log("Info about response for officeInfo");
 					//console.log(result);
-					
-					if(globals_initialization)
-					{
-						dataBaseData.offices = result;
-					}
 					
 					for(let i = 0; i < result.first.length; ++i)
 					{
@@ -2467,9 +2172,6 @@
 						let officeLatitude = result.first[i][result.second[4].name];
 						let officeLongitude = result.first[i][result.second[5].name];
 						let passed = true;
-						
-						if(globals_initialization)
-							dataBaseData[officeID] = {};
 						
 						var unitLocation = 
 						{
@@ -2508,24 +2210,22 @@
 							unitLocation = foundValueForLocation;
 						}
 						
+
 						let locationvalue = "";
 						query = "Select * from \"manuel des tables d'entrées et de sorties\";";
 						
 						if( !( paramyear === undefined  )) 
 						{
 							query = "Select * from \"manuel des tables d'entrées et de sorties\" where Année = "+paramyear+";";
-							
 						}																																		
 						else if (empHoursObj != undefined)
 						{
 							query = "Select * from \"manuel des tables d'entrées et de sorties\" where Année = "+empHoursObj.date.getFullYear()+";";
-							
 						}
 						
-						let result_ =(globals_initialization)?await faire_un_simple_query(query):dataBaseData.entries_exits;
-						
+						let result_ = await faire_un_simple_query(query);
 						let to_complete = false;
-				
+
 						if(result_.first instanceof Array)
 						{	
 							let temp_results = FilterElementNotFoundFunction(result_,"année",ayear);
@@ -2540,11 +2240,6 @@
 							to_complete = true;
 						}
 						
-						if(globals_initialization)
-						{
-							dataBaseData.entries_exits = result_;
-						}
-						
 						if(to_complete)
 						{
 							let aquery = "create table \""+ayear+" entrées et sorties\" (IDIndividu varchar(255),Date Date,Entrées Time NOT NULL,Sorties VARCHAR(10) DEFAULT NULL, PRIMARY KEY(Date,Entrées,IDIndividu));\n";
@@ -2554,10 +2249,7 @@
 							aquery += "insert into \"manuel des tables d'entrées et de sorties\" values("+ayear+","+"$$"+ayear+" jours de fêtes et de non travail$$);";
 							await faire_un_simple_query(aquery);
 							result_ = await faire_un_simple_query(query);
-							//add new year
-							dataBaseData.entries_exits.push(result_[2]);
 						}
-						
 						
 						if(result_.second == false && !(result_.second instanceof Array)) 
 						{
@@ -2586,14 +2278,14 @@
 							monthCounts = prevMonthCounts;
 							unitLocation.yearIndex = l; 
 							unitLocation.yearIndexes.push(l);
+							
 							let year = result_.first[l][result_.second[0].name];
 							let state = result_.first[l][result_.second[1].name];
 							let table = result_.first[l][result_.second[2].name];
 							let events = result_.first[l][result_.second[3].name];
-							
 							let param_year_month_day = (paramday != undefined && parammonth != undefined && paramyear != undefined)?paramyear+"-"+parammonth+"-"+paramday : undefined;
-							
 							let query = "Select * from individu inner join appartenance";
+							
 							query += " ON appartenance.IDIndividu =  individu.ID";
 							query += " inner join \"location du bureau\" ON  appartenance.IDBureau =";
 							query += " \"location du bureau\".ID AND EXTRACT(YEAR FROM individu.Début) <= ";
@@ -2622,19 +2314,9 @@
 							query += "Select * from \""+events+"\";";
 							
 							if(empHoursObj)
-							{
-								console.log(query);
-							}
+							{console.log(query);}
 							//console.log(empHoursObj);
-							let threeResults = (globals_initialization)?await faire_un_simple_query(query):dataBaseData[officeID][year].threeResults;
-							console.log("Global initalization is "+ globals_initialization);
-							
-							if(globals_initialization)
-							{
-								dataBaseData[officeID][year] = {threeResults: undefined};
-								dataBaseData[officeID][year].threeResults = threeResults;
-							}
-							
+							let threeResults = await faire_un_simple_query(query);
 							let resultTwo = threeResults[0];
 							let aresult = threeResults[2];
 							let bresult = threeResults[1];
@@ -4190,11 +3872,32 @@
 					console.log("added to kv");
 					//console.log("Location argument "+locationArgObj+" employee argument "+empObj);
 					//console.log(primaryObject);
-					kvSplitandSet("dataBaseData",dataBaseData);
-					kvSplitandSet("primaryObjects",primaryObject);
-					console.log(splitText(JSON.stringify({a:1,b:2,r:2345}),2));
-					console.log(dataBaseData.entries_exits.first);
-					
+					let splitelements = splitText(JSON.stringify(primaryObject), 900* 1024);
+					if( splitelements.length > 0)
+					{
+						let error = false;
+						do
+						{
+							try
+							{
+								let tempIndex = 0;
+								let allElements = "";
+								for(;tempIndex < splitelements.length ;++tempIndex)
+								{
+									await kvUser.set("primaryObjects"+tempIndex,splitelements[tempIndex]);
+									allElements += tempIndex,splitelements[tempIndex];
+								}
+								await kvUser.set("primaryObjectsLength",splitelements.length);
+								//JSON.parse(allElements);
+							}
+							catch(err)
+							{
+								console.log(err.message.substring(0,5000));
+								error = true;
+							}
+						}while(error);
+					}
+					console.log("done adding "+splitelements.length+" elements to KV ");
 					if (!(response === undefined))
 					{
 						response.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
@@ -4218,35 +3921,6 @@
 			}
 	} 
 	
-	async function kvSplitandSet(elementName,object)
-	{
-		let splitelements = splitText(JSON.stringify(object), 900* 1024);
-		if( splitelements.length > 0)
-		{
-			let error = false;
-			do
-			{
-				try
-				{
-					let tempIndex = 0;
-					let allElements = "";
-					for(;tempIndex < splitelements.length ;++tempIndex)
-					{
-						await kvUser.set(elementName+tempIndex,splitelements[tempIndex]);
-						console.log(elementName+tempIndex);
-					}
-					await kvUser.set(elementName+"Length",splitelements.length);
-					//JSON.parse(allElements);
-					console.log("done adding "+splitelements.length+" elements to KV ");
-				}
-				catch(err)
-				{
-					console.log(err.message.substring(0,5000));
-					error = true;
-				}
-			}while(error);
-		}
-	}
 	
 	function notIDDecreaseAll(location,ID)
 	{			
@@ -4359,10 +4033,14 @@
 							
 							if(empdaily.ID != ID)
 							{
-								dayContent.vacances--;
+								/* dayContent.vacanes--;
 								weekContent.vacances--;
 								monthContent.vacances--;
-								yearContentElement.vacances--;
+								yearContentElement.vacances--; */
+								dayContent.vacations--;
+								weekContent.vacations--;
+								monthContent.vacations--;
+								yearContentElement.vacations--;
 								tempDeleteStack.push(empdaily);
 							}
 						}

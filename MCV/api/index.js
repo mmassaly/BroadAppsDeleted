@@ -2150,6 +2150,10 @@
 					if(stopDate == undefined)
 					{
 						stopDate = dateToday;
+						if(!setDateofToday)
+						{
+							stopDate = new Date(paramyear,parammonth-1,paramday);
+						}
 					}
 					amonth += 1;
 					//console.log("new date today is "+ dateToday.toLocaleString());
@@ -2274,14 +2278,14 @@
 							monthCounts = prevMonthCounts;
 							unitLocation.yearIndex = l; 
 							unitLocation.yearIndexes.push(l);
+							
 							let year = result_.first[l][result_.second[0].name];
 							let state = result_.first[l][result_.second[1].name];
 							let table = result_.first[l][result_.second[2].name];
 							let events = result_.first[l][result_.second[3].name];
-							
 							let param_year_month_day = (paramday != undefined && parammonth != undefined && paramyear != undefined)?paramyear+"-"+parammonth+"-"+paramday : undefined;
-							
 							let query = "Select * from individu inner join appartenance";
+							
 							query += " ON appartenance.IDIndividu =  individu.ID";
 							query += " inner join \"location du bureau\" ON  appartenance.IDBureau =";
 							query += " \"location du bureau\".ID AND EXTRACT(YEAR FROM individu.Début) <= ";
