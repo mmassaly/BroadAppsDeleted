@@ -474,11 +474,8 @@
 									resultc.writeHeader(200,{"Content-Type": "application/json"});
 									resultc.write(JSON.stringify({OK:200}));
 									resultc.end();
-									await hoursToEmp(undefined,urlObject);
-									hoursLocker[urlObject.userAuthentification.ID].inside = true;
 									urlObject.day = undefined; urlObject.startDay = undefined; urlObject.endDay = undefined;
 									await getDataForAdmin(undefined,undefined,undefined,urlObject,undefined,undefined,undefined,false);
-									hoursLocker[urlObject.userAuthentification.ID].inside = false;
 								}
 								,(ex) =>
 								{
