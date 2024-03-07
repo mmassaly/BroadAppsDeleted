@@ -2149,7 +2149,7 @@
 					if(stopDate == undefined)
 					{
 						stopDate = dateToday;
-						if(!setDateofToday)
+						if(!setDateofToday && (paramyear && parammonth && paramday))
 						{
 							stopDate = new Date(paramyear,parammonth-1,paramday);
 						}
