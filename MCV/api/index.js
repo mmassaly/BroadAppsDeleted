@@ -2665,14 +2665,20 @@
 									//console.log("Month counts " + monthCounts);
 									//console.log("Current month " + currentDateOfYear.getMonth());
 								}
-									
+								
+								if(empHoursObj)
+								{
+									console.log("Jour de début " + start_day);
+									console.log("Nombre de jours " + nombre_de_jours);
+								}	
+								
 								while( start_day <= nombre_de_jours)
 								{
 									currentDateOfYear = new Date(year,monthCounts-1,start_day);
 									if(empHoursObj)
 									{
-										//console.log("Employee Hours...");
-										//console.log(currentDateOfYear);console.log(bresult);
+										console.log("Employee Hours...");
+										console.log(currentDateOfYear);console.log(bresult);
 									}
 									
 									if( monthIndex == 9 )
