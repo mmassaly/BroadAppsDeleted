@@ -3460,17 +3460,17 @@
 																	if(startIndex != -1)
 																	{
 																		employeeContentModel.exits[startIndex] = b;
-																		//console.log("Empty Second");
-																		//console.log(employeeContentModel.entries);
-																		//console.log(employeeContentModel.exits);
+																		console.log("Empty Second");
+																		console.log(employeeContentModel.entries);
+																		console.log(employeeContentModel.exits);
 																	}
 																	else
 																	{
-																		//console.log("Full Second");	
+																		console.log("Full Second");	
 																		employeeContentModel.entries.push(a);
 																		employeeContentModel.exits.push(b);
-																		//console.log(employeeContentModel.entries);
-																		//console.log(employeeContentModel.exits);
+																		console.log(employeeContentModel.entries);
+																		console.log(employeeContentModel.exits);
 																	}
 
 																}
@@ -3492,7 +3492,7 @@
 																	let value_to_deal_with = compareHoursOneSuperior(a,b)< 0;
 																	if(startIndex != -1)
 																	{
-																		//console.log("Empty Second");
+																		console.log("Empty Second");
 																		if(value_to_deal_with )
 																		{
 																			employeeContentModel.exits[startIndex] = b;
@@ -3501,15 +3501,19 @@
 																		{
 																			employeeContentModel.entries.splice(startIndex,1);
 																		}
+																		console.log(employeeContentModel.entries);
+																		console.log(employeeContentModel.exits);
 																	}
 																	else
 																	{
-																		//console.log("Full Second");
+																		console.log("Full Second");
 																		if(value_to_deal_with)
 																		{
 																			employeeContentModel.entries.push(a);
 																			employeeContentModel.exits.push(b);
 																		}
+																		console.log(employeeContentModel.entries);
+																		console.log(employeeContentModel.exits);
 																	}	
 
 																	if(value_to_deal_with)
