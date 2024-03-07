@@ -2228,7 +2228,7 @@
 						if(result_.first instanceof Array)
 						{	
 							let temp_results = FilterElementNotFoundFunction(result_,"année",ayear);
-							console.log(temp_results);
+							//console.log(temp_results);
 							if(temp_results.first.length == 0)
 							{
 								to_complete = true;
@@ -2496,7 +2496,7 @@
 								else
 									going_yearly_count = empHoursObj.date.getMonth()+1;
 							}
-							//console.log("Test count "+testCount+" year_count "+going_yearly_count);
+							console.log("Test count "+testCount+" year_count "+going_yearly_count);
 							
 							while( testCount < going_yearly_count )
 							{
