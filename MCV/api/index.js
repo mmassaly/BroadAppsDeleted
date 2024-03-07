@@ -475,7 +475,9 @@
 									resultc.write(JSON.stringify({OK:200}));
 									resultc.end();
 									urlObject.day = undefined; urlObject.startDay = undefined; urlObject.endDay = undefined;
+									console.log("Awaiting refreshing from getDataForAdmin");
 									await getDataForAdmin(undefined,undefined,undefined,urlObject,undefined,undefined,undefined,false);
+									console.log("Done Awaiting refreshing from getDataForAdmin");
 								}
 								,(ex) =>
 								{
@@ -641,15 +643,15 @@
 									{
 											if(tempResult)
 											{
-												console.log("This guy is authenticated");
+												//console.log("This guy is authenticated");
 												let resultd = resultc;
 												check_super_admin(userAuthentification,sqlConnection,undefined).then((othertempResult)=>
 												{
-													console.log("Inside checking admin type");
+													//console.log("Inside checking admin type");
 													if(othertempResult.first)
 													{
-														console.log("This guy is a primary admin");
-														console.log("responding");
+														//console.log("This guy is a primary admin");
+														//console.log("responding");
 														resultd.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
 														,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
 														,"Access-Control-Max-Age":'86400'
@@ -682,7 +684,7 @@
 													}
 													else if(othertempResult.second || othertempResult.fourth)
 													{
-														console.log("This guy is a secondary or a fouth kind of  admin");
+														//console.log("This guy is a secondary or a fouth kind of  admin");
 														let tempLocation = getLocation(primaryObject,userAuthentification.locationID);
 														tempLocation = Object.fromEntries(Object.entries(tempLocation.first));
 														let tempData =
