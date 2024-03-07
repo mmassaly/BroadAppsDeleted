@@ -3304,7 +3304,7 @@
 											//beginning of events or holiday
 											if( dresultFiltered.first.length > 0 )
 											{
-												console.log("Iside d result");
+												console.log("Inside d result");
 												console.log(dresultFiltered);
 												let str = "";
 												dresultFiltered.first.forEach((element)=>
@@ -4690,11 +4690,19 @@
 					nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].vacationdates.other.push(employeeContentModel.date);
 					nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].weeks[weekIndex].vacationdates.other.push(employeeContentModel.date);
 				}
+				else
+				{ 
+					if(nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].empDicofVacances[employeeContentModel.ID]!= employeeContentModel)
+					{
+						nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].empDicofVacances[employeeContentModel.ID] = employeeContentModel
+					}
+				}
 			}
 			else
 			{
 				if(found)
 				{
+					
 					let tempValue = nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].vacationsdates;
 					if(tempValue.indexOf(employeeContentModel) > -1)
 						tempValue.splice(tempValue.indexOf(employeeContentModel),1);
@@ -4759,6 +4767,13 @@
 				nodupTemp.empDic[employeeContentModel.ID].presencedates.other.push(employeeContentModel.date);
 				nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].presencedates.other.push(employeeContentModel.date);
 				nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].weeks[weekIndex].presencedates.other.push(employeeContentModel.date);
+			}
+			else
+			{ 
+				if(nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].empDicofPresences[employeeContentModel.ID] != employeeContentModel)
+				{
+					nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].empDicofPresences[employeeContentModel.ID] = employeeContentModel
+				}
 			}
 		}
 		else
@@ -4829,6 +4844,13 @@
 				nodupTemp.empDic[employeeContentModel.ID].sicknessdates.other.push(employeeContentModel.date);
 				nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].sicknessdates.other.push(employeeContentModel.date);
 				nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].weeks[weekIndex].sicknessesdates.other.push(employeeContentModel.date);
+			}
+			else
+			{ 
+				if(nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].empDicofSicknesses[employeeContentModel.ID] != employeeContentModel)
+				{
+					nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].empDicofSicknesses[employeeContentModel.ID] = employeeContentModel
+				}
 			}
 		}
 		else
@@ -4914,6 +4936,13 @@
 				nodupTemp.empDic[employeeContentModel.ID].absencedates.other.push(employeeContentModel.date);
 				nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].absencedates.other.push(employeeContentModel.date);
 				nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].weeks[weekIndex].absencedates.other.push(employeeContentModel.date);
+			}
+			else
+			{ 
+				if(nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].empDicofAbsences[employeeContentModel.ID] != employeeContentModel)
+				{
+					nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].empDicofAbsences[employeeContentModel.ID] = employeeContentModel
+				}
 			}
 		}
 		else
@@ -5024,6 +5053,18 @@
 				nodupTemp.empDic[employeeContentModel.ID].overallretarddates.other.push(employeeContentModel.date);
 				nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].overallretarddates.other.push(employeeContentModel.date);
 				nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].weeks[weekIndex].overallretarddates.other.push(employeeContentModel.date);
+			}
+			else
+			{ 
+				if(nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].empDicofRetards[employeeContentModel.ID] != employeeContentModel)
+				{
+					nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].empDicofRetards[employeeContentModel.ID] = employeeContentModel;
+					
+					
+					//nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].retardsdates.push(employeeContentModel);
+					//nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].simpleRetardsdates.push(employeeContentModel);
+
+				}
 			}
 		}
 		else
@@ -5147,6 +5188,18 @@
 				nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].overallretarddates.other.push(employeeContentModel.date);
 				nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].weeks[weekIndex].overallretarddates.other.push(employeeContentModel.date);
 			}
+			else
+			{
+				if(nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].empDicofRetards[employeeContentModel.ID] != employeeContentModel)
+				{
+					nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].empDicofRetards[employeeContentModel.ID] = employeeContentModel;
+					nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].empDicofCritical[employeeContentModel.ID] = employeeContentModel;
+					
+					//nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].retardsdates.push(employeeContentModel);
+					//nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].retardsCriticaldates.push(employeeContentModel);
+
+				}
+			}
 		}
 		else
 		{
@@ -5237,6 +5290,13 @@
 				nodupTemp.empDic[employeeContentModel.ID].missiondates.other.push(employeeContentModel.date);
 				nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].missiondates.other.push(employeeContentModel.date);
 				nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].weeks[weekIndex].missiondates.other.push(employeeContentModel.date);
+			}
+			else
+			{
+				if(nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].empDicofMissions[employeeContentModel.ID] != employeeContentModel)
+				{
+					nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].empDicofMissions[employeeContentModel.ID] = employeeContentModel;
+				}
 			}
 		}
 		else
