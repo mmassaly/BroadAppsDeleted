@@ -56,7 +56,7 @@
 			setTimeout(
 				async function()
 				{	
-							let length = await kvUser.get("primaryObjectsLength");	
+							let length = await kvUser.get("primaryObjectsLength");	//set primaryObjectsLength -1
 							console.log("PrimaryObject in KV's length is "+length);
 							if(length  == -1 || length  == undefined || length  == -1)
 							{
