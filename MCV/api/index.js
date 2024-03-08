@@ -106,6 +106,7 @@
 										try
 										{
 											primaryObject = JSON.parse(allAddedUp);
+											reorganizeKv(primaryObject);
 											let dateTime = new Date();
 											console.log("primaryObject has been successfully initialized ");
 											console.log(((dateTime - startTime)/1000) +" seconds ...");
@@ -912,6 +913,7 @@
 										try
 										{
 											primaryObject = JSON.parse(allAddedUp);
+											reorganizeKv(primaryObject);
 											let endDate = new Date()
 											console.log("primaryObject has been successfully initialized...after"+((endDate-startDate)/1000)+" seconds" );
 											try
@@ -939,10 +941,12 @@
 										catch(err)
 										{
 											console.log(err.message.substring(0,1000));
+											console.log(err);
 											problem = true;
 											primaryObject = undefined;
 										}
 										console.log(primaryObject);
+										
 									}
 									
 									if(problem)
@@ -4250,6 +4254,30 @@
 		return returnKeys;
 	}
 	
+	function reorganizeKv(bigdeal)
+	{
+		bigdeal.container.forEach((container)=>
+		{
+			container.yearsContent.forEach((yearsContainer)=>
+			{
+				yearsContainer.months.forEach((month)=>
+				{
+					month.weeks.forEach((week)=>
+					{
+						week.days.forEach((day)=>
+						{
+							Object.keys(yearsContainer.empDic).forEach((ID)=>{
+								let employeeContentModel = getEmployeeContentModel(day,ID);
+								if(employeeContentModel != undefined)
+								youWillsetAccordingtoGivenModel(day,employeeContentModel);
+							});
+						});
+					});
+				});
+			});
+		});
+	}
+	
 	function getLocation(content,locationID)
 	{
 		if(content != undefined)
@@ -4337,6 +4365,7 @@
 			elements.push(days.sicknessesdates);
 			elements.push(days.vacationsdates);
 			elements.push(days.presencedates);
+			elements.push(days.simpleRetardsdates);
 			
 			let index = 1;
 			
@@ -4354,6 +4383,103 @@
 					}
 				}
 			});
+		}
+
+		//console.log((element_found) == undefined ? "Element with ID "+ID+" not found ":"Element with ID "+ID+" found");
+		return element_found;
+	}
+	
+	function youWillsetAccordingtoGivenModel(days,employeeContentModel) 
+	{
+		let elements = [];
+		let element_found = undefined;
+		
+		if( days.empDicofAbsences[employeeContentModel.ID] != undefined )
+		{
+			days.empDicofAbsences[employeeContentModel.ID] = employeeContentModel;
+		}
+		
+		if( days.empDicofCritical[employeeContentModel.ID] != undefined )
+		{
+			days.empDicofCritical[employeeContentModel.ID] = employeeContentModel;
+		}
+		
+		if( days.empDicofMissions[employeeContentModel.ID] != undefined )
+		{
+			days.empDicofMissions[employeeContentModel.ID] = employeeContentModel;
+		}
+		
+		if( days.empDicofPresences[employeeContentModel.ID] != undefined )
+		{
+			days.empDicofPresences[employeeContentModel.ID] = employeeContentModel;
+		}
+		
+		if( days.empDicofRetards[employeeContentModel.ID] != undefined )
+		{
+			days.empDicofRetards[employeeContentModel.ID] = employeeContentModel;
+		}
+		
+		if( days.empDicofSicknesses[employeeContentModel.ID] != undefined )
+		{
+			days.empDicofSicknesses[employeeContentModel.ID] = employeeContentModel;
+		}
+		
+		if( days.empDicofVacances[employeeContentModel.ID] != undefined )
+		{
+			days.empDicofVacances[employeeContentModel.ID] = employeeContentModel;
+		}
+		
+		if(days != undefined)
+		{
+			let obj_dic = {};
+			
+			elements.push(days.absencesdates);
+			if( obj_dic[elements] == undefined ) 
+				obj_dic[elements] = {indexes:[],data:days.absencesdates};
+			elements.push(days.retardsdates);
+			if( obj_dic[elements] == undefined ) 
+				obj_dic[elements] = {indexes:[],data:days.retardsdates};
+			elements.push(days.retardsCriticaldates);
+			if( obj_dic[elements] == undefined ) 
+				obj_dic[elements] = {indexes:[],data:days.retardsCriticaldates};
+			elements.push(days.missionsdates);
+			if( obj_dic[elements] == undefined ) 
+				obj_dic[elements] = {indexes:[],data:days.missionsdates};
+			elements.push(days.sicknessesdates);
+			if( obj_dic[elements] == undefined ) 
+				obj_dic[elements] = {indexes:[],data:days.sicknessesdates};
+			elements.push(days.vacationsdates);
+			if( obj_dic[elements] == undefined ) 
+				obj_dic[elements] = {indexes:[],data:days.vacationsdates};
+			elements.push(days.presencedates);
+			if( obj_dic[elements] == undefined ) 
+				obj_dic[elements] = {indexes:[],data:days.presencedates};
+			if( obj_dic[elements] == undefined ) 
+				obj_dic[elements] = {indexes:[],data:days.simpleRetardsdates};
+			
+			let index = 1;
+			elements.forEach((element)=>
+			{
+				//console.log(index++);
+				for(let i = 0; i < element.length;++i)
+				{
+					//console.log("Reaching element ID "+element[i].ID);
+					if(element[i].ID == employeeContentModel.ID)
+					{
+						//console.log("Element with ID "+ID );
+						obj_dic[elements].indexes.push(i);
+					}
+				}
+			});
+			
+			Object.keys(obj_dic).forEach((key)=>
+			{
+				obj_dic[key].indexes.forEach((index)=>
+				{
+					obj_dic[key].data[index] = employeeContentModel;
+				}); 
+			});
+			
 		}
 
 		//console.log((element_found) == undefined ? "Element with ID "+ID+" not found ":"Element with ID "+ID+" found");
@@ -4689,14 +4815,14 @@
 					nodupTemp.empDic[employeeContentModel.ID].vacationdates.other.push(employeeContentModel.date);
 					nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].vacationdates.other.push(employeeContentModel.date);
 					nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].weeks[weekIndex].vacationdates.other.push(employeeContentModel.date);
-				}
+				}/*
 				else
 				{ 
 					if(nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].empDicofVacances[employeeContentModel.ID]!= employeeContentModel)
 					{
 						nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].empDicofVacances[employeeContentModel.ID] = employeeContentModel
 					}
-				}
+				}*/
 			}
 			else
 			{
@@ -4767,14 +4893,14 @@
 				nodupTemp.empDic[employeeContentModel.ID].presencedates.other.push(employeeContentModel.date);
 				nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].presencedates.other.push(employeeContentModel.date);
 				nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].weeks[weekIndex].presencedates.other.push(employeeContentModel.date);
-			}
+			}/*
 			else
 			{ 
 				if(nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].empDicofPresences[employeeContentModel.ID] != employeeContentModel)
 				{
 					nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].empDicofPresences[employeeContentModel.ID] = employeeContentModel
 				}
-			}
+			}*/
 		}
 		else
 		{
@@ -4844,14 +4970,14 @@
 				nodupTemp.empDic[employeeContentModel.ID].sicknessdates.other.push(employeeContentModel.date);
 				nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].sicknessdates.other.push(employeeContentModel.date);
 				nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].weeks[weekIndex].sicknessesdates.other.push(employeeContentModel.date);
-			}
+			}/*
 			else
 			{ 
 				if(nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].empDicofSicknesses[employeeContentModel.ID] != employeeContentModel)
 				{
 					nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].empDicofSicknesses[employeeContentModel.ID] = employeeContentModel
 				}
-			}
+			}*/
 		}
 		else
 		{
@@ -4936,14 +5062,14 @@
 				nodupTemp.empDic[employeeContentModel.ID].absencedates.other.push(employeeContentModel.date);
 				nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].absencedates.other.push(employeeContentModel.date);
 				nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].weeks[weekIndex].absencedates.other.push(employeeContentModel.date);
-			}
+			}/*
 			else
 			{ 
 				if(nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].empDicofAbsences[employeeContentModel.ID] != employeeContentModel)
 				{
 					nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].empDicofAbsences[employeeContentModel.ID] = employeeContentModel
 				}
-			}
+			}*/
 		}
 		else
 		{
@@ -5053,7 +5179,7 @@
 				nodupTemp.empDic[employeeContentModel.ID].overallretarddates.other.push(employeeContentModel.date);
 				nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].overallretarddates.other.push(employeeContentModel.date);
 				nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].weeks[weekIndex].overallretarddates.other.push(employeeContentModel.date);
-			}
+			}/*
 			else
 			{ 
 				if(nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].empDicofRetards[employeeContentModel.ID] != employeeContentModel)
@@ -5065,7 +5191,7 @@
 					//nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].simpleRetardsdates.push(employeeContentModel);
 
 				}
-			}
+			}*/
 		}
 		else
 		{
@@ -5187,7 +5313,7 @@
 				nodupTemp.empDic[employeeContentModel.ID].overallretarddates.other.push(employeeContentModel.date);
 				nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].overallretarddates.other.push(employeeContentModel.date);
 				nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].weeks[weekIndex].overallretarddates.other.push(employeeContentModel.date);
-			}
+			}/*
 			else
 			{
 				if(nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].empDicofRetards[employeeContentModel.ID] != employeeContentModel)
@@ -5197,9 +5323,8 @@
 					
 					//nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].retardsdates.push(employeeContentModel);
 					//nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].retardsCriticaldates.push(employeeContentModel);
-
 				}
-			}
+			}*/
 		}
 		else
 		{
@@ -5291,13 +5416,13 @@
 				nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].missiondates.other.push(employeeContentModel.date);
 				nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].weeks[weekIndex].missiondates.other.push(employeeContentModel.date);
 			}
-			else
+			/*else
 			{
 				if(nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].empDicofMissions[employeeContentModel.ID] != employeeContentModel)
 				{
 					nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].empDicofMissions[employeeContentModel.ID] = employeeContentModel;
 				}
-			}
+			}*/
 		}
 		else
 		{
