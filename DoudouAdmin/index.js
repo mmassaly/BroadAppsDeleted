@@ -438,8 +438,10 @@ async function formidableFileUpload(req,path,res)
 						elements_dic.push(obj);
 						
 						let queryStr = "create table \""+baseTable+"\" ("+valuesStr+",id integer,idindividu integer, Primary KEY("+pkvalues+",id,idindividu))\n;";
-						queryStr += "insert into \""+table+"\" values (DEFAULT,$$"+baseTable+"$$,$$"+image_url+"$$);";
+						queryStr += "insert into \""+table+"\" values (DEFAULT,$$"+baseTable+"$$,$$"+image_url+"$$);\n";
+						queryStr += "create table \""+baseTable+" saisies\" ("+valuesStr+",id integer,idindividu integer,index integer, Primary KEY("+pkvalues+",id,idindividu,index integer))\n;";
 						console.log(queryStr);
+						
 						let tempuserAuthentification = {ID:urlObject.authID[0],Prenom:urlObject.authPrenom[0],Nom:urlObject.authNom[0],genre:urlObject.authGenre[0],pass:urlObject.authpass[0]};
 						let tempResult = await forced_authentification_query(tempuserAuthentification,undefined);
 						//let tempResult = false;
@@ -449,7 +451,7 @@ async function formidableFileUpload(req,path,res)
 							let result = await faire_un_simple_query(queryStr);
 							if(result.second != false || (result.second instanceof Array))
 							{
-								base.bytable[max++] = {name:baseTable,headers:Array.prototype.concat(elements_dic,individuals_interest),rows:[],image_url:image_url};
+								base.bytable[max++] = {name:baseTable,headers:Array.prototype.concat(elements_dic,individuals_interest),rows:[],rowsInput:[],image_url:image_url};
 								goodResponse(res, {text:"Base ajoutée",customtext:"OK"});
 							}
 							else
@@ -462,15 +464,29 @@ async function formidableFileUpload(req,path,res)
 							dummyResponse(res,{text:"Ajout impossible",customtext:"Error"});
 						}
 				}
-				else if(commandArg == "addrows" || commandArg == "modifyrows")
+				else if(commandArg == "addrows" || commandArg == "addinputrows")
 				{
 					let tableId = undefined;
+					let ADDERSID = undefined;
+					let rowsInputFormat = {}
 					Object.keys(fields).forEach(key=>
 					{
+						if(key == "authID")
+						{
+							let valueEq = undefined;
+							if(fields[key] instanceof Array)
+							{
+								valueEq = fields[key][0];
+							}
+							else
+								valueEq = fields[key];
+							
+							ADDERSID = valueEq;
+						}
 						if(key != commandArg && key != command && key != "table" && key != "userAuthentification" && key != "table"  && key !="command"  && key != "cmdArg"
 						 && key != "authID"  && key != "authPrenom"  && key != "authNom"  && key !="authGenre"  && key !="authpass")
 						{
-							
+							console.log(key);
 							let valueEq = "";
 							if(fields[key] instanceof Array)
 							{
@@ -484,6 +500,8 @@ async function formidableFileUpload(req,path,res)
 							
 							obj["img"] = false;
 							elements_dic.push(obj);
+							
+							rowsInputFormat[key] = valueEq;
 							
 							if(count > 0)
 							{
@@ -504,27 +522,28 @@ async function formidableFileUpload(req,path,res)
 						else
 						{
 							let valueEq = "";
-								if(fields[key] instanceof Array)
-								{
-									valueEq = fields[key][0];
-								}
-								else
-									valueEq = fields[key];
+							if(fields[key] instanceof Array)
+							{
+								valueEq = fields[key][0];
+							}
+							else
+								valueEq = fields[key];
 								
 							if(key == "table")
 								table = valueEq;
 						}
+						
 						console.log(key);
 						
 					});
-
+					console.log(count+"----------------");
 					let query = "insert into \"" + table + "\" values (" + valuesStr+" );\n";
 					console.log(query);
 					console.log(commandArg);
 					console.log(tableId);
 					console.log(fields);
 					
-					if(commandArg == "addrows")
+					if(commandArg == "addinputrows" || commandArg == "addrows")
 					{
 						let tempuserAuthentification = {ID:urlObject.authID[0],Prenom:urlObject.authPrenom[0],Nom:urlObject.authNom[0],genre:urlObject.authGenre[0],pass:urlObject.authpass[0]};
 						let tempResult = await forced_authentification_query(tempuserAuthentification,undefined);
@@ -532,6 +551,7 @@ async function formidableFileUpload(req,path,res)
 						if(tempResult != false && tableId != undefined)
 						{
 							let result = await add(table,valuesStr);
+							
 							console.log(typeof result.first == 'object');
 							if(!(result.second instanceof Array))
 							{
@@ -560,7 +580,8 @@ async function formidableFileUpload(req,path,res)
 									
 									if(base.byId[tempuserAuthentification.ID][tableId] == undefined)
 									{
-										base.byId[tempuserAuthentification.ID][tableId] = {name:base.bytable[tableId].name,headers:base.bytable[tableId].headers,rows:JSON.parse(JSON.stringify(base.bytable[tableId].rows))};
+										base.byId[tempuserAuthentification.ID][tableId] = {name:base.bytable[tableId].name,headers:base.bytable[tableId].headers,rows:[],rowsInput:[]};
+										//base.byId[tempuserAuthentification.ID][tableId] = {name:base.bytable[tableId].name,headers:base.bytable[tableId].headers,rows:JSON.parse(JSON.stringify(base.bytable[tableId].rows),rowsInput:[])};
 									}
 									
 									
@@ -572,8 +593,8 @@ async function formidableFileUpload(req,path,res)
 									let a = undefined;
 									let b = undefined;
 									
-									console.log(tempuserAuthentification.ID);
-									console.log(base.individuals);
+									//console.log(tempuserAuthentification.ID);
+									//console.log(base.individuals);
 									
 									b = {value:base.individuals[tempuserAuthentification.ID].first,img:false};//.prenom
 									rows.push(b);
@@ -587,13 +608,39 @@ async function formidableFileUpload(req,path,res)
 									a = {value:base.individuals[tempuserAuthentification.ID]["image"], img: true};//["image"]
 									rows.push(a);
 									
-									base.bytable[tableId].rows.push(rows);
+									rowsInputFormat["prenom"] = base.individuals[tempuserAuthentification.ID].first;
+									rowsInputFormat["nom"] = base.individuals[tempuserAuthentification.ID].second;
+									rowsInputFormat["genre"] = base.individuals[tempuserAuthentification.ID].gender;
+									rowsInputFormat["image"] = base.individuals[tempuserAuthentification.ID]["image"];
 									
-									console.log(base.bytable[tableId].rows.length+"--------------------------");
-									base.byId[tempuserAuthentification.ID][tableId].rows.push(rows);
 									
-									console.log(base.bytable[tableId].rows.length+"--------------------------");
-										
+									if( commandArg == "addinputrows" )
+									{
+										base.bytable[tableId].rowsInput.push(rowsInputFormat);
+										console.log(base.bytable[tableId].rowsInput);
+										console.log("added into rowsInput 622");
+									}
+									else
+										base.bytable[tableId].rows.push(rows);
+									
+									console.log(tableId);
+									console.log(base.byId[tempuserAuthentification.ID]);
+									
+									if( commandArg == "addinputrows" )
+									{
+										console.log(base.byId[tempuserAuthentification.ID][tableId].rowsInput.length+"--------------------------");
+										base.byId[tempuserAuthentification.ID][tableId].rowsInput.push(rowsInputFormat);
+										console.log(base.byId[tempuserAuthentification.ID][tableId].rowsInput);
+										console.log(base.byId[tempuserAuthentification.ID][tableId].rowsInput.length+"--------------------------");
+										console.log("added into rowsInput 635");
+									}
+									else
+									{
+										console.log(base.byId[tempuserAuthentification.ID][tableId].rows.length+"--------------------------");
+										base.byId[tempuserAuthentification.ID][tableId].rows.push(rows);
+										console.log(base.byId[tempuserAuthentification.ID][tableId].rows.length+"--------------------------");
+									}	
+									
 									goodResponse(res, {text:"Ajout passé",customtext:"OK"});
 									
 							}
@@ -605,6 +652,193 @@ async function formidableFileUpload(req,path,res)
 						else
 						{
 							dummyResponse(res,{text:"Vous n'avez pas l'accés",customtext:"Error"});
+						}
+					}
+				}
+				else if ( commandArg == "modifyrows" || commandArg == "modifyinputrows")
+				{
+					let valuesStr = ["",""];
+					let tableId = undefined;
+					let keys = [];
+					let elements_dic = [[],[]];
+					let oldComparison = {};
+					let newComparison = {};
+					
+					Object.keys(fields).forEach(key=>
+					{
+						if(key != commandArg && key != command && key != "table" && key != "userAuthentification" && key != "table"  && key !="command"  && key != "cmdArg"
+						 && key != "authID"  && key != "authPrenom"  && key != "authNom"  && key !="authGenre"  && key !="authpass")
+						{
+							keys.push(key);
+							let valueEq = ["",""];
+							oldComparison[key] = fields[key][0];	
+							newComparison[key] = fields[key][1];
+							
+							
+							if(fields[key] instanceof Array)
+							{
+								valueEq[0] = fields[key][0];
+								valueEq[1] = fields[key][1];
+							}
+							
+							let obj ={};
+							obj["value"] = valueEq[0];
+							obj["img"] = false;
+							elements_dic[0].push(obj);
+							
+							obj ={};
+							obj["value"] = valueEq[1];
+							obj["img"] = false;
+							elements_dic[1].push(obj);
+							
+							if(count > 0)
+							{
+								valuesStr[0] += ",\""+key+"\"="+"$$"+valueEq[1]+"$$";
+								valuesStr[1] += " AND \""+key+"\"="+"$$"+valueEq[0]+"$$";
+							}
+							else
+							{
+								valuesStr[0] += "\""+key+"\"="+"$$"+valueEq[1]+"$$";
+								valuesStr[1] += "\""+key+"\"="+"$$"+valueEq[0]+"$$";
+							}
+							++count;
+							
+							if( key == "id")
+							{
+								tableId = valueEq[0];
+							}
+							
+						}
+						else
+						{
+							let valueEq = ["",""];
+								if(fields[key] instanceof Array)
+								{
+									valueEq[0] = fields[key][0];
+									valueEq[1] = fields[key][1];
+								}
+							if(key == "table")
+								table = valueEq[0];
+						}
+						console.log(key);
+						
+					});
+				
+					let queryStr = "update \"" + table + "\" SET "+valuesStr[0]+" WHERE "+valuesStr[1]+"\n;";
+					console.log(queryStr);
+					console.log(commandArg);
+					console.log(tableId);
+					console.log(fields);
+					
+					if(commandArg == "modifyrows" || commandArg == "modifyinputrows")
+					{
+						let tempuserAuthentification = {ID:urlObject.authID[0],Prenom:urlObject.authPrenom[0],Nom:urlObject.authNom[0],genre:urlObject.authGenre[0],pass:urlObject.authpass[0]};
+						let tempResult = await forced_authentification_query(tempuserAuthentification,undefined);
+						
+						if(tempResult != false && tableId != undefined)
+						{
+							let result = await faire_un_simple_query(queryStr);
+							if(result.second != false || (result.second instanceof Array))
+							{
+									
+									let rows = [];
+									elements_dic[0].forEach((k)=>{
+										rows.push(k);
+									});
+									
+									let rowsbeta = [];
+									elements_dic[1].forEach((k)=>{
+										rowsbeta.push(k);
+									});
+									
+									let a = undefined;
+									let b = undefined;
+								
+									 
+									if( commandArg == "modifyinputrows" )
+									{
+										
+										oldComparison["prenom"] =  base.individuals[tempuserAuthentification.ID].first;
+										oldComparison["nom"] =  base.individuals[tempuserAuthentification.ID].second;
+										oldComparison["genre"] =  base.individuals[tempuserAuthentification.ID].gender;
+										oldComparison["image"] =  base.individuals[tempuserAuthentification.ID]["image"];
+										newComparison["prenom"] =  base.individuals[tempuserAuthentification.ID].first;
+										newComparison["nom"] =  base.individuals[tempuserAuthentification.ID].second;
+										newComparison["genre"] =  base.individuals[tempuserAuthentification.ID].gender;
+										newComparison["image"] =  base.individuals[tempuserAuthentification.ID]["image"];
+										
+										console.log(base.bytable[tableId].rowsInput.length+"--------------------------");
+										
+										console.log(oldComparison);
+										
+										let elementFound = base.byId[tempuserAuthentification.ID][tableId].rowsInput.find((rowElement)=> Object.values(rowElement).reduce((acc,aelement,index)=> acc = acc && (Object.values(oldComparison)[index] == aelement.toString()),true));
+										console.log("elementfound is "+((elementFound != undefined)? 'defined':'undefined'));
+										Object.keys(elementFound).forEach((loopkey)=>
+										{
+											elementFound[loopkey] = newComparison[loopkey];
+										});
+										console.log(elementFound);
+										
+										elementFound = base.bytable[tableId].rowsInput.find((rowElement)=> Object.values(rowElement).reduce((acc,aelement,index)=> acc = acc && (Object.values(oldComparison)[index] == aelement.toString()),true));
+										console.log("elementfound is "+((elementFound != undefined)? 'defined':'undefined'));
+										if(elementFound)
+										Object.keys(elementFound).forEach((loopkey)=>
+										{
+											elementFound[loopkey] = newComparison[loopkey];
+										});
+										console.log(elementFound);
+										
+										console.log(base.bytable[tableId].rowsInput.length+"--------------------------");
+									}
+									else
+									{
+										oldComparison["prenom"] =  base.individuals[tempuserAuthentification.ID].first;
+										oldComparison["nom"] =  base.individuals[tempuserAuthentification.ID].second;
+										oldComparison["genre"] =  base.individuals[tempuserAuthentification.ID].gender;
+										oldComparison["image"] =  base.individuals[tempuserAuthentification.ID]["image"];
+										newComparison["prenom"] =  base.individuals[tempuserAuthentification.ID].first;
+										newComparison["nom"] =  base.individuals[tempuserAuthentification.ID].second;
+										newComparison["genre"] =  base.individuals[tempuserAuthentification.ID].gender;
+										newComparison["image"] =  base.individuals[tempuserAuthentification.ID]["image"];
+										
+										console.log(base.bytable[tableId].rows.length+"--------------------------");
+										let elementFound = base.byId[tempuserAuthentification.ID][tableId].rows.find((rowElement)=> rowElement.reduce((acc,aelement,index)=> acc = acc && (Object.values(oldComparison)[index] == aelement.value.toString()),true));
+										console.log("elementfound is "+((elementFound != undefined)? 'defined':'undefined'));
+										console.log(oldComparison);
+										base.byId[tempuserAuthentification.ID][tableId].rows.forEach((el)=>{console.log(el);});
+										console.log(base.bytable[tableId].rows.length+"--------------------------");
+										
+										if(elementFound)
+										Object.keys(oldComparison).forEach((loopkey,index)=>
+										{
+											elementFound[index].value = newComparison[loopkey];
+										});
+										
+										elementFound = base.bytable[tableId].rows.find((rowElement)=> rowElement.reduce((acc,aelement,index)=> acc = acc && (Object.values(oldComparison)[index] == aelement.value.toString()),true));
+										console.log(oldComparison);
+										base.bytable[tableId].rows.forEach((el)=>{console.log(el);});
+										console.log("elementfound is "+((elementFound != undefined)? 'defined':'undefined'));
+										
+										
+										if(elementFound)
+										Object.keys(oldComparison).forEach((loopkey,index)=>
+										{
+											elementFound[index].value = newComparison[loopkey];
+										});
+										console.log(base.bytable[tableId].rows.length+"--------------------------");
+									}	
+									
+									goodResponse(res, {text:"Modifications passées",customtext:"OK"});
+									
+							}
+							else
+							{
+								dummyResponse(res,{text:"Modifications impossibles",customtext:"Error"});
+							}
+						}
+						else
+						{
+							dummyResponse(res,{text:"Vous n'avez pas l'accés pour modifier.",customtext:"Error"});
 						}
 					}
 				}
@@ -674,7 +908,7 @@ async function formidableFileUpload(req,path,res)
 							{
 								if(base.bytable[elements_dic_other["baseID"]] != undefined)
 								{
-									base.byId[elements_dic_other["ID"]][elements_dic_other["baseID"]] = {name: base.bytable[elements_dic_other["baseID"]].name,headers: base.bytable[elements_dic_other["baseID"]].headers,rows:[]}  ;
+									base.byId[elements_dic_other["ID"]][elements_dic_other["baseID"]] = {name: base.bytable[elements_dic_other["baseID"]].name,headers: base.bytable[elements_dic_other["baseID"]].headers,rows:[],rowsInput:[]}  ;
 								}
 							}
 							
@@ -824,7 +1058,7 @@ async function formidableFileUpload(req,path,res)
 											{
 												if(base.bytable[elements_dic_other["baseID"]] != undefined)
 												{
-													base.byId[elements_dic_other["ID"]][elements_dic_other["baseID"]] = {name: base.bytable[elements_dic_other["baseID"]].name,headers: base.bytable[elements_dic_other["baseID"]].headers,rows:[]}  ;
+													base.byId[elements_dic_other["ID"]][elements_dic_other["baseID"]] = {name: base.bytable[elements_dic_other["baseID"]].name,headers: base.bytable[elements_dic_other["baseID"]].headers,rows:[],rowsInput:[]}  ;
 												}
 												console.log("Added to byId");
 												console.log(base.byId[elements_dic_other["ID"]]);
@@ -1084,6 +1318,7 @@ async function add_all_users()
 		
 		var holder = {};
 		let query_two =  "";
+		let query_three = "";
 		query = "";
 		
 		query += "SELECT COLUMN_NAME, DATA_TYPE, IS_NULLABLE, COLUMN_DEFAULT,TABLE_NAME FROM INFORMATION_SCHEMA.COLUMNS";
@@ -1093,7 +1328,7 @@ async function add_all_users()
 		for(let i = 0; i < tempResult[1].first.length; ++i)
 		{
 			query += "SELECT COLUMN_NAME, DATA_TYPE, IS_NULLABLE, COLUMN_DEFAULT,TABLE_NAME FROM INFORMATION_SCHEMA.COLUMNS where TABLE_NAME = $$"+tempResult[1].first[i]['name']+"$$;\n";
-			base.bytable[tempResult[1].first[i]["id"]] = {name: tempResult[1].first[i]["name"],headers:[],rows:[]}; 
+			base.bytable[tempResult[1].first[i]["id"]] = {name: tempResult[1].first[i]["name"],headers:[],rows:[],rowsInput:[]}; 
 			holder[tempResult[1].first[i]["name"]] = base.bytable[tempResult[1].first[i]["id"]] ;
 			let arrayFiltered = lastTempResult[1].first.filter((elem)=> elem.id == tempResult[1].first[i]["id"]);
 			if(arrayFiltered.length > 0)
@@ -1101,6 +1336,7 @@ async function add_all_users()
 				base.bytable[tempResult[1].first[i]["id"]]["image_url"] = arrayFiltered[0]["image_url"];
 			}
 			query_two += "SELECT * FROM \""+tempResult[1].first[i]['name']+"\" inner join  (Select IDIndividu,Prenom,Nom,Genre,Image from \"DouDous'individuals\") as A  on A.IDIndividu = \""+tempResult[1].first[i]['name']+"\".IDIndividu;\n";
+			query_three += "SELECT * FROM \""+tempResult[1].first[i]['name']+" saisies\" inner join  (Select IDIndividu,Prenom,Nom,Genre,Image from \"DouDous'individuals\") as A  on A.IDIndividu = \""+tempResult[1].first[i]['name']+" saisies\".IDIndividu;\n";
 		}
 		
 		console.log(query);
@@ -1161,7 +1397,7 @@ async function add_all_users()
 		let otherResult = await faire_un_simple_query(query_two);
 		
 		let filter = ["prenom","nom","id","genre"];
-		//console.log(otherResult);
+		console.log(otherResult);
 		if( !(otherResult instanceof Array) )
 		{
 			otherResult = [otherResult];
@@ -1169,13 +1405,48 @@ async function add_all_users()
 		
 		//console.log(otherResult[0]);
 		//console.log(otherResult[0].first.length+".....................");
-		//console.log(otherResult[0].second.length+".....................");	
+		console.log(otherResult[0].second.length+".....................");	
+		
+		console.log(base.byId);
+		let baseIDs = [];
+		let copy = JSON.parse(JSON.stringify(base.bytable));
+		console.log(copy);
+		for(let i = 0; i < otherResult.length; ++i)
+		{
+			
+			orderQueryResultByColumnForVisibility (otherResult[i],"id",undefined,"rows","image",undefined,base.bytable,undefined,[]);
+			orderQueryResultByColumnForVisibility (otherResult[i],"idindividu","id","rows","image",copy,base.byId,["name","headers","rowsInput"],[]);
+		}
+		console.log(query_three);
+		otherResult = await faire_un_simple_query(query_three);
+		
+		filter = ["prenom","nom","id","genre"];
+		
+		if( !(otherResult instanceof Array) )
+		{
+			otherResult = [otherResult];
+		}
 		
 		for(let i = 0; i < otherResult.length; ++i)
 		{
-			let copy = JSON.parse(JSON.stringify(base.bytable));
-			orderQueryResultByColumnForVisibility (otherResult[i],"id",undefined,"rows","image",undefined,base.bytable,undefined,[]);
-			orderQueryResultByColumnForVisibility (otherResult[i],"idindividu","id","rows","image",copy,base.byId,["name","headers"],[]);
+			console.log(i);
+			console.log("--------------Inside saisies---------------------");
+			otherResult[i].first.forEach((row,index)=>
+			{
+				/* Object.keys(row).forEach((key2)=>
+				{
+					valuesOfRow.push(row[key2]);
+				});
+				 */
+				let rowsCopy = JSON.parse(JSON.stringify(row));
+				let rowsCopy2 = JSON.parse(JSON.stringify(row));
+				
+				//console.log(Object.keys(base.bytable[row["id"]]));
+				//console.log(base.bytable[row["id"]]);
+				base.bytable[row["id"]].rowsInput.push(rowsCopy);
+				base.byId[row["idindividu"]][row["id"]].rowsInput.push(rowsCopy2);
+			});	
+			console.log("--------------After saisies---------------------");
 		}
 		
 		
@@ -1191,13 +1462,13 @@ async function add_all_users()
 				if( base.bytable[lastTempResult[2].first[i]["id"]] != undefined )
 				{
 					base.byId[lastTempResult[2].first[i]["idindividu"]][lastTempResult[2].first[i]["id"]] = { name: base.bytable[lastTempResult[2].first[i]["id"]].name,
-					headers: base.bytable[lastTempResult[2].first[i]["id"]].headers, rows: []  }; 
+					headers: base.bytable[lastTempResult[2].first[i]["id"]].headers, rows: [],rowsInput:[]  }; 
 				}
 			}
 		}
 		
-		//console.log(base.byId);
-		//console.log(base.bytable);
+		console.log(base.byId);
+		console.log(base.bytable);
 		//console.log(connectedguys);
 }
 

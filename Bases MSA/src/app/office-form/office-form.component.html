@@ -58,7 +58,11 @@
 	</div>
 </form>
 <form *ngIf="c2" style ="overflow-x:auto;" #fTwo = "ngForm" (ngSubmit)="submitFunction(fTwo.value,fTwo,$event)" ngNativeValidate>
-	<img width="80px" height = "80px" style="position:fixed;" *ngIf ="selectedID != '' && data.base.tables != undefined &&  data.base.tables[selectedID] != undefined && data.base.tables[selectedID].headers != undefined && data.base.tables[selectedID].image_url != undefined" src={{data.base.tables[selectedID].image_url}}/>
+	<div *ngIf ="selectedID != '' && data.base.tables != undefined &&  data.base.tables[selectedID] != undefined && data.base.tables[selectedID].headers != undefined && data.base.tables[selectedID].image_url != undefined && data.base.tables[selectedID].image_url instanceof Array">
+		<div *ngFor= "let image_src of data.base.tables[selectedID].image_url;let iBis = index"  >
+			<img width="100%" height = "300px" style="" *ngIf ="selectedID != '' && data.base.tables != undefined &&  data.base.tables[selectedID] != undefined && data.base.tables[selectedID].headers != undefined && data.base.tables[selectedID].image_url != undefined" src={{image_src}}/>
+		</div>
+	</div>
 	<h1 style="margin-top:80px" *ngIf ="selectedID != '' && data.base.tables != undefined &&  data.base.tables[selectedID] != undefined && data.base.tables[selectedID].headers != undefined && data.base.tables[selectedID].image_url != undefined">Ajouter</h1>
 	<h1 *ngIf ="selectedID == '' && data.base.tables == undefined ||  data.base.tables[selectedID] == undefined || data.base.tables[selectedID].headers == undefined || data.base.tables[selectedID].image_url == undefined">Ajouter</h1>
 	<select [(ngModel)] = "displayID" name ="idDisplayer">
@@ -72,26 +76,28 @@
 			<th *ngFor = "let headerEntry of data.base.tables[selectedID].headers;let i=index" [ngClass]="i %2 ==0? 'even' : 'odd'" > {{headerEntry.name}} </th>
 			<th>Autre</th>
 		</tr>
-		<ng-template ngFor let-row [ngForOf]= "data.base.tables[selectedID].rows"  let-i = index >
-			<tr *ngIf="row[row.length-6].value == displayID || displayID == 'all' ">
-				<td *ngFor = "let rowValue of row" ><img *ngIf="rowValue.img" width="80px" height = "80px" src={{rowValue.value}}/>{{rowValue.img == false?rowValue.value:""}}</td>
+		<ng-template ngFor let-row [ngForOf]= "data.base.tables[selectedID].rows"  let-iBis = index; let-oddOne = odd >
+			<tr *ngIf="row[row.length-5].value == displayID || displayID == 'all' " [ngClass]= "oddOne?'odd':'even'" (click) = " this.data.rowChanges[selectedID].values[iBis].displays = this.data.rowChanges[selectedID].values[iBis].displays?true: true">
+				<td *ngFor = "let rowValue of row;let heads = index" ><input name = "{{'rowChangeInput'+iBis+heads}}" *ngIf ="heads < data.base.tables[selectedID].headers.length -6 && data.base.tables[selectedID].headers[heads].validate && this.data.rowChanges[selectedID].values[iBis].displays" (change)= "updateChange(selectedID,iBis,data.base.tables[selectedID].headers,'modifyrows')" [appMngtype] = "fixType(data.base.tables[selectedID].headers[heads].type)"   [(ngModel)] = "this.data.rowChanges[selectedID].values[iBis].row[heads].value" ><img *ngIf="rowValue.img" width="80px" height = "80px" src={{rowValue.value}}/>{{rowValue.img == false?rowValue.value:""}}</td>
 			</tr>
 		</ng-template>
-		<tr *ngFor = "let row of onDisplay.elements;let b = index" > 
+		<ng-template ngFor let-row [ngForOf]= "data.base.tables[selectedID].rowsInput" let-b = index >
+		<tr *ngIf = "data.base.tables[selectedID].rowsInput.length <= data.onDisplay[selectedID].elements.length" (click) = "flipOthers(selectedID,b,false,data.onDisplay[selectedID].elements[b])"  > 
 			<td  *ngFor="let headerEntry of data.base.tables[selectedID].headers;let i = index" >
 				{{type_correcter[headerEntry.type]}}
-				<input  *ngIf = "i < data.base.tables[selectedID].headers.length -6 && headerEntry.validate && !row.flipped" [appMngtype] = "fixType(headerEntry.type)" name = "{{headerEntry.name+b+i}}"  [(ngModel)] ="row.values[i]"  required ngModel/>
-				<label *ngIf ="headerEntry.validate && row.flipped"> {{row.values[i]}} </label>
-				<input type ="fixType(headerEntry.type)" *ngIf = "( i == data.base.tables[selectedID].headers.length -6 ) && headerEntry.validate && !row.flipped" name = "{{headerEntry.name +b+i}}" [(ngModel)] = "selectedID" disabled required ngModel>
-				<input type ="fixType(headerEntry.type)" *ngIf = "( i == data.base.tables[selectedID].headers.length -5 ) && headerEntry.validate && !row.flipped" name = "{{headerEntry.name+b+i}}" [(ngModel)] = "data.userAuthentification.ID" disabled required ngModel>
+				<input  *ngIf = "i < data.base.tables[selectedID].headers.length -6 && headerEntry.validate && !data.onDisplay[selectedID].elements[b].flipped" [appMngtype] = "fixType(headerEntry.type)" name = "{{headerEntry.name+b+i}}" (change) = "updateChange(selectedID,b,data.base.tables[selectedID].headers,'modifyinputrows')" [(ngModel)] ="data.onDisplay[selectedID].elements[b].values[headerEntry.name]"   required ngModel/>
+				<label *ngIf ="headerEntry.validate && data.onDisplay[selectedID].elements[b].flipped"> {{data.onDisplay[selectedID].elements[b].values[i]}} </label>
+				<input type ="fixType(headerEntry.type)" *ngIf = "( i == data.base.tables[selectedID].headers.length -6 ) && headerEntry.validate && !data.onDisplay[selectedID].elements[b].flipped" name = "{{headerEntry.name +b+i}}" (change) = "updateChange(selectedID,b,data.base.tables[selectedID].headers,'modifyinputrows')" [(ngModel)] = "selectedID"  disabled required ngModel>
+				<input type ="fixType(headerEntry.type)" *ngIf = "( i == data.base.tables[selectedID].headers.length -5 ) && headerEntry.validate && !data.onDisplay[selectedID].elements[b].flipped" name = "{{headerEntry.name+b+i}}" (change) = "updateChange(selectedID,b,data.base.tables[selectedID].headers,'modifyinputrows')" [(ngModel)] = "data.userAuthentification.ID"  disabled required ngModel>
 				<label *ngIf = "i == data.base.tables[selectedID].headers.length -4"> {{data.userAuthentification.Prenom}} </label>
 				<label *ngIf = "i == data.base.tables[selectedID].headers.length -3"> {{data.userAuthentification.Nom}} </label>
 				<label *ngIf = "i == data.base.tables[selectedID].headers.length -2"> {{data.userAuthentification.genre}} </label>
 				<img *ngIf = "i == data.base.tables[selectedID].headers.length -1" /> 
 			</td>
-			<td><div [ngClass] ="row.submitting?'movingCircle':'none'"> </div><button type ="submit" [ngClass] ="row.submitting?'none':'submitbutton'" name ="{{'b'+b}}" style = "margin-left:auto;margin-right:auto;"  *ngIf = "!row.flipped" (mouseenter) = "flipOthers(b,true,row)" (mouseleave) = "flipOthers(b,false,row)"> Soumettre </button> <div [ngClass] = "row.class">{{row.responseString}}</div></td>
+			<td><div   [ngClass] ="data.onDisplay[selectedID].elements[b].submitting?'movingCircle':'none'"> </div><button type ="submit" [ngClass] ="data.onDisplay[selectedID].elements[b].submitting?'none':'submitbutton'" name ="{{'b'+b}}" style = "margin-left:auto;margin-right:auto;"  *ngIf = "!data.onDisplay[selectedID].elements[b].flipped" (mouseenter) = "flipOthers(selectedID,b,true,data.onDisplay[selectedID].elements[b])" (click) = "flipOthers(selectedID,b,false,data.onDisplay[selectedID].elements[b])" > Soumettre </button> <div  [ngClass] = "data.onDisplay[selectedID].elements[b].class">{{data.onDisplay[selectedID].elements[b].responseString}}</div></td>
 		</tr>
-		<tr><td colspan= "*" style = "margin-left:auto;margin-right:auto;" ><td><button  (click) = "addUp(data.base.tables[selectedID].headers.length,selectedID,data.userAuthentification.ID)" >+</button></td></tr>
+		</ng-template>
+		<tr><td colspan= "*" style = "margin-left:auto;margin-right:auto;" ><td><button type ="button" (click) = "addUp(data.base.tables[selectedID].headers.length,selectedID,data.userAuthentification.ID,data.base.tables[selectedID].headers)" >+</button></td></tr>
 	</table>
 </form>
 <form *ngIf="c3"  #fThree  ="ngForm" (ngSubmit)="submitFunction(fThree.value,fThree,$event)" ngNativeValidate>

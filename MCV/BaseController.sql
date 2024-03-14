@@ -120,3 +120,35 @@ $$MISSION DE CONTRÔLE$$,
 $$02/11/2022 00:00:00$$,
 $$REPONSES FAVORABLES DE L'ENTREPRISE (VOIR) PV$$,
 $$27/10/2022 00:00:00$$);
+
+
+
+
+create table "Base plainte PAP saisies"( Emprise VARCHAR(255),
+ "Numéro de la réclamation" VARCHAR(255),
+ Date Date,"Prénom et Nom du plaignant" VARCHAR(255) ,
+ Sexe  VARCHAR(255),"Quartier ou village" VARCHAR(255),
+ "Code PAP (si recensée)" VARCHAR (255),
+ "Fonction du Plaignant" VARCHAR(255), "Parties concernées" VARCHAR(255),
+ "Objet de réclamation" VARCHAR (255),"Description de la réclamation" TEXT,
+ "Solutions préconisées par le plaignant" VARCHAR(255),"Plainte enregistrée par" VARCHAR (255),
+ "Recevabilité de la plainte après examen de l’UGP" VARCHAR(255),
+ Commentaires TEXT,"Solutions proposées" VARCHAR(255),
+ "Responsable de l’action" VARCHAR(255),
+ Echéance Date,
+ "Actions effectuées par l’entreprise" VARCHAR(255),
+ "Date de clôture de la plainte" Date,id integer,idindividu integer,index integer, PRIMARY KEY(Emprise,
+ "Numéro de la réclamation",
+ Date,"Prénom et Nom du plaignant",Sexe,"Quartier ou village","Code PAP (si recensée)",
+ "Fonction du Plaignant","Parties concernées",
+ "Objet de réclamation","Description de la réclamation",
+ "Solutions préconisées par le plaignant","Plainte enregistrée par",
+ "Recevabilité de la plainte après examen de l’UGP",
+ Commentaires,"Solutions proposées",
+ "Responsable de l’action",
+ Echéance,
+ "Actions effectuées par l’entreprise",
+ "Date de clôture de la plainte",id,idindividu,index
+ ))
+ 
+ alter table "DouDous'bases" ALTER COLUMN image_url TYPE text[];

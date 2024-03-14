@@ -23,7 +23,6 @@ export class OfficeFormComponent
 	public s3_valid:boolean = false;
 	public s4_valid:boolean = false;
 	public s4_selected_index = 0;
-	public onDisplay:AllRowsContainer = {indexofSelection: -1,elements: []};
 	public toggled: boolean = false;
 	public selectedID:string = "";
 	public objectKeysFunction: Function = Object.keys;
@@ -32,11 +31,14 @@ export class OfficeFormComponent
 	public rowHovered: any = undefined;
 	public newBase:boolean = false;
 	public baseColumns: any[] = [{value:"",index:0,submitting:false}];
-	public dicSubmittedOnDisplay:any = {}; 
 	public c1:boolean = true;
 	public c2:boolean = false;
 	public c3:boolean = false;
 	public c3data:any = {submitting:false,responseString:"",response:false};
+	public addingRowsDone:any = {count: 0, submitting:true,responseString:""};
+	public ourHeaders:any = {};
+	public swappingStack:any[] = []; 
+	public updatingInputs: any = {count: 0, submitting:true,responseString:""};
 	
 	constructor(private httpservice: HttpService,public data: DataStorageService)
 	{
@@ -85,7 +87,7 @@ export class OfficeFormComponent
 			formdata.append("authpass",this.data.userAuthentification.pass);
 			
 			console.log(formvalue);
-			//this.getRequestCallBack(this.httpservice,formdata,this,current_row_hovered);
+			//this.getRequestCallBack(this.httpservice,formdata,this,submissionNotifier);
 		}
 		else if(this.c2)
 		{
@@ -118,9 +120,9 @@ export class OfficeFormComponent
 			formdata.append("authNom",this.data.userAuthentification.Nom);
 			formdata.append("authGenre",this.data.userAuthentification.genre);
 			formdata.append("authpass",this.data.userAuthentification.pass);
-			console.log(this.dicSubmittedOnDisplay[source.submitter.name]);
-			this.dicSubmittedOnDisplay[source.submitter.name].submitting = true;
-			this.getRequestCallBack(this.httpservice,formdata,this,this.dicSubmittedOnDisplay[source.submitter.name]);
+			console.log(this.data.dicSubmittedOnDisplay[source.submitter.name]);
+			this.data.dicSubmittedOnDisplay[source.submitter.name].submitting = true;
+			this.getRequestCallBack(this.httpservice,formdata,this,this.data.dicSubmittedOnDisplay[source.submitter.name]);
 		}
 		else if (this.c3)
 		{
@@ -150,7 +152,7 @@ export class OfficeFormComponent
 		}
 	}
 	
-	getRequestCallBack(ahttpservice:HttpService,formvalue:FormData,officefc:OfficeFormComponent,current_row_hovered:any)
+	getRequestCallBack(ahttpservice:HttpService,formvalue:FormData,officefc:OfficeFormComponent,submissionNotifier:any)
 	{
 		officefc.submissionRequests++;
 		console.log("Why are you so stubbordn..."+officefc.submissionRequests);
@@ -212,7 +214,7 @@ export class OfficeFormComponent
 									d1 = new Date();
 								}
 							}
-							officefc.getRequestCallBack(officefc.httpservice,formvalue,officefc,current_row_hovered);
+							officefc.getRequestCallBack(officefc.httpservice,formvalue,officefc,submissionNotifier);
 						}
 						else
 						{
@@ -227,25 +229,39 @@ export class OfficeFormComponent
 				}
 				else if(response.customtext == "OK")
 				{
-					if(!current_row_hovered)
+					if(!submissionNotifier)
 						officefc.responseString = "ajout passé.";
 					else
 					{
-						current_row_hovered.responseString = "ajout passé";
-						current_row_hovered.submitting = false;
+						submissionNotifier.responseString = "ajout passé";
+						if(submissionNotifier.count == undefined)
+							submissionNotifier.submitting = false;
+						else if( submissionNotifier.count > 0 )
+						{
+							submissionNotifier.count -= 1;
+							if(submissionNotifier == 0)
+								submissionNotifier.submitting = false;
+						}
 					}
 				}
 				else
 				{
-					if(!current_row_hovered)
+					if(!submissionNotifier)
 						officefc.responseString = response.text as string;
 					else
 					{
 						if( response.customtext == "Error" )
 						{
-							current_row_hovered.responseString = response.text;
+							submissionNotifier.responseString = response.text;
 						}
-						current_row_hovered.submitting = false;
+						if(submissionNotifier.count == undefined)
+							submissionNotifier.submitting = false;
+						else if( submissionNotifier.count > 0 )
+						{
+							submissionNotifier.count -= 1;
+							if(submissionNotifier == 0)
+								submissionNotifier.submitting = false;
+						}
 					}
 				}
 			}catch(ex){}
@@ -254,32 +270,53 @@ export class OfficeFormComponent
 			console.log(responseValue);
 			if (responseValue.status == 500)
 			{
-				if(!current_row_hovered)
+				if(!submissionNotifier)
 					officefc.responseString = "ajout échoué.";
 				else
 				{
-					current_row_hovered.responseString = "ajout échoué.";
-					current_row_hovered.submitting = false;
+					submissionNotifier.responseString = "ajout échoué.";
+					if(submissionNotifier.count == undefined)
+							submissionNotifier.submitting = false;
+					else if( submissionNotifier.count > 0 )
+					{
+						submissionNotifier.count -= 1;
+						if(submissionNotifier == 0)
+							submissionNotifier.submitting = false;
+					}
 				}
 			}
 			else if (responseValue.status == 504)
 			{
-				if(!current_row_hovered)
+				if(!submissionNotifier)
 					officefc.responseString = "ajout échoué.Le serveur est entrain de charger..";
 				else
 				{	
-					current_row_hovered.responseString = "ajout échoué.Le serveur est entrain de charger..";
-					current_row_hovered.submitting = false;
+					submissionNotifier.responseString = "ajout échoué.Le serveur est entrain de charger..";
+					if(submissionNotifier.count == undefined)
+						submissionNotifier.submitting = false;
+					else if( submissionNotifier.count > 0 )
+					{
+						submissionNotifier.count -= 1;
+						if(submissionNotifier == 0)
+							submissionNotifier.submitting = false;
+					}
 				}
 			}
 			else
 			{
-				if(!current_row_hovered)
+				if(!submissionNotifier)
 					officefc.responseString = "ajout échoué. Il y a un problème de connection.";
 				else
 				{
-					current_row_hovered.responseString = "ajout échoué. Il y a un problème de connection.";					
-					current_row_hovered.submitting = false;
+					submissionNotifier.responseString = "ajout échoué. Il y a un problème de connection.";					
+					if(submissionNotifier.count == undefined)
+						submissionNotifier.submitting = false;
+					else if( submissionNotifier.count > 0 )
+					{
+						submissionNotifier.count -= 1;
+						if(submissionNotifier == 0)
+						submissionNotifier.submitting = false;
+					}
 				}
 			}
 		});
@@ -365,41 +402,160 @@ export class OfficeFormComponent
 		}
 	}
 	
-	addUp(length:number,selectedID:string,ID:string)
+	updateChange(selectedID:any,row:number,headers:any,typeofupdate:string)
 	{
-		let values:string[] = [];
-		for(let index = 0; index < length; ++index)
+		console.log(row);
+		let formdata = new FormData();
+		let newwillbeswapped = undefined;
+		let oldtobeswapped = undefined;
+		
+		if(typeofupdate == 'modifyinputrows')
 		{
-			if(index +1 == length-1)
+			newwillbeswapped = this.data.onDisplay[selectedID].elements[row].values;
+			oldtobeswapped = this.data.onDisplaySaving[selectedID].values[row];
+			
+			console.log(this.data.onDisplaySaving[selectedID].values);
+			console.log(newwillbeswapped);
+			console.log(typeof newwillbeswapped);
+			console.log(oldtobeswapped);
+			console.log(typeof oldtobeswapped);
+			
+			
+			for (const headerItem of headers) 
 			{
-				values.push(ID);
+				console.log(headerItem.validate);
+				if( headerItem.validate )
+				{
+					console.log(headerItem.name+" "+oldtobeswapped[headerItem.name]);
+					console.log(headerItem.name+" "+newwillbeswapped[headerItem.name]);
+					formdata.append(headerItem.name as string,JSON.parse(JSON.stringify(oldtobeswapped[headerItem.name])));
+					formdata.append(headerItem.name as string,JSON.parse(JSON.stringify(newwillbeswapped[headerItem.name])));
+				}
 			}
-			else if (index + 1 ==length)
+			
+			formdata.append("index",oldtobeswapped["index"]);
+			formdata.append("index",newwillbeswapped["index"]);
+		}
+		else if(typeofupdate == 'modifyrows')
+		{
+			newwillbeswapped = this.data.rowChanges[selectedID].values[row].row;
+			oldtobeswapped = this.data.base.tables[selectedID].rows[row];
+			
+			console.log(this.data.onDisplaySaving[selectedID].values);
+			console.log(newwillbeswapped);
+			console.log(typeof newwillbeswapped);
+			console.log(oldtobeswapped);
+			console.log(typeof oldtobeswapped);
+			
+			let count = 0;
+			for (const headerItem of headers) 
 			{
-				values.push(selectedID);
+				console.log(headerItem.validate);
+				if( headerItem.validate )
+				{
+					console.log(headerItem.name+" "+oldtobeswapped[count].value);
+					console.log(headerItem.name+" "+newwillbeswapped[count].value);
+					formdata.append(headerItem.name as string,oldtobeswapped[count].value);
+					formdata.append(headerItem.name as string,newwillbeswapped[count].value);
+				}
+				++count;
 			}
-			else
+		}
+		//not needed this.swappingStack.push({old:oldtobeswapped,anew:newwillbeswapped,headers:headers});
+		
+		formdata.append("table",typeofupdate == 'modifyinputrows'?this.data.base.tables[this.selectedID].name+" saisies":this.data.base.tables[this.selectedID].name);
+		formdata.append("command","update");
+		formdata.append("cmdArg",typeofupdate);
+		formdata.append("authID",this.data.userAuthentification.ID);
+		formdata.append("authPrenom",this.data.userAuthentification.Prenom);
+		formdata.append("authNom",this.data.userAuthentification.Nom);
+		formdata.append("authGenre",this.data.userAuthentification.genre);
+		formdata.append("authpass",this.data.userAuthentification.pass);
+		this.getRequestCallBack(this.httpservice,formdata,this,this.updatingInputs);
+		
+		if(typeofupdate == 'modifyinputrows')
+		{
+			for (const headerItem of headers) 
 			{
-				values.push("");
+				if(headerItem.validate)
+				{
+					oldtobeswapped[headerItem.name] = JSON.parse(JSON.stringify(newwillbeswapped[headerItem.name]));
+				}
 			}
 		}
 		
-		console.log(values);
+	}
+	
+	async addUp(length:number,selectedID:string,ID:string,headers:any[])
+	{
+		let formdata = new FormData();
+		let values:any = {};
+		let values2:any ={};
+		console.log(headers);
 		
-		if(this.onDisplay == undefined)
+		if(this.data.onDisplay[selectedID] == undefined)
 		{
-			this.onDisplay = {indexofSelection: 0, elements:[]}
+			this.data.onDisplay[selectedID] ={indexofSelection: 0, elements:[]};
 		}
-		let object_value:any = {values:values,responseString:"",class:"notdisplayed",done:false,index:this.onDisplay.elements.length,flipped:false,submitting:false};
-		this.onDisplay.elements.push(object_value);
-		this.onDisplay.indexofSelection = this.onDisplay.elements.length-1; 	
-		this.dicSubmittedOnDisplay["b"+(this.onDisplay.elements.length-1)] = object_value;
+		
+		for (const headerItem of headers) 
+		{
+			if( headerItem.name != "id" && headerItem.name != "idindividu" && headerItem.name !="prenom" && headerItem.name!="nom" && headerItem.name!="genre" && headerItem.name !="image")
+			{	
+				formdata.append(headerItem.name as string,"");
+				values[headerItem.name] = "";
+				values2[headerItem.name] = "";
+			}
+			console.log(headerItem.name);
+			console.log("empty");
+		}
+		
+		if(formdata.get("id") == undefined)
+		{
+			formdata.append("id",selectedID);
+			values["id"] = selectedID;
+			values2["id"] = selectedID;
+		}
+			
+		if(formdata.get("idindividu") == undefined)
+		{
+			formdata.append("idindividu",ID);
+			values["idindividu"] = ID;
+			values2["idindividu"] = ID;
+		}
+		
+		values["index"] = this.data.onDisplay[selectedID].elements.length;
+		values2["index"] = this.data.onDisplaySaving[selectedID].values.length;
+		
+		formdata.append("index",this.data.onDisplay[selectedID].elements.length);
+		
+		let object_value:any = {values:values,responseString:"",class:"notdisplayed",done:false,index:this.data.onDisplay[selectedID].elements.length,flipped:false,submitting:false};
+		
+		this.data.onDisplay[selectedID].elements.push(object_value);
+		this.data.onDisplay[selectedID].indexofSelection = this.data.onDisplay[selectedID].elements.length-1; 	
+		this.data.dicSubmittedOnDisplay["b"+(this.data.onDisplay[selectedID].elements.length-1)] = object_value;
+		
+		this.data.onDisplaySaving[selectedID].values.push(values2);	
+		
+		formdata.append("table",this.data.base.tables[this.selectedID].name+" saisies");
+		formdata.append("command","update");
+		formdata.append("cmdArg","addinputrows");
+		formdata.append("authID",this.data.userAuthentification.ID);
+		formdata.append("authPrenom",this.data.userAuthentification.Prenom);
+		formdata.append("authNom",this.data.userAuthentification.Nom);
+		formdata.append("authGenre",this.data.userAuthentification.genre);
+		formdata.append("authpass",this.data.userAuthentification.pass);
+			
+		this.addingRowsDone.count++;
+		this.addingRowsDone.submitting = true;
+		this.getRequestCallBack(this.httpservice,formdata,this,this.addingRowsDone);
+
 	}
 	
 	deleteElement(givenindex:number)
 	{
 		let found_elements_index = -1;
-		this.onDisplay.elements.forEach((element,index,array)=>
+		this.data.onDisplay.elements.forEach((element:rowInterface,index:number)=>
 		{
 			if(element.index == givenindex)
 			{
@@ -409,7 +565,7 @@ export class OfficeFormComponent
 		
 		if(found_elements_index != -1)
 		{
-			this.onDisplay.elements.splice(1,found_elements_index);
+			this.data.onDisplay.elements.splice(1,found_elements_index);
 			this.resetSelectedIndex();
 		}
 		
@@ -417,11 +573,11 @@ export class OfficeFormComponent
 	
 	resetSelectedIndex()
 	{
-		this.onDisplay.elements.forEach((element,index,array)=>
+		this.data.onDisplay.elements.forEach((element:rowInterface,index:number)=>
 		{
 			if(!element.done)
 			{
-				this.onDisplay.indexofSelection = index;
+				this.data.onDisplay.indexofSelection = index;
 			}
 		});
 	}
@@ -439,7 +595,7 @@ export class OfficeFormComponent
 		this.c3 = value3;
 	}
 	
-	flipOthers(indexPassed:number,flip:boolean,rowHovered:any)
+	flipOthers(selectedID:any,indexPassed:number,flip:boolean,rowHovered:any)
 	{
 		console.log(indexPassed+"-----------------");
 		if(flip)
@@ -448,7 +604,7 @@ export class OfficeFormComponent
 		}
 		
 		
-		this.onDisplay.elements.forEach((element,index)=>
+		this.data.onDisplay[selectedID].elements.forEach((element:rowInterface,index:number)=>
 		{
 			console.log(index);
 			if(index != indexPassed)

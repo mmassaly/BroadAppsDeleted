@@ -88,5 +88,51 @@ export class AppComponent {
   setValues(value:any)
   {
 		(new ChangesAdapter()).SecondComplementsorSimplifiesFirst(this.data.base,value as Base);
+		Object.keys(this.data.base.tables).forEach((key)=>
+		{
+			if(this.data.onDisplay[key] == undefined)
+			{
+				console.log("changing "+key);
+				this.data.onDisplay[key] = {indexofSelection: 0, elements:[]};;
+				this.data.onDisplaySaving[key] ={values:[]};
+				
+				this.data.base.tables[key].rowsInput.forEach((rielem:any)=>
+				{
+					console.log("Adding");console.log(rielem);
+					let copy = JSON.parse(JSON.stringify(rielem));
+					let copy2 = JSON.parse(JSON.stringify(rielem));
+					let object_value:any = {values:copy,responseString:"",
+					class:"notdisplayed",done:false,index:this.data.onDisplay[key].elements.length,flipped:false,submitting:false};
+					this.data.onDisplay[key].elements.push(object_value);
+					this.data.onDisplaySaving[key].values.push(copy2);					
+					this.data.onDisplay[key].indexofSelection = this.data.onDisplay[key].elements.length-1; 	
+					this.data.dicSubmittedOnDisplay["b"+(this.data.onDisplay[key].elements.length-1)] = object_value;
+				});
+			}	
+			if(this.data.rowChanges[key] == undefined)
+			{
+				this.data.rowChanges[key] = {values:[]};
+				this.data.base.tables[key].rows.forEach((rielem:any)=>
+				{
+					this.data.rowChanges[key].values.push({row:JSON.parse(JSON.stringify(rielem)),displays:false});
+				});
+			}
+			else if (this.data.rowChanges[key].values.length < this.data.base.tables[key].rows.length)
+			{
+				let count = this.data.rowChanges[key].values.length;
+				while(count <= this.data.base.tables[key].rows.length)
+				{
+					this.data.rowChanges[key].values.push({row:JSON.parse(JSON.stringify(this.data.base.tables[key].rows[count])),displays:false});++count;
+				}
+			}
+			else if (this.data.base.tables[key].rows.length > 0 && this.data.rowChanges[key].values.length > this.data.base.tables[key].rows.length )
+			{
+				let count = this.data.rowChanges[key].values.length;
+				while(count > this.data.base.tables[key].rows.length)
+				{
+					this.data.rowChanges[key].values.pop();--count;
+				}
+			}
+		});
   }
 }

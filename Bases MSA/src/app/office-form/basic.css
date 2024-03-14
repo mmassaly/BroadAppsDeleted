@@ -1,5 +1,16 @@
-
-
+tr:hover
+{
+	cursor: pointer;
+}
+tr.odd
+{
+	background-color:lightblue;
+	border-radius: 3px;
+}
+td
+{
+	text-align: center;
+}
 li:hover
 {
 	background-color: silver;

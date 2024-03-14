@@ -10,3 +10,5 @@ images/clear_blob.js : https://70gxoz4jnkgivatx.public.blob.vercel-storage.com/i
 images/readBlobs.js : https://70gxoz4jnkgivatx.public.blob.vercel-storage.com/images/readBlobs-TB5RvG2YLezGm4ESXUKDbocW0bR9jK.js
 images/upload.js : https://70gxoz4jnkgivatx.public.blob.vercel-storage.com/images/upload-ej3dmwXgysgRDHhMQWcUEXRd873kSx.js
 assets/images/doudousindividuals/profile-pictures/humain.png : https://70gxoz4jnkgivatx.public.blob.vercel-storage.com/assets/images/doudousindividuals/profile-pictures/humain-7SV4HWrHl7K7GzOEwhE6QeR0hTzBGa.png
+assets/images/doudousindividuals/profile-pictures/pic1.png : https://70gxoz4jnkgivatx.public.blob.vercel-storage.com/assets/images/doudousindividuals/profile-pictures/pic1-Xrb4Dekojhrtl12FSPYr2V0et8kFwz.png
+assets/images/doudousindividuals/profile-pictures/pic2.png : https://70gxoz4jnkgivatx.public.blob.vercel-storage.com/assets/images/doudousindividuals/profile-pictures/pic2-JPYUy2nOnMvgKC7qEGPFoceNtiHG16.png
