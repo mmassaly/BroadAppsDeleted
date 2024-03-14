@@ -721,7 +721,7 @@ async function formidableFileUpload(req,path,res)
 								table = valueEq[0];
 						}
 						console.log(key);
-						
+						//
 					});
 				
 					let queryStr = "update \"" + table + "\" SET "+valuesStr[0]+" WHERE "+valuesStr[1]+"\n;";
