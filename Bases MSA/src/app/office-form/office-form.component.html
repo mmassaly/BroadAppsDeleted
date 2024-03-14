@@ -60,7 +60,7 @@
 <form *ngIf="c2" style ="overflow-x:auto;" #fTwo = "ngForm" (ngSubmit)="submitFunction(fTwo.value,fTwo,$event)" ngNativeValidate>
 	<div *ngIf ="selectedID != '' && data.base.tables != undefined &&  data.base.tables[selectedID] != undefined && data.base.tables[selectedID].headers != undefined && data.base.tables[selectedID].image_url != undefined && data.base.tables[selectedID].image_url instanceof Array">
 		<div *ngFor= "let image_src of data.base.tables[selectedID].image_url;let iBis = index"  >
-			<img width="100%" height = "300px" style="" *ngIf ="selectedID != '' && data.base.tables != undefined &&  data.base.tables[selectedID] != undefined && data.base.tables[selectedID].headers != undefined && data.base.tables[selectedID].image_url != undefined" src={{image_src}}/>
+			<img width="100%" height = "300px" style="max-width:900px;margin-left:auto;margin-right:auto" *ngIf ="selectedID != '' && data.base.tables != undefined &&  data.base.tables[selectedID] != undefined && data.base.tables[selectedID].headers != undefined && data.base.tables[selectedID].image_url != undefined" src={{image_src}}/>
 		</div>
 	</div>
 	<h1 style="margin-top:80px" *ngIf ="selectedID != '' && data.base.tables != undefined &&  data.base.tables[selectedID] != undefined && data.base.tables[selectedID].headers != undefined && data.base.tables[selectedID].image_url != undefined">Ajouter</h1>
