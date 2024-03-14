@@ -131,7 +131,7 @@
 		</select>
 	</div>
 	<label for = "imgname" style="margin-right:45px;margin-top:10px;">Icone de la base:</label>
-	<input type = "file" name ="imgname" accept = ".jpg,.jpeg,.png,.ico" (change)="fileUpload2($event)" ngModel>	
+	<input type = "file" style="margin-left:10px;margin-top:10px" name ="imgname" accept = ".jpg,.jpeg,.png,.ico" (change)="fileUpload2($event)" ngModel>	
 	<div>{{c3data.responseString}}</div>
 	<div [ngClass] ="c3data.submitting?'movingCircle':'none'"> </div>
 	<button type = "submit" [ngClass] = "c3data.submitting?'none':'display'"  style="margin-bottom:40px;">Soumettre</button>
