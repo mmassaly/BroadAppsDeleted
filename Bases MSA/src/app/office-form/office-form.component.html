@@ -82,7 +82,7 @@
 			</tr>
 		</ng-template>
 		<ng-template ngFor let-row [ngForOf]= "data.base.tables[selectedID].rowsInput" let-b = index >
-		<tr *ngIf = "data.base.tables[selectedID].rowsInput.length <= data.onDisplay[selectedID].elements.length" (click) = "flipOthers(selectedID,b,false,data.onDisplay[selectedID].elements[b])"  > 
+		<tr *ngIf = "row['idindividu'] == data.userAuthentification.ID && data.base.tables[selectedID].rowsInput.length <= data.onDisplay[selectedID].elements.length" (click) = "flipOthers(selectedID,b,false,data.onDisplay[selectedID].elements[b])"  > 
 			<td  *ngFor="let headerEntry of data.base.tables[selectedID].headers;let i = index" >
 				{{type_correcter[headerEntry.type]}}
 				<input  *ngIf = "i < data.base.tables[selectedID].headers.length -6 && headerEntry.validate && !data.onDisplay[selectedID].elements[b].flipped" [appMngtype] = "fixType(headerEntry.type)" name = "{{headerEntry.name+b+i}}" (change) = "updateChange(selectedID,b,data.base.tables[selectedID].headers,'modifyinputrows')" [(ngModel)] ="data.onDisplay[selectedID].elements[b].values[headerEntry.name]"   required ngModel/>
