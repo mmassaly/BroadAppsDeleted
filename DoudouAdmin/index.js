@@ -656,7 +656,7 @@ async function formidableFileUpload(req,path,res)
 									else
 									{
 										base.bytable[tableId].rows.push(rows);
-										if(index_of_input_row != '-1' && base.bytable[tableId].rowsInput.length > 1)
+										if(index_of_input_row != '-1' && base.bytable[tableId].rowsInput.length > 0)
 										{
 											let value = base.bytable[tableId].rowsInput.find((el)=> el.index.toString() == index_of_input_row);
 											
@@ -690,7 +690,7 @@ async function formidableFileUpload(req,path,res)
 										console.log(base.byId[tempuserAuthentification.ID][tableId].rows.length+"--------------------------");
 										base.byId[tempuserAuthentification.ID][tableId].rows.push(rows);
 										
-										if(index_of_input_row != '-1' &&  base.byId[tempuserAuthentification.ID][tableId].rowsInput.length > 1)
+										if(index_of_input_row != '-1' &&  base.byId[tempuserAuthentification.ID][tableId].rowsInput.length > 0)
 										{
 											let value = base.byId[tempuserAuthentification.ID][tableId].rowsInput.find((el)=> el.index.toString() == index_of_input_row);
 											if(value != undefined )

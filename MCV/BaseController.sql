@@ -99,10 +99,10 @@ ALTER table "DouDous'individuals" ALTER COLUMN IdIndividu SET DATA TYPE  integer
 
 delete from "Base plainte PAP" where Emprise = 'fndlfd;lfd';
 
-insert into "Base des plaintes" values ( //change date into fr mode 
+insert into "Base plainte PAP" values ( 
 $$NULL$$,
 $$0001RIM$$,
-$$26/10/2022 00:00:00$$,
+$$2022-10-26$$,
 $$IDRISSA MAMADOU$$,
 $$MASCULIN$$,
 $$ROSSO MAURITANIE$$,
@@ -117,38 +117,109 @@ $$RECEVABLE$$,
 $$PROBLEMES RECURRENTS AVEC L'ENTREPRISE, RECHERCHE SOLUTION DEFINITIVE$$,
 $$INSTRUIRE LA MISSION DE CONTRÔLE POUR ORGANISER DANS LES 48 HEURES UNE REUNION AVEC L'ENTREPRISE$$,
 $$MISSION DE CONTRÔLE$$,
-$$02/11/2022 00:00:00$$,
+$$2022-11-2$$,
 $$REPONSES FAVORABLES DE L'ENTREPRISE (VOIR) PV$$,
-$$27/10/2022 00:00:00$$);
+$$2022-10-27$$,1,1,0);
 
 
 
 
-create table "Base plainte PAP saisies"( Emprise VARCHAR(255),
+create table "Base plainte PAP saisies"( "Emprise" VARCHAR(255),
  "Numéro de la réclamation" VARCHAR(255),
- Date Date,"Prénom et Nom du plaignant" VARCHAR(255) ,
- Sexe  VARCHAR(255),"Quartier ou village" VARCHAR(255),
+ "Date" Date,"Prénom et Nom du plaignant" VARCHAR(255) ,
+ "Sexe" VARCHAR(255),"Quartier ou village" VARCHAR(255),
  "Code PAP (si recensée)" VARCHAR (255),
  "Fonction du Plaignant" VARCHAR(255), "Parties concernées" VARCHAR(255),
  "Objet de réclamation" VARCHAR (255),"Description de la réclamation" TEXT,
  "Solutions préconisées par le plaignant" VARCHAR(255),"Plainte enregistrée par" VARCHAR (255),
  "Recevabilité de la plainte après examen de l’UGP" VARCHAR(255),
- Commentaires TEXT,"Solutions proposées" VARCHAR(255),
+ "Commentaires" TEXT,"Solutions proposées" VARCHAR(255),
  "Responsable de l’action" VARCHAR(255),
- Echéance Date,
+ "Echéance" Date,
  "Actions effectuées par l’entreprise" VARCHAR(255),
- "Date de clôture de la plainte" Date,id integer,idindividu integer,index integer, PRIMARY KEY(Emprise,
+ "Date de clôture de la plainte" Date,"id" integer,"idindividu" integer,index integer, PRIMARY KEY("Emprise",
  "Numéro de la réclamation",
- Date,"Prénom et Nom du plaignant",Sexe,"Quartier ou village","Code PAP (si recensée)",
+ Date,"Prénom et Nom du plaignant","Sexe","Quartier ou village","Code PAP (si recensée)",
  "Fonction du Plaignant","Parties concernées",
  "Objet de réclamation","Description de la réclamation",
  "Solutions préconisées par le plaignant","Plainte enregistrée par",
  "Recevabilité de la plainte après examen de l’UGP",
- Commentaires,"Solutions proposées",
+ "Commentaires","Solutions proposées",
  "Responsable de l’action",
- Echéance,
+ "Echéance",
  "Actions effectuées par l’entreprise",
  "Date de clôture de la plainte",id,idindividu,index
  ))
  
+ create table "Base plainte PAP"( "Emprise" VARCHAR(255),
+ "Numéro de la réclamation" VARCHAR(255),
+ "Date" Date,"Prénom et Nom du plaignant" VARCHAR(255) ,
+ "Sexe"  VARCHAR(255),"Quartier ou village" VARCHAR(255),
+ "Code PAP (si recensée)" VARCHAR (255),
+ "Fonction du Plaignant" VARCHAR(255), "Parties concernées" VARCHAR(255),
+ "Objet de réclamation" VARCHAR (255),"Description de la réclamation" TEXT,
+ "Solutions préconisées par le plaignant" VARCHAR(255),"Plainte enregistrée par" VARCHAR (255),
+ "Recevabilité de la plainte après examen de l’UGP" VARCHAR(255),
+ "Commentaires" TEXT,"Solutions proposées" VARCHAR(255),
+ "Responsable de l’action" VARCHAR(255),
+ "Echéance" Date,
+ "Actions effectuées par l’entreprise" VARCHAR(255),
+ "Date de clôture de la plainte" Date,"id" integer,"idindividu" integer,index integer, PRIMARY KEY("Emprise",
+ "Numéro de la réclamation",
+ Date,"Prénom et Nom du plaignant","Sexe","Quartier ou village","Code PAP (si recensée)",
+ "Fonction du Plaignant","Parties concernées",
+ "Objet de réclamation","Description de la réclamation",
+ "Solutions préconisées par le plaignant","Plainte enregistrée par",
+ "Recevabilité de la plainte après examen de l’UGP",
+ "Commentaires","Solutions proposées",
+ "Responsable de l’action",
+ "Echéance",
+ "Actions effectuées par l’entreprise",
+ "Date de clôture de la plainte",id,idindividu,index
+ ))
+ 
+ 
+ 
  alter table "DouDous'bases" ALTER COLUMN image_url TYPE text[];
+ 
+ 
+ 
+ create table "Base plainte PAP"( "Emprise" VARCHAR(255),
+ "Numéro de la réclamation" VARCHAR(255),
+ "Date" Date,"Prénom et Nom du plaignant" VARCHAR(255) ,
+ "Sexe" VARCHAR(255),"Quartier ou village" VARCHAR(255),
+ "Code PAP (si recensée)" VARCHAR(255),
+ "Fonction du Plaignant" VARCHAR(255), "Parties concernées" VARCHAR(255),
+ "Objet de réclamation" VARCHAR(255),"Description de la réclamation" VARCHAR(255),
+ "Solutions préconisées par le plaignant" VARCHAR(255),"Plainte enregistrée par" VARCHAR(255),
+ "Recevabilité de la plainte après examen de l’UGP" VARCHAR(255),
+ "Commentaires" VARCHAR(255),"Solutions proposées" VARCHAR(255),
+ "Responsable de l’action" VARCHAR(255),
+ "Echéance" Date,
+ "Actions effectuées par l’entreprise" VARCHAR(255),
+ "Date de clôture de la plainte" Date,"id" integer,"idindividu" integer,index integer, PRIMARY KEY("Emprise",
+ "Numéro de la réclamation",
+ "Date","Prénom et Nom du plaignant","Sexe","Quartier ou village","Code PAP (si recensée)",
+ "Fonction du Plaignant","Parties concernées",
+ "Objet de réclamation","Description de la réclamation",
+ "Solutions préconisées par le plaignant","Plainte enregistrée par",
+ "Recevabilité de la plainte après examen de l’UGP",
+ "Commentaires","Solutions proposées",
+ "Responsable de l’action",
+ "Echéance",
+ "Actions effectuées par l’entreprise",
+ "Date de clôture de la plainte",id,idindividu,index
+ ))
+ 
+ alter table "Base plainte PAP" ADD PRIMARY KEY("Emprise",
+ "Numéro de la réclamation",
+ "Date","Prénom et Nom du plaignant","Sexe","Quartier ou village","Code PAP (si recensée)",
+ "Fonction du Plaignant","Parties concernées",
+ "Objet de réclamation","Description de la réclamation",
+ "Solutions préconisées par le plaignant","Plainte enregistrée par",
+ "Recevabilité de la plainte après examen de l’UGP",
+ "Commentaires","Solutions proposées",
+ "Responsable de l’action",
+ "Echéance",
+ "Actions effectuées par l’entreprise",
+ "Date de clôture de la plainte",id,idindividu,index)

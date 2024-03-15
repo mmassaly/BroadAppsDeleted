@@ -65,7 +65,7 @@
 	</div>
 	<h1 style="margin-top:80px" *ngIf ="selectedID != '' && data.base.tables != undefined &&  data.base.tables[selectedID] != undefined && data.base.tables[selectedID].headers != undefined && data.base.tables[selectedID].image_url != undefined">Ajouter</h1>
 	<h1 *ngIf ="selectedID == '' && data.base.tables == undefined ||  data.base.tables[selectedID] == undefined || data.base.tables[selectedID].headers == undefined || data.base.tables[selectedID].image_url == undefined">Ajouter</h1>
-	<select [(ngModel)] = "displayID" name ="idDisplayer">
+	<select *ngIf ="data.userAuthentification.superadmin" [(ngModel)] = "displayID" name ="idDisplayer">
 		<option value="all">Ensemble</option>
 		<option *ngFor="let container of objectKeysFunction(data.base.individuals); let i = index" value="{{data.base.individuals[i][0]}}">
 		{{data.base.individuals[i][0]+" "+data.base.individuals[i][1].first+" "+data.base.individuals[i][1].second+"\n"+data.base.individuals[i][1].gender}}

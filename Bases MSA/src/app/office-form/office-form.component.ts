@@ -552,9 +552,9 @@ export class OfficeFormComponent
 				values2[headerItem.name] = "";
 				if(headerItem.type == 'Date')
 				{
-					values[headerItem.name] = new Date();
-					values2[headerItem.name] = new Date();
-					formdata.append(headerItem.name as string,new Date().toLocaleDateString('en-US'));
+					values[headerItem.name] = new Date().toLocaleDateString('fr-FR');
+					values2[headerItem.name] = new Date().toLocaleDateString('fr-FR');
+					formdata.append(headerItem.name as string,new Date().toLocaleDateString('fr-FR'));
 				}
 				else
 					formdata.append(headerItem.name as string,'');
