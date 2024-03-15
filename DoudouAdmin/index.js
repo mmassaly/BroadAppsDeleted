@@ -740,8 +740,11 @@ async function formidableFileUpload(req,path,res)
 						{
 							keys.push(key);
 							let valueEq = ["",""];
-							oldComparison[key] = fields[key][0];	
-							newComparison[key] = fields[key][1];
+							if( !(commandArg == "modifyrows" && base.individuals[tempuserAuthentification.ID].superadmin && key != "id" && key != "idindividu"))
+							{
+								oldComparison[key] = fields[key][0];	
+								newComparison[key] = fields[key][1];
+							}
 							
 							
 							if(fields[key] instanceof Array)
