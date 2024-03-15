@@ -550,6 +550,11 @@ export class OfficeFormComponent
 				formdata.append(headerItem.name as string,"");
 				values[headerItem.name] = "";
 				values2[headerItem.name] = "";
+				if(headerItem.type == 'Date')
+				{
+					values[headerItem.name] = new Date();
+					values2[headerItem.name] = new Date();
+				}
 			}
 			console.log(headerItem.name);
 			console.log("empty");
