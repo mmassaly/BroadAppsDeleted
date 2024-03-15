@@ -552,9 +552,9 @@ export class OfficeFormComponent
 				values2[headerItem.name] = "";
 				if(headerItem.type == 'Date')
 				{
-					values[headerItem.name] = new Date().toLocaleDateString('fr-FR');
-					values2[headerItem.name] = new Date().toLocaleDateString('fr-FR');
-					formdata.append(headerItem.name as string,new Date().toLocaleDateString('fr-FR'));
+					values[headerItem.name] = curr.getFullYear()+'-'+(curr.getMonth()+1)+'-'+curr.getDate();
+					values2[headerItem.name] = curr.getFullYear()+'-'+(curr.getMonth()+1)+'-'+curr.getDate();
+					formdata.append(headerItem.name as string,curr.getFullYear()+'-'+(curr.getMonth()+1)+'-'+curr.getDate());
 				}
 				else
 					formdata.append(headerItem.name as string,'');
