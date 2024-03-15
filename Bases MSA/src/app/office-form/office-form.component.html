@@ -81,7 +81,7 @@
 				<td *ngFor = "let rowValue of row;let heads = index" ><input name = "{{'rowChangeInput'+iBis+heads}}" *ngIf ="heads < data.base.tables[selectedID].headers.length -6 && data.base.tables[selectedID].headers[heads].validate && this.data.rowChanges[selectedID].values[iBis].displays" (change)= "updateChange(selectedID,iBis,data.base.tables[selectedID].headers,'modifyrows')" [appMngtype] = "fixType(data.base.tables[selectedID].headers[heads].type)"   [(ngModel)] = "this.data.rowChanges[selectedID].values[iBis].row[heads].value" ><img *ngIf="rowValue.img" width="80px" height = "80px" src={{rowValue.value}}/>{{rowValue.img == false?rowValue.value:""}}</td>
 			</tr>
 		</ng-template>
-		<ng-template ngFor let-row [ngForOf]= "data.base.tables[selectedID].rowsInput" let-b = index >
+		<ng-template ngFor let-row [ngForOf]= "data.onDisplay[selectedID].elements" let-b = index >
 		<tr *ngIf = "row['idindividu'] == data.userAuthentification.ID "   > 
 			<td  *ngFor="let headerEntry of data.base.tables[selectedID].headers;let i = index" >
 				{{type_correcter[headerEntry.type]}}
