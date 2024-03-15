@@ -546,7 +546,7 @@ export class OfficeFormComponent
 		
 		for (const headerItem of headers) 
 		{
-			if( headerItem.name != "id" && headerItem.name != "idindividu" && headerItem.name !="prenom" && headerItem.name!="nom" && headerItem.name!="genre" && headerItem.name !="image")
+			if( headerItem.name != "index" && headerItem.name != "id" && headerItem.name != "idindividu" && headerItem.name !="prenom" && headerItem.name!="nom" && headerItem.name!="genre" && headerItem.name !="image")
 			{	
 				values[headerItem.name] = "";
 				values2[headerItem.name] = "";
