@@ -6,7 +6,7 @@ import {BasicCommands} from '../year-employee-model/year-employee-model';
 export class HttpService {
 
   constructor(public http: HttpClient) { }
-  //urlport:string = "http://localhost:3035";
+  urlport:string = "http://localhost:3035";
   //urlport:string = "https://msa-pointage-server.vercel.app";
   //urlport:string = "https://msa-pointage-web.cyclic.cloud";
   //urlport:string = "https://vercel-order-transmitter.vercel.app";
@@ -14,7 +14,7 @@ export class HttpService {
   //urlport:string = "http://192.168.0.106:3034";
   //urlport:string = "http://localhost:3034";
   //urlport:string = "http://localhost:3008";
-  urlport:string ="https://broadappsdeleted.onrender.com"
+  //urlport:string ="https://broadappsdeleted.onrender.com"
 
   request(url:string)
   {

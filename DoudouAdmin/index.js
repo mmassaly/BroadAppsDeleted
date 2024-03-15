@@ -733,7 +733,7 @@ async function formidableFileUpload(req,path,res)
 					let oldComparison = {};
 					let newComparison = {};
 					let tempuserAuthentification = {ID:urlObject.authID[0],Prenom:urlObject.authPrenom[0],Nom:urlObject.authNom[0],genre:urlObject.authGenre[0],pass:urlObject.authpass[0]};
-						
+					console.log(commandArg);	
 					
 					Object.keys(fields).forEach(key=>
 					{
@@ -742,11 +742,9 @@ async function formidableFileUpload(req,path,res)
 						{
 							keys.push(key);
 							let valueEq = ["",""];
-							if( !(commandArg == "modifyrows" && base.individuals[tempuserAuthentification.ID].superadmin && key != "id" && key != "idindividu"))
-							{
-								oldComparison[key] = fields[key][0];	
-								newComparison[key] = fields[key][1];
-							}
+							
+							oldComparison[key] = fields[key][0];	
+							newComparison[key] = fields[key][1];
 							
 							
 							if(fields[key] instanceof Array)
@@ -843,10 +841,29 @@ async function formidableFileUpload(req,path,res)
 										console.log(base.bytable[tableId].rowsInput.length+"--------------------------");
 										
 										console.log(oldComparison);
+										let found_index = -1;
 										
-										let elementFound = base.byId[tempuserAuthentification.ID][tableId].rowsInput.find((rowElement)=> Object.values(rowElement).reduce((acc,aelement,index)=> acc = acc && (Object.values(oldComparison)[index] == aelement.toString()),true));
+										base.byId[tempuserAuthentification.ID][tableId].rowsInput.forEach((rowInput,firstindex)=>
+										{
+											let all_found = true;
+											Object.keys(oldComparison).forEach((keyel,index2)=>
+											{
+												if(  !((rowInput[keyel] instanceof Date && rowInput[keyel].toISOString() == oldComparison[keyel]) || rowInput[keyel].toString() == oldComparison[keyel] ) )
+												{
+													all_found = false;
+												}
+											});
+											console.log("All found is "+all_found);
+											if(all_found  && Object.keys(oldComparison).length > 0 && found_index == -1)
+											{
+												found_index = firstindex;
+											}
+										});
+										
+										let elementFound = (found_index == -1)? undefined:base.byId[tempuserAuthentification.ID][tableId].rowsInput[found_index];
 										console.log("elementfound is "+((elementFound != undefined)? 'defined':'undefined'));
-										if(elementFound)
+										
+										if( found_index != -1 )
 										Object.keys(elementFound).forEach((loopkey)=>
 										{
 											elementFound[loopkey] = newComparison[loopkey];
@@ -856,15 +873,35 @@ async function formidableFileUpload(req,path,res)
 										
 										console.log(elementFound);
 										
-										elementFound = base.bytable[tableId].rowsInput.find((rowElement)=> Object.values(rowElement).reduce((acc,aelement,index)=> acc = acc && (Object.values(oldComparison)[index] == aelement.toString()),true));
+										found_index = -1;
+										
+										base.bytable[tableId].rowsInput.forEach((rowInput,firstindex)=>
+										{
+											let all_found = true;
+											Object.keys(oldComparison).forEach((keyel,index2)=>
+											{
+												if(  !((rowInput[keyel] instanceof Date && rowInput[keyel].toISOString() == oldComparison[keyel]) || rowInput[keyel].toString() == oldComparison[keyel] ) )
+												{
+													all_found = false;
+												}
+											});
+											console.log("All found is "+all_found);
+											if(all_found  && Object.keys(oldComparison).length > 0 && found_index == -1)
+											{
+												found_index = firstindex;
+											}
+										});
+										
+										elementFound = (found_index == -1)? undefined:base.bytable[tableId].rowsInput[found_index];
 										console.log("elementfound is "+((elementFound != undefined)? 'defined':'undefined'));
-										if(elementFound)
+										
+										if( found_index != -1 )
 										Object.keys(elementFound).forEach((loopkey)=>
 										{
 											elementFound[loopkey] = newComparison[loopkey];
 										});
 										else
-											console.log( base.bytable[tableId].rowsInput);
+											console.log(base.byId[tempuserAuthentification.ID][tableId].rowsInput);
 										
 										console.log(elementFound);
 										
@@ -877,41 +914,90 @@ async function formidableFileUpload(req,path,res)
 											oldComparison["prenom"] =  base.individuals[tempuserAuthentification.ID].first;
 											oldComparison["nom"] =  base.individuals[tempuserAuthentification.ID].second;
 											oldComparison["genre"] =  base.individuals[tempuserAuthentification.ID].gender;
+											oldComparison["image"] = base.individuals[tempuserAuthentification.ID].image;
 											
 											newComparison["prenom"] =  base.individuals[tempuserAuthentification.ID].first;
 											newComparison["nom"] =  base.individuals[tempuserAuthentification.ID].second;
 											newComparison["genre"] =  base.individuals[tempuserAuthentification.ID].gender;
+											newComparison["image"] = base.individuals[tempuserAuthentification.ID].image;
 										}
 										
-										console.log(base.bytable[tableId].rows.length+"--------------------------");
-										let elementFound = base.byId[tempuserAuthentification.ID][tableId].rows.find((rowElement)=> rowElement.reduce((acc,aelement,index)=> acc = acc && (Object.values(oldComparison)[index] == aelement.value.toString()),true));
-										console.log("elementfound is "+((elementFound != undefined)? 'defined':'undefined'));
 										console.log(oldComparison);
-										base.byId[tempuserAuthentification.ID][tableId].rows.forEach((el)=>{console.log(el);});
-										console.log(base.bytable[tableId].rows.length+"--------------------------");
+										let keys_for_comparison = Object.keys(oldComparison);
+										console.log(keys_for_comparison);
+										let found_index = -1;
+										console.log(base.byId[tempuserAuthentification.ID][tableId].rows.length);
 										
-										if(elementFound)
-										Object.keys(oldComparison).forEach((loopkey,index)=>
+										base.byId[tempuserAuthentification.ID][tableId].rows.forEach((row,firstindex)=>
 										{
-											elementFound[index].value = newComparison[loopkey];
+											let all_found = true;
+											console.log(firstindex);
+											Object.keys(oldComparison).forEach((keyel,index2)=>
+											{
+												if(  !((row[index2].value instanceof Date && row[index2].value.toISOString() == oldComparison[keyel]) || row[index2].value.toString() == oldComparison[keyel] ) )
+												{
+													all_found = false;
+												}
+											});
+											console.log("All found is "+all_found +" rows length is "+row.length+"-------------"+found_index);
+											console.log(all_found  && row.length > 0 && found_index == -1);
+											if(all_found  && row.length > 0 && found_index == -1)
+											{
+												found_index = firstindex;
+												console.log("New All found is "+all_found +" rows length is "+row.length+"-------------"+found_index);
+											}
+										});
+										
+										let elementFound = (found_index == -1)? undefined:base.byId[tempuserAuthentification.ID][tableId].rows[found_index];
+										console.log("elementfound is "+((elementFound != undefined)? 'defined':'undefined'));
+										
+										if( found_index != -1 )
+										Object.keys(newComparison).forEach((loopkey,rowindex)=>
+										{
+											elementFound[rowindex].value = newComparison[loopkey];
 										});
 										else
 											console.log(base.byId[tempuserAuthentification.ID][tableId].rows);
 										
-										elementFound = base.bytable[tableId].rows.find((rowElement)=> rowElement.reduce((acc,aelement,index)=> acc = acc && (Object.values(oldComparison)[index] == aelement.value.toString()),true));
-										console.log(oldComparison);
-										base.bytable[tableId].rows.forEach((el)=>{console.log(el);});
+										console.log(elementFound);
+										
+										keys_for_comparison = Object.keys(oldComparison);
+										console.log(keys_for_comparison);
+										found_index = -1;
+										
+										base.bytable[tableId].rows.forEach((row,firstindex)=>
+										{
+											let all_found = true;
+											
+											Object.keys(oldComparison).forEach((keyel,index2)=>
+											{
+												
+												if(  !((row[index2].value instanceof Date && row[index2].value.toISOString() == oldComparison[keyel]) || row[index2].value.toString() == oldComparison[keyel] ) )
+												{
+													all_found = false;
+												}
+												
+											});
+											
+											if(all_found  && row.length > 0 && found_index == -1)
+											{
+												found_index = firstindex;
+											}
+										});
+										
+										elementFound = (found_index == -1)? undefined:base.bytable[tableId].rows[found_index];
 										console.log("elementfound is "+((elementFound != undefined)? 'defined':'undefined'));
 										
-										
-										if(elementFound)
-										Object.keys(oldComparison).forEach((loopkey,index)=>
+										if( found_index != -1 )
+										Object.keys(newComparison).forEach((loopkey,rowindex)=>
 										{
-											elementFound[index].value = newComparison[loopkey];
+											elementFound[rowindex].value = newComparison[loopkey];
 										});
 										else
-											console.log(base.bytable[tableId].rows);
-										console.log(base.bytable[tableId].rows.length+"--------------------------");
+											console.log(base.byId[tempuserAuthentification.ID][tableId].rows);
+										
+										console.log(elementFound);
+										
 									}	
 									
 									goodResponse(res, {text:"Modifications passées",customtext:"OK"});

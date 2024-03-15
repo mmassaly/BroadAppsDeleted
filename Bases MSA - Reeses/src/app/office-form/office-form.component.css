@@ -304,3 +304,6 @@ div.notBasicNo: hover
 	color: white;
 	text-decoraton-color: white;
 }
+
+tr:hover
+{background-color:lightblue}
