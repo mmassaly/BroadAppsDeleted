@@ -76,8 +76,8 @@
 				<td *ngFor = "let rowValue of row;let heads = index" ><input name = "{{'rowChangeInput'+iBis+heads}}" *ngIf ="heads < data.base.tables[selectedID].headers.length -6 && data.base.tables[selectedID].headers[heads].validate && this.data.rowChanges[selectedID].values[iBis].displays" (change)= "updateChange(selectedID,iBis,data.base.tables[selectedID].headers,'modifyrows')" [appMngtype] = "fixType(data.base.tables[selectedID].headers[heads].type)"   [(ngModel)] = "this.data.rowChanges[selectedID].values[iBis].row[heads].value" ><img *ngIf="rowValue.img" style="border-radius:50%;" width="70px" height = "70px" src={{rowValue.value}}/>{{rowValue.img == false?rowValue.value:""}}</td>
 			</tr>
 		</ng-template>
-		<ng-template ngFor let-row [ngForOf]= "data.base.tables[selectedID].rowsInput" let-b = index >
-		<tr *ngIf = "row['idindividu'] == data.userAuthentification.ID" >   
+		<ng-template ngFor let-row [ngForOf]= "data.onDisplay[selectedID].elements" let-b = index >
+		<tr *ngIf = "data.onDisplay[selectedID].elements[b].values.idindividu.toString() == data.userAuthentification.ID.toString()" >   
 			<td  *ngFor="let headerEntry of data.base.tables[selectedID].headers;let i = index" >
 				{{type_correcter[headerEntry.type]}}
 				<input  *ngIf = "i < data.base.tables[selectedID].headers.length -6 && headerEntry.validate && !data.onDisplay[selectedID].elements[b].flipped" [appMngtype] = "fixType(headerEntry.type)" name = "{{headerEntry.name+b+i}}" (change) = "updateChange(selectedID,b,data.base.tables[selectedID].headers,'modifyinputrows')" [(ngModel)] ="data.onDisplay[selectedID].elements[b].values[headerEntry.name]"   required ngModel/>

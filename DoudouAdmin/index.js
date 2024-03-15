@@ -94,14 +94,14 @@ var server = http.createServer(function(req,res)
 								
 								forced_authentification_query_login(urlObject.userAuthentification,resultb).then((ares)=>
 								{
-										console.log(ares);
+										//console.log(ares);
 										if(JSON.stringify(ares.first) == "false" && JSON.stringify(ares.second) == "false" )
 										{
 											resultb.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
 											,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
 											,"Access-Control-Max-Age":'86400'
 											,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"});
-											console.log("Sending response");
+											//console.log("Sending response");
 											resultb.write(JSON.stringify(ares));
 											resultb.end();
 											return;
@@ -112,7 +112,7 @@ var server = http.createServer(function(req,res)
 											//console.log(othertempResult);
 												if(ares.first == true || ares.second == true )
 												{
-													console.log("Inside setting");
+													//console.log("Inside setting");
 													if (othertempResult.first)
 													{
 														ares.element.superadmin = true;
@@ -216,15 +216,15 @@ var server = http.createServer(function(req,res)
 									{
 											if(tempResult)
 											{
-												console.log("This guy is authenticated");
+												//console.log("This guy is authenticated");
 												let resultd = resultc;
 												check_super_admin(userAuthentification,undefined,undefined).then((othertempResult)=>
 												{
-													console.log("Inside checking admin type");
+													//console.log("Inside checking admin type");
 													if(othertempResult.first)
 													{
-														console.log("This guy is a primary admin");
-														console.log("responding");
+														//console.log("This guy is a primary admin");
+														///console.log("responding");
 														resultd.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
 														,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
 														,"Access-Control-Max-Age":'86400'
@@ -236,7 +236,7 @@ var server = http.createServer(function(req,res)
 													}
 													else if(othertempResult.second)
 													{
-														console.log("This guy is a secondary kind of  admin");
+														//console.log("This guy is a secondary kind of  admin");
 														
 														resultd.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
 														,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
@@ -603,7 +603,6 @@ async function formidableFileUpload(req,path,res)
 							if(result.second != false || (result.second instanceof Array))
 							{
 									console.log("--------------------base-------------------------");
-									console.log(base);
 									console.log("--------------------base-------------------------");
 									
 									
@@ -660,13 +659,18 @@ async function formidableFileUpload(req,path,res)
 										if(index_of_input_row != '-1' && base.bytable[tableId].rowsInput.length > 1)
 										{
 											let value = base.bytable[tableId].rowsInput.find((el)=> el.index.toString() == index_of_input_row);
+											
 											if(value != undefined)
 											{
-												let found_elements_index = base.bytable[tableId].rowsInput.indexOf(value);
-												if(found_elements_index >= 0)
-												{
-													base.bytable[tableId].rowsInput.splice(found_elements_index,1);
-												}
+													let found_elements_index = base.bytable[tableId].rowsInput.indexOf(value);
+													if(found_elements_index >= 0)
+													{
+														console.log("old length is"+ base.bytable[tableId].rowsInput.length);
+														console.log("Element deleted from table");
+														console.log(value);
+														base.bytable[tableId].rowsInput.splice(found_elements_index,1);
+														console.log("new length is"+ base.bytable[tableId].rowsInput.length);
+													}
 											}
 										}
 									}
@@ -691,11 +695,16 @@ async function formidableFileUpload(req,path,res)
 											let value = base.byId[tempuserAuthentification.ID][tableId].rowsInput.find((el)=> el.index.toString() == index_of_input_row);
 											if(value != undefined )
 											{
-												let found_elements_index = base.byId[tempuserAuthentification.ID][tableId].rowsInput.indexOf(value);
-												if(found_elements_index >= 0)
-												{
-													base.byId[tempuserAuthentification.ID][tableId].rowsInput.splice(found_elements_index,1);
-												}
+													let found_elements_index = base.byId[tempuserAuthentification.ID][tableId].rowsInput.indexOf(value);
+													if(found_elements_index >= 0)
+													{
+														
+														console.log("old length is"+ base.byId[tempuserAuthentification.ID][tableId].rowsInput.length);
+														console.log("Element deleted from byId");
+														console.log(value);
+														base.byId[tempuserAuthentification.ID][tableId].rowsInput.splice(found_elements_index,1);
+														console.log("new length is"+ base.byId[tempuserAuthentification.ID][tableId].rowsInput.length);
+													}
 											}
 										}
 										console.log(base.byId[tempuserAuthentification.ID][tableId].rows.length+"--------------------------");
@@ -1820,9 +1829,9 @@ async function check_super_admin(userAuthentification,aconnection,res)
 				if(!(notAnError.second == false))
 				{
 					let authenticated = false;
-					console.log(query);
-					console.log(userAuthentification);
-					console.log(notAnError.first);
+					//console.log(query);
+					//console.log(userAuthentification);
+					//console.log(notAnError.first);
 					
 					if(notAnError.first.length == 0)
 					{

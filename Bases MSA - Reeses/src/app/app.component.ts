@@ -138,14 +138,28 @@ export class AppComponent {
 				let notFoundMustGo:any[] = [];
 				this.data.onDisplay[key].elements.forEach((el:any)=> 
 				{
-					let finding_results =this.data.base.tables[key].rowsInput.find((el2:any)=>
+					let found = false;
+					let finding_results:any[] = []
+					this.data.base.tables[key].rowsInput.forEach((el2:any)=>
 					{
-						el.values.index.toString() == el2.index.toString() && el.values.id.toString() == el2.id.toString()
+						/* console.log(el.values.index.toString());
+						console.log(el.values.idindividu.toString());
+						console.log(el.values.id.toString());
+						
+						console.log(el2.index.toString());
+						console.log(el2.idindividu.toString());
+						console.log(el2.id.toString()); */
+						
+						if(el.values.index.toString() == el2.index.toString() && el.values.idindividu.toString() == el2.idindividu.toString() && el.values.id.toString() == el2.id.toString())
+						{
+							found = true;
+						}
+						console.log("found is "+found);
 					}); 
 					
-					if(finding_results == undefined)
+					if(finding_results == undefined || !found)
 					{
-						notFoundMustGo.push(el);
+						notFoundMustGo.push(el);	
 					}
 					
 				});
@@ -154,6 +168,8 @@ export class AppComponent {
 				{
 					let index = this.data.onDisplay[key].elements.indexOf(el);
 					this.data.onDisplay[key].elements.splice(index,1);
+					/* console.log(el);
+					console.log("deleted"); */
 				});
 			}
 		});
