@@ -868,14 +868,16 @@ async function formidableFileUpload(req,path,res)
 									}
 									else
 									{
-										oldComparison["prenom"] =  base.individuals[tempuserAuthentification.ID].first;
-										oldComparison["nom"] =  base.individuals[tempuserAuthentification.ID].second;
-										oldComparison["genre"] =  base.individuals[tempuserAuthentification.ID].gender;
-										oldComparison["image"] =  base.individuals[tempuserAuthentification.ID]["image"];
-										newComparison["prenom"] =  base.individuals[tempuserAuthentification.ID].first;
-										newComparison["nom"] =  base.individuals[tempuserAuthentification.ID].second;
-										newComparison["genre"] =  base.individuals[tempuserAuthentification.ID].gender;
-										newComparison["image"] =  base.individuals[tempuserAuthentification.ID]["image"];
+										if(base.individuals[tempuserAuthentification.ID].user)
+										{
+											oldComparison["prenom"] =  base.individuals[tempuserAuthentification.ID].first;
+											oldComparison["nom"] =  base.individuals[tempuserAuthentification.ID].second;
+											oldComparison["genre"] =  base.individuals[tempuserAuthentification.ID].gender;
+											
+											newComparison["prenom"] =  base.individuals[tempuserAuthentification.ID].first;
+											newComparison["nom"] =  base.individuals[tempuserAuthentification.ID].second;
+											newComparison["genre"] =  base.individuals[tempuserAuthentification.ID].gender;
+										}
 										
 										console.log(base.bytable[tableId].rows.length+"--------------------------");
 										let elementFound = base.byId[tempuserAuthentification.ID][tableId].rows.find((rowElement)=> rowElement.reduce((acc,aelement,index)=> acc = acc && (Object.values(oldComparison)[index] == aelement.value.toString()),true));
