@@ -732,6 +732,8 @@ async function formidableFileUpload(req,path,res)
 					let elements_dic = [[],[]];
 					let oldComparison = {};
 					let newComparison = {};
+					let tempuserAuthentification = {ID:urlObject.authID[0],Prenom:urlObject.authPrenom[0],Nom:urlObject.authNom[0],genre:urlObject.authGenre[0],pass:urlObject.authpass[0]};
+						
 					
 					Object.keys(fields).forEach(key=>
 					{
@@ -804,7 +806,6 @@ async function formidableFileUpload(req,path,res)
 					
 					if(commandArg == "modifyrows" || commandArg == "modifyinputrows")
 					{
-						let tempuserAuthentification = {ID:urlObject.authID[0],Prenom:urlObject.authPrenom[0],Nom:urlObject.authNom[0],genre:urlObject.authGenre[0],pass:urlObject.authpass[0]};
 						let tempResult = await forced_authentification_query(tempuserAuthentification,undefined);
 						
 						if(tempResult != false && tableId != undefined)
