@@ -547,14 +547,18 @@ export class OfficeFormComponent
 		{
 			if( headerItem.name != "id" && headerItem.name != "idindividu" && headerItem.name !="prenom" && headerItem.name!="nom" && headerItem.name!="genre" && headerItem.name !="image")
 			{	
-				formdata.append(headerItem.name as string,"");
+				
 				values[headerItem.name] = "";
 				values2[headerItem.name] = "";
 				if(headerItem.type == 'Date')
 				{
 					values[headerItem.name] = new Date();
 					values2[headerItem.name] = new Date();
+					formdata.append(headerItem.name as string,new Date().toLocaleDateString('en-US'));
 				}
+				else
+					formdata.append(headerItem.name as string,'');
+				
 			}
 			console.log(headerItem.name);
 			console.log("empty");
@@ -574,10 +578,39 @@ export class OfficeFormComponent
 			values2["idindividu"] = ID;
 		}
 		
-		values["index"] = this.data.onDisplay[selectedID].elements.length;
-		values2["index"] = this.data.onDisplaySaving[selectedID].values.length;
+		let max = 0;
+		let usable_index:number[] = [];
+		this.data.onDisplay[selectedID].elements.forEach((el:any,index:number)=>
+		{
+			usable_index.push(index);
+			let currNum = Number(el.values.index);
+			if( currNum>= max )
+			{
+				max = currNum+1;
+			}
+			if(currNum == index)
+				usable_index.pop();
+		});
 		
-		formdata.append("index",this.data.onDisplay[selectedID].elements.length);
+		values["index"] = usable_index.length > 0? usable_index[0]:max;
+		
+		let max2 = 0;
+		usable_index = [];
+		this.data.onDisplaySaving[selectedID].values.forEach((el:any,index:number)=>
+		{
+			usable_index.push(index);
+			let currNum = Number(el.index);
+			if( currNum >= max2 )
+			{
+				max2 = currNum+1;
+			}
+			if(currNum == index)
+				usable_index.pop();
+		});;
+		
+		values2["index"] = usable_index.length > 0? usable_index[0].toString():max2;
+		
+		formdata.append("index",values["index"]);
 		
 		let object_value:any = {values:values,responseString:"",class:"notdisplayed",done:false,index:this.data.onDisplay[selectedID].elements.length,flipped:false,submitting:false};
 		
