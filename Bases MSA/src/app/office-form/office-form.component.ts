@@ -552,6 +552,7 @@ export class OfficeFormComponent
 				values2[headerItem.name] = "";
 				if(headerItem.type == 'Date')
 				{
+					let curr = new Date();
 					values[headerItem.name] = curr.getFullYear()+'-'+(curr.getMonth()+1)+'-'+curr.getDate();
 					values2[headerItem.name] = curr.getFullYear()+'-'+(curr.getMonth()+1)+'-'+curr.getDate();
 					formdata.append(headerItem.name as string,curr.getFullYear()+'-'+(curr.getMonth()+1)+'-'+curr.getDate());
