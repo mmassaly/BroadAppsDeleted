@@ -67,8 +67,8 @@
 	<h1 *ngIf ="selectedID == '' && data.base.tables == undefined ||  data.base.tables[selectedID] == undefined || data.base.tables[selectedID].headers == undefined || data.base.tables[selectedID].image_url == undefined">Ajouter</h1>
 	<select [(ngModel)] = "displayID" name ="idDisplayer">
 		<option value="all">Ensemble</option>
-		<option *ngFor="let container of objectKeysFunction(data.base.individuals); let i = index" value="{{data.base.individuals[container][0]}}">
-		{{data.base.individuals[container][0]+" "+data.base.individuals[container][1].first+" "+data.base.individuals[container][1].second+"\n"+data.base.individuals[container][1].gender}}
+		<option *ngFor="let container of objectKeysFunction(data.base.individuals); let i = index" value="{{data.base.individuals[i][0]}}">
+		{{data.base.individuals[i][0]+" "+data.base.individuals[i][1].first+" "+data.base.individuals[i][1].second+"\n"+data.base.individuals[i][1].gender}}
 		</option>	
 	</select>
 	<table *ngIf ="selectedID != '' && data.base.tables != undefined &&  data.base.tables[selectedID] != undefined && data.base.tables[selectedID].headers != undefined ">
@@ -81,7 +81,7 @@
 				<td *ngFor = "let rowValue of row;let heads = index" ><input name = "{{'rowChangeInput'+iBis+heads}}" *ngIf ="heads < data.base.tables[selectedID].headers.length -6 && data.base.tables[selectedID].headers[heads].validate && this.data.rowChanges[selectedID].values[iBis].displays" (change)= "updateChange(selectedID,iBis,data.base.tables[selectedID].headers,'modifyrows')" [appMngtype] = "fixType(data.base.tables[selectedID].headers[heads].type)"   [(ngModel)] = "this.data.rowChanges[selectedID].values[iBis].row[heads].value" ><img *ngIf="rowValue.img" width="80px" height = "80px" src={{rowValue.value}}/>{{rowValue.img == false?rowValue.value:""}}</td>
 			</tr>
 		</ng-template>
-		<ng-template ngFor let-row [ngForOf]= "data.onDisplay[selectedID].elements" let-b = index >
+		<ng-template ngFor let-row [ngForOf]= "data.base.tables[selectedID].rowsInput" let-b = index >
 		<tr *ngIf = "row['idindividu'] == data.userAuthentification.ID "   > 
 			<td  *ngFor="let headerEntry of data.base.tables[selectedID].headers;let i = index" >
 				{{type_correcter[headerEntry.type]}}

@@ -1118,7 +1118,7 @@ async function formidableFileUpload(req,path,res)
 											base.individuals[elements_dic_other["ID"] ] = 
 											{ID:elements_dic_other["ID"],"first":elements_dic_other["first"],"second":elements_dic_other["second"],
 											"gender":elements_dic_other["gender"],"pwd":elements_dic_other["password"],
-											"superadmin":elements_dic_other["type1"],"user":elements_dic_other["type2"]};
+											"superadmin":elements_dic_other["type1"],"user":elements_dic_other["type2"],"image":image_url};
 											
 											if( base.byId[elements_dic_other["ID"]] == undefined) 
 											{

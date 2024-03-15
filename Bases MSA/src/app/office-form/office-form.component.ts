@@ -127,8 +127,9 @@ export class OfficeFormComponent
 			formdata.append("authGenre",this.data.userAuthentification.genre);
 			formdata.append("authpass",this.data.userAuthentification.pass);
 			
+			console.log((addindividual)?"addindividual":"linkindividualtobase");
 			console.log(formvalue);
-			this.getRequestCallBack(this.httpservice,formdata,this,submissionNotifier);
+			this.getRequestCallBack(this.httpservice,formdata,this,undefined);
 		}
 		else if(this.c2)
 		{
