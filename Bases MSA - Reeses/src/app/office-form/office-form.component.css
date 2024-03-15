@@ -1,0 +1,306 @@
+div.movingCircle
+{
+	border-width: 5px;
+	border-style: solid;
+    	min-width: 40px;
+	min-height: 40px;
+	max-width: 40px;
+	max-height: 40px;
+	border-color: greenyellow green greenyellow green;
+	/*border-image: linear-gradient(to right,greenyellow,green);
+	border-image-slice: 1%; sucks!*/
+	border-radius: 50%;
+	margin: auto;
+	margin-bottom: 10px;
+	animation: 5s linear 0s infinite rotateAnimation;
+}
+.none
+{
+	display:none;
+}
+
+@keyframes rotateAnimation 
+{
+	from {
+    		transform: rotate(0deg);
+  	}
+  	to {
+    		transform: rotate(360deg);
+  	}
+}
+th
+{
+	background-color: blue;
+	border-radius: 5px;
+	color:white;
+	min-width: 120px;
+	max-width: 160px;
+}
+table
+{
+	font-size: 12px;
+}
+
+li:active
+{
+	background-color:blue;
+	color: white;
+}
+li
+{
+	display: inline-block;
+	margin-left: 40px;
+}
+div.formDivisiona, div.formDivisionb, div.formDivisionc
+{
+	grid-template-columns: auto auto;
+	grid-column-start:1;
+	grid-column-end:2;
+	column-count: 2;
+	row-gap: 20px;
+	column-gap: 20px;
+	display:inline-grid;
+}
+
+@media screen and (min-width: 340px)
+{
+	div.gridTwoElements
+	{
+		grid-template-columns: auto auto;
+		grid-column-start:1;
+		grid-column-end:2;
+		column-count: 2;
+		column-gap: 10px;
+		display:inline-grid;
+	}
+}
+
+div.formDivisiond
+{
+	grid-template-columns: auto auto;
+	grid-column-start:1;
+	grid-column-end:2;
+	column-count: 2;
+	row-gap: 20px;
+	column-gap: 30px;
+	display:inline-grid;
+}
+
+fieldset legend 
+{
+	background-image: linear-gradient(to right,greenyellow,green);
+	color: white;
+}
+
+fieldset input:checked
+{
+	border: 3px solid green;
+}
+
+fieldset 
+{
+	border-image: linear-gradient(to right,greenyellow,green) 30;	
+	border-width: 1.5px;
+	border-radius: 50%;
+}
+
+div.formDivisiond 
+{
+	grid-column: 1 / span 2;
+}
+
+div.formDivisiona button ,div.formDivisionb button ,div.formDivisionc button
+{
+	margin-top: 30px;
+}
+
+.parent
+{
+	margin-top: 80px;
+}
+
+div.middlePage
+{
+	margin: auto;
+}
+
+div.middlePage form
+{
+	margin-top: 20px;
+	margin-left:20px;
+	padding: 10px 0px 10px 20px;
+	box-shadow: 1px 1px 1px 1px blue;
+}
+
+div.middlePage form h1
+{
+	font-size: 3vh;
+	text-decoration:underline;
+	margin-bottom: 20px;
+	color:blue;
+}
+
+div.fiveRowsSevenColumns
+{
+	display: grid;
+	max-width: 90%;
+	grid-template-columns: 12.5% 12.5% 12.5% 12.5% 12.5% 12.5% 12.5%; 
+	column-count: 7;
+	column-gap: 2%;
+	row-count: 6;
+	grid-template-rows: 15% 15% 15% 15% 15% 15%;
+	row-gap: 3%;
+	grid-row-start: 1;
+	grid-row-end: 6;
+	font-size: 90%;
+	padding-bottom: 20px;
+}
+
+@media screen and (max-width: 468px)
+{
+	div.formDivisiona
+	{
+		row-count: 14;
+		grid-template-rows: auto auto auto auto auto auto auto auto auto auto auto auto auto auto;
+		grid-row-start: 1;
+		grid-row-end: 14;
+		grid-column-start:1;
+		grid-column-end:1;
+		column-count: 1;
+		grid-template-columns: auto;
+		row-gap: 2.5px;
+		display:inline-grid;
+	}
+	div.formDivisionb
+	{
+		row-count: 26;
+		grid-row-start: 1;
+		grid-row-end: 26;
+		grid-column-start:1;
+		grid-column-end:1;
+		column-count: 1;
+		grid-template-columns: auto;
+		row-gap: 2.5px;
+		display:inline-grid;
+	}
+	div.formDivisionc
+	{
+		grid-column-start:1;
+		grid-column-end:1;
+		column-count: 1;
+		grid-template-columns: auto;
+		row-gap: 2.5px;
+		display:inline-grid;
+	}
+	div.formDivisiond
+	{
+		grid-column-start:1;
+		grid-column-end:1;
+		column-count: 1;
+		grid-template-columns: auto;
+		row-gap: 2.5px;
+		display:inline-grid;
+		grid-column: 1 / span 1;
+	}
+	div.middlePage
+	{
+		width: 85%;
+		margin: auto;
+	}
+	div.formDivisiona input, div.formDivisionb input 
+	{
+		width: 85%;
+	}
+	
+}
+
+@media screen and (max-width: 339px)
+{
+	div.gridTwoElements
+	{
+		grid-template-rows: auto auto;
+		grid-row-start:1;
+		grid-row-end:2;
+		row-count: 2;
+		row-gap: 10px;
+		display:inline-grid;
+	}
+}
+@media screen and (max-width: 400px)
+{
+	div.parent
+	{
+		margin-top: 160px;
+	}
+}
+@media screen and (max-width: 350px)
+{
+	div.middlePage form
+	{
+		border:none;
+		box-shadow:none;
+	}
+}
+div.dateElement 
+{
+	color:grey;
+	font-size: 125%;
+	font-style: bold;
+	text-align: center;
+	width: 80%;
+	border-radius: 4%;
+	padding-top: 15px;
+	padding-bottom: 25px;
+	border: 1px solid gray;
+	overflow: none;
+}
+
+div.dateElement:hover
+{
+	background-color: blue;
+	cursor:pointer;
+	color:white;
+}
+
+div.dateElement:hover p.eventsdescription
+{
+	color: white;
+}
+
+div.styledUnderform
+{
+	margin-top: 1%;
+ 	margin-bottom: 1%;
+	grid-template-columns: auto auto;
+	grid-column-start:1;
+	grid-column-end:2;
+	column-count: 2;
+	row-gap: 10px;
+	column-gap: 10px;
+	display:inline-grid;
+}
+
+p.eventsdescription
+{
+	text-align:center;
+	margin: auto;
+}
+
+p.eventsdescription
+{
+	color: green;
+}
+
+div.notBasicNo
+{
+	color: green;
+	text-decoration: underline;
+	text-decoraton-color: blue;
+	text-decoration-thickness: 5px;
+}
+
+div.notBasicNo: hover
+{
+	color: white;
+	text-decoraton-color: white;
+}

@@ -1,25 +1,24 @@
+<!-- background-image:linear-gradient(to top,green,lawngreen);border-radius: 5px; -->
 <div>
-
-<label for ="rd1" *ngIf = "data.userAuthentification.superadmin" >Ajouter un employé</label>
-<input type ="radio" name ="wello" id="rd1" (change)="toggle(c1?c1:true,false,false)" [checked] = "c1" *ngIf = "data.userAuthentification.superadmin" >
-<label for ="rd2" *ngIf = "data.userAuthentification.superadmin" style="margin-left:5px" >Base de donnée</label>
-<input type ="radio" name ="wello" id="rd2" (change)="toggle(false,c2?c2:true,false)" *ngIf = "data.userAuthentification.superadmin" >
-<label for ="rd2" *ngIf = "!data.userAuthentification.superadmin" style="margin-left:5px" checked>Base de donnée</label>
-<input type ="radio" name ="wello" id="rd2" (change)="toggle(false,c2?c2:true,false)" [checked] = "!c2" *ngIf = "!data.userAuthentification.superadmin" >
-<label for ="rd3" *ngIf = "data.userAuthentification.superadmin" style="margin-left:5px" >Ajouter une nouvelle base</label>
-<input type ="radio" name ="wello" id="rd3" *ngIf = "data.userAuthentification.superadmin" (click)="toggle(false,false,c3?c3:true)">
-
-<div class = "leftshiftotoggleMenu">
-	<div *ngIf ="data.base.tables != undefined ">
-		<h1>Liste des bases</h1>
-		<ul>
-			<li *ngFor ="let key of objectKeysFunction(data.base.tables)" (click) = "setSelectedID(key)" >
-				<label style="display:none">{{key+" "}} </label>
-				{{data.base.tables[key]?.name}}
-			</li>
-		</ul>
-	</div>
+<div style=" margin-top: -15px;position:sticky; top: 0">
+<div>
+	<img width="150px" height = "75px" style="float:left"   src="https://70gxoz4jnkgivatx.public.blob.vercel-storage.com/assets/images/doudousindividuals/profile-pictures/senegal_drapeau-rqXIPLDI2oX3XqlhuTvKqJ6dbYZJ63.png"/>
+	<img width="150px" height = "75px" style="float:right"   src="https://70gxoz4jnkgivatx.public.blob.vercel-storage.com/assets/images/doudousindividuals/profile-pictures/mauritanie_drapeau-ufCJZFn03UwTPzjruTUekQOEWxBOJ1.png"/>
 </div>
+<div style="text-align:center;">
+	<img width="150px" height = "75px" src = "https://70gxoz4jnkgivatx.public.blob.vercel-storage.com/assets/images/doudousindividuals/profile-pictures/banque_europeene_d'investissement-f19Ly5CyqxiBqF2FEUnICJEEXafDvD.png">
+	<img width="150px" height = "75px" src = "https://70gxoz4jnkgivatx.public.blob.vercel-storage.com/assets/images/doudousindividuals/profile-pictures/banque_africaine_de_developpement-YNW3DVeoo1pHtgW853JnNntMCKSs3z.png">
+	<img width="150px" height = "75px" src ="https://70gxoz4jnkgivatx.public.blob.vercel-storage.com/assets/images/doudousindividuals/profile-pictures/union_europ%C3%A9enne-dP4LeaK4gAEFHO25cRyfHb5KsPO6ZP.jpg">
+</div>
+<h1 style="font-size: 18px; text-align:center;background:linear-gradient(to right,green,blue,silver,green);-webkit-text-fill-color: transparent;-webkit-background-clip: text;">PROJET DE CONSTRUCTION DU PONT DE ROSSO</h1>
+<h2 style="font-size: 14px; text-align:center;background:linear-gradient(to right,green,blue,green,silver);-webkit-text-fill-color: transparent;-webkit-background-clip: text;">MECANISME DE GESTION DES PLAINTES</h2>
+<h2 style="font-size: 14px; text-align:center;background:linear-gradient(to right,green,blue,green,silver);-webkit-text-fill-color: transparent;-webkit-background-clip: text;">GROUPEMENT MSA / BEESAS</h2>
+<div style="text-align:center;">
+	<img width="150px" height = "75px" src ="https://70gxoz4jnkgivatx.public.blob.vercel-storage.com/assets/images/doudousindividuals/profile-pictures/MSA-oJGRwZrilxDYiaBn5fgFBr5Q0wTTAu.png">
+	<img width="150px" height = "75px" src ="https://70gxoz4jnkgivatx.public.blob.vercel-storage.com/assets/images/doudousindividuals/profile-pictures/Beesas-xKxQTinovJ1jpdg1dS9RwODjMzzyW6.png">
+</div>
+</div>
+
 <div  class="middlePage">
 <form *ngIf="c1 && !data.userAuthentification.user" #fOne  ="ngForm" (ngSubmit)="submitFunction(fOne.value,fOne,$event)" ngNativeValidate>
 	<h1>Formulaire d'ajout d'un nouvel employé</h1>
@@ -58,11 +57,7 @@
 	</div>
 </form>
 <form *ngIf="c2" style ="overflow-x:auto;" #fTwo = "ngForm" (ngSubmit)="submitFunction(fTwo.value,fTwo,$event)" ngNativeValidate>
-	<div *ngIf ="selectedID != '' && data.base.tables != undefined &&  data.base.tables[selectedID] != undefined && data.base.tables[selectedID].headers != undefined && data.base.tables[selectedID].image_url != undefined && data.base.tables[selectedID].image_url instanceof Array">
-		<div *ngFor= "let image_src of data.base.tables[selectedID].image_url;let iBis = index"  >
-			<img width="100%" height = "300px" style="max-width:700px;margin-left:auto;margin-right:auto" *ngIf ="selectedID != '' && data.base.tables != undefined &&  data.base.tables[selectedID] != undefined && data.base.tables[selectedID].headers != undefined && data.base.tables[selectedID].image_url != undefined" src={{image_src}}/>
-		</div>
-	</div>
+	
 	<h1 style="margin-top:80px" *ngIf ="selectedID != '' && data.base.tables != undefined &&  data.base.tables[selectedID] != undefined && data.base.tables[selectedID].headers != undefined && data.base.tables[selectedID].image_url != undefined">Ajouter</h1>
 	<h1 *ngIf ="selectedID == '' && data.base.tables == undefined ||  data.base.tables[selectedID] == undefined || data.base.tables[selectedID].headers == undefined || data.base.tables[selectedID].image_url == undefined">Ajouter</h1>
 	<select [(ngModel)] = "displayID" name ="idDisplayer">
@@ -77,12 +72,12 @@
 			<th>Autre</th>
 		</tr>
 		<ng-template ngFor let-row [ngForOf]= "data.base.tables[selectedID].rows"  let-iBis = index; let-oddOne = odd >
-			<tr *ngIf="row[row.length-5].value == displayID || displayID == 'all' " [ngClass]= "oddOne?'odd':'even'" (dblclick) = " this.data.rowChanges[selectedID].values[iBis].displays = !this.data.rowChanges[selectedID].values[iBis].displays">
-				<td *ngFor = "let rowValue of row;let heads = index" ><input name = "{{'rowChangeInput'+iBis+heads}}" *ngIf ="heads < data.base.tables[selectedID].headers.length -6 && data.base.tables[selectedID].headers[heads].validate && this.data.rowChanges[selectedID].values[iBis].displays" (change)= "updateChange(selectedID,iBis,data.base.tables[selectedID].headers,'modifyrows')" [appMngtype] = "fixType(data.base.tables[selectedID].headers[heads].type)"   [(ngModel)] = "this.data.rowChanges[selectedID].values[iBis].row[heads].value" ><img *ngIf="rowValue.img" width="80px" height = "80px" src={{rowValue.value}}/>{{rowValue.img == false?rowValue.value:""}}</td>
+			<tr *ngIf="row[row.length-5].value == displayID || displayID == 'all' " [ngClass]= "oddOne?'odd':'even'" (dblclick) = "this.data.rowChanges[selectedID].values[iBis].displays = !this.data.rowChanges[selectedID].values[iBis].displays">
+				<td *ngFor = "let rowValue of row;let heads = index" ><input name = "{{'rowChangeInput'+iBis+heads}}" *ngIf ="heads < data.base.tables[selectedID].headers.length -6 && data.base.tables[selectedID].headers[heads].validate && this.data.rowChanges[selectedID].values[iBis].displays" (change)= "updateChange(selectedID,iBis,data.base.tables[selectedID].headers,'modifyrows')" [appMngtype] = "fixType(data.base.tables[selectedID].headers[heads].type)"   [(ngModel)] = "this.data.rowChanges[selectedID].values[iBis].row[heads].value" ><img *ngIf="rowValue.img" style="border-radius:50%;" width="70px" height = "70px" src={{rowValue.value}}/>{{rowValue.img == false?rowValue.value:""}}</td>
 			</tr>
 		</ng-template>
 		<ng-template ngFor let-row [ngForOf]= "data.base.tables[selectedID].rowsInput" let-b = index >
-		<tr *ngIf = "row['idindividu'] == data.userAuthentification.ID "   > 
+		<tr *ngIf = "row['idindividu'] == data.userAuthentification.ID" >   
 			<td  *ngFor="let headerEntry of data.base.tables[selectedID].headers;let i = index" >
 				{{type_correcter[headerEntry.type]}}
 				<input  *ngIf = "i < data.base.tables[selectedID].headers.length -6 && headerEntry.validate && !data.onDisplay[selectedID].elements[b].flipped" [appMngtype] = "fixType(headerEntry.type)" name = "{{headerEntry.name+b+i}}" (change) = "updateChange(selectedID,b,data.base.tables[selectedID].headers,'modifyinputrows')" [(ngModel)] ="data.onDisplay[selectedID].elements[b].values[headerEntry.name]"   required ngModel/>
@@ -140,4 +135,4 @@
 </div>
 </div>
 <!-- &&  numberReturn(s4.value) >= 0 -->
-<!-- && data.base.tables[selectedID].rowsInput.length <= data.onDisplay[selectedID].elements.length-->
+<!-- && data.base.tables[selectedID].rowsInput.length <= data.onDisplay[selectedID].elements.length" ligne 80-->  
