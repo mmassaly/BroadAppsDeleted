@@ -280,13 +280,18 @@ export class OfficeFormComponent
 					else
 					{
 						submissionNotifier.responseString = "ajout passé";
-						if(submissionNotifier.count == undefined)
+						if(submissionNotifier.count == undefined){
 							submissionNotifier.submitting = false;
+							submissionNotifier.success = true;
+						}
 						else if( submissionNotifier.count > 0 )
 						{
 							submissionNotifier.count -= 1;
 							if(submissionNotifier == 0)
+							{
+								submissionNotifier.success = true;
 								submissionNotifier.submitting = false;
+							}
 						}
 					}
 				}
@@ -301,12 +306,18 @@ export class OfficeFormComponent
 							submissionNotifier.responseString = response.text;
 						}
 						if(submissionNotifier.count == undefined)
+						{
 							submissionNotifier.submitting = false;
+							submissionNotifier.success = true;
+						}
 						else if( submissionNotifier.count > 0 )
 						{
 							submissionNotifier.count -= 1;
 							if(submissionNotifier == 0)
+							{
 								submissionNotifier.submitting = false;
+								submissionNotifier.success = true;
+							}
 						}
 					}
 				}
@@ -322,12 +333,18 @@ export class OfficeFormComponent
 				{
 					submissionNotifier.responseString = "ajout échoué.";
 					if(submissionNotifier.count == undefined)
-							submissionNotifier.submitting = false;
+					{
+						submissionNotifier.submitting = false;
+						submissionNotifier.success = true;
+					}
 					else if( submissionNotifier.count > 0 )
 					{
 						submissionNotifier.count -= 1;
 						if(submissionNotifier == 0)
+						{
 							submissionNotifier.submitting = false;
+							submissionNotifier.success = true;
+						}
 					}
 				}
 			}
@@ -339,12 +356,18 @@ export class OfficeFormComponent
 				{	
 					submissionNotifier.responseString = "ajout échoué.Le serveur est entrain de charger..";
 					if(submissionNotifier.count == undefined)
+					{
 						submissionNotifier.submitting = false;
+						submissionNotifier.success = true;
+					}
 					else if( submissionNotifier.count > 0 )
 					{
 						submissionNotifier.count -= 1;
-						if(submissionNotifier == 0)
+						if(submissionNotifier == 0) 
+						{
+							submissionNotifier.success = true;
 							submissionNotifier.submitting = false;
+						}
 					}
 				}
 			}
@@ -356,12 +379,18 @@ export class OfficeFormComponent
 				{
 					submissionNotifier.responseString = "ajout échoué. Il y a un problème de connection.";					
 					if(submissionNotifier.count == undefined)
+					{
 						submissionNotifier.submitting = false;
+						submissionNotifier.success = true;
+					}
 					else if( submissionNotifier.count > 0 )
 					{
 						submissionNotifier.count -= 1;
 						if(submissionNotifier == 0)
-						submissionNotifier.submitting = false;
+						{
+							submissionNotifier.submitting = false;
+							submissionNotifier.success = true;
+						}
 					}
 				}
 			}
