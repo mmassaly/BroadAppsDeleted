@@ -245,7 +245,7 @@ var server = http.createServer(function(req,res)
 														});
 																
 														//resultd.write(JSON.stringify({individuals:[base.individuals[userAuthentification.ID]],tables:base.byId[userAuthentification.ID]}));
-														resultd.write(JSON.stringify({individuals:[base.individuals[userAuthentification.ID]],tables:base.bytable}}));
+														resultd.write(JSON.stringify({individuals:[base.individuals[userAuthentification.ID]],tables:base.bytable}));
 														resultd.end();
 														
 													}
