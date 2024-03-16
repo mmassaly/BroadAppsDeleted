@@ -133,7 +133,8 @@ export class AppComponent {
 					this.data.rowChanges[key].values.pop();--count;
 				}
 			}
-			else if (this.data.base.tables[key].rowsInput.length > 0 && this.data.onDisplay[key].elements.length > this.data.base.tables[key].rowsInput.length )
+			
+			if (this.data.base.tables[key].rowsInput.length > 0 && this.data.onDisplay[key].elements.length > this.data.base.tables[key].rowsInput.length )
 			{
 				let notFoundMustGo:any[] = [];
 				this.data.onDisplay[key].elements.forEach((el:any)=> 
