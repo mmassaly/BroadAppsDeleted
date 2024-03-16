@@ -90,9 +90,16 @@ export class LoginPageComponent
 					console.log("--------------Log data---------------");
 					*/
 					aparent.data.userAuthentification = castResponse.element;
-					aparent.setUserAuthentifiction(castResponse.element);
-					aparent.toggle.toggle = false;
-					aparent.responseText = "OK";
+					if(aparent.data.userAuthentification.superadmin)
+					{
+						aparent.setUserAuthentifiction(castResponse.element);
+						aparent.toggle.toggle = false;
+						aparent.responseText = "OK";
+					}
+					else
+					{
+						aparent.responseText = "Votre mot de passe et ID n'est pas celui d'un administrateur.Vous n'avez pas l'accés à la page.";
+					}
 					/*
 					console.log("--------------Log data---------------");
 					console.log(aparent.data.userAuthentification);
