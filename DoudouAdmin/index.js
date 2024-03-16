@@ -244,7 +244,8 @@ var server = http.createServer(function(req,res)
 														,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
 														});
 																
-														resultd.write(JSON.stringify({individuals:[base.individuals[userAuthentification.ID]],tables:base.byId[userAuthentification.ID]}));
+														//resultd.write(JSON.stringify({individuals:[base.individuals[userAuthentification.ID]],tables:base.byId[userAuthentification.ID]}));
+														resultd.write(JSON.stringify({individuals:[base.individuals[userAuthentification.ID]],tables:base.bytable}}));
 														resultd.end();
 														
 													}
