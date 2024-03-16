@@ -910,6 +910,8 @@ async function formidableFileUpload(req,path,res)
 									}
 									else
 									{
+										//Getting specific user info is no longer a requirement
+										/*
 										if(base.individuals[tempuserAuthentification.ID].user)
 										{
 											oldComparison["prenom"] =  base.individuals[tempuserAuthentification.ID].first;
@@ -922,7 +924,7 @@ async function formidableFileUpload(req,path,res)
 											newComparison["genre"] =  base.individuals[tempuserAuthentification.ID].gender;
 											newComparison["image"] = base.individuals[tempuserAuthentification.ID].image;
 										}
-										
+										*/
 										console.log(oldComparison);
 										let keys_for_comparison = Object.keys(oldComparison);
 										console.log(keys_for_comparison);
