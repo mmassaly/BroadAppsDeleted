@@ -43,6 +43,8 @@ export class OfficeFormComponent
 	constructor(private httpservice: HttpService,public data: DataStorageService)
 	{
 		setInterval(()=>{console.log(data);console.log("Toggle "+this.toggled+"....")},2000);
+		if(data.userAuthentification.user)
+			this.displayID = data.userAuthentification.ID;
 	}
 	public submitFunctionBasic(b:number,source:any)
 	{
