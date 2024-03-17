@@ -1,3 +1,23 @@
+div.divSmaller div img
+{
+	height: 30px;
+	width: 50px;
+}
+div.divSmaller img
+{
+	height: 30px;
+	width: 50px;
+}
+
+div.divSmaller h1
+{
+	font-size: 14px;
+}
+div.divSmaller h2
+{
+	font-size: 11px;
+}
+
 tr:hover
 {
 	cursor: pointer;
@@ -44,7 +64,12 @@ li:hover li
 		display: block;
 	}
 }
-
+img.flag
+{
+ border-radius: 5px;
+ padding-left: 5px;
+ padding-right: 5px;
+}
 
 @media-screen (min-width: 801px)
 {

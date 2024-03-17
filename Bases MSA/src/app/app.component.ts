@@ -98,7 +98,7 @@ export class AppComponent {
 				
 				this.data.base.tables[key].rowsInput.forEach((rielem:any)=>
 				{
-					console.log("Adding");console.log(rielem);
+					//console.log("Adding");console.log(rielem);
 					let copy = JSON.parse(JSON.stringify(rielem));
 					let copy2 = JSON.parse(JSON.stringify(rielem));
 					let object_value:any = {values:copy,responseString:"",

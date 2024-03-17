@@ -92,13 +92,13 @@ export class AppComponent {
 		{
 			if(this.data.onDisplay[key] == undefined)
 			{
-				console.log("changing "+key);
+				//console.log("changing "+key);
 				this.data.onDisplay[key] = {indexofSelection: 0, elements:[]};;
 				this.data.onDisplaySaving[key] ={values:[]};
 				
 				this.data.base.tables[key].rowsInput.forEach((rielem:any)=>
 				{
-					console.log("Adding");console.log(rielem);
+					//console.log("Adding");console.log(rielem);
 					let copy = JSON.parse(JSON.stringify(rielem));
 					let copy2 = JSON.parse(JSON.stringify(rielem));
 					let object_value:any = {values:copy,responseString:"",

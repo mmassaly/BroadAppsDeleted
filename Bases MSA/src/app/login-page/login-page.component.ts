@@ -38,7 +38,7 @@ export class LoginPageComponent
 		let reqObj = {command: "login" , cmdArg: "login",comeBack:data.comeBack,Box: data.Box,Pos: data.Pos,userAuthentification:{ID: IDParam,Prenom:"",Nom:"",genre:"",naissance:"",pass:passParam,superadmin:false,admin:false,user:false}};
 		console.log(reqObj);
 		let aparent:LoginPageComponent = this;
-		if(aparent.data.userAuthentification.ID.trim() == "" && aparent.data.userAuthentification.pass.trim() == "")
+		if(aparent.data.userAuthentification.ID == undefined || (aparent.data.userAuthentification.ID.trim() == "" && aparent.data.userAuthentification.pass.trim() == "") )
 		aparent.httpservice.requestBaseStandardBeta(reqObj).subscribe((response)=>
 		{
 			console.log(response);

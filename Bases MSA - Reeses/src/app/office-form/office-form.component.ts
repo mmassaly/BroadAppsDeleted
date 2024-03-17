@@ -45,6 +45,12 @@ export class OfficeFormComponent
 		setInterval(()=>{console.log(data);console.log("Toggle "+this.toggled+"....")},2000);
 		if(data.userAuthentification.user)
 			this.displayID = data.userAuthentification.ID;
+		/*setTimeout(()=>
+		{
+			let elem = document.getElementById("msabeesesheader");
+			if( elem != undefined)
+				elem.classList.toggle("divSmaller");
+		},5000);*/
 	}
 	public submitFunctionBasic(b:number,source:any)
 	{
