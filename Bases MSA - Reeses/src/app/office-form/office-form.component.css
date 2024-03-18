@@ -124,7 +124,7 @@ div.middlePage
 	margin: auto;
 }
 
-div.middlePage form
+div.middlePage form.visual
 {
 	margin-top: 20px;
 	margin-left:20px;
@@ -322,15 +322,13 @@ form.controlling
 div.command 
 {
 	font-size:20px;
-	color:white;
+	color:darkslategray;
 	float:right;
-	bacground-color: red;
 	width:40px;
 	margin-right: 10px;
 }
 div.command:hover
 {
-	font-size:30px;
 	cursor:pointer;
 }
 ::-webkit-scrollbar {
@@ -344,22 +342,30 @@ div.command:hover
   box-shadow: inset 0 0 5px blue; 
   border-radius: 5px;
 }
-div.mode .notmode
+
+form.visual 
 {
-	display:none;
+	height:350px;
+	max-height:90%;
+	overflow-y:auto;
 }
 
-div.notmode .mode 
+form.newvisual
 {
-	display:none;
+	width: 100%;
+	border: none;
 }
 
-div.notmode .notmode
+form.newvisual table
 {
-	display:block;
+	border: none;
 }
 
-div.mode .mode
+form.newvisual table > form
 {
-	display:block;
+	margin-top: 20px;
+	margin-left:20px;
+	padding: 10px 0px 10px 20px;
+	box-shadow: 1px 1px 1px 1px darkslategrey,1px 1px 1px 1px darkslategrey inset;
+	width: 100%;	
 }

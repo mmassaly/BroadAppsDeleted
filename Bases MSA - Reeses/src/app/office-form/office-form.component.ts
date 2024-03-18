@@ -847,19 +847,20 @@ export class OfficeFormComponent
 		values.forEach((val)=>console.log(val));
 	}
 	
-	changeClass()
+	changeClass(idValue:string,oldclass:string,newclass:string)
 	{
 		try
 		{
-			let element = document.getElementById('msabeesesheader')
+			let element = document.getElementById(idValue);
 			if(element)
 			{
-				element.classList.toggle('notmode');
-				element.classList.toggle('mode');
+				element.classList.toggle(oldclass);
+				element.classList.toggle(newclass);
 			}
 		}
 		catch(err)
 		{
+			
 		}
 	}
 }
