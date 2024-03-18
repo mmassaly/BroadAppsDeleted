@@ -4429,33 +4429,17 @@
 			days.empDicofVacances[employeeContentModel.ID] = employeeContentModel;
 		}
 		
+		
 		if(days != undefined)
 		{
-			let obj_dic = {};
-			
 			elements.push(days.absencesdates);
-			if( obj_dic[elements] == undefined ) 
-				obj_dic[elements] = {indexes:[],data:days.absencesdates};
 			elements.push(days.retardsdates);
-			if( obj_dic[elements] == undefined ) 
-				obj_dic[elements] = {indexes:[],data:days.retardsdates};
 			elements.push(days.retardsCriticaldates);
-			if( obj_dic[elements] == undefined ) 
-				obj_dic[elements] = {indexes:[],data:days.retardsCriticaldates};
 			elements.push(days.missionsdates);
-			if( obj_dic[elements] == undefined ) 
-				obj_dic[elements] = {indexes:[],data:days.missionsdates};
 			elements.push(days.sicknessesdates);
-			if( obj_dic[elements] == undefined ) 
-				obj_dic[elements] = {indexes:[],data:days.sicknessesdates};
 			elements.push(days.vacationsdates);
-			if( obj_dic[elements] == undefined ) 
-				obj_dic[elements] = {indexes:[],data:days.vacationsdates};
 			elements.push(days.presencedates);
-			if( obj_dic[elements] == undefined ) 
-				obj_dic[elements] = {indexes:[],data:days.presencedates};
-			if( obj_dic[elements] == undefined ) 
-				obj_dic[elements] = {indexes:[],data:days.simpleRetardsdates};
+			elements.push(days.simpleRetardsdates);
 			
 			let index = 1;
 			elements.forEach((element)=>
@@ -4467,17 +4451,9 @@
 					if(element[i].ID == employeeContentModel.ID)
 					{
 						//console.log("Element with ID "+ID );
-						obj_dic[elements].indexes.push(i);
+						element[i] = employeeContentModel;
 					}
 				}
-			});
-			
-			Object.keys(obj_dic).forEach((key)=>
-			{
-				obj_dic[key].indexes.forEach((index)=>
-				{
-					obj_dic[key].data[index] = employeeContentModel;
-				}); 
 			});
 			
 		}
