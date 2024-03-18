@@ -1,21 +1,22 @@
 <!-- background-image:linear-gradient(to top,green,lawngreen);border-radius: 5px; -->
 <div style="height: 100vh">
-<div id= "msabeesesheader"  style=" margin-top: -15px;position:sticky; top: 0;background-color:darkslategray">
-<div>
+<div id= "msabeesesheader" class="mode"  style=" margin-top: -10px;background-color:darkslategray">
+<div class="mode">
 	<img width="110px" class ="flag" height = "60px" style="float:left"   src="https://70gxoz4jnkgivatx.public.blob.vercel-storage.com/assets/images/doudousindividuals/profile-pictures/senegal_drapeau-rqXIPLDI2oX3XqlhuTvKqJ6dbYZJ63.png"/>
 	<img width="110px" class ="flag" height = "60px" style="float:right"   src="https://70gxoz4jnkgivatx.public.blob.vercel-storage.com/assets/images/doudousindividuals/profile-pictures/mauritanie_drapeau-ufCJZFn03UwTPzjruTUekQOEWxBOJ1.png"/>
 </div>
-<div style="text-align:center;">
+<div class="mode" style="text-align:center;">
 	<img width="110px" height = "60px" src = "https://70gxoz4jnkgivatx.public.blob.vercel-storage.com/assets/images/doudousindividuals/profile-pictures/banque_europeene_d'investissement-f19Ly5CyqxiBqF2FEUnICJEEXafDvD.png">
 	<img width="110px" height = "60px" src = "https://70gxoz4jnkgivatx.public.blob.vercel-storage.com/assets/images/doudousindividuals/profile-pictures/banque_africaine_de_developpement-YNW3DVeoo1pHtgW853JnNntMCKSs3z.png">
 	<img width="110px" height = "60px" src ="https://70gxoz4jnkgivatx.public.blob.vercel-storage.com/assets/images/doudousindividuals/profile-pictures/union_europ%C3%A9enne-dP4LeaK4gAEFHO25cRyfHb5KsPO6ZP.jpg">
 </div>
-<h1 style="font-size: 16px; text-align:center;color:white">PROJET DE CONSTRUCTION DU PONT DE ROSSO</h1>
-<h2 style="font-size: 12px; text-align:center;color:white">MECANISME DE GESTION DES PLAINTES</h2>
-<h2 style="font-size: 12px; text-align:center;color:white">GROUPEMENT MSA / BEESAS</h2>
-<div style="text-align:center;min-width:100%;">
+<h1 class="mode" style="font-size: 16px; text-align:center;color:white">PROJET DE CONSTRUCTION DU PONT DE ROSSO</h1>
+<h2 class="mode" style="font-size: 12px; text-align:center;color:white">MECANISME DE GESTION DES PLAINTES</h2>
+<h2 class="mode" style="font-size: 12px; text-align:center;color:white">GROUPEMENT MSA / BEESAS</h2>
+<div class="mode" style="text-align:center;min-width:100%;">
 	<img width="125px" height = "60px" src ="https://70gxoz4jnkgivatx.public.blob.vercel-storage.com/assets/images/doudousindividuals/profile-pictures/MSA-oJGRwZrilxDYiaBn5fgFBr5Q0wTTAu.png">
 	<img width="125px" height = "60px" src ="https://70gxoz4jnkgivatx.public.blob.vercel-storage.com/assets/images/doudousindividuals/profile-pictures/Beesas-xKxQTinovJ1jpdg1dS9RwODjMzzyW6.png">
+	<div class= "command" >&#9776;</div>	
 </div>
 </div>
 
@@ -56,7 +57,7 @@
 	<!-- (mouseenter) = "ableInput(s1,s2,idemp,fn1,sn1,g1,pwd1,id2)" (mouseleave)="disableInput(s1,s2,idemp,fn1,sn1,g1,pwd1,id2)" -->
 	</div>
 </form>
-<form *ngIf="c2" style ="overflow-x:auto;" #fTwo = "ngForm" (ngSubmit)="submitFunction(fTwo.value,fTwo,$event)" ngNativeValidate>
+<form *ngIf="c2" style ="height:350px;max-height:90%;overflow-y:auto" #fTwo = "ngForm" (ngSubmit)="submitFunction(fTwo.value,fTwo,$event)" ngNativeValidate>
 	
 	<h1 style="margin-top:20px" *ngIf ="selectedID != '' && data.base.tables != undefined &&  data.base.tables[selectedID] != undefined && data.base.tables[selectedID].headers != undefined && data.base.tables[selectedID].image_url != undefined">Ajouter</h1>
 	<h1 *ngIf ="selectedID == '' && data.base.tables == undefined ||  data.base.tables[selectedID] == undefined || data.base.tables[selectedID].headers == undefined || data.base.tables[selectedID].image_url == undefined">Ajouter</h1>
@@ -66,16 +67,19 @@
 		{{data.base.individuals[i][0]+" "+data.base.individuals[i][1].first+" "+data.base.individuals[i][1].second+"\n"+data.base.individuals[i][1].gender}}
 		</option>	
 	</select>
-	<table *ngIf ="selectedID != '' && data.base.tables != undefined &&  data.base.tables[selectedID] != undefined && data.base.tables[selectedID].headers != undefined ">
-		<tr>
-			<th *ngFor = "let headerEntry of data.base.tables[selectedID].headers;let i=index" [ngClass]="i %2 ==0? 'even' : 'odd'" > {{headerEntry.name}} </th>
-			<th>Autre</th>
-		</tr>
+	<!-- <label style= "color:white;background:darkslategray;margin-right:40px;padding-top:10px 10px;border-radius: 5px;">{{data.userAuthentification.Prenom+" "+data.userAuthentification.Nom+" "+"Lignes:"+data.base.tables[selectedID].rows.length}}</label>
+	<label style= "color:white;background:darkslategray;float:right;margin-left:40px;padding-top:10px 10px;border-radius: 5px">{{'Lignes:'+data.base.tables[selectedID].rows.length}}</label>
+	 --><table  *ngIf ="selectedID != '' && data.base.tables != undefined &&  data.base.tables[selectedID] != undefined && data.base.tables[selectedID].headers != undefined ">
+		<thead style= "position:sticky;top:-7px;">
+			<th   *ngFor = "let headerEntry of data.base.tables[selectedID].headers;let i=index" [ngClass]="i %2 ==0? 'even' : 'odd'" > {{headerEntry.name}} </th>
+			<th >Autre</th>
+		</thead>
 		<ng-template ngFor let-row [ngForOf]= "data.base.tables[selectedID].rows"  let-iBis = index; let-oddOne = odd >
 			<tr *ngIf="row[row.length-5].value == displayID || displayID == 'all' " [ngClass]= "oddOne?'odd':'even'" (dblclick) = "this.data.rowChanges[selectedID].values[iBis].displays = !this.data.rowChanges[selectedID].values[iBis].displays">
 				<td *ngFor = "let rowValue of row;let heads = index" ><input name = "{{'rowChangeInput'+iBis+heads}}" *ngIf ="heads < data.base.tables[selectedID].headers.length -6 && data.base.tables[selectedID].headers[heads].validate && this.data.rowChanges[selectedID].values[iBis].displays" (change)= "updateChange(selectedID,iBis,data.base.tables[selectedID].headers,'modifyrows')" [appMngtype] = "fixType(data.base.tables[selectedID].headers[heads].type)"   [(ngModel)] = "this.data.rowChanges[selectedID].values[iBis].row[heads].value" ><img *ngIf="rowValue.img" style="border-radius:50%;" width="70px" height = "70px" src={{rowValue.value}}/>{{rowValue.img == false?rowValue.value:""}}</td>
 			</tr>
 		</ng-template>
+		
 		<ng-template ngFor let-row [ngForOf]= "data.onDisplay[selectedID].elements" let-b = index >
 		<tr *ngIf = "data.onDisplay[selectedID].elements[b].values.idindividu.toString() == data.userAuthentification.ID.toString()" >   
 			<td  *ngFor="let headerEntry of data.base.tables[selectedID].headers;let i = index" >

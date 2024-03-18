@@ -45,12 +45,6 @@ export class OfficeFormComponent
 		setInterval(()=>{console.log(data);console.log("Toggle "+this.toggled+"....")},2000);
 		if(data.userAuthentification.user)
 			this.displayID = data.userAuthentification.ID;
-		/*setTimeout(()=>
-		{
-			let elem = document.getElementById("msabeesesheader");
-			if( elem != undefined)
-				elem.classList.toggle("divSmaller");
-		},5000);*/
 	}
 	public submitFunctionBasic(b:number,source:any)
 	{
@@ -851,6 +845,22 @@ export class OfficeFormComponent
 	log(values:any[])
 	{
 		values.forEach((val)=>console.log(val));
+	}
+	
+	changeClass()
+	{
+		try
+		{
+			let element = document.getElementById('msabeesesheader')
+			if(element)
+			{
+				element.classList.toggle('notmode');
+				element.classList.toggle('mode');
+			}
+		}
+		catch(err)
+		{
+		}
 	}
 }
 
