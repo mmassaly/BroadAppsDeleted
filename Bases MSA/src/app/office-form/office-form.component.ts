@@ -42,7 +42,7 @@ export class OfficeFormComponent
 	
 	constructor(private httpservice: HttpService,public data: DataStorageService)
 	{
-		setInterval(()=>{console.log(data);console.log("Toggle "+this.toggled+"....")},2000);
+		
 	}
 	public submitFunctionBasic(b:number,source:any)
 	{
@@ -79,8 +79,8 @@ export class OfficeFormComponent
 			formdata.append("authNom",this.data.userAuthentification.Nom);
 			formdata.append("authGenre",this.data.userAuthentification.genre);
 			formdata.append("authpass",this.data.userAuthentification.pass);
-			console.log(source.srcElement.name+" ..........submitting");
-			console.log(this.data.dicSubmittedOnDisplay[source.srcElement.name]);
+			//console.log(source.srcElement.name+" ..........submitting");
+			//console.log(this.data.dicSubmittedOnDisplay[source.srcElement.name]);
 			this.data.dicSubmittedOnDisplay[source.srcElement.name].submitting = true;
 			this.getRequestCallBack(this.httpservice,formdata,this,this.data.dicSubmittedOnDisplay[source.srcElement.name]);
 			//let b = this.data.dicSubmittedOnDisplay[source.srcElement.name].index;
@@ -140,8 +140,8 @@ export class OfficeFormComponent
 				if( key != "idDisplayer" )
 					formdata.append(key as string,value as string);
 				
-				console.log(key);
-				console.log(value);
+				//console.log(key);
+				//console.log(value);
 			}
 			
 			if(formdata.get("id") == undefined)
@@ -163,8 +163,8 @@ export class OfficeFormComponent
 			formdata.append("authNom",this.data.userAuthentification.Nom);
 			formdata.append("authGenre",this.data.userAuthentification.genre);
 			formdata.append("authpass",this.data.userAuthentification.pass);
-			console.log(source.srcElement.name+" ..........submitting");
-			console.log(this.data.dicSubmittedOnDisplay[source.srcElement.name]);
+			//console.log(source.srcElement.name+" ..........submitting");
+			//console.log(this.data.dicSubmittedOnDisplay[source.srcElement.name]);
 			this.data.dicSubmittedOnDisplay[source.srcElement.name].submitting = true;
 			this.getRequestCallBack(this.httpservice,formdata,this,this.data.dicSubmittedOnDisplay[source.srcElement.name]);
 			//let b = this.data.dicSubmittedOnDisplay[source.srcElement.name].index;
@@ -414,7 +414,7 @@ export class OfficeFormComponent
 			if(value.value == "3")
 			value2.value = value.value;
 		}
-		console.log(value);console.log(value2);
+		//console.log(value);console.log(value2);
 	}
 	
 	numberReturn (value:any)
@@ -473,13 +473,13 @@ export class OfficeFormComponent
 		if(num == 4 && index != this.s4_selected_index)
 		{
 			this.s4_selected_index = index;
-			console.log("Indexes:" +index);
+			//console.log("Indexes:" +index);
 		}
 	}
 	
 	updateChange(selectedID:any,row:number,headers:any,typeofupdate:string)
 	{
-		console.log(row);
+		//console.log(row);
 		let formdata = new FormData();
 		let newwillbeswapped = undefined;
 		let oldtobeswapped = undefined;
@@ -489,11 +489,11 @@ export class OfficeFormComponent
 			newwillbeswapped = this.data.onDisplay[selectedID].elements[row].values;
 			oldtobeswapped = this.data.onDisplaySaving[selectedID].values[row];
 			
-			console.log(this.data.onDisplaySaving[selectedID].values);
-			console.log(newwillbeswapped);
-			console.log(typeof newwillbeswapped);
-			console.log(oldtobeswapped);
-			console.log(typeof oldtobeswapped);
+			//console.log(this.data.onDisplaySaving[selectedID].values);
+			//console.log(newwillbeswapped);
+			//console.log(typeof newwillbeswapped);
+			//console.log(oldtobeswapped);
+			//console.log(typeof oldtobeswapped);
 			
 			
 			for (const headerItem of headers) 
@@ -501,8 +501,8 @@ export class OfficeFormComponent
 				console.log(headerItem.validate);
 				if( headerItem.validate )
 				{
-					console.log(headerItem.name+" "+oldtobeswapped[headerItem.name]);
-					console.log(headerItem.name+" "+newwillbeswapped[headerItem.name]);
+					//console.log(headerItem.name+" "+oldtobeswapped[headerItem.name]);
+					//console.log(headerItem.name+" "+newwillbeswapped[headerItem.name]);
 					formdata.append(headerItem.name as string,JSON.parse(JSON.stringify(oldtobeswapped[headerItem.name])));
 					formdata.append(headerItem.name as string,JSON.parse(JSON.stringify(newwillbeswapped[headerItem.name])));
 				}
@@ -516,11 +516,11 @@ export class OfficeFormComponent
 			newwillbeswapped = this.data.rowChanges[selectedID].values[row].row;
 			oldtobeswapped = this.data.base.tables[selectedID].rows[row];
 			
-			console.log(this.data.onDisplaySaving[selectedID].values);
-			console.log(newwillbeswapped);
-			console.log(typeof newwillbeswapped);
-			console.log(oldtobeswapped);
-			console.log(typeof oldtobeswapped);
+			//console.log(this.data.onDisplaySaving[selectedID].values);
+			//console.log(newwillbeswapped);
+			//console.log(typeof newwillbeswapped);
+			//console.log(oldtobeswapped);
+			//console.log(typeof oldtobeswapped);
 			
 			let count = 0;
 			for (const headerItem of headers) 
@@ -528,8 +528,8 @@ export class OfficeFormComponent
 				console.log(headerItem.validate);
 				if( headerItem.validate )
 				{
-					console.log(headerItem.name+" "+oldtobeswapped[count].value);
-					console.log(headerItem.name+" "+newwillbeswapped[count].value);
+					//console.log(headerItem.name+" "+oldtobeswapped[count].value);
+					//console.log(headerItem.name+" "+newwillbeswapped[count].value);
 					formdata.append(headerItem.name as string,oldtobeswapped[count].value);
 					formdata.append(headerItem.name as string,newwillbeswapped[count].value);
 				}
@@ -566,7 +566,7 @@ export class OfficeFormComponent
 		let formdata = new FormData();
 		let values:any = {};
 		let values2:any ={};
-		console.log(headers);
+		//console.log(headers);
 		
 		if(this.data.onDisplay[selectedID] == undefined)
 		{
@@ -590,8 +590,8 @@ export class OfficeFormComponent
 					formdata.append(headerItem.name as string,'');
 			}
 			
-			console.log(headerItem.name);
-			console.log("empty");
+			//console.log(headerItem.name);
+			//console.log("empty");
 		}
 		
 		if(formdata.get("id") == undefined)
@@ -710,7 +710,7 @@ export class OfficeFormComponent
 	
 	flipOthers(selectedID:any,indexPassed:number,flip:boolean,rowHovered:any)
 	{
-		console.log(indexPassed+"-----------------");
+		//console.log(indexPassed+"-----------------");
 		if(flip)
 		{
 			this.rowHovered = rowHovered;
@@ -738,8 +738,8 @@ export class OfficeFormComponent
 				this.notLinking = true;
 			else
 				this.notLinking = false;
-			console.log("Linking status");
-			console.log(this.notLinking);
+			//console.log("Linking status");
+			//console.log(this.notLinking);
 		}
 		elements.forEach((element,index)=>
 		{
@@ -821,7 +821,7 @@ export class OfficeFormComponent
 	
 	reduceRowOfValuesbydisplayID(rowValuesArray:any[]):boolean
 	{
-		console.log(rowValuesArray);
+		//console.log(rowValuesArray);
 		return rowValuesArray.reduce((acc:boolean,curr:any)=> acc = acc || (curr.value == this.displayID || this.displayID == 'all'),false);
 	}
 	

@@ -43,7 +43,7 @@ export class AppComponent {
 	if(aparent.requestCommand.userAuthentification.ID == "")
 	{
 		aparent.setUserAuthentification(aparent.data.userAuthentification);
-		console.log(aparent.data.userAuthentification);
+		//console.log(aparent.data.userAuthentification);
 	}
 	if(aparent.data.userAuthentification.ID != "")
 	{
@@ -55,9 +55,9 @@ export class AppComponent {
 			aRequestCommand["Pos"] = data["Pos"];
 			Object.assign(aRequestCommand,aparent.requestCommand);
 		}
-		console.log(data);
+		//console.log(data);
 		let newRequestCommand:any = (data == undefined)? Object.assign({},aparent.requestCommand): aRequestCommand;
-		console.log(newRequestCommand);
+		//console.log(newRequestCommand);
 		
 		ahttpservice.requestBaseStandardBeta(newRequestCommand).subscribe((response:any)=>
 		{	
@@ -92,7 +92,7 @@ export class AppComponent {
 		{
 			if(this.data.onDisplay[key] == undefined)
 			{
-				console.log("changing "+key);
+				//console.log("changing "+key);
 				this.data.onDisplay[key] = {indexofSelection: 0, elements:[]};;
 				this.data.onDisplaySaving[key] ={values:[]};
 				
@@ -155,7 +155,7 @@ export class AppComponent {
 						{
 							found = true;
 						}
-						console.log("found is "+found);
+						//console.log("found is "+found);
 					}); 
 					
 					if(finding_results == undefined || !found)
