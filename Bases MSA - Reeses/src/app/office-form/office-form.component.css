@@ -325,7 +325,7 @@ div.command
 	color:darkslategray;
 	float:right;
 	width:40px;
-	margin-right: 10px;
+	margin-right: 40px;
 }
 div.command:hover
 {
@@ -361,11 +361,14 @@ form.newvisual table
 	border: none;
 }
 
-form.newvisual table > form
+form.newvisual
 {
 	margin-top: 20px;
 	margin-left:20px;
 	padding: 10px 0px 10px 20px;
-	box-shadow: 1px 1px 1px 1px darkslategrey,1px 1px 1px 1px darkslategrey inset;
-	width: 100%;	
+}
+
+div.none
+{
+	display:none;
 }

@@ -857,6 +857,11 @@ export class OfficeFormComponent
 				element.classList.toggle(oldclass);
 				element.classList.toggle(newclass);
 			}
+			element = document.getElementById('msabeesesheader');
+			if(element)
+			{
+				element.classList.toggle('none');
+			}
 		}
 		catch(err)
 		{
