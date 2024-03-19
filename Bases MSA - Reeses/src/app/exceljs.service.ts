@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import * as ExcelJS from 'exceljs';
+import {Workbook}  from 'exceljs';
 import { saveAs } from 'file-saver';
 
 @Injectable({
@@ -11,7 +11,7 @@ export class ExceljsService {
   
   public createWorkBook(name:string):any
   {
-		const workbook:any = new ExcelJS.Workbook();
+		const workbook:any = new Workbook();
 		workbook.creator = name;
 		workbook.created = new Date();
 		return workbook;
@@ -28,10 +28,14 @@ export class ExceljsService {
   public addHeadersToWorkSheet(sheet:any,headers:any[])
   {
 		console.log(headers);
-		sheet.addRow(headers.map((headerObj)=> headerObj.name)); 
+		let headersTemp:any[] =[];
+		headers.forEach((headerObj:any)=> { headersTemp.push({ header:headerObj.name,key: headerObj.name.toLowerCase().replace(' ',''),width:15 }); });
+		if(headersTemp != undefined)
+			sheet.columns = headersTemp
 		const headerRow = sheet.getRow(1);
 		headerRow.font = { bold: true, color: { argb: 'FFFFFF' } }; // Texte en gras et blanc
 		headerRow.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: '0070C0' } }; 
+	
   }
   
   private addRowToWorkSheet(row:any[],sheet:any)
@@ -56,7 +60,14 @@ export class ExceljsService {
 			let rowOfValues = rowValue.map((el:any)=> el.value);
 			this.addRowToWorkSheet(rowOfValues,sheet);
 		});
-	
+		
+		sheet.columns.forEach((column:any) => {
+			column.width = column.header.length < 15 ? 15 : column.header.length;
+			column.eachCell({ includeEmpty: true }, (cell:any) => {
+				const columnWidth = cell.value ? cell.value.toString().length : 15;
+				column.width = Math.max(column.width, columnWidth);
+			});
+		});
   }
   
 }
