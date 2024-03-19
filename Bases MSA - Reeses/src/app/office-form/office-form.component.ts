@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { HttpResponse,HttpErrorResponse} from '@angular/common/http';
 import {HttpService} from '../http-forced/http.service';
 import {DataStorageService} from '../data-storage-service/data-storage.service';
+import {ExceljsService} from '../exceljs.service'
 
 @Component({
   selector: 'app-office-form',
@@ -39,6 +40,7 @@ export class OfficeFormComponent
 	public ourHeaders:any = {};
 	public swappingStack:any[] = []; 
 	public updatingInputs: any = {count: 0, submitting:true,responseString:""};
+	private xcelService:ExceljsService = new ExceljsService();
 	
 	constructor(private httpservice: HttpService,public data: DataStorageService)
 	{
@@ -867,6 +869,16 @@ export class OfficeFormComponent
 		{
 			
 		}
+	}
+	
+	async generateFile()
+	{
+		console.log("generating file");
+		let wb = this.xcelService.createWorkBook(this.data.userAuthentification.Prenom +" "+this.data.userAuthentification.Nom);
+		let ws = this.xcelService.addWorkSheet(this.data.base.tables[this.selectedID].name+" Acceuil",wb);
+		this.xcelService.addHeadersToWorkSheet(ws,this.data.base.tables[this.selectedID].headers);
+		this.xcelService.writeAllRowValuesFor1DArray(ws,this.data.base.tables[this.selectedID].rows,this.data.base.tables[this.selectedID].headers.length);
+		await this.xcelService.saveWorkBookIntoFile(wb,this.data.base.tables[this.selectedID].name);
 	}
 }
 

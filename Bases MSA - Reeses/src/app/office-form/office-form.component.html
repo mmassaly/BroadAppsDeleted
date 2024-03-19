@@ -55,22 +55,24 @@
 	<div name ="return" [ngStyle]= "{color: Color}" >{{responseString}}</div>
 	<!-- (mouseenter) = "ableInput(s1,s2,idemp,fn1,sn1,g1,pwd1,id2)" (mouseleave)="disableInput(s1,s2,idemp,fn1,sn1,g1,pwd1,id2)" -->
 	</div>
-</form>
+</form> <!-- style= "position:sticky;top:-8px;background-color:white;padding:15px 0px 20px 0px;width:auto;" -->
 <form *ngIf="c2" id = "database" class="visual" #fTwo = "ngForm" (ngSubmit)="submitFunction(fTwo.value,fTwo,$event)" ngNativeValidate>
-	
-	<h1 style="margin-top:20px" *ngIf ="selectedID != '' && data.base.tables != undefined &&  data.base.tables[selectedID] != undefined && data.base.tables[selectedID].headers != undefined && data.base.tables[selectedID].image_url != undefined">Ajouter</h1>
-	<h1 *ngIf ="selectedID == '' && data.base.tables == undefined ||  data.base.tables[selectedID] == undefined || data.base.tables[selectedID].headers == undefined || data.base.tables[selectedID].image_url == undefined">Ajouter</h1>
-	<select  [(ngModel)] = "displayID" name ="idDisplayer">
-		<option value="all">Ensemble</option>
-		<option *ngFor="let container of objectKeysFunction(data.base.individuals); let i = index" value="{{data.base.individuals[i][0]}}">
-		{{data.base.individuals[i][0]+" "+data.base.individuals[i][1].first+" "+data.base.individuals[i][1].second+"\n"+data.base.individuals[i][1].gender}}
-		</option>	
-	</select>
-	<div class= "command" (click) ="changeClass('database','visual','newvisual')">&#9776;</div>
+	<div >
+		<h1 style="margin-top:15px" *ngIf ="selectedID != '' && data.base.tables != undefined &&  data.base.tables[selectedID] != undefined && data.base.tables[selectedID].headers != undefined && data.base.tables[selectedID].image_url != undefined">Ajouter</h1>
+		<h1 *ngIf ="selectedID == '' && data.base.tables == undefined ||  data.base.tables[selectedID] == undefined || data.base.tables[selectedID].headers == undefined || data.base.tables[selectedID].image_url == undefined">Ajouter</h1>
+		<select  [(ngModel)] = "displayID" name ="idDisplayer">
+			<option value="all">Ensemble</option>
+			<option *ngFor="let container of objectKeysFunction(data.base.individuals); let i = index" value="{{data.base.individuals[i][0]}}">
+			{{data.base.individuals[i][0]+" "+data.base.individuals[i][1].first+" "+data.base.individuals[i][1].second+"\n"+data.base.individuals[i][1].gender}}
+			</option>	
+		</select>
+		<span class= "command" (click) ="changeClass('database','visual','newvisual')">&#9776;</span>
+		<img class="excel" *ngIf= "selectedID != '' && data.base.tables != undefined &&  data.base.tables[selectedID] != undefined && data.base.tables[selectedID].headers != undefined " (click)="generateFile()" src="../assets/icons8-excel-48.png" />
+	</div>
 	<!-- <label style= "color:white;background:darkslategray;margin-right:40px;padding-top:10px 10px;border-radius: 5px;">{{data.userAuthentification.Prenom+" "+data.userAuthentification.Nom+" "+"Lignes:"+data.base.tables[selectedID].rows.length}}</label>
 	<label style= "color:white;background:darkslategray;float:right;margin-left:40px;padding-top:10px 10px;border-radius: 5px">{{'Lignes:'+data.base.tables[selectedID].rows.length}}</label>
 	 --><table  *ngIf ="selectedID != '' && data.base.tables != undefined &&  data.base.tables[selectedID] != undefined && data.base.tables[selectedID].headers != undefined ">
-		<thead style= "position:sticky;top:-5px;">
+		<thead style= "position:sticky;top:0px;">
 			<th   *ngFor = "let headerEntry of data.base.tables[selectedID].headers;let i=index" [ngClass]="i %2 ==0? 'even' : 'odd'" > {{headerEntry.name}} </th>
 			<th>Autre</th>
 		</thead>

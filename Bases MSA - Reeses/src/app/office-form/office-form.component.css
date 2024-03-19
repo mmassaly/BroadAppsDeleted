@@ -319,7 +319,7 @@ form.controlling
 	max-height:90%;
 	overflow-y:auto;
 }
-div.command 
+span.command 
 {
 	font-size:20px;
 	color:darkslategray;
@@ -327,7 +327,11 @@ div.command
 	width:40px;
 	margin-right: 40px;
 }
-div.command:hover
+img.excel:hover
+{
+	cursor:pointer;
+}
+span.command:hover
 {
 	cursor:pointer;
 }
