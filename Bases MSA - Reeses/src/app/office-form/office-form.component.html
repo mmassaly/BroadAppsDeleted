@@ -14,9 +14,27 @@
 <h2 class="mode" style="font-size: 12px; text-align:center;color:white">MECANISME DE GESTION DES PLAINTES</h2>
 <h2 class="mode" style="font-size: 12px; text-align:center;color:white">GROUPEMENT MSA / BEESAS</h2>
 <div class="mode" style="text-align:center;min-width:100%;">
-	<img width="125px" height = "60px" src ="https://70gxoz4jnkgivatx.public.blob.vercel-storage.com/assets/images/doudousindividuals/profile-pictures/MSA-oJGRwZrilxDYiaBn5fgFBr5Q0wTTAu.png">
-	<img width="125px" height = "60px" src ="https://70gxoz4jnkgivatx.public.blob.vercel-storage.com/assets/images/doudousindividuals/profile-pictures/Beesas-xKxQTinovJ1jpdg1dS9RwODjMzzyW6.png">	
+	<img width="100px" height = "40px" src ="https://70gxoz4jnkgivatx.public.blob.vercel-storage.com/assets/images/doudousindividuals/profile-pictures/MSA-oJGRwZrilxDYiaBn5fgFBr5Q0wTTAu.png">
+	<img width="100px" height = "40px" src ="https://70gxoz4jnkgivatx.public.blob.vercel-storage.com/assets/images/doudousindividuals/profile-pictures/Beesas-xKxQTinovJ1jpdg1dS9RwODjMzzyW6.png">	
 </div>
+</div>
+<div id= "msabeesesheader2" class="none">
+	<img width="60px" id="img1" class ="flag" height = "40px" style="float:left"   src ="https://70gxoz4jnkgivatx.public.blob.vercel-storage.com/assets/images/doudousindividuals/profile-pictures/Senegal-eCne68uvxF59zssYFtFDI4C6e6tpaf.jpg"/>
+	<img width="60px" id="img2" class ="flag" height = "40px" style="float:right"   src="https://70gxoz4jnkgivatx.public.blob.vercel-storage.com/assets/images/doudousindividuals/profile-pictures/mauritania%204k-SFCMxn6YjMs3CkheQxj5P0lI8A1f7X.jpg"/>
+	<div  style="display:inline;text-align:center;">
+		<img width="60px" height = "40px" src = "https://70gxoz4jnkgivatx.public.blob.vercel-storage.com/assets/images/doudousindividuals/profile-pictures/banque_europeene_d'investissement-f19Ly5CyqxiBqF2FEUnICJEEXafDvD.png">
+		<img width="60px" height = "40px" src = "https://70gxoz4jnkgivatx.public.blob.vercel-storage.com/assets/images/doudousindividuals/profile-pictures/banque_africaine_de_developpement-YNW3DVeoo1pHtgW853JnNntMCKSs3z.png">
+		<img width="60px" height = "40px" src ="https://70gxoz4jnkgivatx.public.blob.vercel-storage.com/assets/images/doudousindividuals/profile-pictures/union_europ%C3%A9enne-dP4LeaK4gAEFHO25cRyfHb5KsPO6ZP.jpg">
+	</div>
+	<div style="display:inline">
+		<h1 class="mode" style="font-size: 8px; text-align:center;color:white">PROJET DE CONSTRUCTION DU PONT DE ROSSO</h1>
+		<h2 class="mode" style="font-size: 8px; text-align:center;color:white">MECANISME DE GESTION DES PLAINTES</h2>
+		<h2 class="mode" style="font-size: 8px; text-align:center;color:white">GROUPEMENT MSA / BEESAS</h2>
+	</div>
+	<div style="display:inline;text-align:center;">
+		<img width="60px"  height = "40px" src ="https://70gxoz4jnkgivatx.public.blob.vercel-storage.com/assets/images/doudousindividuals/profile-pictures/MSA-oJGRwZrilxDYiaBn5fgFBr5Q0wTTAu.png">
+		<img width="60px"  height = "40px" src ="https://70gxoz4jnkgivatx.public.blob.vercel-storage.com/assets/images/doudousindividuals/profile-pictures/Beesas-xKxQTinovJ1jpdg1dS9RwODjMzzyW6.png">	
+	</div>
 </div>
 
 <div  class="middlePage">
@@ -57,7 +75,7 @@
 	</div>
 </form> <!-- style= "position:sticky;top:-8px;background-color:white;padding:15px 0px 20px 0px;width:auto;" -->
 <form *ngIf="c2" id = "database" class="visual" #fTwo = "ngForm" (ngSubmit)="submitFunction(fTwo.value,fTwo,$event)" ngNativeValidate>
-	<div >
+	<div>
 		<h1 style="margin-top:15px" *ngIf ="selectedID != '' && data.base.tables != undefined &&  data.base.tables[selectedID] != undefined && data.base.tables[selectedID].headers != undefined && data.base.tables[selectedID].image_url != undefined">Ajouter</h1>
 		<h1 *ngIf ="selectedID == '' && data.base.tables == undefined ||  data.base.tables[selectedID] == undefined || data.base.tables[selectedID].headers == undefined || data.base.tables[selectedID].image_url == undefined">Ajouter</h1>
 		<select  [(ngModel)] = "displayID" name ="idDisplayer">
@@ -95,7 +113,7 @@
 				<label *ngIf = "i == data.base.tables[selectedID].headers.length -2"> {{data.userAuthentification.genre}} </label>
 				<img *ngIf = "i == data.base.tables[selectedID].headers.length -1" /> 
 			</td>
-			<td><div   [ngClass] ="data.onDisplay[selectedID].elements[b].submitting?'movingCircle':'none'"> </div><button type ="button" (click) ="submitFunctionBasic(b,$event)"  [ngClass] ="data.onDisplay[selectedID].elements[b].submitting?'none':'submitbutton'" name ="{{selectedID+'b'+b}}" (mouseenter)="log([this.data.dicSubmittedOnDisplay,'b'+b+' is submitting'])" style = "margin-left:auto;margin-right:auto;"  *ngIf = "!data.onDisplay[selectedID].elements[b].flipped"  > Soumettre </button> <div  [ngClass] = "data.onDisplay[selectedID].elements[b].class">{{data.onDisplay[selectedID].elements[b].responseString}}</div></td>
+			<td><div  [ngClass] ="data.onDisplay[selectedID].elements[b].submitting?'movingCircle':'none'"> </div><button type ="button" (click) ="submitFunctionBasic(b,$event)"  [ngClass] ="data.onDisplay[selectedID].elements[b].submitting?'none':'submitbutton'" name ="{{selectedID+'b'+b}}" (mouseenter)="log([this.data.dicSubmittedOnDisplay,'b'+b+' is submitting'])" style = "margin-left:auto;margin-right:auto;"  *ngIf = "!data.onDisplay[selectedID].elements[b].flipped"  > Soumettre </button> <div  [ngClass] = "data.onDisplay[selectedID].elements[b].class">{{data.onDisplay[selectedID].elements[b].responseString}}</div></td>
 		</tr>
 		</ng-template>
 		<tr><td colspan= "*" style = "margin-left:auto;margin-right:auto;" ><td><button type ="button"  (click) = "addUp(data.base.tables[selectedID].headers.length,selectedID,data.userAuthentification.ID,data.base.tables[selectedID].headers)" >+</button></td></tr>

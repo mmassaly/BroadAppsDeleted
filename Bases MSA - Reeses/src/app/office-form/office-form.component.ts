@@ -864,6 +864,14 @@ export class OfficeFormComponent
 			{
 				element.classList.toggle('none');
 			}
+			element = document.getElementById('msabeesesheader2');
+			if(element)
+			{
+				element.classList.toggle('none');
+				element.classList.toggle('gridheader');
+			}
+			
+			
 		}
 		catch(err)
 		{

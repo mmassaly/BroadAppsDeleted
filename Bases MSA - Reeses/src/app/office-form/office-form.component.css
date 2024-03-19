@@ -14,7 +14,7 @@ div.movingCircle
 	margin-bottom: 10px;
 	animation: 5s linear 0s infinite rotateAnimation;
 }
-.none
+.none 
 {
 	display:none;
 }
@@ -155,7 +155,17 @@ div.fiveRowsSevenColumns
 	font-size: 90%;
 	padding-bottom: 20px;
 }
-
+.gridheader
+{
+	display: grid;
+	width: 100%;
+	grid-template-columns: 20% 20% 20% 20% 20%; 
+	column-count: 5;
+	column-gap: 0%;
+	grid-col-start: 1;
+	grid-col-end: 5;
+	background-color:darkslategray;
+}
 @media screen and (max-width: 468px)
 {
 	div.formDivisiona
@@ -295,11 +305,11 @@ div.notBasicNo
 {
 	color: green;
 	text-decoration: underline;
-	text-decoration-color: blue;
+	text-decoraton-color: blue;
 	text-decoration-thickness: 5px;
 }
 
-div.notBasicNo:hover
+div.notBasicNo: hover
 {
 	color: white;
 	text-decoraton-color: white;
@@ -382,6 +392,11 @@ div.none
 div.none div img 
 {
 	width: 40px; height: 40px;
+}
+
+div.none img.flag 
+{
+	transition: display 2s linear 2s;
 }
 
 div.none div h1,div.none div h2
