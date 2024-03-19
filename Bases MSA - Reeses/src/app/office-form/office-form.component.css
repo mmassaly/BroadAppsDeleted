@@ -295,11 +295,11 @@ div.notBasicNo
 {
 	color: green;
 	text-decoration: underline;
-	text-decoraton-color: blue;
+	text-decoration-color: blue;
 	text-decoration-thickness: 5px;
 }
 
-div.notBasicNo: hover
+div.notBasicNo:hover
 {
 	color: white;
 	text-decoraton-color: white;
