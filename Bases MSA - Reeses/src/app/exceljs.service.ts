@@ -56,6 +56,7 @@ export class ExceljsService {
 			let rowOfValues = rowValue.map((el:any)=> el.value);
 			this.addRowToWorkSheet(rowOfValues,sheet);
 		});
+	
   }
   
 }
