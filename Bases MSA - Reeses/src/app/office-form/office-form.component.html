@@ -1,6 +1,6 @@
 <!-- background-image:linear-gradient(to top,green,lawngreen);border-radius: 5px; -->
 <div style="height: 100vh">
-<div id= "msabeesesheader" class="mode"  >
+<div id= "msabeesesheader" class="mode" >
 <div class="mode">
 	<img width="110px" class ="flag" height = "60px" style="float:left"   src="https://70gxoz4jnkgivatx.public.blob.vercel-storage.com/assets/images/doudousindividuals/profile-pictures/senegal_drapeau-rqXIPLDI2oX3XqlhuTvKqJ6dbYZJ63.png"/>
 	<img width="110px" class ="flag" height = "60px" style="float:right"   src="https://70gxoz4jnkgivatx.public.blob.vercel-storage.com/assets/images/doudousindividuals/profile-pictures/mauritanie_drapeau-ufCJZFn03UwTPzjruTUekQOEWxBOJ1.png"/>
@@ -70,9 +70,9 @@
 	<!-- <label style= "color:white;background:darkslategray;margin-right:40px;padding-top:10px 10px;border-radius: 5px;">{{data.userAuthentification.Prenom+" "+data.userAuthentification.Nom+" "+"Lignes:"+data.base.tables[selectedID].rows.length}}</label>
 	<label style= "color:white;background:darkslategray;float:right;margin-left:40px;padding-top:10px 10px;border-radius: 5px">{{'Lignes:'+data.base.tables[selectedID].rows.length}}</label>
 	 --><table  *ngIf ="selectedID != '' && data.base.tables != undefined &&  data.base.tables[selectedID] != undefined && data.base.tables[selectedID].headers != undefined ">
-		<thead style= "position:sticky;top:-2px;">
+		<thead style= "position:sticky;top:-5px;">
 			<th   *ngFor = "let headerEntry of data.base.tables[selectedID].headers;let i=index" [ngClass]="i %2 ==0? 'even' : 'odd'" > {{headerEntry.name}} </th>
-			<th >Autre</th>
+			<th>Autre</th>
 		</thead>
 		<ng-template ngFor let-row [ngForOf]= "data.base.tables[selectedID].rows"  let-iBis = index; let-oddOne = odd >
 			<tr *ngIf="row[row.length-5].value == displayID || displayID == 'all' " [ngClass]= "oddOne?'odd':'even'" (dblclick) = "this.data.rowChanges[selectedID].values[iBis].displays = !this.data.rowChanges[selectedID].values[iBis].displays">
