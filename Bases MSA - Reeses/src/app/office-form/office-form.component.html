@@ -75,7 +75,7 @@
 	</div>
 </form> <!-- style= "position:sticky;top:-8px;background-color:white;padding:15px 0px 20px 0px;width:auto;" -->
 <form *ngIf="c2" id = "database" class="visual" #fTwo = "ngForm" (ngSubmit)="submitFunction(fTwo.value,fTwo,$event)" ngNativeValidate>
-	<div>
+	<div style="margin-bottom:20px;">
 		<h1 style="margin-top:15px" *ngIf ="selectedID != '' && data.base.tables != undefined &&  data.base.tables[selectedID] != undefined && data.base.tables[selectedID].headers != undefined && data.base.tables[selectedID].image_url != undefined">Ajouter</h1>
 		<h1 *ngIf ="selectedID == '' && data.base.tables == undefined ||  data.base.tables[selectedID] == undefined || data.base.tables[selectedID].headers == undefined || data.base.tables[selectedID].image_url == undefined">Ajouter</h1>
 		<select  [(ngModel)] = "displayID" name ="idDisplayer">

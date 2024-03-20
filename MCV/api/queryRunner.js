@@ -334,6 +334,64 @@ async function f (value)
 	}
 	else
 		console.log(results);
+	
+	let indexes = [];
+	results.rows.forEach((el,index)=>
+	{
+		console.log("index--------------"+index);
+		results.rows.forEach((el2,index2)=>
+		{
+			let found = true;
+			console.log("index2--------------"+index2);
+			results.fields.forEach((keyobj)=>{
+				if(index < index2 && (el[keyobj.name] == el2[keyobj.name] || (el[keyobj.name] instanceof Date && el2[keyobj.name] instanceof Date && el[keyobj.name].toLocaleDateString() == el2[keyobj.name].toLocaleDateString()))  )
+				{
+					console.log("el One-------"+el[keyobj.name]);console.log("el Two-------"+el2[keyobj.name]);
+				}
+				else if(found)
+				{
+					console.log("false el One-------"+el[keyobj.name]);console.log("el Two-------"+el2[keyobj.name]);
+					found = false;
+				}
+			});
+			
+			if(found)
+			{
+				if(indexes.indexOf(index2) == -1)
+				{
+					indexes.push(index2);
+				}
+			}
+		});
+	});
+	console.log(indexes);
+	let str = "";
+	let recoverStr ="";
+	results.rows.forEach((el,index)=>
+	{
+		if(indexes.indexOf(index) > 0)
+		{
+			str +="delete from \"Base Plainte PAP\" where ";
+			recoverStr += "insert into \"Base Plainte PAP\" values ";
+			results.fields.forEach((keyobj,curr)=>
+			{
+				if(curr == 0)
+				{
+					str += keyobj +" = "+el[keyobj.name];
+					recoverStr += "("+el[keyobj.name];
+				}
+				else
+				{
+					str += "AND "+keyobj +" = "+el[keyobj.name];
+					recoverStr += ","+el[keyobj.name];
+				}
+			});
+			str+=";\n";
+			recoverStr +=");\n";
+		}
+	});
+	console.log(str);
+	console.log(recoverStr);
 };
 //console.log(querybeta);
 /*
@@ -367,9 +425,22 @@ query += "delete from individu where id = '1-26';";
 query = "SELECT COLUMN_NAME, DATA_TYPE, IS_NULLABLE, COLUMN_DEFAULT,TABLE_NAME FROM INFORMATION_SCHEMA.COLUMNS where TABLE_NAME = $$Base plainte PAP$$;";
 
 //query = "SELECT * from \"DouDous'individuals\";"; 
-query = "SELECT * from \"Base plainte PAP\"";
-query = "SELECT * FROM \"Base plainte PAP\" inner join  (Select IDIndividu,Prenom,Nom,Genre,Image from \"DouDous'individuals\") as A  on A.IDIndividu = \"Base plainte PAP\".IDIndividu;";
-f(query);
+//query = "SELECT * from \"Base plainte PAP\"";
+//query = "SELECT * FROM \"Base plainte PAP\" inner join  (Select IDIndividu,Prenom,Nom,Genre,Image from \"DouDous'individuals\") as A  on A.IDIndividu = \"Base plainte PAP\".IDIndividu;";
+query =	"SELECT *, COUNT(*)";
+query += 'FROM "Base plainte PAP"';
+query += 'GROUP BY "Numéro de la réclamation","Emprise","Date","Prénom et Nom du plaignant","Sexe","Quartier ou village","Quartier ou village","Code PAP (si recensée)","Fonction du Plaignant","Parties concernées",'
+query += '"Objet de réclamation","Description de la réclamation",';
+query += '"Solutions préconisées par le plaignant","Plainte enregistrée par",';
+ query += '"Recevabilité de la plainte après examen de l’UGP",';
+ query += '"Commentaires","Solutions proposées",';
+  query += '"Responsable de l’action",';
+  query += '"Echéance",';
+  query += '"Actions effectuées par l’entreprise",';
+  query += '"Date de clôture de la plainte",id,idindividu';
+ query += ' HAVING COUNT(*) > 1;'
 
+let results = f(query);
+//let results.filter(
 
 

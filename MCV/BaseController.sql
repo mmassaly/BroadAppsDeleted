@@ -241,3 +241,17 @@ JOIN information_schema.columns AS c ON c.table_schema = tc.constraint_schema
     AND ccu.column_name = c.column_name
 WHERE constraint_type = 'PRIMARY KEY'
     AND tc.table_name = 'Base plainte PAP';
+	
+	SELECT *, COUNT(*)
+FROM "Base plainte PAP"
+GROUP BY "Numéro de la réclamation","Emprise","Date","Prénom et Nom du plaignant","Sexe","Quartier ou village","Quartier ou village","Code PAP (si recensée)","Fonction du Plaignant","Parties concernées",
+ "Objet de réclamation","Description de la réclamation",
+ "Solutions préconisées par le plaignant","Plainte enregistrée par",
+ "Recevabilité de la plainte après examen de l’UGP",
+ "Commentaires","Solutions proposées",
+ "Responsable de l’action",
+ "Echéance",
+ "Actions effectuées par l’entreprise",
+ "Date de clôture de la plainte",id,idindividu
+HAVING COUNT(*) > 1;
+	
