@@ -149,6 +149,23 @@
 		//total = 180000 + totalSeconds;
 		//'fr-FR'(total-totalSeconds)
 		setTimeout(caller,total-totalSeconds);
+		
+		
+		if(current.getHours()>= 8 && current.getMinutes() >= 30 && current.getSeconds() >= 00 || (current.getHours()> 8) )
+		{
+			getEightThirty();
+		}
+		else
+		{
+			setTimeout(getEightThirty,(8*60*60+30*60)-totalSeconds);
+		}
+		
+	}
+	
+	function getEightThirty()
+	{
+		let currentDatedetails = getDateDetailsFromCorruptJavascript();
+		getDataForAdmin(undefined,undefined,undefined,undefined,currentDatedetails[2],currentDatedetails[1],currentDatedetails[0],true);
 	}
 	
 	function getCommandGivenID(ID)
