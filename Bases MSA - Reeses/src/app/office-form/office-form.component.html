@@ -171,7 +171,6 @@
 							<!-- <input style="border-radius:3%;color:green;" name ="{{'checkbox'+table.name+i+index2}}"  [(ngModel)] = "table.columns[i]" type ="checkBox"/> -->
 						</div>
 						<br>
-						{{ table.functions.length+" "+index5+" "+table.functions[index5]}}
 						<select name ="{{'selectFunction'+i+index5}}" (change)= "addSubFunctions(table,index5)"  [(ngModel)] = "table.functions[index5].name" >
 							<option *ngFor="let func of functions;let selectorIndex = index"  value ="{{func}}">{{func}}</option>
 						</select>
