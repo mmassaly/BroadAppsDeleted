@@ -1,0 +1,130 @@
+
+form
+{
+	margin-left: auto;
+	margin-right: auto;
+	width: 70%;
+	background-color: white;
+	border-width: 1px;
+	border-color: silver;
+	border-style:solid;
+	padding: 5%;
+	border-radius:20px;
+	text-align: center;
+}
+
+div.horizontal
+{
+	margin-top:-10px;
+	padding: 20px;
+	background-image: linear-gradient(to right, blue, silver);
+	color: white;
+	font-style: Arial, Helvetica, sans-serif;
+	font-size: 18px;
+	text-align: center;
+}
+
+.formDiv
+{
+	font-style: Arial, Helvetica, sans-serif;
+	display:inline-grid;
+	column-count: 2;
+	grid-column-start:1;
+	grid-column-end: 2;
+	grid-template-columns: auto auto;
+	row-gap: 20px;
+	column-gap: 5%;
+	margin:auto;
+}
+
+
+.form h1
+{
+	font-size: 16px;
+}
+
+h1 
+{
+	color: blue;
+	text-align: center;
+}
+.submit
+{
+	background-color: blue;
+	color: white;
+	width: 120px;
+	grid-column: 1 / span 2;
+	padding-top: 5px;
+	padding-bottom: 5px;
+	border-radius: 5px 5px 5px 5px;
+	border-color:white;
+	text-align: center;
+	margin:auto;
+}
+.submit:hover
+{
+	cursor:pointer;
+}
+
+.basicInputLook
+{
+	width: 120px; 
+	margin-left: 20px;
+}
+
+.parent
+{
+	padding: 40px;
+	background-image: linear-gradient(to right,blue,silver );
+	height: 75vh;
+}
+
+@media screen and (max-width:430px)
+{
+	#text1
+	{
+		width: 83%;
+		margin-left: 0%;
+		margin-right: 2%;
+		color: green;
+	}
+	#pwd1
+	{
+		width: 83%;
+		margin-left: 0%;
+		margin-right: 2%;
+		color: green;
+	}
+	#parent1
+	{
+		width: 95%;
+		padding: 5%;
+	}
+	h1
+	{
+		font-size: 20px;
+	}
+}
+
+@media screen and (max-width: 330px) 
+{
+	#parent1
+	{
+		width: 100%;
+		padding: 5% 0% 0% 0%;
+	}
+	#loginForm
+	{
+		width: 100%;
+		padding: 0%;
+		margin-left: 5px;
+		background: none;
+		border: none;
+		font-size: 12px;
+		color: green;
+	}
+	#titleBar
+	{
+		font-size: 16px;
+	}
+}

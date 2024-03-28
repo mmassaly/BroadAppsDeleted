@@ -1,0 +1,93 @@
+div.divSmaller div img
+{
+	height: 30px;
+	width: 50px;
+}
+div.divSmaller img
+{
+	height: 30px;
+	width: 50px;
+}
+
+div.divSmaller h1
+{
+	font-size: 14px;
+}
+div.divSmaller h2
+{
+	font-size: 11px;
+}
+
+tr:hover
+{
+	cursor: pointer;
+}
+tr.odd
+{
+	border-style: solid;
+	border-width: 2px;
+	border-color: black;
+	border-radius: 3px;
+}
+td
+{
+	text-align: center;
+}
+li:hover
+{
+	background-color: silver;
+	cursor:pointer;	
+}
+
+li:hover li 
+{
+	display:inline-block;
+}
+
+@media-screen (max-width: 800px)
+{
+	.leftshiftotoggleMenu
+	{
+		color:blue;
+		width: 100%;
+		position: fixed;
+		z-index: 1;
+		left: 0px;
+	}
+	ul 
+	{
+		display: none;
+	}
+	.leftshiftotoggleMenu div:hover ul 
+	{
+		cursor:pointer;
+		display: block;
+	}
+}
+img.flag
+{
+ border-radius: 20%;
+ margin-left: 5px;
+ margin-right: 5px;
+ margin-top: 5px;	
+}
+
+@media-screen (min-width: 801px)
+{
+	.leftshiftotoggleMenu
+	{
+		color:blue;
+		max-width: 30%;
+		display: inline-block;
+	}
+	ul 
+	{
+		display: block;
+	}
+}
+
+.leftshiftotoggleMenu
+{
+	color:blue;
+}
+

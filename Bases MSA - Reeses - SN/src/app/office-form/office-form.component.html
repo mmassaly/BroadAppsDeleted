@@ -1,0 +1,258 @@
+<!-- background-image:linear-gradient(to top,green,lawngreen);border-radius: 5px; -->
+<div style="height: 100vh">
+<div id= "msabeesesheader" class="mode" >
+<div class="mode">
+	<img width="110px" class ="flag" height = "60px" style="float:left"   src="https://70gxoz4jnkgivatx.public.blob.vercel-storage.com/assets/images/doudousindividuals/profile-pictures/senegal_drapeau-rqXIPLDI2oX3XqlhuTvKqJ6dbYZJ63.png"/>
+	<img width="110px" class ="flag" height = "60px" style="float:right" hidden  src="https://70gxoz4jnkgivatx.public.blob.vercel-storage.com/assets/images/doudousindividuals/profile-pictures/mauritanie_drapeau-ufCJZFn03UwTPzjruTUekQOEWxBOJ1.png"/>
+</div>
+<div class="mode" style="text-align:center;">
+	<img width="110px" height = "60px" src = "https://70gxoz4jnkgivatx.public.blob.vercel-storage.com/assets/images/doudousindividuals/profile-pictures/banque_europeene_d'investissement-f19Ly5CyqxiBqF2FEUnICJEEXafDvD.png">
+	<img width="110px" height = "60px" src = "https://70gxoz4jnkgivatx.public.blob.vercel-storage.com/assets/images/doudousindividuals/profile-pictures/banque_africaine_de_developpement-YNW3DVeoo1pHtgW853JnNntMCKSs3z.png">
+	<img width="110px" height = "60px" src ="https://70gxoz4jnkgivatx.public.blob.vercel-storage.com/assets/images/doudousindividuals/profile-pictures/union_europ%C3%A9enne-dP4LeaK4gAEFHO25cRyfHb5KsPO6ZP.jpg">
+</div>
+<h1 class="mode" style="font-size: 16px; text-align:center;color:white">PROJET DE CONSTRUCTION DU PONT DE ROSSO</h1>
+<h2 class="mode" style="font-size: 12px; text-align:center;color:white">MECANISME DE GESTION DES PLAINTES</h2>
+<h2 class="mode" style="font-size: 12px; text-align:center;color:white">GROUPEMENT MSA / BEESAS</h2>
+<div class="mode" style="text-align:center;min-width:100%;">
+	<img width="100px" height = "40px" src ="https://70gxoz4jnkgivatx.public.blob.vercel-storage.com/assets/images/doudousindividuals/profile-pictures/MSA-oJGRwZrilxDYiaBn5fgFBr5Q0wTTAu.png">
+	<img width="100px" height = "40px" src ="https://70gxoz4jnkgivatx.public.blob.vercel-storage.com/assets/images/doudousindividuals/profile-pictures/Beesas-xKxQTinovJ1jpdg1dS9RwODjMzzyW6.png">	
+</div>
+</div>
+<div id= "msabeesesheader2" class="none">
+	<img width="60px" id="img1" class ="flag" height = "40px" style="float:left"   src ="https://70gxoz4jnkgivatx.public.blob.vercel-storage.com/assets/images/doudousindividuals/profile-pictures/Senegal-eCne68uvxF59zssYFtFDI4C6e6tpaf.jpg"/>
+	<img width="60px" id="img2" class ="flag" height = "40px" style="float:right"   src="https://70gxoz4jnkgivatx.public.blob.vercel-storage.com/assets/images/doudousindividuals/profile-pictures/mauritania%204k-SFCMxn6YjMs3CkheQxj5P0lI8A1f7X.jpg"/>
+	<div  style="display:inline;text-align:center;">
+		<img width="60px" height = "40px" src = "https://70gxoz4jnkgivatx.public.blob.vercel-storage.com/assets/images/doudousindividuals/profile-pictures/banque_europeene_d'investissement-f19Ly5CyqxiBqF2FEUnICJEEXafDvD.png">
+		<img width="60px" height = "40px" src = "https://70gxoz4jnkgivatx.public.blob.vercel-storage.com/assets/images/doudousindividuals/profile-pictures/banque_africaine_de_developpement-YNW3DVeoo1pHtgW853JnNntMCKSs3z.png">
+		<img width="60px" height = "40px" src ="https://70gxoz4jnkgivatx.public.blob.vercel-storage.com/assets/images/doudousindividuals/profile-pictures/union_europ%C3%A9enne-dP4LeaK4gAEFHO25cRyfHb5KsPO6ZP.jpg">
+	</div>
+	<div style="display:inline">
+		<h1 class="mode" style="font-size: 8px; text-align:center;color:white">PROJET DE CONSTRUCTION DU PONT DE ROSSO</h1>
+		<h2 class="mode" style="font-size: 8px; text-align:center;color:white">MECANISME DE GESTION DES PLAINTES</h2>
+		<h2 class="mode" style="font-size: 8px; text-align:center;color:white">GROUPEMENT MSA / BEESAS</h2>
+	</div>
+	<div style="display:inline;text-align:center;">
+		<img width="60px"  height = "40px" src ="https://70gxoz4jnkgivatx.public.blob.vercel-storage.com/assets/images/doudousindividuals/profile-pictures/MSA-oJGRwZrilxDYiaBn5fgFBr5Q0wTTAu.png">
+		<img width="60px"  height = "40px" src ="https://70gxoz4jnkgivatx.public.blob.vercel-storage.com/assets/images/doudousindividuals/profile-pictures/Beesas-xKxQTinovJ1jpdg1dS9RwODjMzzyW6.png">	
+	</div>
+</div>
+
+<div  class="middlePage">
+<form *ngIf="c1 && !data.userAuthentification.user" #fOne  ="ngForm" (ngSubmit)="submitFunction(fOne.value,fOne,$event)" ngNativeValidate>
+	<h1>Formulaire d'ajout d'un nouvel employé</h1>
+	<button (click) = "clear([s1,s2,s3],[fn1,sn1,g1,s1,id2,pwd1,idemp])">Effacer</button><br><br>
+	<div class="formDivisionb">
+	<label for= "baseIDPrime"  >Attaché à la Base:</label>
+	<select #s1 name = "baseIDPrime"  (change) ="setSelectorValues(s1,s1.selectedIndex,[s1.value],[id2])" ngModel>
+		<option *ngFor="let container of objectKeysFunction(data.base.tables); let i = index" value="{{container}}">{{data.base.tables[container].name}}</option>
+	</select>
+	<label for = "baseID" >ID de la base:</label>
+	<input type = "number"  #id2   name = "baseID" [(ngModel)] = "modelDic.baseID" required ngModel>
+	<label for= "employeeID"  >ID de l'employé:</label>
+	<select #s2 name = "employeeID"  ngModel  (change) ="setSelectorValues(s2,s2.selectedIndex,[data.base.individuals[s2.value][1].first,data.base.individuals[s2.value][1].second,data.base.individuals[s2.value][1].gender,data.base.individuals[s2.value][1].pwd,data.base.individuals[s2.value][1].user?1:0,data.base.individuals[s2.value][1].ID],[fn1,sn1,g1,pwd1,s3,idemp])" >
+		<option *ngFor="let container of objectKeysFunction(data.base.individuals); let i = index" value="{{container}}">{{data.base.individuals[container][0]+" "+data.base.individuals[container][1].first+" "+data.base.individuals[container][1].second+"\n"+data.base.individuals[container][1].gender}}</option>
+	</select>
+	<label for = "ID">ID:</label>
+	<input type = "number" [(ngModel)] = "modelDic.ID" #idemp name = "ID" required ngModel>
+	<label for= "first" >Prénom:</label>
+	<input type = "text" #fn1  name="first" required ngModel>
+	<label for = "second" >Nom:</label>
+	<input type = "text" #sn1 name="second" required ngModel>
+	<label for = "gender" >Genre:</label>
+	<select name="gender" #g1 required ngModel>
+		<option value="Homme">Homme</option>
+		<option value="Femme">Femme</option>
+	</select>
+	<label for = "password" >Mot de passe:</label>
+	<input type = "password" #pwd1 name = "password" required ngModel>
+	<label for ="type1">Type de compte:</label>
+	<select #s3 name="type" id="type1" ngModel><option value ="1">Administrateur</option><option value="4">Utilisateur</option></select>
+	<label for = "imgname">Photo de profil:</label>
+	<input type = "file" name ="imgname" accept =".jpg,.jpeg,.png,.ico" (change)="fileUpload($event)" ngModel>
+	<button type="submit" >Soumettre</button>
+	<div name ="return" [ngStyle]= "{color: Color}" >{{responseString}}</div>
+	<!-- (mouseenter) = "ableInput(s1,s2,idemp,fn1,sn1,g1,pwd1,id2)" (mouseleave)="disableInput(s1,s2,idemp,fn1,sn1,g1,pwd1,id2)" -->
+	</div>
+</form> <!-- style= "position:sticky;top:-8px;background-color:white;padding:15px 0px 20px 0px;width:auto;" -->
+<form *ngIf="c2" id = "database" class="visual" #fTwo = "ngForm" (ngSubmit)="submitFunction(fTwo.value,fTwo,$event)" ngNativeValidate>
+	<div class ="gridTwoColumns">
+		<div style="margin-bottom:20px;width: 100%;display:inline;">
+			<h1 style="text-align:center;font-size:12px;margin-top:15px;background-color:darkslategray;color:white;border-radius:3%;width:120px" *ngIf ="selectedID != '' && data.base.tables != undefined &&  data.base.tables[selectedID] != undefined && data.base.tables[selectedID].headers != undefined && data.base.tables[selectedID].image_url != undefined">Ajouter</h1>
+			<h1 style="text-align:center;font-size:12px;margin-top:15px;background-color:darkslategray;color:white;border-radius:3%;width:120px" *ngIf ="selectedID == '' && data.base.tables == undefined ||  data.base.tables[selectedID] == undefined || data.base.tables[selectedID].headers == undefined || data.base.tables[selectedID].image_url == undefined">Ajouter</h1>
+			<select  [(ngModel)] = "displayID" name ="idDisplayer">
+				<option value="all">Ensemble</option>
+				<option *ngFor="let container of objectKeysFunction(data.base.individuals); let i = index" value="{{data.base.individuals[i][0]}}">
+				{{data.base.individuals[i][0]+" "+data.base.individuals[i][1].first+" "+data.base.individuals[i][1].second+"\n"+data.base.individuals[i][1].gender}}
+				</option>	
+			</select>
+			<span class= "command" (click) ="changeClass('database','visual','newvisual')">&#9776;</span>
+			<img class="excel" *ngIf= "selectedID != '' && data.base.tables != undefined &&  data.base.tables[selectedID] != undefined && data.base.tables[selectedID].headers != undefined " (click)="generateFile()" src="../assets/icons8-excel-48.png" />
+		</div>
+		<div style="padding-left:15px;margin-bottom:20px;border-left: 2px solid darkslategray;display:inline;width: 3%">
+			<h1 style="text-align:center;font-size:12px;margin-top:15px;background-color:darkslategray;color:white;border-radius:5%;width:120px" >Mode Relationel</h1>
+			<img class="excel" width="38px" height="38px" style="border-radius:50%;" (click) ="maintableToggled = !maintableToggled" *ngIf= "selectedID != '' && data.base.tables != undefined &&  data.base.tables[selectedID] != undefined && data.base.tables[selectedID].headers != undefined " src="../assets/baseFinale.png" />
+		</div>
+	</div>
+	<!-- *ngIf ="selectedID != '' && data.base.tables != undefined &&  data.base.tables[selectedID] != undefined && data.base.tables[selectedID].headers != undefined && data.base.tables[selectedID].image_url != undefined" -->
+	<!-- <label style= "color:white;background:darkslategray;margin-right:40px;padding-top:10px 10px;border-radius: 5px;">{{data.userAuthentification.Prenom+" "+data.userAuthentification.Nom+" "+"Lignes:"+data.base.tables[selectedID].rows.length}}</label>
+	<label style= "color:white;background:darkslategray;float:right;margin-left:40px;padding-top:10px 10px;border-radius: 5px">{{'Lignes:'+data.base.tables[selectedID].rows.length}}</label>
+	 -->
+	<table  *ngIf ="selectedID != '' && !maintableToggled && data.base.tables != undefined &&  data.base.tables[selectedID] != undefined && data.base.tables[selectedID].headers != undefined ">
+		<thead style= "position:sticky;top:0px;">
+			<th   *ngFor = "let headerEntry of data.base.tables[selectedID].headers;let i=index" [ngClass]="i %2 ==0? 'even' : 'odd'" > {{headerEntry.name}} </th>
+			<th>Autre</th>
+		</thead>
+		<ng-template ngFor let-row [ngForOf]= "data.base.tables[selectedID].rows"  let-iBis = index; let-oddOne = odd >
+			<tr *ngIf="row[row.length-5].value == displayID || displayID == 'all' " [ngClass]= "oddOne?'odd':'even'" (dblclick) = "this.data.rowChanges[selectedID].values[iBis].displays = !this.data.rowChanges[selectedID].values[iBis].displays">
+				<td *ngFor = "let rowValue of row;let heads = index" ><input name = "{{'rowChangeInput'+iBis+heads}}" *ngIf ="heads < data.base.tables[selectedID].headers.length -6 && data.base.tables[selectedID].headers[heads].validate && this.data.rowChanges[selectedID].values[iBis].displays" (change)= "updateChange(selectedID,iBis,data.base.tables[selectedID].headers,'modifyrows')" [appMngtype] = "fixType(data.base.tables[selectedID].headers[heads].type)"   [(ngModel)] = "this.data.rowChanges[selectedID].values[iBis].row[heads].value" ><img *ngIf="rowValue.img" style="border-radius:50%;" width="70px" height = "70px" src={{rowValue.value}}/>{{rowValue.img == false?rowValue.value:""}}</td>
+			</tr>
+		</ng-template>
+		
+		<ng-template ngFor let-row [ngForOf]= "data.onDisplay[selectedID].elements" let-b = index >
+		<tr *ngIf = "data.onDisplay[selectedID].elements[b].values.idindividu.toString() == data.userAuthentification.ID.toString()" >   
+			<td  *ngFor="let headerEntry of data.base.tables[selectedID].headers;let i = index" >
+				{{type_correcter[headerEntry.type]}}
+				<input  *ngIf = "i < data.base.tables[selectedID].headers.length -6 && headerEntry.validate && !data.onDisplay[selectedID].elements[b].flipped" [appMngtype] = "fixType(headerEntry.type)" name = "{{headerEntry.name+b+i}}" (change) = "updateChange(selectedID,b,data.base.tables[selectedID].headers,'modifyinputrows')" [(ngModel)] ="data.onDisplay[selectedID].elements[b].values[headerEntry.name]"   required ngModel/>
+				<label *ngIf ="headerEntry.validate && data.onDisplay[selectedID].elements[b].flipped"> {{data.onDisplay[selectedID].elements[b].values[i]}} </label>
+				<input type ="fixType(headerEntry.type)" *ngIf = "( i == data.base.tables[selectedID].headers.length -6 ) && headerEntry.validate && !data.onDisplay[selectedID].elements[b].flipped" name = "{{headerEntry.name +b+i}}" (change) = "updateChange(selectedID,b,data.base.tables[selectedID].headers,'modifyinputrows')" [(ngModel)] = "selectedID"  disabled required ngModel>
+				<input type ="fixType(headerEntry.type)" *ngIf = "( i == data.base.tables[selectedID].headers.length -5 ) && headerEntry.validate && !data.onDisplay[selectedID].elements[b].flipped" name = "{{headerEntry.name+b+i}}" (change) = "updateChange(selectedID,b,data.base.tables[selectedID].headers,'modifyinputrows')" [(ngModel)] = "data.userAuthentification.ID"  disabled required ngModel>
+				<label *ngIf = "i == data.base.tables[selectedID].headers.length -4"> {{data.userAuthentification.Prenom}} </label>
+				<label *ngIf = "i == data.base.tables[selectedID].headers.length -3"> {{data.userAuthentification.Nom}} </label>
+				<label *ngIf = "i == data.base.tables[selectedID].headers.length -2"> {{data.userAuthentification.genre}} </label>
+				<img *ngIf = "i == data.base.tables[selectedID].headers.length -1" /> 
+			</td>
+			<td><div  [ngClass] ="data.onDisplay[selectedID].elements[b].submitting?'movingCircle':'none'"> </div><button type ="button" (click) ="submitFunctionBasic(b,$event)"  [ngClass] ="data.onDisplay[selectedID].elements[b].submitting?'none':'submitbutton'" name ="{{selectedID+'b'+b}}" (mouseenter)="log([this.data.dicSubmittedOnDisplay,'b'+b+' is submitting'])" style = "margin-left:auto;margin-right:auto;"  *ngIf = "!data.onDisplay[selectedID].elements[b].flipped"  > Soumettre </button> <div  [ngClass] = "data.onDisplay[selectedID].elements[b].class">{{data.onDisplay[selectedID].elements[b].responseString}}</div></td>
+		</tr>
+		</ng-template>
+		<tr><td colspan= "*" style = "margin-left:auto;margin-right:auto;" ><td><button type ="button"  (click) = "addUp(data.base.tables[selectedID].headers.length,selectedID,data.userAuthentification.ID,data.base.tables[selectedID].headers)" >+</button></td></tr>
+	</table>
+	<div  *ngIf ="selectedID != '' && maintableToggled && data.base.tables != undefined &&  data.base.tables[selectedID] != undefined && data.base.tables[selectedID].headers != undefined ">
+		<button type ="button" (click)="addRelation()"> Ajouter</button>
+		<ul>
+			<li *ngFor = "let atable of generatedRelations;let i = index" (click)="atable.toggled = !atable.toggled">
+				{{atable.name}}
+				<table *ngIf = "atable.validated" [hidden] = "atable.toggled?true:undefined">
+					<thead style= "position:sticky;top:0px;">
+						<th *ngFor = "let headerEntry of atable.names;let i2=index" [ngClass]="i2 %2 ==0? 'even' : 'odd'" > {{headerEntry}} </th>
+					</thead>								
+					<ng-template ngFor let-row [ngForOf]= "data.base.tables[selectedID].rows" let-b = index >
+						<tr>   
+							<ng-template ngFor let-headerEntry [ngForOf]="atable.functions" let i3=index>
+								<td>
+									{{data.base.tables[selectedID].rows[b][headerEntry.columnsIndex].value}}
+								</td>
+							</ng-template>
+						</tr>
+					</ng-template>
+				</table>
+			</li>
+		</ul>
+		<div  [ngClass] = "table.class" *ngFor="let table of generatedRelations;let i = index;">
+				<div style = "margin-top:10px;padding-top:20px;padding-left: 20px;border-radius:.5%;max-height:300px;overflow-y:auto">
+					<div>
+						<label for="{{'input'+'nomdelarelation'+i}}">Nom de la relation:</label><br>
+						<input name ="{{'input'+'nomdelarelation'+i}}" [(ngModel)] = "table.name" style="margin-top:10px;border-radius:1%"  class ="visible" type ="text"/><br>
+						<input style="margin-top:10px;border-radius:10px;width:80%;border-color:silver;box-shadow: 1px 1px 1px grey -1px -1px -1px grey inset" name ="{{table.name+'search'+i}}"[(ngModel)] ="table.searchName" type = "search"/>
+					</div>
+					<label style="display:none;position: sticky;top:0" class ="relationTablesTitle">{{table.name}}</label>
+					<div style  ="display:inline-block" *ngFor= "let headerEntry of data.base.tables[selectedID].headers;let index2 = index">
+						<div *ngIf="table.searchName == '' || headerEntry.name.trim().toLowerCase().indexOf(table.searchName.trim().toLowerCase()) >= 0" style="display:inline-block;margin-top:10px" >
+							<span  style  ="display:inline-block;width:auto;color:white;background-color:blue;border-radius: 7px;padding:10px;" >{{headerEntry.name}} </span>
+							<input style="border-radius:3%;color:green;" name ="{{'checkbox'+table.name+i+index2}}"  (change)="inputCheckBoxChange($event,table,index2,headerEntry.name)"  type ="checkBox"/>
+						</div>
+					</div>
+					<button type ="button" (click)='validateRelation(i)'>Valider</button>
+				</div>
+				<div style = "margin-top:10px;padding-top:20px;padding-left: 20px;border-radius:.5%;max-height:300px;overflow-y:auto" >
+					<label style="position: sticky;top:0" class ="relationTablesTitle">{{table.name}}</label>
+					<div style  ="display:inline-block" *ngFor= "let headerIndex of table.columns;let index5 = index;">
+						<div style="display:inline-block;margin-top:10px" >
+							<span  style  ="display:inline-block;width:auto;color:white;background-color:blue;border-radius: 7px;padding:10px;" >{{data.base.tables[selectedID].headers[headerIndex].name}} </span>
+							<!-- <input style="border-radius:3%;color:green;" name ="{{'checkbox'+table.name+i+index2}}"  [(ngModel)] = "table.columns[i]" type ="checkBox"/> -->
+						</div>
+						<br>
+						<select name ="{{'selectFunction'+i+index5}}" (change)= "addSubFunctions(table,index5)"  [(ngModel)] = "table.functions[index5].name" >
+							<option *ngFor="let func of functions;let selectorIndex = index"  value ="{{func}}">{{func}}</option>
+						</select>
+						<div style="display:inline"*ngIf = "table.functions[index5].name != 'aucun' && table.functions[index5].name != '' && table.functions[index5].name != undefined">
+							<label style = "margin-left:10px" *ngIf = "table.functions[index5].name != 'si egal'">{{functionsId[table.functions[index5].name]}}</label>
+							<div style="margin-top:5px;">
+								<input type ="text" *ngIf="table.functions[index5].name != undefined && table.functions[index5].name.trim() != ''" name = "{{'functionsInput'+i+index5}}" width="10">
+								<select name ="{{selectConnector+i+index5}}" [(ngModel)] = "table.functions[index5].subFunctions[0].connector"   *ngIf = "table.functions[index5].name == 'si egal à' || table.functions[index5].name == 'si infegal à' || table.functions[index5].name == 'si supegal à' || table.functions[index5].name == 'si inf à' ||table.functions[index5].name == 'si sup à'">
+									<ng-template ngFor let-connector [ngForOf] ="ifFunctionsConnector" let-selectorIndex = index>
+										<option value = "{{connector}}"  *ngIf="selectorIndex == 0" selected>
+											{{connector}}
+										</option>
+										<option value = "{{connector}}"  *ngIf="selectorIndex > 0">
+											{{connector}}
+										</option>
+									</ng-template>
+								</select>
+								<label style = "margin-left:10px" *ngIf = "(table.functions[index5].name == 'si egal à' || table.functions[index5].name == 'si infegal à' || table.functions[index5].name == 'si supegal à' || table.functions[index5].name == 'si inf à' ||table.functions[index5].name == 'si sup à') && (table.functions[index5].subFunctions[0].connector == 'valeur retour =')">valeur retour =</label>
+								<input style = "margin-left:10px" *ngIf = "(table.functions[index5].name == 'si egal à' || table.functions[index5].name == 'si infegal à' || table.functions[index5].name == 'si supegal à' || table.functions[index5].name == 'si inf à' ||table.functions[index5].name == 'si sup à')  && (table.functions[index5].subFunctions[0].connector == 'valeur retour =')" type ="text" width="10">
+								<br>
+								<ng-template  ngFor let-subFunction [ngForOf] ="table.functions[index5].subFunctions"  let-iBis2 = index;>
+									<select *ngIf = "iBis2> 0" name="{{'selectsubFunction'+i+index5+iBis2}}"  [(ngModel)] = "subFunction.name">
+										<option *ngFor= "let func of filterArray(functions,(table.functions[index5].subFunctions[iBis2-1].connector == 'et'|| table.functions[index5].subFunctions[iBis2-1].connector == 'ou')?['multiplier par' , 'diviser par','ajouter à','soustraire à','puissance de']:['si egal à','si sup à','si inf à','si supegal à','si infegal à']);let selectorIndex = index" [selected]="selectorIndex == 0?true:undefined" value ="{{func}}">{{func}}</option>
+									</select>
+									<br>
+									<input name = "{{'subFunctionInput'+i+index5+iBis2}}" type ="text" width="10"  *ngIf ="iBis2> 0 && (subFunction.name != 'aucun' &&  subFunction.name != '') ">
+									<select name ="{{selectConnector+i+index5+iBis2}}" [(ngModel)] = "subFunction.connector"  *ngIf = "iBis2> 0 && (subFunction.name == 'si egal à' || subFunction.name == 'si infegal à' || subFunction.name == 'si supegal à' ||  subFunction.name == 'si inf à' || subFunction.name == 'si sup à')">
+										<option value = "{{connector}}" *ngFor="let connector of ifFunctionsConnector;let selectorIndex = index" [selected]="selectorIndex == 0?true:undefined">
+											{{connector}}
+										</option>
+									</select>
+									<label style = "margin-left:10px" *ngIf = "iBis2> 0 && (subFunction.name == 'si egal à' || subFunction.name == 'si infegal à' || subFunction.name == 'si supegal à' || subFunction.name == 'si inf à' ||subFunction.name == 'si sup à') && (subFunction.connector == 'valeur retour =')">valeur retour =</label>
+									<input name = "{{'subFunctionOutput'+i+index5+iBis2}}" style = "margin-left:10px" *ngIf = "iBis2> 0 && (subFunction.name == 'si egal à' || subFunction.name == 'si infegal à' || subFunction.name == 'si supegal à' || subFunction.name == 'si inf à' || subFunction.name == 'si sup à')  && (subFunction.connector == 'valeur retour =')" type ="text" width="10">
+									<br>
+								</ng-template>
+								<br>
+								<button type ="button" (click)="table.functions[i].subFunctions.push({name:'',inputs:[],connector:'aucun'})">+</button>
+							</div>
+						</div>
+					</div>
+				</div>
+		</div>
+	</div>
+</form>
+<form *ngIf="c3"  #fThree  ="ngForm" (ngSubmit)="submitFunction(fThree.value,fThree,$event)" ngNativeValidate>
+	<label for= "newBaseName"  >Nom de la nouvelle base:</label>
+	<input type = "text"  #pn1  name="newBaseName" required ngModel/>
+	<div *ngFor="let element of baseColumns;let i = index" style="margin-top:10px;">
+		<label for ="{{'column'+i}}" style="margin-right:45px;">Nom de la colone:</label>
+		<input name="{{'column'+i}}" type="text"  required ngModel/>
+		<select name="{{'typeofColumn'+i}}" style="margin-left:5px;" required ngModel>
+			<option value="text">
+				Texte
+			</option>
+			<option value="varchar(256)">
+				Chaîne de carractères
+			</option>
+			<option value ="integer">
+				Nombre entier
+			</option>
+			<option value="Decimal(22,3)">
+				Nombre Décimal (19 avant virgule 3 après)
+			</option>
+			<option value ="Boolean">
+				Vrai ou Faux
+			</option>
+			<option value="date">
+				Date
+			</option>
+			<option value="Time">
+				Heures
+			</option>
+		</select>
+	</div>
+	<label for = "imgname" style="margin-right:45px;margin-top:10px;">Icone de la base:</label>
+	<input type = "file" style="margin-left:10px;margin-top:10px" name ="imgname" accept = ".jpg,.jpeg,.png,.ico" (change)="fileUpload2($event)" ngModel>	
+	<div>{{c3data.responseString}}</div>
+	<div [ngClass] ="c3data.submitting?'movingCircle':'none'"> </div>
+	<button type = "submit" [ngClass] = "c3data.submitting?'none':'display'"  style="margin-bottom:40px;">Soumettre</button>
+	<button (click)="addBase()">+</button>
+</form>
+</div>
+</div>
+<!-- &&  numberReturn(s4.value) >= 0 -->
+<!-- && data.base.tables[selectedID].rowsInput.length <= data.onDisplay[selectedID].elements.length" ligne 80-->  
