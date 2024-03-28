@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { HttpResponse,HttpErrorResponse} from '@angular/common/http';
 import {HttpService} from '../http-forced/http.service';
 import {DataStorageService} from '../data-storage-service/data-storage.service';
-import {ExceljsService} from '../exceljs.service'
+import {ExceljsService} from '../exceljs.service';
 
 @Component({
   selector: 'app-office-form',
@@ -25,6 +25,8 @@ export class OfficeFormComponent
 	public s4_valid:boolean = false;
 	public s4_selected_index = 0;
 	public toggled: boolean = false;
+	public maintableToggled: boolean = false;
+	public generatedRelations:any[] = [];
 	public selectedID:string = "1";
 	public objectKeysFunction: Function = Object.keys;
 	public type_correcter: any = {"text":"Texte","password":"Mot de passe","Integer":"Nombre entier","Date":"Date"};
@@ -42,6 +44,13 @@ export class OfficeFormComponent
 	public updatingInputs: any = {count: 0, submitting:true,responseString:""};
 	private xcelService:ExceljsService = new ExceljsService();
 	
+	public choices:string[] = ["aucun","filtre","relation"];
+	public functions:string[] =["aucun"];// ["aucun","si egal à","si sup à","si inf à","si supegal à","si infegal à","multiplier par","diviser par","ajouter à","soustraire à","puissance de"];
+	public functionsId:any = {"multiplier":"X","diviser":"/","ajouter":"+","soustraire":"-","puissance":"^"};
+	public ifFunctionsDic:any = { "si egal à":["vrai","faux","autre"]};
+	public ifFunctionsConnector:string[] =  ["valeur retour =","et","ou"];
+	public groupFunctions:string[] = ["comptes","comptes et pourcentages"];
+	public selectConnector:string = 'selectconnector';
 	constructor(private httpservice: HttpService,public data: DataStorageService)
 	{
 		setInterval(()=>{console.log(data);console.log("Toggle "+this.toggled+"....")},2000);
@@ -836,6 +845,11 @@ export class OfficeFormComponent
 		this.baseColumns.push(object_value);
 	}
 	
+	addRelation()
+	{
+		this.generatedRelations.push({name:"",columns:[],names:[],functions:[],searchName:"",class:"gridTwoColumns",validated:false,toggled:true});
+	}
+	
 	fixType(type:string):string
 	{
 		if(type == "Integer")
@@ -847,6 +861,18 @@ export class OfficeFormComponent
 	log(values:any[])
 	{
 		values.forEach((val)=>console.log(val));
+	}
+	
+	addSubFunctions(table:any,index5:number)
+	{
+		if(table.functions[index5].subFunctions == undefined) 
+		{
+			table.functions[index5].subFunctions = [];
+		} 
+		if(table.functions[index5].subFunctions.length == 0)
+		{
+			table.functions[index5].subFunctions.push({name:table.functions[index5].name,connector:'aucun',input:'',output:''});
+		}
 	}
 	
 	changeClass(idValue:string,oldclass:string,newclass:string)
@@ -879,6 +905,48 @@ export class OfficeFormComponent
 		}
 	}
 	
+	inputCheckBoxChange(source:any,table:any,index2:number,name:string)
+	{
+		//table.columns.indexOf(index2)>=0?table.columns.splice(index2,1):table.columns.push(index2);console.log(table);
+		
+		if(!source.srcElement.checked)
+		{
+			let indexFound = table.columns.indexOf(index2);
+			if(indexFound >=0)
+			{
+				table.columns.splice(indexFound,1);
+				table.names.splice(indexFound,1);
+				table.functions.splice(indexFound,1);
+			}
+		}
+		else
+		{	
+			if(table.columns.indexOf(index2)<0)
+			{
+				table.columns.push(index2);
+				table.names.push(name);
+				table.functions.push({name:undefined,subFunctions:[],columnsIndex:index2})
+			}
+		}
+		
+	}
+	
+	find(atable:any,i3:number)
+	{
+		console.log(atable);
+		return atable.columns.find((el:number) => el == i3)  != undefined ;
+	}
+	
+	validateRelation(index:number)
+	{
+		this.generatedRelations[index].class ="none";
+		if(this.generatedRelations[index].name.trim() == '')
+		{
+			this.generatedRelations[index].name = "Relation no "+index;
+		}
+		this.generatedRelations[index].validated = true;
+	}
+	
 	async generateFile()
 	{
 		console.log("generating file");
@@ -886,8 +954,28 @@ export class OfficeFormComponent
 		let ws = this.xcelService.addWorkSheet(this.data.base.tables[this.selectedID].name+" Acceuil",wb);
 		this.xcelService.addHeadersToWorkSheet(ws,this.data.base.tables[this.selectedID].headers);
 		this.xcelService.writeAllRowValuesFor1DArray(ws,this.data.base.tables[this.selectedID].rows,this.data.base.tables[this.selectedID].headers.length);
+		this.generatedRelations.forEach((table,index)=>
+		{
+			ws = this.xcelService.addWorkSheet("Papier"+(index+1)+"-"+table.name,wb);
+			this.xcelService.addHeadersToWorkSheet(ws,table.names);
+			this.xcelService.writeAllRowValuesFor1DArray(ws,this.data.base.tables[this.selectedID].rows,table.names.length);
+		});
 		await this.xcelService.saveWorkBookIntoFile(wb,this.data.base.tables[this.selectedID].name);
 	}
+	
+	filterArray(array:any[],notequals:any[])
+	{
+		let values:any[] = [];
+		array.forEach(arrElem => 
+		{
+			if( notequals.find( element => element == arrElem ) == undefined )
+			{
+				values.push(arrElem);
+			}
+		});
+		return values;
+	}
+	
 }
 
 interface responsa 

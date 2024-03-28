@@ -132,13 +132,6 @@ div.middlePage form.visual
 	box-shadow: 1px 1px 1px 1px darkslategrey,1px 1px 1px 1px darkslategrey inset;
 }
 
-div.middlePage form h1
-{
-	font-size: 3vh;
-	text-decoration:underline;
-	margin-bottom: 20px;
-	color:blue;
-}
 
 div.fiveRowsSevenColumns
 {
@@ -408,4 +401,14 @@ div.mode
 {
 	margin-top: -10px;
 	background-color:darkslategray;
+}
+
+div.gridTwoColumns 
+{
+	display:grid;
+	grid-template-columns: 48% 48%;
+	col-gap: 2%;
+	column-count: 2;
+	grid-column-start: 1;
+	grid-column-end: 2;
 }

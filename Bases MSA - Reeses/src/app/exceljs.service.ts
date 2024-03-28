@@ -29,9 +29,19 @@ export class ExceljsService {
   {
 		console.log(headers);
 		let headersTemp:any[] =[];
-		headers.forEach((headerObj:any)=> { headersTemp.push({ header:headerObj.name,key: headerObj.name.toLowerCase().replace(' ',''),width:15 }); });
+		headers.forEach((headerObj:any)=> 
+		{ 
+			if(typeof headerObj == 'string')
+			{
+				headersTemp.push({ header:headerObj,key: headerObj.toLowerCase().replace(' ',''),width:15 }); 
+			}
+			else
+			{
+				headersTemp.push({ header:headerObj.name,key: headerObj.name.toLowerCase().replace(' ',''),width:15 }); 
+			}
+		});
 		if(headersTemp != undefined)
-			sheet.columns = headersTemp
+			sheet.columns = headersTemp;
 		const headerRow = sheet.getRow(1);
 		headerRow.font = { bold: true, color: { argb: 'FFFFFF' } }; // Texte en gras et blanc
 		headerRow.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: '0070C0' } }; 
@@ -40,7 +50,6 @@ export class ExceljsService {
   
   private addRowToWorkSheet(row:any[],sheet:any)
   {
-		console.log(row);
 		sheet.addRow(row); 
   }
   
@@ -57,12 +66,17 @@ export class ExceljsService {
 		console.log("limit"+limit);console.log("length"+length);console.log("values"+values.length);
 		values.forEach((rowValue:any[])=>
 		{
-			let rowOfValues = rowValue.map((el:any)=> el.value);
-			this.addRowToWorkSheet(rowOfValues,sheet);
+			let rowOfValues = rowValue.map((el:any,index:number)=> el.value);
+			let values = [];
+			for(let i = 0; i < rowOfValues.length && i < limit;++i)
+			{
+				values.push(rowOfValues[i]);
+			}
+			this.addRowToWorkSheet(values,sheet);
 		});
 		
 		sheet.columns.forEach((column:any) => {
-			column.width = column.header.length < 15 ? 15 : column.header.length;
+			column.width = (column.header == undefined || (column.header != undefined && column.header.length < 15))? 15 : column.header.length;
 			column.eachCell({ includeEmpty: true }, (cell:any) => {
 				const columnWidth = cell.value ? cell.value.toString().length : 15;
 				column.width = Math.max(column.width, columnWidth);

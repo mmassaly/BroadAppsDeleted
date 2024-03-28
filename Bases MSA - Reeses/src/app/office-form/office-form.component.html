@@ -75,21 +75,29 @@
 	</div>
 </form> <!-- style= "position:sticky;top:-8px;background-color:white;padding:15px 0px 20px 0px;width:auto;" -->
 <form *ngIf="c2" id = "database" class="visual" #fTwo = "ngForm" (ngSubmit)="submitFunction(fTwo.value,fTwo,$event)" ngNativeValidate>
-	<div style="margin-bottom:20px;">
-		<h1 style="margin-top:15px" *ngIf ="selectedID != '' && data.base.tables != undefined &&  data.base.tables[selectedID] != undefined && data.base.tables[selectedID].headers != undefined && data.base.tables[selectedID].image_url != undefined">Ajouter</h1>
-		<h1 *ngIf ="selectedID == '' && data.base.tables == undefined ||  data.base.tables[selectedID] == undefined || data.base.tables[selectedID].headers == undefined || data.base.tables[selectedID].image_url == undefined">Ajouter</h1>
-		<select  [(ngModel)] = "displayID" name ="idDisplayer">
-			<option value="all">Ensemble</option>
-			<option *ngFor="let container of objectKeysFunction(data.base.individuals); let i = index" value="{{data.base.individuals[i][0]}}">
-			{{data.base.individuals[i][0]+" "+data.base.individuals[i][1].first+" "+data.base.individuals[i][1].second+"\n"+data.base.individuals[i][1].gender}}
-			</option>	
-		</select>
-		<span class= "command" (click) ="changeClass('database','visual','newvisual')">&#9776;</span>
-		<img class="excel" *ngIf= "selectedID != '' && data.base.tables != undefined &&  data.base.tables[selectedID] != undefined && data.base.tables[selectedID].headers != undefined " (click)="generateFile()" src="../assets/icons8-excel-48.png" />
+	<div class ="gridTwoColumns">
+		<div style="margin-bottom:20px;width: 100%;display:inline;">
+			<h1 style="text-align:center;font-size:12px;margin-top:15px;background-color:darkslategray;color:white;border-radius:3%;width:120px" *ngIf ="selectedID != '' && data.base.tables != undefined &&  data.base.tables[selectedID] != undefined && data.base.tables[selectedID].headers != undefined && data.base.tables[selectedID].image_url != undefined">Ajouter</h1>
+			<h1 style="text-align:center;font-size:12px;margin-top:15px;background-color:darkslategray;color:white;border-radius:3%;width:120px" *ngIf ="selectedID == '' && data.base.tables == undefined ||  data.base.tables[selectedID] == undefined || data.base.tables[selectedID].headers == undefined || data.base.tables[selectedID].image_url == undefined">Ajouter</h1>
+			<select  [(ngModel)] = "displayID" name ="idDisplayer">
+				<option value="all">Ensemble</option>
+				<option *ngFor="let container of objectKeysFunction(data.base.individuals); let i = index" value="{{data.base.individuals[i][0]}}">
+				{{data.base.individuals[i][0]+" "+data.base.individuals[i][1].first+" "+data.base.individuals[i][1].second+"\n"+data.base.individuals[i][1].gender}}
+				</option>	
+			</select>
+			<span class= "command" (click) ="changeClass('database','visual','newvisual')">&#9776;</span>
+			<img class="excel" *ngIf= "selectedID != '' && data.base.tables != undefined &&  data.base.tables[selectedID] != undefined && data.base.tables[selectedID].headers != undefined " (click)="generateFile()" src="../assets/icons8-excel-48.png" />
+		</div>
+		<div style="padding-left:15px;margin-bottom:20px;border-left: 2px solid darkslategray;display:inline;width: 3%">
+			<h1 style="text-align:center;font-size:12px;margin-top:15px;background-color:darkslategray;color:white;border-radius:5%;width:120px" >Mode Relationel</h1>
+			<img class="excel" width="38px" height="38px" style="border-radius:50%;" (click) ="maintableToggled = !maintableToggled" *ngIf= "selectedID != '' && data.base.tables != undefined &&  data.base.tables[selectedID] != undefined && data.base.tables[selectedID].headers != undefined " src="../assets/baseFinale.png" />
+		</div>
 	</div>
+	<!-- *ngIf ="selectedID != '' && data.base.tables != undefined &&  data.base.tables[selectedID] != undefined && data.base.tables[selectedID].headers != undefined && data.base.tables[selectedID].image_url != undefined" -->
 	<!-- <label style= "color:white;background:darkslategray;margin-right:40px;padding-top:10px 10px;border-radius: 5px;">{{data.userAuthentification.Prenom+" "+data.userAuthentification.Nom+" "+"Lignes:"+data.base.tables[selectedID].rows.length}}</label>
 	<label style= "color:white;background:darkslategray;float:right;margin-left:40px;padding-top:10px 10px;border-radius: 5px">{{'Lignes:'+data.base.tables[selectedID].rows.length}}</label>
-	 --><table  *ngIf ="selectedID != '' && data.base.tables != undefined &&  data.base.tables[selectedID] != undefined && data.base.tables[selectedID].headers != undefined ">
+	 -->
+	<table  *ngIf ="selectedID != '' && !maintableToggled && data.base.tables != undefined &&  data.base.tables[selectedID] != undefined && data.base.tables[selectedID].headers != undefined ">
 		<thead style= "position:sticky;top:0px;">
 			<th   *ngFor = "let headerEntry of data.base.tables[selectedID].headers;let i=index" [ngClass]="i %2 ==0? 'even' : 'odd'" > {{headerEntry.name}} </th>
 			<th>Autre</th>
@@ -118,6 +126,95 @@
 		</ng-template>
 		<tr><td colspan= "*" style = "margin-left:auto;margin-right:auto;" ><td><button type ="button"  (click) = "addUp(data.base.tables[selectedID].headers.length,selectedID,data.userAuthentification.ID,data.base.tables[selectedID].headers)" >+</button></td></tr>
 	</table>
+	<div  *ngIf ="selectedID != '' && maintableToggled && data.base.tables != undefined &&  data.base.tables[selectedID] != undefined && data.base.tables[selectedID].headers != undefined ">
+		<button type ="button" (click)="addRelation()"> Ajouter</button>
+		<ul>
+			<li *ngFor = "let atable of generatedRelations;let i = index" (click)="atable.toggled = !atable.toggled">
+				{{atable.name}}
+				<table *ngIf = "atable.validated" [hidden] = "atable.toggled?true:undefined">
+					<thead style= "position:sticky;top:0px;">
+						<th *ngFor = "let headerEntry of atable.names;let i2=index" [ngClass]="i2 %2 ==0? 'even' : 'odd'" > {{headerEntry}} </th>
+					</thead>								
+					<ng-template ngFor let-row [ngForOf]= "data.base.tables[selectedID].rows" let-b = index >
+						<tr>   
+							<ng-template ngFor let-headerEntry [ngForOf]="atable.functions" let i3=index>
+								<td>
+									{{data.base.tables[selectedID].rows[b][headerEntry.columnsIndex].value}}
+								</td>
+							</ng-template>
+						</tr>
+					</ng-template>
+				</table>
+			</li>
+		</ul>
+		<div  [ngClass] = "table.class" *ngFor="let table of generatedRelations;let i = index;">
+				<div style = "margin-top:10px;padding-top:20px;padding-left: 20px;border-radius:.5%;max-height:300px;overflow-y:auto">
+					<div>
+						<label for="{{'input'+'nomdelarelation'+i}}">Nom de la relation:</label><br>
+						<input name ="{{'input'+'nomdelarelation'+i}}" [(ngModel)] = "table.name" style="margin-top:10px;border-radius:1%"  class ="visible" type ="text"/><br>
+						<input style="margin-top:10px;border-radius:10px;width:80%;border-color:silver;box-shadow: 1px 1px 1px grey -1px -1px -1px grey inset" name ="{{table.name+'search'+i}}"[(ngModel)] ="table.searchName" type = "search"/>
+					</div>
+					<label style="display:none;position: sticky;top:0" class ="relationTablesTitle">{{table.name}}</label>
+					<div style  ="display:inline-block" *ngFor= "let headerEntry of data.base.tables[selectedID].headers;let index2 = index">
+						<div *ngIf="table.searchName == '' || headerEntry.name.trim().toLowerCase().indexOf(table.searchName.trim().toLowerCase()) >= 0" style="display:inline-block;margin-top:10px" >
+							<span  style  ="display:inline-block;width:auto;color:white;background-color:blue;border-radius: 7px;padding:10px;" >{{headerEntry.name}} </span>
+							<input style="border-radius:3%;color:green;" name ="{{'checkbox'+table.name+i+index2}}"  (change)="inputCheckBoxChange($event,table,index2,headerEntry.name)"  type ="checkBox"/>
+						</div>
+					</div>
+					<button type ="button" (click)='validateRelation(i)'>Valider</button>
+				</div>
+				<div style = "margin-top:10px;padding-top:20px;padding-left: 20px;border-radius:.5%;max-height:300px;overflow-y:auto" >
+					<label style="position: sticky;top:0" class ="relationTablesTitle">{{table.name}}</label>
+					<div style  ="display:inline-block" *ngFor= "let headerIndex of table.columns;let index5 = index;">
+						<div style="display:inline-block;margin-top:10px" >
+							<span  style  ="display:inline-block;width:auto;color:white;background-color:blue;border-radius: 7px;padding:10px;" >{{data.base.tables[selectedID].headers[headerIndex].name}} </span>
+							<!-- <input style="border-radius:3%;color:green;" name ="{{'checkbox'+table.name+i+index2}}"  [(ngModel)] = "table.columns[i]" type ="checkBox"/> -->
+						</div>
+						<br>
+						{{ table.functions.length+" "+index5+" "+table.functions[index5]}}
+						<select name ="{{'selectFunction'+i+index5}}" (change)= "addSubFunctions(table,index5)"  [(ngModel)] = "table.functions[index5].name" >
+							<option *ngFor="let func of functions;let selectorIndex = index"  value ="{{func}}">{{func}}</option>
+						</select>
+						<div style="display:inline"*ngIf = "table.functions[index5].name != 'aucun' && table.functions[index5].name != '' && table.functions[index5].name != undefined">
+							<label style = "margin-left:10px" *ngIf = "table.functions[index5].name != 'si egal'">{{functionsId[table.functions[index5].name]}}</label>
+							<div style="margin-top:5px;">
+								<input type ="text" *ngIf="table.functions[index5].name != undefined && table.functions[index5].name.trim() != ''" name = "{{'functionsInput'+i+index5}}" width="10">
+								<select name ="{{selectConnector+i+index5}}" [(ngModel)] = "table.functions[index5].subFunctions[0].connector"   *ngIf = "table.functions[index5].name == 'si egal à' || table.functions[index5].name == 'si infegal à' || table.functions[index5].name == 'si supegal à' || table.functions[index5].name == 'si inf à' ||table.functions[index5].name == 'si sup à'">
+									<ng-template ngFor let-connector [ngForOf] ="ifFunctionsConnector" let-selectorIndex = index>
+										<option value = "{{connector}}"  *ngIf="selectorIndex == 0" selected>
+											{{connector}}
+										</option>
+										<option value = "{{connector}}"  *ngIf="selectorIndex > 0">
+											{{connector}}
+										</option>
+									</ng-template>
+								</select>
+								<label style = "margin-left:10px" *ngIf = "(table.functions[index5].name == 'si egal à' || table.functions[index5].name == 'si infegal à' || table.functions[index5].name == 'si supegal à' || table.functions[index5].name == 'si inf à' ||table.functions[index5].name == 'si sup à') && (table.functions[index5].subFunctions[0].connector == 'valeur retour =')">valeur retour =</label>
+								<input style = "margin-left:10px" *ngIf = "(table.functions[index5].name == 'si egal à' || table.functions[index5].name == 'si infegal à' || table.functions[index5].name == 'si supegal à' || table.functions[index5].name == 'si inf à' ||table.functions[index5].name == 'si sup à')  && (table.functions[index5].subFunctions[0].connector == 'valeur retour =')" type ="text" width="10">
+								<br>
+								<ng-template  ngFor let-subFunction [ngForOf] ="table.functions[index5].subFunctions"  let-iBis2 = index;>
+									<select *ngIf = "iBis2> 0" name="{{'selectsubFunction'+i+index5+iBis2}}"  [(ngModel)] = "subFunction.name">
+										<option *ngFor= "let func of filterArray(functions,(table.functions[index5].subFunctions[iBis2-1].connector == 'et'|| table.functions[index5].subFunctions[iBis2-1].connector == 'ou')?['multiplier par' , 'diviser par','ajouter à','soustraire à','puissance de']:['si egal à','si sup à','si inf à','si supegal à','si infegal à']);let selectorIndex = index" [selected]="selectorIndex == 0?true:undefined" value ="{{func}}">{{func}}</option>
+									</select>
+									<br>
+									<input name = "{{'subFunctionInput'+i+index5+iBis2}}" type ="text" width="10"  *ngIf ="iBis2> 0 && (subFunction.name != 'aucun' &&  subFunction.name != '') ">
+									<select name ="{{selectConnector+i+index5+iBis2}}" [(ngModel)] = "subFunction.connector"  *ngIf = "iBis2> 0 && (subFunction.name == 'si egal à' || subFunction.name == 'si infegal à' || subFunction.name == 'si supegal à' ||  subFunction.name == 'si inf à' || subFunction.name == 'si sup à')">
+										<option value = "{{connector}}" *ngFor="let connector of ifFunctionsConnector;let selectorIndex = index" [selected]="selectorIndex == 0?true:undefined">
+											{{connector}}
+										</option>
+									</select>
+									<label style = "margin-left:10px" *ngIf = "iBis2> 0 && (subFunction.name == 'si egal à' || subFunction.name == 'si infegal à' || subFunction.name == 'si supegal à' || subFunction.name == 'si inf à' ||subFunction.name == 'si sup à') && (subFunction.connector == 'valeur retour =')">valeur retour =</label>
+									<input name = "{{'subFunctionOutput'+i+index5+iBis2}}" style = "margin-left:10px" *ngIf = "iBis2> 0 && (subFunction.name == 'si egal à' || subFunction.name == 'si infegal à' || subFunction.name == 'si supegal à' || subFunction.name == 'si inf à' || subFunction.name == 'si sup à')  && (subFunction.connector == 'valeur retour =')" type ="text" width="10">
+									<br>
+								</ng-template>
+								<br>
+								<button type ="button" (click)="table.functions[i].subFunctions.push({name:'',inputs:[],connector:'aucun'})">+</button>
+							</div>
+						</div>
+					</div>
+				</div>
+		</div>
+	</div>
 </form>
 <form *ngIf="c3"  #fThree  ="ngForm" (ngSubmit)="submitFunction(fThree.value,fThree,$event)" ngNativeValidate>
 	<label for= "newBaseName"  >Nom de la nouvelle base:</label>
