@@ -56,7 +56,7 @@
 			setTimeout(
 				async function()
 				{	
-							let length = await kvUser.get("primaryObjectsLength");	//set primaryObjectsLength -1
+							let length = -1;//await kvUser.get("primaryObjectsLength");	//set primaryObjectsLength -1
 							console.log("PrimaryObject in KV's length is "+length);
 							if(length  == -1 || length  == undefined || length  == -1)
 							{
@@ -879,7 +879,7 @@
 					let length_count = 0;
 					let errorBoolean = false;
 					
-					do
+					/*do
 					{
 						try
 						{
@@ -891,7 +891,7 @@
 							errorBoolean = true;
 							++length_count;
 						}
-					}while(errorBoolean && length_count <= 2);
+					}while(errorBoolean && length_count <= 2);*/
 					
 					console.log("PrimaryObject in KV's length is "+length);
 							if(length  == -1 || length  == undefined)
@@ -2058,7 +2058,7 @@
 				//console.log(" paramyear "+paramyear+" other paramday "+paramday+" other parammonth "+parammonth);
 				//console.log("Location argument "+locationArgObj+" employee argument "+empObj);
 				console.log("set date of today "+setDateofToday);
-				let primSet = false; let count = 2;
+				/*let primSet = false; let count = 2;
 				do
 				{
 					try
@@ -2074,7 +2074,7 @@
 					}
 				}
 				while(!primSet && count-- >=0);
-				
+				*/
 				let data = 
 				{
 					selected_name: 0,
@@ -3901,7 +3901,7 @@
 					console.log("added to kv");
 					//console.log("Location argument "+locationArgObj+" employee argument "+empObj);
 					//console.log(primaryObject);
-					let splitelements = splitText(JSON.stringify(primaryObject), 900* 1024);
+					/*let splitelements = splitText(JSON.stringify(primaryObject), 900* 1024);
 					if( splitelements.length > 0)
 					{
 						let error = false;
@@ -3927,6 +3927,7 @@
 						}while(error);
 					}
 					console.log("done adding "+splitelements.length+" elements to KV ");
+					*/
 					if (!(response === undefined))
 					{
 						response.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
