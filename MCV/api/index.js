@@ -1277,7 +1277,7 @@
 											if(reason == "congès")
 											{
 												let year = current.getFullYear();
-												vacation_available = vacationsAvailable(year); 
+												vacation_available = vacationsAvailable(year,IDOffice); 
 											}
 											
 											if(current.getDay() != 6 && current.getDay() != 0 )
@@ -4695,10 +4695,11 @@
 		
 	}
 	
-	function vacationsAvailable(year)
+	function vacationsAvailable(year,officeID)
 	{
 		console.log("Looking for year "+year);
-		let nodupTempAlpha = getYear(primaryObject,year);
+		let unitLocation = getLocation(primaryObject,officeID);
+		let nodupTempAlpha = getYear(unitLocation,year);
 		let nodupTemp = nodupTempAlpha.first;
 		
 		if( nodupTemp.empDic[employeeContentModel.ID].vacationsDaysLeft > 0 )
