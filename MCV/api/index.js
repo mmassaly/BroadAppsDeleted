@@ -4697,6 +4697,7 @@
 	
 	function vacationsAvailable(year)
 	{
+		console.log("Looking for year "+year);
 		let nodupTempAlpha = getYear(primaryObject,year);
 		let nodupTemp = nodupTempAlpha.first;
 		
