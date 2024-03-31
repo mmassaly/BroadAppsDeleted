@@ -4312,6 +4312,7 @@
 	{
 		if(content != undefined)
 		{
+			console.log(content);
 			for(let i = 0; i < content.yearsContent.length ; ++i )
 			{
 				if(	content.yearsContent[i].year == year )
