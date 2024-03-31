@@ -4699,8 +4699,11 @@
 	function vacationsAvailable(year,officeID)
 	{
 		console.log("Looking for year "+year);
+		console.log(primaryObject);
 		let unitLocation = getLocation(primaryObject,officeID);
+		console.log(unitLocation);
 		let nodupTempAlpha = getYear(unitLocation,year);
+		console.log(noduoTempAlpha);
 		let nodupTemp = nodupTempAlpha.first;
 		
 		if( nodupTemp.empDic[employeeContentModel.ID].vacationsDaysLeft > 0 )
