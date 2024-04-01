@@ -1283,7 +1283,7 @@
 										values = (reason == "mission")?",false,false,true,false)":(reason == "congès")?",false,false,false,true)":(reason == "maladie")?",true,false,false,false)":false;
 										let updateArray = (reason == "mission")?[false,false,true,false]:(reason == "congès")?[false,false,false,true]:(reason == "maladie")?[true,false,false,false]:[false,false,false,false];
 																				
-										while(values != false && current <= endDay  )
+										while(values != false && (current < endDay || startDay == endDay)  )
 										{
 											//old current.getDay() != 6 && current.getDay() != 0 || reason == "mission"
 											let vacation_available = false;
@@ -2181,7 +2181,9 @@
 					let dateToday = new Date(ayear,amonth,day);
 					if(stopDate == undefined)
 					{
-						stopDate = dateToday;
+						//stopDate = dateToday;
+						stopDate = new Date(ayear,11,31);
+						
 						if(!setDateofToday && (paramyear && parammonth && paramday))
 						{
 							stopDate = new Date(paramyear,parammonth-1,paramday);
