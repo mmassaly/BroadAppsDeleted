@@ -1088,6 +1088,19 @@
 			blob.contentDisposition;
 			blob.contentType;
 			*/
+			if(primaryObject == undefined)
+			{
+				//console.log("Your response should be with the 200 code");
+				result.writeHeader(200,{"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+					,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
+					,"Access-Control-Max-Age":'86400'
+					,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
+				});
+				result.write(JSON.stringify({first: undefined,res:"Call index is "+callIndex+"\n"
+					+"Charging pourcentage "+ charging_percentage+"",third:true,text:"Still Charging",charging:true}));
+					result.end();
+					return;
+			} 
 			
 			if(command === "update" || (command instanceof Array && command[0] === "update"))
 			{
@@ -1277,7 +1290,7 @@
 											if(reason == "congès")
 											{
 												let year = current.getFullYear();
-												vacation_available = vacationsAvailable(year,IDOffice); 
+												vacation_available = vacationsAvailable(year,IDOffice,IDEmployee); 
 											}
 											
 											if(current.getDay() != 6 && current.getDay() != 0 )
@@ -4696,7 +4709,7 @@
 		
 	}
 	
-	function vacationsAvailable(year,officeID)
+	function vacationsAvailable(year,officeID,IDEmployee)
 	{
 		
 		console.log("Looking for year "+year);
@@ -4707,18 +4720,18 @@
 		console.log(nodupTempAlpha);
 		let nodupTemp = nodupTempAlpha.first;
 		
-		if( nodupTemp.empDic[employeeContentModel.ID].vacationsDaysLeft > 0 )
+		if( nodupTemp.empDic[IDEmployee].vacationsDaysLeft > 0 )
 			return true;
 		
 		let spaceAvailable = false; 		
 		if( nodupTemp.empDic[ID].movedTo != undefined )
 		{
-			let nodeUpNestedAlpha = getYear(nodupTemp.empDic[employeeContentModel.ID].movedTo.year);
+			let nodeUpNestedAlpha = getYear(nodupTemp.empDic[IDEmployee].movedTo.year);
 			let nodeUpNested = nodeUpNestedAlpha.first;
 			
 			if( nodeUpNestedAlpha.second != -1 ) 
 			{
-				if( nodeUpNested.empDic[employeeContentModel.ID].vacationsDaysLeft > 0 )
+				if( nodeUpNested.empDic[IDEmployee].vacationsDaysLeft > 0 )
 				{
 					spaceAvailable = true;
 				}
