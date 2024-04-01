@@ -4700,15 +4700,11 @@
 	{
 		
 		console.log("Looking for year "+year);
-		console.log(primaryObject);
 		let unitLocation = getLocation(primaryObject,officeID);
 		if(unitLocation.first != undefined)
 			unitLocation = unitLocation.first;
-		else 
-			throw new Error("Je ne peux pas acceder à cette information.");
-		console.log(unitLocation);
 		let nodupTempAlpha = getYear(unitLocation,year);
-		console.log(noduoTempAlpha);
+		console.log(nodupTempAlpha);
 		let nodupTemp = nodupTempAlpha.first;
 		
 		if( nodupTemp.empDic[employeeContentModel.ID].vacationsDaysLeft > 0 )
