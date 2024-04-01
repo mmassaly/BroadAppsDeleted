@@ -4698,9 +4698,14 @@
 	
 	function vacationsAvailable(year,officeID)
 	{
+		
 		console.log("Looking for year "+year);
 		console.log(primaryObject);
 		let unitLocation = getLocation(primaryObject,officeID);
+		if(unitLocation.first != undefined)
+			unitLocation = unitLocation.first;
+		else 
+			throw new Error("Je ne peux pas acceder à cette information.");
 		console.log(unitLocation);
 		let nodupTempAlpha = getYear(unitLocation,year);
 		console.log(noduoTempAlpha);
