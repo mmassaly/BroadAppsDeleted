@@ -4724,7 +4724,7 @@
 			return true;
 		
 		let spaceAvailable = false; 		
-		if( nodupTemp.empDic[ID].movedTo != undefined )
+		if( nodupTemp.empDic[IDEmployee].movedTo != undefined )
 		{
 			let nodeUpNestedAlpha = getYear(nodupTemp.empDic[IDEmployee].movedTo.year);
 			let nodeUpNested = nodeUpNestedAlpha.first;
