@@ -23,6 +23,11 @@ var server = http.createServer(function(req,res)
 	});
 });
 
+var server2 = http.createServer(function(req,res)
+{
+	
+});
+
 /* server.on('upgrade',function(req, socket, head)
 {
 	console.log(JSON.stringify({OK:"Request no but through sockets option"+requestCount+" passed."}));
@@ -36,8 +41,9 @@ var server = http.createServer(function(req,res)
 	},2000);
 	
 });
+*/
 
-server.on('connect',function(req, socket, head)
+server2.on('connect',function(req, socket, head)
 {
 	console.log(req.url)
 	console.log("Connect accepted");
@@ -53,6 +59,5 @@ server.on('connect',function(req, socket, head)
 		socket.write(JSON.stringify({OK:"Request no but through sockets option "+requestCount+" passed."}));
 	},2000);
 	
-}); */
-
-server.listen(3006);
+}); 
+server2.listen(3016);

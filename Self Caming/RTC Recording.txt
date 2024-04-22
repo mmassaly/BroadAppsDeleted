@@ -1,0 +1,48 @@
+// Côté client : capture et envoi des données de la webcam
+navigator.mediaDevices.getUserMedia({ video: true })
+  .then(stream => {
+    // Connecter à socket.io
+    const socket = io.connect('http://votre_serveur:port');
+
+    // Utiliser RecordRTC pour enregistrer le flux vidéo
+    const recorder = RecordRTC(stream, {
+      type: 'video'
+    });
+
+    recorder.startRecording();
+
+    // Après un certain temps, arrêter l'enregistrement et envoyer les données
+    setTimeout(() => {
+      recorder.stopRecording(() => {
+        const blob = recorder.getBlob();
+        // Convertir le blob en un format lisible par le serveur
+        const reader = new FileReader();
+        reader.onload = () => {
+          const buffer = Buffer.from(reader.result);
+          socket.emit('video', buffer);
+        };
+        reader.readAsArrayBuffer(blob);
+      });
+    }, 5000); // Enregistrer pendant 5 secondes
+  })
+  .catch(error => {
+    console.error('Erreur d’accès à la webcam', error);
+  });
+
+// Côté serveur Node.js : réception et traitement des données de la webcam
+const express = require('express');
+const app = express();
+const server = require('http').Server(app);
+const io = require('socket.io')(server);
+
+io.on('connection', socket => {
+  socket.on('video', data => {
+    // Traiter les données vidéo reçues
+    console.log('Données vidéo reçues', data);
+    // Vous pouvez ensuite sauvegarder les données, les traiter ou les diffuser
+  });
+});
+
+server.listen(3000, () => {
+  console.log('Serveur démarré sur http://localhost:3000');
+});

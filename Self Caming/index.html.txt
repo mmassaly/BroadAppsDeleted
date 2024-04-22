@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+	<meta charset="utf-8" name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+<script>
+	let videoElement = document.createvideoElement("video");
+	videoElement.id = "SelfCamera1";
+	videoElement.width = 640;
+	videoElement.height  = 480;
+	document.body.appendChild(videoElement);
+	
+	let constraints = 
+	{
+		audio: true;
+		video: 
+		{
+			facingMode: "user",
+			width:  1280,
+			height: 640
+		}
+	};
+	
+	mediaDevices.getUserMedia(constraints).then((mediaStream)=>
+	{
+		videoElement.srcObject = mediaStream;
+		videoElement.onloadedmetadata(()=>
+		{
+			videoElement.play();
+		});
+	}).catch( (err) =>
+	{
+		 console.error(`${err.name}: ${err.message}`);
+	});
+	
+</script>
+</body>
+<footer></footer>
+</html>

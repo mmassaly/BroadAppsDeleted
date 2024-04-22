@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+	<meta charset="utf-8" name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+<script>
+	let videoElement = document.createElement("video");
+	let canvasElement = document.createElement("canvas");
+	let serverCanvasElement = document.createElement("canvas");
+	let ctx = canvasElement.getContext("2d");
+	let ctx2 = serverCanvasElement.getContext("2d");
+	videoElement.id = "SelfCamera1";
+	videoElement.width = 200;
+	videoElement.height  = 200;
+	canvasElement.width = 200;
+	canvasElement.height = 200;
+	serverCanvasElement.width = 200;
+	serverCanvasElement.height = 200;
+	
+	document.body.appendChild(videoElement);
+	document.body.appendChild(videoElement);
+	document.body.appendChild(canvasElement);
+	document.body.appendChild(serverCanvasElement);
+	
+	var mediaSource = new MediaSource();
+	var mediaSource2 = new MediaSource();
+	var added = false;
+	var sourceBuffer = undefined;
+	var sourceBuffer2 = undefined;
+	var sourceBuffer3 = undefined;
+	var current = 0;
+	var stack = [];
+	var stackFunctions = [];
+	var index = 0;
+	var expecting = 0;
+	var buffs = [];
+	var buffs2 = [];
+	var ID;
+	var totalTime = 0;
+	//mediaSource.addEventListener('sourceopen', ()=>
+	//{
+	//	console.log("Source is open");
+	//	sourceBuffer = mediaSource.addSourceBuffer('video/webm;codecs=vp9,opus');//'video/x-matroska;codecs="avc1,opus"'
+	//});
+	
+
+	mediaSource2.addEventListener('error', (err)=>
+	{
+		console.log("Error occured");
+		console.log(err);
+	});
+	
+	
+	mediaSource.addEventListener('error', (err)=>
+	{
+		console.log("Error occured");
+		console.log(err);
+	});
+	
+	mediaSource.addEventListener('sourceopen', (err)=>
+	{
+		sourceBuffer = mediaSource.addSourceBuffer('video/webm;codecs=vp9,opus');//'video/x-matroska;codecs="avc1,opus"'
+	});
+	
+	
+	let constraints = 
+	{
+		audio: false,
+		video: 
+		{
+			facingMode: "user",
+			width:  1280,
+			height: 1280,
+			mimeType: "video/mp4"
+		}
+	};
+	
+	setInterval(async () => {
+        ctx.drawImage(videoElement, 0, 0, canvasElement.width, canvasElement.height);
+        const image = canvasElement.toDataURL('image/jpeg'); // Convert to JPEG
+		canvasElement.toBlob(async (blob)=>
+		{
+			console.log(blob);
+			if(blob != null)
+			{
+				let result_ = await blob.arrayBuffer();
+				fetchHTTPRequest(result_,blob.type);
+			}
+		});
+		//fetchHTTPRequest(image,undefined)
+        // Now you can use 'image' as needed (e.g., save it or display it)s	
+    },100);
+	
+	navigator.mediaDevices.getUserMedia({ audio: true })
+		.then(stream => {
+			// Now you have access to the microphone audio via the 'source' node
+		})
+		.catch(error => {
+			console.error('Error accessing microphone:', error);
+	});
+	
+	// Create a ScriptProcessorNode (deprecated, but still works)
+	// Connect the source to the recorder
+	
+	
+	navigator.mediaDevices.getUserMedia(constraints).then((mediaStream)=>
+	{
+		videoElement.srcObject = mediaStream;
+		console.log(typeof mediaStream);
+		let resultPrime = undefined;
+		
+		const video_tracks = mediaStream.getVideoTracks();
+		const recoptions = 
+		{
+			frameRate: { ideal: 50, max: 85 },
+			mimeType: "video/webm; codecs=vp9",
+			audioBitsPerSecond : 256 * 8 * 1024,
+			videoBitsPerSecond : 256 * 8 * 1024,
+			bitsPerSecond: 256 * 8 * 1024,  // if this is provided, skip above two
+			checkForInactiveTracks: true
+		};
+		const mediaRecorder = new MediaRecorder(mediaStream,recoptions);
+		
+		video_tracks[0].oncapturehandlechange = (event)=>{console.log(event);};
+		//handleMediaRecord(mediaRecorder,3000,basicHTTPRequest);
+		//handleMediaRecord(mediaRecorder,100,fetchHTTPRequest);
+		videoElement.onloadedmetadata = ()=>
+		{
+			videoElement.play();
+		};
+	}).catch( (err) =>
+	{
+		 console.error(`${err.name}: ${err.message} ${err.trace}`);
+	});
+	
+	function handleMediaRecord(mediaRecorder,time,cb)
+	{
+		let chunks = [];
+		const force = (mediaRecorder)=>
+		{
+			mediaRecorder.stop();
+			mediaRecorder.start();
+		};
+		
+		const incite2 = () =>
+		{
+			recorderNode.stop();
+			recorderNode.start();
+		}
+		
+		const incite = ()=>
+		{
+			try
+			{
+				mediaRecorder.requestData()
+			}
+			catch(err)
+			{ 
+				console.log(err);
+			}
+		};
+		
+		const resume = (mediaRecorder)=>
+		{
+			mediaRecorder.resume();
+		};
+		
+		const start = (mediaRecorder)=>
+		{
+			mediaRecorder.start();
+		};
+		
+		mediaRecorder.ondataavailable = (e) => {
+			chunks.push(e.data);
+			console.log(e.data);
+			/*if(cb)
+			{
+				cb(e.data,undefined);
+			}*/
+			
+			e.data.arrayBuffer().then( async function (data)
+			{
+				console.log(data);
+				while(sourceBuffer.updating);
+				
+				if(mediaSource.readyState.open)
+					sourceBuffer.abort();
+					
+				sourceBuffer.appendBuffer(data);
+				cb(data,e.data.type);
+			}); 
+		};
+		
+		start(mediaRecorder);
+		incite();
+		
+		ID = setInterval(()=>
+		{
+			incite();
+			incite2();
+			//force(mediaRecorder);
+			totalTime += time;
+			if(totalTime >= 120000)
+			{
+				clearInterval(ID);
+				totalTime = 0;
+			}
+		},time);
+		
+		setInterval(()=>
+		{
+			clearInterval(ID);
+			ID = setInterval(()=>
+			{
+				incite();
+				incite2();
+				//force(mediaRecorder);
+				totalTime += time;
+				if(totalTime >= 120000)
+				{
+					clearInterval(ID);
+					totalTime = 0;
+				}
+			},time);
+		},120000);
+		
+	}
+	
+	function basicHTTPRequest(data,type)
+	{
+		var url = "http://localhost:3016";
+		var req = new XMLHttpRequest();
+		req.open("POST",url,true);
+		req.setRequestHeader("Content-Type",type == undefined?data.type:type);
+		//req.overrideMimeType("video/mp4");does not show up into the headers list
+		req.onreadystatechange = ()=>
+		{
+			if (this.readyState == 4 && this.status == 200)
+			{
+				//console.log(this.responseText);
+				//console.log(this);
+			}
+		};
+		req.send(data);
+	}
+	function basic2HTTPRequest()
+	{
+		var url = "http://localhost:3016";
+		var req = new XMLHttpRequest();
+		req.open("GET",url,true);
+		console.log("GET Requesting");
+		//req.overrideMimeType("video/mp4");does not show up into the headers list
+		req.onreadystatechange = ()=>
+		{
+			if (this.readyState == 4 && this.status == 200)
+			{
+				console.log(this.responseText);
+				console.log(this);
+			}
+		};
+		req.send(null);
+	}
+	
+	async function fetchHTTPRequest(data,type)
+	{
+		let res = await fetch("http://localhost:3035",{mode: "cors",redirect: "follow",method: 'POST',
+		headers:{'Content-Type':type == undefined?data.type:type},body:data});
+	}
+	
+	async function fetch2HTTPRequest()
+	{
+		let res = await fetch("http://localhost:3016",{mode: "cors",redirect: "follow",method: 'GET'});
+		//console.log(res);
+		//console.log(res.arrayBuffer());
+		res.blob().then(async (value)=>
+		{
+			console.log(value);
+			//console.log(MediaSource.isTypeSupported('video/x-matroska;codecs="avc1,opus"'));
+			//console.log(MediaSource.isTypeSupported('video/mp4; codecs="avc1.42E01E, mp4a.40.2"'));//'video/webm;codecs=vp9,opus'
+			//console.log(MediaSource.isTypeSupported('video/webm;codecs=vp9,opus'));
+			
+			drawServer(value)
+		});
+	}
+	
+	function drawServer(serverImage)
+	{
+		createImageBitmap(serverImage).then((imgbitmapvalue)=>{
+			ctx2.drawImage(imgbitmapvalue, 0, 0, serverCanvasElement.width, serverCanvasElement.height);
+		});
+	}
+
+	setInterval(()=>
+	{
+		fetch2HTTPRequest();
+	},150);
+	
+	async function pushValue(value)
+	{
+			console.log(mediaSource2.activeSourceBuffers);
+			console.log(mediaSource2.activeSourceBuffers.length);
+			console.log(mediaSource2.sourceBuffers);
+			console.log(mediaSource2.sourceBuffers.length);
+			try
+			{
+				if(mediaSource2.sourceBuffers.length > 0)
+				{
+					while(mediaSource2.sourceBuffers[0].updating)
+					{
+						console.log("First one is still uploading");
+					}
+					try
+					{
+						mediaSource2.sourceBuffers[0].appendBuffer(value);
+					}
+					catch(err)
+					{
+						console.log("Awaiting...........");
+						console.log(err);
+						mediaSource2.removeSourceBuffer(mediaSource2.sourceBuffers[0]);
+						if(mediaSource2.readyState.open)
+						{
+							
+						}
+						let sourceBuffer3 = await new Promise ((res)=>{mediaSource2.addEventListener('sourceopen', ()=>
+							{
+								console.log("Source is open");
+								let asourceBuffer3 = mediaSource2.addSourceBuffer('video/webm;codecs=vp9,opus');//'video/x-matroska;codecs="avc1,opus"'
+								res(asourceBuffer3);
+							});
+						});
+						try
+						{
+							mediaSource2.sourceBuffers[0].appendBuffer(value);
+						}
+						catch(err2)
+						{
+							console.log(err2);
+						}
+						console.log("Done awaiting");
+					}
+					console.log("Value appended");
+				}
+				else
+				{
+					sourceBuffer3 = mediaSource2.addSourceBuffer('video/webm;codecs=vp9,opus');
+				}
+			}
+			catch(err)
+			{
+				console.log(err);
+			}
+	}
+	
+	function charging()
+	{
+		document.getElementById("vd2").autoplay = true;
+		document.getElementById("vd2").src = URL.createObjectURL(mediaSource);
+		document.getElementById("vd3").src = URL.createObjectURL(mediaSource2);
+	}
+	
+	function charge(amediaSource)
+	{
+		document.getElementById("vd2").src = URL.createObjectURL(amediaSource);
+	}
+	
+	window.onload = charging;
+</script>
+<video id="vd2" width ="300" height = "300" style="border:2px solid grey" autoplay = "true" ></video>
+<video id="vd3" width ="300" height = "300" style="border:2px solid grey"  autoplay = "true"></video>
+</body>
+<footer></footer>
+</html>
