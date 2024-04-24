@@ -15,7 +15,8 @@
     "chart.js": "^4.4.1",
     "follow-redirects": "^1.15.5",
     "formidable": "3.5.1",
-    "pg": "^8.2.1"
+    "pg": "^8.2.1",
+	"socket.io":"^9.5.0"
   },
   "author": "Mamadou Massaly",
   "license": "ISC"
