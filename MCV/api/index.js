@@ -285,7 +285,7 @@
 		});
 	  });
 	});
-	//server2.listen(3037);
+	server2.listen(process.env.PORT2)//server2.listen(3037);
 	
 	var server = http.createServer(function(req,res)
 	{
@@ -945,7 +945,7 @@
 	{
 		try
 		{
-			server.listen(3034)
+			server.listen(process.env.PORT1);//server.listen(3034)
 			try
 			{
 				add_all_users();
