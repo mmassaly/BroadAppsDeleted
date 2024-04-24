@@ -258,7 +258,7 @@
 		}
 	});
 	
-	const io = new Server(server2, {cors: {
+	const io = new Server(server1, {cors: {
 		origin: "*",
 		methods: ['POST', 'GET', 'PUT', 'DELETE', 'OPTIONS'],
 		allowedHeaders: ["X-Requested-With", "X-HTTP-Method-Override", "Content-Type", "Accept"]
