@@ -8,7 +8,7 @@ console.log(postData);
 var reqOptions =
 {
 	hostname: "127.0.0.1",
-	port:3006,
+	port:3038,
 	method: "POST",
 	path: "/",
 	headers: 
@@ -25,6 +25,7 @@ let req = http.request(reqOptions,function(res)
 
 	res.on("data",function(chunk)
 	{
+		console.log(chunk);
 		data += chunk;
 	});
 	res.on("end",function()
@@ -40,4 +41,4 @@ req.on('error', (e) => {
 
 // write data to request body
 req.write(postData);
-req.end();
+//req.end();

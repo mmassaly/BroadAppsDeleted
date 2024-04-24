@@ -7,6 +7,7 @@
 	var {GlobalsForcedFolding} = require('./Extra.js');	
 	var {ImageFilesContainer} = require('./queryTests.js');
 	var kvPackage = require('@vercel/kv');
+	var { Server } = require('socket.io');
 	let globalForcedFoldingPrime = undefined;
 	let imageDictionary = new ImageFilesContainer();
 	let connection = undefined;
@@ -15,7 +16,7 @@
 	let primaryObject = undefined;
 	let baseInit = false;
 	let schema = "";
-	let current= todaysDate;
+	let current = todaysDate;
 	let addUser_In_use = false; 
 	let commands = [];
 	let callIndex = 0;
@@ -163,8 +164,11 @@
 	
 	function getEightThirty()
 	{
-		let currentDatedetails = getDateDetailsFromCorruptJavascript();
-		getDataForAdmin(undefined,undefined,undefined,undefined,currentDatedetails[2],currentDatedetails[1],currentDatedetails[0],true);
+		if(primaryObject != undefined)
+		{
+			let currentDatedetails = getDateDetailsFromCorruptJavascript();
+			getDataForAdmin(undefined,undefined,undefined,undefined,currentDatedetails[2],currentDatedetails[1],currentDatedetails[0],true);
+		}
 	}
 	
 	function getCommandGivenID(ID)
@@ -210,7 +214,80 @@
 	}
 	
 	let sleep = true;
+	
+	
+	var server2 = http.createServer(function(req,res)
+	{
+		console.log(req.method);
+		//console.log(req.url);
+		
+		if (req.method === 'OPTIONS') 
+		{
+			console.log('!OPTIONS');
+			// IE8 does not allow domains to be specified, just the *
+			//headers["Access-Control-Allow-Origin"] = req.headers.origin;
+			res.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+				,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
+				,"Access-Control-Max-Age":'86400'
+				,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
+			});
+			res.end();
+		}
+		else if(req.method === 'GET')
+		{
+			res.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+				,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
+				,"Access-Control-Max-Age":'86400'
+				,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
+			});
+			res.end();
+		}
+		else if (req.method == 'POST')
+		{
+			
+			let result = res;
+			let reqData = "";
+			
+			req.on("data",function(data)
+			{
+				reqData += data;
+			}).on("end",()=>
+			{
+				console.log("At 3037")
+				res.socket.write("CALL UPDATE OK");
+				res.end();
+			});
+		}
+	});
+	
+	const io = new Server(server2, {cors: {
+		origin: "*",
+		methods: ['POST', 'GET', 'PUT', 'DELETE', 'OPTIONS'],
+		allowedHeaders: ["X-Requested-With", "X-HTTP-Method-Override", "Content-Type", "Accept"]
+	}});
 
+	io.on("connection", (socket) => {
+	  // ...
+	  console.log("Hello Mamadou");
+	  socket.emit('updated',"Hello Mamadou!");
+	  socket.emit("update","Hello Mamadou!");
+	  socket.emit("updated","Hello Mamadou!");
+	  
+	  socket.on("json", (data) => {
+		socket.emit('askforupdate',"Hello Mamadou!");
+		let user = JSON.parse(data);
+		let res = findUserShort(user.ID,user.pass);
+			if(res.found)
+			{
+				connectedguys[res.index].socket = socket;
+			}
+		socket.on("disconnect",()=>
+		{
+			connectedguys[res.index].socket = undefined;
+		});
+	  });
+	});
+	server2.listen(3037);
 	
 	var server = http.createServer(function(req,res)
 	{
@@ -611,6 +688,7 @@
 							else if(command === "pull") 
 							{
 								let commandArg = urlObject.cmdArg;
+								console.log("{hello:\"Hello World\"}");
 								if(commandArg == undefined)
 								{
 									//console.log("undefined commandArg");
@@ -2068,9 +2146,11 @@
 			
 			async function getDataForAdmin(response,locationArgObj,empObj,empHoursObj,paramyear,parammonth,paramday,setDateofToday)
 			{
+				console.trace("Inside getDataForAdmin");
 				//console.log(" paramyear "+paramyear+" other paramday "+paramday+" other parammonth "+parammonth);
 				//console.log("Location argument "+locationArgObj+" employee argument "+empObj);
 				console.log("set date of today "+setDateofToday);
+				const updating = (paramyear || parammonth || paramday || empHoursObj || empObj || locationArgObj )
 				/*let primSet = false; let count = 2;
 				do
 				{
@@ -2198,7 +2278,6 @@
 					
 					for(let i = 0; i < result.first.length; ++i)
 					{
-						
 						let officeID = result.first[i][result.second[0].name];
 						let officeName = result.first[i][result.second[1].name];
 						let officeAddresse = result.first[i][result.second[2].name];
@@ -2206,6 +2285,9 @@
 						let officeLatitude = result.first[i][result.second[4].name];
 						let officeLongitude = result.first[i][result.second[5].name];
 						let passed = true;
+						console.log(i);
+						console.log(officeName);
+						//waitFunction(5000);
 						
 						var unitLocation = 
 						{
@@ -2307,8 +2389,13 @@
 						let prevMonthCounts = monthCounts;
 						
 						unitLocation.yearIndexes = [];
+						console.log(result_.first);
+						console.log(0 < result_.first.length);
+						console.log("--------------------------------------------------------------");
+						//waitFunction(10000);
 						for (let l = 0; l < result_.first.length; ++l)
 						{
+							//waitFunction(5000);
 							monthCounts = prevMonthCounts;
 							unitLocation.yearIndex = l; 
 							unitLocation.yearIndexes.push(l);
@@ -2531,10 +2618,16 @@
 								else
 									going_yearly_count = empHoursObj.date.getMonth()+1;
 							}
-							console.log("Test count "+testCount+" year_count "+going_yearly_count);
 							
+							console.log("Test count "+testCount+" year_count "+going_yearly_count+" year "+year);
+							//waitFunction(3000);
+									
 							while( testCount < going_yearly_count )
 							{
+								
+								console.log("Test count "+testCount+" year_count "+going_yearly_count+" year "+year);
+								//waitFunction(1000);
+								
 								++monthCounts;
 								if(locationArgObj == undefined && empObj == undefined && empHoursObj == undefined
 								&& paramyear == undefined && parammonth == undefined && paramday == undefined)
@@ -2636,6 +2729,15 @@
 								monthFoundAlpha = getMonth(yearContentModel,monthSearchIndex);
 								monthFound = monthFoundAlpha.first;
 								
+								/*if(currentDateOfYear.getDate() == 24 && currentDateOfYear.getMonth() == 3 && currentDateOfYear.getFullYear() == 2024)
+								{
+									console.log(currentDateOfYear);
+									console.log("monthSearchIndex:"+monthSearchIndex);
+									console.log(monthFoundAlpha);
+									console.log(monthly);
+									waitFunction(40000);
+								}*/
+								
 								if( monthFound == undefined && parammonth != undefined )
 								{
 									//console.log(yearContentModel.months);
@@ -2710,7 +2812,7 @@
 								while( start_day <= nombre_de_jours)
 								{
 									currentDateOfYear = new Date(year,monthCounts-1,start_day);
-									if(empHoursObj)
+									if( empHoursObj )
 									{
 										console.log("Employee Hours...");
 										console.log(currentDateOfYear);console.log(bresult);
@@ -3253,8 +3355,15 @@
 												if(existing_element == false)
 												{
 													//console.log("New Element added");
-													let command = { paths:[{path:"container",index:location_index},{path:"yearsContent",index:yearIndex},{path:"employees",index:yearContentModel.employees.length}], commandObj:{command:"push",value:days} };
-													pushCommands(command);
+													if(updating)
+													{
+														let command = { paths:[{path:"container",index:location_index},{path:"yearsContent",index:yearIndex},{path:"employees"}], commandObj:{command:"push",value:employeeDescribed} };
+														pushCommands(command);
+														command = { paths:[{path:"container",index:location_index},{path:"yearsContent",index:yearIndex},{path:"empDic"}], commandObj:{command:"setKeyValue",value:employeeDescribed} };
+														pushCommands(command);
+														command = { paths:[{path:"container",index:location_index},{path:"yearsContent",index:yearIndex},{path:"employees"}], commandObj:{command:"inc",path:"employeesCount"} };
+														pushCommands(command);
+													}
 													yearContentModel.employees.push(employeeDescribed);
 													yearContentModel.empDic[employeeDescribed.ID] = employeeDescribed;
 													yearContentModel.employeesCount++;
@@ -3269,6 +3378,18 @@
 												{
 													if( prevyearContentModel.empDic[employeeDescribed.ID] != undefined && prevyearContentModel.empDic[employeeDescribed.ID].vacationsDaysAllowed > 0)
 													{
+														if(updating)
+														{
+															command = { paths:[{path:"container",index:location_index},{path:"yearsContent",index:yearIndex},{path:"empDic",index:employeeDescribed.ID},{path:"vacationsDaysLeft"}], commandObj:{command:"add",value:prevyearContentModel.empDic[employeeDescribed.ID].vacationsDaysLeft} };
+															pushCommands(command);
+															command = { paths:[{path:"container",index:location_index},{path:"yearsContent",index:yearIndex},{path:"empDic",index:employeeDescribed.ID},{path:"vacationsDaysAllowed"}], commandObj:{command:"add",value:prevyearContentModel.empDic[employeeDescribed.ID].vacationsDaysLeft} };
+															pushCommands(command);
+														
+															command = { paths:[{path:"container",index:location_index},{path:"yearsContent",index:yearIndex-1},{path:"empDic",index:employeeDescribed.ID},{path:"movedTo"}], commandObj:{command:"set",value:0} };
+															pushCommands(command);
+															command = { paths:[{path:"container",index:location_index},{path:"yearsContent",index:yearIndex-1},{path:"empDic",index:employeeDescribed.ID},{path:"vacationsDaysLeft"}], commandObj:{command:"set",value:{year:year-1,numberofVacations:prevyearContentModel.empDic[employeeDescribed.ID].vacationsDaysLeft}} };
+															pushCommands(command);
+														}
 														yearContentModel.empDic[employeeDescribed.ID].vacationsDaysLeft += prevyearContentModel.empDic[employeeDescribed.ID].vacationsDaysLeft;
 														yearContentModel.empDic[employeeDescribed.ID].vacationsDaysAllowed += prevyearContentModel.empDic[employeeDescribed.ID].vacationsDaysLeft;
 														prevyearContentModel.empDic[employeeDescribed.ID].movedTo = {year:year-1,numberofVacations:prevyearContentModel.empDic[employeeDescribed.ID].vacationsDaysLeft};
@@ -3318,18 +3439,38 @@
 											
 											if(yearContentModel.months[monthIndex].weeks[weekIndex].days[dayIndex].employeeHours[employeeContentModel.ID] == undefined)
 											{
+												if(updating)
+												{
+													let command = { paths:[{path:"container",index:location_index},{path:"yearsContent",index:yearIndex},{path:"months",index:monthIndex},{path:"weeks",index:weekIndex},{path:"days",index:dayIndex},{path:"employeeHours",index:employeeContentModel.ID}], commandObj:{command:"set",value:"00:00:00"} };
+													pushCommands(command);
+												}		
 												yearContentModel.months[monthIndex].weeks[weekIndex].days[dayIndex].employeeHours[employeeContentModel.ID] = "00:00:00";
 											}
 											if(yearContentModel.months[monthIndex].weeks[weekIndex].employeeHours[employeeContentModel.ID] == undefined)
 											{
+												if(updating)
+												{
+													let command = { paths:[{path:"container",index:location_index},{path:"yearsContent",index:yearIndex},{path:"months",index:monthIndex},{path:"weeks",index:weekIndex},{path:"employeeHours",index:employeeContentModel.ID}], commandObj:{command:"set",value:"00:00:00"} };
+													pushCommands(command);
+												}
 												yearContentModel.months[monthIndex].weeks[weekIndex].employeeHours[employeeContentModel.ID] = "00:00:00";
 											}
 											if(yearContentModel.months[monthIndex].employeeHours[employeeContentModel.ID] == undefined)
 											{
+												if(updating)
+												{
+													let command = { paths:[{path:"container",index:location_index},{path:"yearsContent",index:yearIndex},{path:"months",index:monthIndex},{path:"employeeHours",index:employeeContentModel.ID}], commandObj:{command:"set",value:"00:00:00"} };
+													pushCommands(command);
+												}
 												yearContentModel.months[monthIndex].employeeHours[employeeContentModel.ID] = "00:00:00";
 											}
 											if(yearContentModel.employeeHours[employeeContentModel.ID] == undefined)
 											{
+												if(updating)
+												{
+													let command = { paths:[{path:"container",index:location_index},{path:"yearsContent",index:yearIndex},{path:"employeeHours",index:employeeContentModel.ID}], commandObj:{command:"set",value:"00:00:00"} };
+													pushCommands(command);
+												}
 												yearContentModel.employeeHours[employeeContentModel.ID] = "00:00:00";
 											}
 											// console.log("*****************************");
@@ -3351,27 +3492,52 @@
 												if(employeeContentModel.mission)//mission section
 												{
 													employeeContentModel.mission = false;
+													if(updating)
+													{
+														let command = { paths:[{path:"container",index:location_index},{path:"yearsContent",index:yearIndex},{path:"months",index:monthIndex},{path:"weeks",index:weekIndex},{path:"days",index:weekDayIndex},{path:"mission"}], commandObj:{commands:[{command:"find",index:employeeContentModel.ID},{command:"set",value:false}]} };
+														pushCommands(command,employeeContentModel.ID);
+													}
 													calculateMission(unitLocation,year,-1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
 												}
 												if(employeeContentModel.absence)//absence section
 												{
 													employeeContentModel.absence = false;
+													if(updating)
+													{
+														let command = { paths:[{path:"container",index:location_index},{path:"yearsContent",index:yearIndex},{path:"months",index:monthIndex},{path:"weeks",index:weekIndex},{path:"days",index:weekDayIndex},{path:"absence"}],commandObj:{commands:[{command:"find",index:employeeContentModel.ID},{command:"set",value:false}]} };
+														pushCommands(command,employeeContentModel.ID);
+													}
 													if(currentDateOfYear.getDay() != 0 && currentDateOfYear.getDay() != 6)
 													calculateAbsence(unitLocation,year,-1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
 												}
 												if(employeeContentModel.congès)//congès section
 												{
 													employeeContentModel.congès = false;
+													if(updating)
+													{
+														let command = { paths:[{path:"container",index:location_index},{path:"yearsContent",index:yearIndex},{path:"months",index:monthIndex},{path:"weeks",index:weekIndex},{path:"days",index:weekDayIndex},{path:"congès"}], commandObj:{commands:[{command:"find",index:employeeContentModel.ID},{command:"set",value:false}]} };
+														pushCommands(command,employeeContentModel.ID);
+													}
 													calculateCongès(unitLocation,year,-1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
 												}
 												if(employeeContentModel.retard)//retards section
 												{
 													employeeContentModel.retard = false;
+													if(updating)
+													{
+														let command = { paths:[{path:"container",index:location_index},{path:"yearsContent",index:yearIndex},{path:"months",index:monthIndex},{path:"weeks",index:weekIndex},{path:"days",index:weekDayIndex},{path:"retard"}],commandObj:{commands:[{command:"find",index:employeeContentModel.ID},{command:"set",value:false}]} };
+														pushCommands(command,employeeContentModel.ID);
+													}
 													calculateRetards(unitLocation,year,-1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
 												}
 												if(employeeContentModel.retardCritical)//retards critiques section
 												{
 													employeeContentModel.retardCritical = false;
+													if(updating)
+													{
+														let command = { paths:[{path:"container",index:location_index},{path:"yearsContent",index:yearIndex},{path:"months",index:monthIndex},{path:"weeks",index:weekIndex},{path:"days",index:weekDayIndex},{path:"absence"}], commandObj:{commands:[{command:"find",index:employeeContentModel.ID},{command:"set",value:false}]} };
+														pushCommands(command,employeeContentModel.ID);
+													}
 													calculateCriticalRetards(unitLocation,year,-1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
 												}
 											}
@@ -3391,15 +3557,30 @@
 														{
 															calculateRetards(unitLocation,year,-1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
 															employeeContentModel.retard = false;
+															if(updating)
+															{
+																let command = { paths:[{path:"container",index:location_index},{path:"yearsContent",index:yearIndex},{path:"months",index:monthIndex},{path:"weeks",index:weekIndex},{path:"days",index:weekDayIndex},{path:"retard"}], commandObj:{commands:[{command:"find",index:employeeContentModel.ID},{command:"set",value:false}]} };
+																pushCommands(command,employeeContentModel.ID);
+															}
 														}
 
 														employeeContentModel.retardCritical = true;
 														employeeContentModel.date = currentDateOfYear.toLocaleString('fr-FR',{day:"numeric",month:"long",year:"numeric"});
 														criticallylate = true;
+														if(updating)
+														{
+															let command = { paths:[{path:"container",index:location_index},{path:"yearsContent",index:yearIndex},{path:"months",index:monthIndex},{path:"weeks",index:weekIndex},{path:"days",index:weekDayIndex},{path:"retardCritical"}], commandObj:{commands:[{command:"find",index:employeeContentModel.ID},{command:"set",value:true}]} };
+															pushCommands(command,employeeContentModel.ID);
+														}
 														calculateCriticalRetards(unitLocation,year,1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
 														
 														if(employeeContentModel.absence)
-														{
+														{																
+															if(updating)
+															{
+																let command = { paths:[{path:"container",index:location_index},{path:"yearsContent",index:yearIndex},{path:"months",index:monthIndex},{path:"weeks",index:weekIndex},{path:"days",index:weekDayIndex},{path:"absence"}], commandObj:{commands:[{command:"find",index:employeeContentModel.ID},{command:"set",value:false}]} };
+																pushCommands(command,employeeContentModel.ID);
+															}
 															employeeContentModel.absence = false;
 															if(currentDateOfYear.getDay() != 0 && currentDateOfYear.getDay() != 6)
 															calculateAbsence(unitLocation,year,-1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);	
@@ -3408,15 +3589,26 @@
 													else if (secondresult.first[0][0][secondresult.second[0][1].name] == 1 && dresultFiltered.first.length == 0) 
 													{
 														if(employeeContentModel.retardCritical)
-														{
+														{			
+															if(updating)
+															{
+																let command = { paths:[{path:"container",index:location_index},{path:"yearsContent",index:yearIndex},{path:"months",index:monthIndex},{path:"weeks",index:weekIndex},{path:"days",index:weekDayIndex},{path:"retardCritical"}], commandObj:{commands:[{command:"find",index:employeeContentModel.ID},{command:"set",value:false}]} };
+																pushCommands(command,employeeContentModel.ID);
+															}
 															employeeContentModel.retardCritical = false;
 															calculateCriticalRetards(unitLocation,year,-1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
 														}
 
+															
+														if(updating)
+														{
+															let command = { paths:[{path:"container",index:location_index},{path:"yearsContent",index:yearIndex},{path:"months",index:monthIndex},{path:"weeks",index:weekIndex},{path:"days",index:weekDayIndex},{path:"retard"}], commandObj:{commands:[{command:"find",index:employeeContentModel.ID},{command:"set",value:true}]} };
+															pushCommands(command,employeeContentModel.ID);
+														}
 														employeeContentModel.retard = true;
 														employeeContentModel.date = currentDateOfYear.toLocaleString('fr-FR',{day:"numeric",month:"long",year:"numeric"});
 														retard = true;	
-
+														
 														if(employeeContentModel.absence)
 														{
 															employeeContentModel.absence = false;
@@ -3430,6 +3622,8 @@
 													{
 														employeeContentModel.presence = true;
 														employeeContentModel.date = currentDateOfYear.toLocaleString('fr-FR',{day:"numeric",month:"long",year:"numeric"});
+														console.log(employeeContentModel.date);
+														console.log("monthIndex "+monthIndex+" weekIndex "+weekIndex+" weekDayIndex "+weekDayIndex);
 														calculatePresence(unitLocation,year,1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
 
 														if(employeeContentModel.retard)
@@ -3943,6 +4137,17 @@
 					}
 					console.log("done adding "+splitelements.length+" elements to KV ");
 					*/
+					if(updating)
+					{
+						connectedguys.forEach( g=> 
+						{
+							if(g.socket != undefined) 
+							{
+								g.socket.emit("askforupdate","You must call update request");
+							}
+						})
+					}
+					
 					if (!(response === undefined))
 					{
 						response.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
@@ -4875,76 +5080,104 @@
 		let nodupTempAlpha =  getYear(unitLocation,year);
 		let nodupTemp = nodupTempAlpha.first;
 		let found = false;
-		nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].presencedates.forEach((element)=>{if(dummyIDComparison(element,employeeContentModel)){found = true;}});
 		
-		if(!found && offset > 0 || found && offset < 0)
+		try
 		{
-			let command = { paths:[{path:"container",index:location_index},{path:"yearsContent",index:yearIndex}], commandObj:{command:((offset>0)?"inc":"dec"),path:"presence"} };
-			pushCommands(command);
-			nodupTemp.months[monthIndex].presence +=offset;
-			nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].presence+=offset;
-			command = { paths:[{path:"container",index:location_index},{path:"yearsContent",index:yearIndex},{path:"months",index:monthIndex}], commandObj:{command:((offset>0)?"inc":"dec"),path:"presence"} };
-			pushCommands(command);
-			nodupTemp.months[monthIndex].weeks[weekIndex].presence +=offset;
-			nodupTemp.presence +=offset;
-			command = { paths:[{path:"container",index:location_index},{path:"yearsContent",index:yearIndex},{path:"months",index:monthIndex},{path:"weeks",index:weekIndex}], commandObj:{command:((offset>0)?"inc":"dec"),path:"presence"} };
-			pushCommands(command);
-			command = { paths:[{path:"container",index:location_index},{path:"yearsContent",index:yearIndex},{path:"months",index:monthIndex},{path:"weeks",index:weekIndex},{path:"days",index:weekDayIndex}], commandObj:{command:((offset>0)?"inc":"dec"),path:"presence"} };
-			pushCommands(command);
-			command = { paths:[{path:"container",index:location_index},{path:"yearsContent",index:yearIndex},{path:"months",index:monthIndex},{path:"weeks",index:weekIndex},{path:"days",index:weekDayIndex}], commandObj:{command:((offset>0)?"push":"remove"),path:"presencedates",value:employeeContentModel} };
-			pushCommands(command);
-			nodupTemp.empDic[employeeContentModel.ID].presencedates.count += offset;
-			nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].presencedates.count += offset;
-			initializeWeekforEmployeesPrivateReport(nodupTemp,employeeContentModel.ID,monthIndex,weekIndex);
-			nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].weeks[weekIndex].presencedates.count += offset;
-		}
+			
+			nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].presencedates.forEach((element)=>{if(dummyIDComparison(element,employeeContentModel)){found = true;}});
+			
+			if(!found && offset > 0 || found && offset < 0)
+			{
+				let command = { paths:[{path:"container",index:location_index},{path:"yearsContent",index:yearIndex}], commandObj:{command:((offset>0)?"inc":"dec"),path:"presence"} };
+				pushCommands(command);
+				nodupTemp.months[monthIndex].presence +=offset;
+				nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].presence+=offset;
+				command = { paths:[{path:"container",index:location_index},{path:"yearsContent",index:yearIndex},{path:"months",index:monthIndex}], commandObj:{command:((offset>0)?"inc":"dec"),path:"presence"} };
+				pushCommands(command);
+				nodupTemp.months[monthIndex].weeks[weekIndex].presence +=offset;
+				nodupTemp.presence +=offset;
+				command = { paths:[{path:"container",index:location_index},{path:"yearsContent",index:yearIndex},{path:"months",index:monthIndex},{path:"weeks",index:weekIndex}], commandObj:{command:((offset>0)?"inc":"dec"),path:"presence"} };
+				pushCommands(command);
+				command = { paths:[{path:"container",index:location_index},{path:"yearsContent",index:yearIndex},{path:"months",index:monthIndex},{path:"weeks",index:weekIndex},{path:"days",index:weekDayIndex}], commandObj:{command:((offset>0)?"inc":"dec"),path:"presence"} };
+				pushCommands(command);
+				command = { paths:[{path:"container",index:location_index},{path:"yearsContent",index:yearIndex},{path:"months",index:monthIndex},{path:"weeks",index:weekIndex},{path:"days",index:weekDayIndex}], commandObj:{command:((offset>0)?"push":"remove"),path:"presencedates",value:employeeContentModel} };
+				pushCommands(command);
+				nodupTemp.empDic[employeeContentModel.ID].presencedates.count += offset;
+				nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].presencedates.count += offset;
+				initializeWeekforEmployeesPrivateReport(nodupTemp,employeeContentModel.ID,monthIndex,weekIndex);
+				nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].weeks[weekIndex].presencedates.count += offset;
+			}
 
-		if(offset > 0)
-		{
-			if(!found)
+			if(offset > 0)
 			{
-				nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].presencedates.push(employeeContentModel);
-				nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].empDicofPresences[employeeContentModel.ID] = employeeContentModel;
-				nodupTemp.empDic[employeeContentModel.ID].presencedates.other.push(employeeContentModel.date);
-				nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].presencedates.other.push(employeeContentModel.date);
-				nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].weeks[weekIndex].presencedates.other.push(employeeContentModel.date);
-			}/*
-			else
-			{ 
-				if(nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].empDicofPresences[employeeContentModel.ID] != employeeContentModel)
+				if(!found)
 				{
-					nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].empDicofPresences[employeeContentModel.ID] = employeeContentModel
-				}
-			}*/
-		}
-		else
-		{
-			if(found)
+					nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].presencedates.push(employeeContentModel);
+					nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].empDicofPresences[employeeContentModel.ID] = employeeContentModel;
+					nodupTemp.empDic[employeeContentModel.ID].presencedates.other.push(employeeContentModel.date);
+					nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].presencedates.other.push(employeeContentModel.date);
+					nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].weeks[weekIndex].presencedates.other.push(employeeContentModel.date);
+				}/*
+				else
+				{ 
+					if(nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].empDicofPresences[employeeContentModel.ID] != employeeContentModel)
+					{
+						nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].empDicofPresences[employeeContentModel.ID] = employeeContentModel
+					}
+				}*/
+			}
+			else
 			{
-				let tempValue = nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].presencedates;
-				if(tempValue.indexOf(employeeContentModel) > -1)
-					tempValue.splice(tempValue.indexOf(employeeContentModel),1);
-				
-				tempValue = nodupTemp.empDic[employeeContentModel.ID].presencedates.other;
-				let temp_index = tempValue.indexOf(employeeContentModel.date);
-				if(temp_index > -1)
-					tempValue.splice(temp_index,1);
+				if(found)
+				{
+					let tempValue = nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].presencedates;
+					if(tempValue.indexOf(employeeContentModel) > -1)
+						tempValue.splice(tempValue.indexOf(employeeContentModel),1);
 					
-				tempValue = nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].presencedates.other; 
-				temp_index = tempValue.indexOf(employeeContentModel.date);
-				if(temp_index > -1)
-					tempValue.splice(temp_index,1);
-				
-				tempValue =	nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].weeks[weekIndex].presencedates.other;
-				temp_index = tempValue.indexOf(employeeContentModel.date);
-				if(temp_index > -1)
-					tempValue.splice(temp_index,1)
-				
-				nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].empDicofPresences[employeeContentModel.ID] = undefined;
-				
+					tempValue = nodupTemp.empDic[employeeContentModel.ID].presencedates.other;
+					let temp_index = tempValue.indexOf(employeeContentModel.date);
+					if(temp_index > -1)
+						tempValue.splice(temp_index,1);
+						
+					tempValue = nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].presencedates.other; 
+					temp_index = tempValue.indexOf(employeeContentModel.date);
+					if(temp_index > -1)
+						tempValue.splice(temp_index,1);
+					
+					tempValue =	nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].weeks[weekIndex].presencedates.other;
+					temp_index = tempValue.indexOf(employeeContentModel.date);
+					if(temp_index > -1)
+						tempValue.splice(temp_index,1)
+					
+					nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].empDicofPresences[employeeContentModel.ID] = undefined;
+					
+				}
 			}
 		}
+		catch(ex)
+		{
+			console.log("----------------------------Exception Area-------------------------");
+			console.log(nodupTemp.months[monthIndex].weeks[weekIndex].days);
+			console.log("Week index "+weekIndex+" month index "+monthIndex+" weekDayIndex "+weekDayIndex);
 			
+			console.log(ex);
+			
+			let d1 = new Date();
+			let difference = 0;
+			let count = 6;
+			let prev = 0;
+			
+			while(count > 0)
+			{
+				if( (Date.now() - d1) / (5000) > prev)
+				{
+					++prev;
+					console.log("Into "+ (prev*5)+" seconds...");
+					--count;
+				}
+			}
+			console.log("----------------------------Exception Area-------------------------");
+		}
 	}
 
 	function calculateSicknesses(unitLocation,year,offset,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex)
@@ -5793,7 +6026,23 @@
 	}
 	
 	
-	
+	function waitFunction(time)
+	{
+		console.log("Waiting function"); 
+		if( time )
+		{
+			let d1 = new Date();
+			
+			while(( Date.now() - d1) < time);	
+			
+			console.log("Waiting done");
+			
+		}	
+		else
+		{
+			while(true);
+		}
+	}
 	
 	
 	

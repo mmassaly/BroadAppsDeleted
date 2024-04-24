@@ -18,7 +18,7 @@ var server = http.createServer(function(req,res)
 		,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept","Content-Length": Buffer.byteLength(body)
 		});
 		
-		res.write(JSON.stringify(body));
+		res.socket.write(JSON.stringify(body));
 		
 	});
 	
@@ -36,4 +36,4 @@ function longString(length)
 	}
 	return content;
 }
-server.listen(3008);
+server.listen(3038);

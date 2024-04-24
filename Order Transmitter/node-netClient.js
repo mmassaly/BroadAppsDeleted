@@ -6,7 +6,7 @@
 	
 	function watch()
 	{
-			client = net.createConnection({ port: 3006 ,host:hostname}, () => {
+			client = net.createConnection({ port: 3038 ,host:hostname}, () => {
 			  // 'connect' listener.
 			  console.log('connected to server!');
 			  client.write(JSON.stringify({keyElement:process.env.keyElement,text:"Hello server"}));
@@ -14,7 +14,7 @@
 
 			client.on('data', (data) => 
 			{
-				let receivedData = JSON.parse(data.toString());
+				let receivedData = data.toString();
 				console.log(receivedData);
 			});
 
@@ -25,6 +25,8 @@
 				watch();
 			}); 
 	}
+	
+	
 	watch();
 
 	
