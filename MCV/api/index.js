@@ -254,8 +254,6 @@
 			}).on("end",()=>
 			{
 				console.log("At 3037")
-				res.socket.write("CALL UPDATE OK");
-				res.end();
 			});
 		}
 	});
