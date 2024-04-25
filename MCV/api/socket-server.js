@@ -5,6 +5,7 @@ const connected_guys = {};
 
 var server2 = http.createServer(function(req,res)
 {
+		console.log("Hello.....\nWelcome!");
 		console.log(req.method);
 		console.log(req.url);
 		

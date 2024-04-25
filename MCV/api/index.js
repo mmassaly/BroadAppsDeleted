@@ -4186,7 +4186,7 @@
 					if(updating)
 					{
 						try{
-							doGetHTTPRequest("localhost",3037,"command=updateALL");
+							doGetHTTPRequest("https://msa-pointage-server-socket.onrender.com",undefined,"command=updateALL");
 						}
 						catch(err)
 						{
