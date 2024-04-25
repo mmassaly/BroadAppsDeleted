@@ -257,51 +257,54 @@
 		}
 	});
 	
-	function doGetHTTPRequest(hostName,port,command)
+	async function doGetHTTPRequest(hostName,port,command)
 	{
-		var getreqOptions =
-		{
-			hostname: hostName,
-			port:port,
-			method: "GET",
-			path: "/"+"?"+command,
-			headers :
+		return new Promise((resolve)=>{
+			var getreqOptions =
 			{
-				"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
-				,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
-				,"Access-Control-Max-Age":'86400'
-				,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
-			}
-		};
-		/*
-			headers: 
+				hostname: hostName,
+				port:port,
+				method: "GET",
+				path: "/"+"?"+command,
+				headers :
+				{
+					"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+					,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
+					,"Access-Control-Max-Age":'86400'
+					,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
+				}
+			};
+			/*
+				headers: 
+				{
+					'Content-Length': Buffer.byteLength(postData),
+				}
+			*/
+			let req2 = http.request(getreqOptions,function(res)
 			{
-				'Content-Length': Buffer.byteLength(postData),
-			}
-		*/
-		let req2 = http.request(getreqOptions,function(res)
-		{
-			let data = "";
-			
-			res.on("data",function(chunk)
-			{
-				data += chunk;
+				let data = "";
+				
+				res.on("data",function(chunk)
+				{
+					data += chunk;
+				});
+				
+				res.on("end",function()
+				{
+					resolve(true);
+					try
+					{
+						let reqObject = JSON.parse(data);
+					}
+					catch(ex)
+					{
+						
+					}
+				}); 
 			});
-			
-			res.on("end",function()
-			{
-				try
-				{
-					let reqObject = JSON.parse(data);
-				}
-				catch(ex)
-				{
-					
-				}
-			}); 
+			req2.on('error',(errdata)=>{ console.log(errdata);resolve(false);});
+			req2.end();
 		});
-		req2.on('error',(errdata)=>{console.log(errdata);});
-		req2.end();
 	}
 	
 	/*
@@ -4185,8 +4188,17 @@
 					
 					if(updating)
 					{
-						try{
-							doGetHTTPRequest("msa-pointage-server-socket.onrender.com",undefined,"command=updateALL");
+						try
+						{
+							var func = async ()=>{
+								let resUpdating;
+								resUpdating = await doGetHTTPRequest("msa-pointage-server-socket.onrender.com",undefined,"command=updateALL");
+								if(!resUpdating)
+								{
+									setTimeout(func,500);
+								}
+							};
+							func();
 						}
 						catch(err)
 						{
@@ -4197,7 +4209,15 @@
 					{
 						try
 						{
-							doGetHTTPRequest("msa-pointage-server-socket.onrender.com",undefined,"command=updateALL");
+							var func = async ()=>{
+								let resUpdating;
+								resUpdating = await doGetHTTPRequest("msa-pointage-server-socket.onrender.com",undefined,"command=updateALL");
+								if(!resUpdating)
+								{
+									setTimeout(func,500);
+								}
+							};
+							func();
 						}
 						catch(err)
 						{

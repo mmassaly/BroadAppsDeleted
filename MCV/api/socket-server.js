@@ -123,10 +123,10 @@ var server2 = http.createServer(function(req,res)
 		
 		socket.on("disconnect",()=>
 		{
-			let result = Object.keys.find( el=>{ connectedguys[el].sockets.find( el2 => el2 == socket)});
+			let result = Object.keys(connected_guys).find( el=>{ connected_guys[el].sockets.find( el2 => el2 == socket)});
 			if(result)
 			{
-				connectedguys[result].sockets.splice(connectedguys[result].sockets.indexOf(socket),1);
+				connected_guys[result].sockets.splice(connected_guys[result].sockets.indexOf(socket),1);
 			}
 		});
 		
