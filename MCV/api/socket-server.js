@@ -78,6 +78,15 @@ var server2 = http.createServer(function(req,res)
 				console.log("At 3037")
 			});
 		}
+		else
+		{
+			res.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+				,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
+				,"Access-Control-Max-Age":'86400'
+				,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
+			});
+			res.end();
+		}
 	});
 	
 	const io = new Server(server2, {cors: {
