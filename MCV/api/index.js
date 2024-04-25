@@ -215,7 +215,6 @@
 	
 	let sleep = true;
 	
-	
 	var server2 = http.createServer(function(req,res)
 	{
 		console.log(req.method);
@@ -258,6 +257,54 @@
 		}
 	});
 	
+	function doGetHTTPRequest(hostName,port,command)
+	{
+		var getreqOptions =
+		{
+			hostname: hostName,
+			port:port,
+			method: "GET",
+			path: "/"+"?"+command,
+			headers :
+			{
+				"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+				,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
+				,"Access-Control-Max-Age":'86400'
+				,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
+			}
+		};
+		/*
+			headers: 
+			{
+				'Content-Length': Buffer.byteLength(postData),
+			}
+		*/
+		let req2 = http.request(getreqOptions,function(res)
+		{
+			let data = "";
+			
+			res.on("data",function(chunk)
+			{
+				data += chunk;
+			});
+			
+			res.on("end",function()
+			{
+				try
+				{
+					let reqObject = JSON.parse(data);
+				}
+				catch(ex)
+				{
+					
+				}
+			}); 
+		});
+		req2.on('error',(errdata)=>{console.log(errdata);});
+		req2.end();
+	}
+	
+	/*
 	const io = new Server(server, {cors: {
 		origin: "*",
 		methods: ['POST', 'GET', 'PUT', 'DELETE', 'OPTIONS'],
@@ -285,8 +332,8 @@
 		});
 	  });
 	});
-	server2.listen(process.env.PORT2)//server2.listen(3037);
-	
+	//server2.listen(3037);
+	*/
 	var server = http.createServer(function(req,res)
 	{
 		console.log(req.method);
@@ -945,7 +992,7 @@
 	{
 		try
 		{
-			server.listen(process.env.PORT1);//server.listen(3034)
+			server.listen(3034)
 			try
 			{
 				add_all_users();
@@ -4135,15 +4182,27 @@
 					}
 					console.log("done adding "+splitelements.length+" elements to KV ");
 					*/
+					
 					if(updating)
 					{
-						connectedguys.forEach( g=> 
+						try{
+							doGetHTTPRequest("localhost",3037,"command=updateALL");
+						}
+						catch(err)
 						{
-							if(g.socket != undefined) 
-							{
-								g.socket.emit("askforupdate","You must call update request");
-							}
-						})
+							console.log(err);
+						}
+					}
+					else
+					{
+						try
+						{
+							doGetHTTPRequest("localhost",3037,"command=updateALL");
+						}
+						catch(err)
+						{
+							console.log(err);
+						}
 					}
 					
 					if (!(response === undefined))

@@ -21,29 +21,21 @@ var reqOptions =
 	 
 };
 
+var getreqOptions =
+{
+	hostname: "127.0.0.1",
+	port:3006,
+	method: "GET",
+	path: "/",
+	headers: 
+	{
+		'Content-Length': Buffer.byteLength(postData),
+	}	 
+};
+
+
 let req = http.request(reqOptions,function(res)
 {
-	
-	let odata ="";
-	
-	req.on('connect',function(res,socket, head)
-	{
-		
-		console.log("Connected");
-		socket.on("data",function(chunk)
-		{
-			odata += chunk;
-		});
-		
-		socket.on("end",function()
-		{
-			odata ="";
-			console.log("Change detected by socket");
-			let reqObject = JSON.parse(odata);
-			console.log(reqObject.OK);
-		});
-		
-	});
 	
 	let data = "";
 	res.on("data",function(chunk)
@@ -59,6 +51,26 @@ let req = http.request(reqOptions,function(res)
 	}); 
 });
 
+let odata ="";
+	
+req.on('connect',function(res,socket, head)
+{
+	
+	console.log("Connected");
+	socket.on("data",function(chunk)
+	{
+		odata += chunk;
+	});
+		
+	socket.on("end",function()
+	{
+		odata ="";
+		console.log("Change detected by socket");
+		let reqObject = JSON.parse(odata);
+		console.log(reqObject.OK);
+	});
+		
+});
 
 req.write(postData);
 req.end();
@@ -91,6 +103,27 @@ req.on('information', (info) => {
   console.log(`Got information prior to main response: ${info.statusCode}`);
 }); 
 
+let req2 = http.request(getreqOptions,function(res)
+{
+	let data = "";
+	res.on("data",function(chunk)
+	{
+		data += chunk;
+	});
+	
+	res.on("end",function()
+	{
+		try
+		{
+			let reqObject = JSON.parse(data);
+		}
+		catch(ex)
+		{
+			
+		}
+	}); 
+});
+req2.end();
 
 
 // write data to request body
