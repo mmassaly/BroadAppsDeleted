@@ -7,7 +7,7 @@ const postData = JSON.stringify({
 var reqOptions =
 {
 	hostname: "127.0.0.1",
-	port:3006,
+	port:3034,
 	method: "CONNECT",
 	path: "/",
 	headers: 
@@ -23,14 +23,10 @@ var reqOptions =
 
 var getreqOptions =
 {
-	hostname: "127.0.0.1",
-	port:3006,
+	hostname: "msa-pointage-server-socket.onrender.com",
+	port:undefined,
 	method: "GET",
-	path: "/",
-	headers: 
-	{
-		'Content-Length': Buffer.byteLength(postData),
-	}	 
+	path: "/"
 };
 
 
@@ -72,8 +68,8 @@ req.on('connect',function(res,socket, head)
 		
 });
 
-req.write(postData);
-req.end();
+//req.write(postData);
+//req.end();
 
 
 
@@ -123,6 +119,7 @@ let req2 = http.request(getreqOptions,function(res)
 		}
 	}); 
 });
+
 req2.end();
 
 
