@@ -4196,6 +4196,10 @@
 								{
 									setTimeout(func,500);
 								}
+								else
+								{
+									console.log("Connection to server indication successfully given");
+								}
 							};
 							func();
 						}
@@ -4214,6 +4218,10 @@
 								if(!resUpdating)
 								{
 									setTimeout(func,500);
+								}
+								else
+								{
+									console.log("Connection to server indication successfully given");
 								}
 							};
 							func();
