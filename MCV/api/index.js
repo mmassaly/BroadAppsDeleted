@@ -1,4 +1,5 @@
 	var http = require("http");
+	var https = require("https");
 	var url = require("url");
 	var postgres = require('pg');
 	var formidable = require('formidable');
@@ -141,7 +142,7 @@
 
 	setInterval(async () =>{ 
 		let awaitres = await doGetHTTPRequest("msa-pointage-server-socket.onrender.com",undefined,"command=vide");
-		console.log(awaitres?"Bad refreshing result":"Good refreshing result");
+		console.log(!awaitres?"Bad refreshing result":"Good refreshing result");
 		},10000);
 
 	function ofUpdate()
@@ -268,6 +269,7 @@
 				port:port,
 				method: "GET",
 				path: "/"+"?"+command,
+				followRedirect:true,
 				headers :
 				{
 					"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
@@ -282,7 +284,7 @@
 					'Content-Length': Buffer.byteLength(postData),
 				}
 			*/
-			let req2 = http.request(getreqOptions,function(res)
+			let req2 = https.request(getreqOptions,function(res)
 			{
 				let data = "";
 				
@@ -293,6 +295,7 @@
 				
 				res.on("end",function()
 				{
+					console.log(data);
 					resolve(true);
 					try
 					{
@@ -304,6 +307,8 @@
 					}
 				}); 
 			});
+			
+			req2.on('timeout',()=>{console.log("request is timed-out");});
 			req2.on('error',(errdata)=>{ console.log(errdata);resolve(false);});
 			req2.end();
 		});
@@ -4202,7 +4207,6 @@
 								}
 								else
 								{
-									console.log("Error reaching notifier server ....");
 									console.log("Connection to server indication successfully given");
 								}
 							};
@@ -4228,7 +4232,6 @@
 								}
 								else
 								{
-									console.log("Error reaching notifier server ....");
 									console.log("Connection to server indication successfully given");
 								}
 							};

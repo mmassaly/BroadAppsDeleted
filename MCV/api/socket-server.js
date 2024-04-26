@@ -62,6 +62,7 @@ var server2 = http.createServer(function(req,res)
 				,"Access-Control-Max-Age":'86400'
 				,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
 			});
+			res.write(JSON.stringify({PASSED:true}));
 			res.end();
 		}
 		else if (req.method == 'POST')
