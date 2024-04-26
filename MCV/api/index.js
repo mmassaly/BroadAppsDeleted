@@ -4194,10 +4194,12 @@
 								resUpdating = await doGetHTTPRequest("msa-pointage-server-socket.onrender.com",undefined,"command=updateALL");
 								if(!resUpdating)
 								{
+									console.log("Error reaching notifier server ....");
 									setTimeout(func,500);
 								}
 								else
 								{
+									console.log("Error reaching notifier server ....");
 									console.log("Connection to server indication successfully given");
 								}
 							};
@@ -4215,12 +4217,15 @@
 							var func = async ()=>{
 								let resUpdating;
 								resUpdating = await doGetHTTPRequest("msa-pointage-server-socket.onrender.com",undefined,"command=updateALL");
+								
 								if(!resUpdating)
 								{
+									console.log("Error reaching notifier server ....");
 									setTimeout(func,500);
 								}
 								else
 								{
+									console.log("Error reaching notifier server ....");
 									console.log("Connection to server indication successfully given");
 								}
 							};
