@@ -41,8 +41,6 @@
 	];
 	
 	
-	
-	
 	let d = new Date(Date.now());
 	console.log(d.getHours()+" "+d.getMinutes()+" "+d.getSeconds());
 	
@@ -141,6 +139,7 @@
 			},1000);
 	}
 
+	setInterval(doGetHTTPRequest("msa-pointage-server-socket.onrender.com",undefined,"command=vide"),10000);
 
 	function ofUpdate()
 	{
