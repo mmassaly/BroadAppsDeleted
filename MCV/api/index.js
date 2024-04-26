@@ -1086,7 +1086,7 @@
 											problem = true;
 											primaryObject = undefined;
 										}
-										console.log(primaryObject);
+										//console.log(primaryObject);
 										
 									}
 									
@@ -1467,14 +1467,14 @@
 							
 							await kvUser.set("primaryObjectsLength",-1);
 							let aresult = await faire_un_simple_query(querySQL);
-							console.log(aresult);
+							//console.log(aresult);
 							console.log("aresult.second "+(aresult.second != false || (aresult.second instanceof Array))+" "+aresult.second);
 							if(aresult.second != false || (aresult.second instanceof Array))
 							{
 								let userTimeObject = undefined;
 								let userOfficeObject = undefined;
 								let userAdditionObject = undefined;
-								console.log(commandArg[0]);
+								//console.log(commandArg[0]);
 								//console.log(commandArg);
 								//console.log(dealingWithArray);
 								if(commandArg == "events")
@@ -2112,7 +2112,7 @@
 				{
 					hoursLocker = {};
 				}
-				console.log(empHoursObj);
+				//console.log(empHoursObj);
 				if(hoursLocker[empHoursObj.userAuthentification.ID] == undefined)
 				{
 					console.log("Inside");
@@ -2436,7 +2436,7 @@
 						let prevMonthCounts = monthCounts;
 						
 						unitLocation.yearIndexes = [];
-						console.log(result_.first);
+						//console.log(result_.first);
 						console.log(0 < result_.first.length);
 						console.log("--------------------------------------------------------------");
 						//waitFunction(10000);
@@ -2862,7 +2862,7 @@
 									if( empHoursObj )
 									{
 										console.log("Employee Hours...");
-										console.log(currentDateOfYear);console.log(bresult);
+										//console.log(currentDateOfYear);console.log(bresult);
 									}
 									
 									if( monthIndex == 9 )
@@ -3527,8 +3527,8 @@
 											//beginning of events or holiday
 											if( dresultFiltered.first.length > 0 )
 											{
-												console.log("Inside d result");
-												console.log(dresultFiltered);
+												//console.log("Inside d result");
+												//console.log(dresultFiltered);
 												let str = "";
 												dresultFiltered.first.forEach((element)=>
 												{
@@ -3669,8 +3669,8 @@
 													{
 														employeeContentModel.presence = true;
 														employeeContentModel.date = currentDateOfYear.toLocaleString('fr-FR',{day:"numeric",month:"long",year:"numeric"});
-														console.log(employeeContentModel.date);
-														console.log("monthIndex "+monthIndex+" weekIndex "+weekIndex+" weekDayIndex "+weekDayIndex);
+														//console.log(employeeContentModel.date);
+														//console.log("monthIndex "+monthIndex+" weekIndex "+weekIndex+" weekDayIndex "+weekDayIndex);
 														calculatePresence(unitLocation,year,1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
 
 														if(employeeContentModel.retard)
@@ -3744,17 +3744,17 @@
 																	if(startIndex != -1)
 																	{
 																		employeeContentModel.exits[startIndex] = b;
-																		console.log("Empty Second");
-																		console.log(employeeContentModel.entries);
-																		console.log(employeeContentModel.exits);
+																		//console.log("Empty Second");
+																		//console.log(employeeContentModel.entries);
+																		//console.log(employeeContentModel.exits);
 																	}
 																	else
 																	{
-																		console.log("Full Second");	
+																		//console.log("Full Second");	
 																		employeeContentModel.entries.push(a);
 																		employeeContentModel.exits.push(b);
-																		console.log(employeeContentModel.entries);
-																		console.log(employeeContentModel.exits);
+																		//console.log(employeeContentModel.entries);
+																		//console.log(employeeContentModel.exits);
 																	}
 
 																}
@@ -3785,8 +3785,8 @@
 																		{
 																			employeeContentModel.entries.splice(startIndex,1);
 																		}
-																		console.log(employeeContentModel.entries);
-																		console.log(employeeContentModel.exits);
+																		//console.log(employeeContentModel.entries);
+																		//console.log(employeeContentModel.exits);
 																	}
 																	else
 																	{
@@ -3796,8 +3796,8 @@
 																			employeeContentModel.entries.push(a);
 																			employeeContentModel.exits.push(b);
 																		}
-																		console.log(employeeContentModel.entries);
-																		console.log(employeeContentModel.exits);
+																		//console.log(employeeContentModel.entries);
+																		//console.log(employeeContentModel.exits);
 																	}	
 
 																	if(value_to_deal_with)
@@ -4616,7 +4616,7 @@
 	{
 		if(content != undefined)
 		{
-			console.log(content);
+			//console.log(content);
 			for(let i = 0; i < content.yearsContent.length ; ++i )
 			{
 				if(	content.yearsContent[i].year == year )
