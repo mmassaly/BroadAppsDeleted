@@ -139,7 +139,7 @@
 			},1000);
 	}
 
-	setInterval(doGetHTTPRequest("msa-pointage-server-socket.onrender.com",undefined,"command=vide"),10000);
+	setInterval(()=>{ doGetHTTPRequest("msa-pointage-server-socket.onrender.com",undefined,"command=vide")},10000);
 
 	function ofUpdate()
 	{
