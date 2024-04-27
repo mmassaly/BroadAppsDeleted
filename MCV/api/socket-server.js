@@ -115,7 +115,8 @@ var server2 = http.createServer(function(req,res)
 		
 		if(connected_guys[user.ID].sockets)
 		{
-			connected_guys[user.ID].sockets.push(socket);
+			if( connected_guys[user.ID].sockets.indexOf(socket) < 0 )
+				connected_guys[user.ID].sockets.push(socket);
 		}
 		else
 		{
