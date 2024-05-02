@@ -51,12 +51,14 @@ export class OfficeFormComponent
 	public ifFunctionsConnector:string[] =  ["valeur retour =","et","ou"];
 	public groupFunctions:string[] = ["comptes","comptes et pourcentages"];
 	public selectConnector:string = 'selectconnector';
+	
 	constructor(private httpservice: HttpService,public data: DataStorageService)
 	{
 		setInterval(()=>{console.log(data);console.log("Toggle "+this.toggled+"....")},2000);
 		if(data.userAuthentification.user)
 			this.displayID = data.userAuthentification.ID;
 	}
+	
 	public submitFunctionBasic(b:number,source:any)
 	{
 		if(this.c2)
@@ -100,6 +102,7 @@ export class OfficeFormComponent
 			//this.flipOthers(this.selectedID,b,false,this.data.onDisplay[this.selectedID].elements[b]);
 		}
 	}
+	
 	public submitFunction(formvalue:any,form:any,source:any):void
 	{
 		let addindividual = this.notLinking;

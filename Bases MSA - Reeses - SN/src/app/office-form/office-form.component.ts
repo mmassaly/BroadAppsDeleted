@@ -104,6 +104,8 @@ export class OfficeFormComponent
 	{
 		let addindividual = this.notLinking;
 		console.log(source);
+		console.log(formvalue);
+		console.log(form);
 		if(this.c1)
 		{
 			//console.log(formvalue);

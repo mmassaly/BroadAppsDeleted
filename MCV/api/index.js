@@ -3077,6 +3077,7 @@
 									{
 										date: currentDateOfYear.toLocaleString('fr-FR',options),
 										day: currentDateOfYear.getDate(),
+										identities:{},
 										empDicofAbsences:{},
 										empDicofMissions:{},
 										empDicofPresences:{},
@@ -5130,6 +5131,11 @@
 					nodupTemp.empDic[employeeContentModel.ID].vacationdates.other.push(employeeContentModel.date);
 					nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].vacationdates.other.push(employeeContentModel.date);
 					nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].weeks[weekIndex].vacationdates.other.push(employeeContentModel.date);
+					
+					if(nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].identities[employeeContentModel.ID] == undefined)
+					{
+						nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].identities[employeeContentModel.ID] = employeeContentModel;
+					}
 				}/*
 				else
 				{ 
@@ -5212,6 +5218,7 @@
 					nodupTemp.empDic[employeeContentModel.ID].presencedates.other.push(employeeContentModel.date);
 					nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].presencedates.other.push(employeeContentModel.date);
 					nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].weeks[weekIndex].presencedates.other.push(employeeContentModel.date);
+					
 				}/*
 				else
 				{ 
@@ -5313,6 +5320,11 @@
 				nodupTemp.empDic[employeeContentModel.ID].sicknessdates.other.push(employeeContentModel.date);
 				nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].sicknessdates.other.push(employeeContentModel.date);
 				nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].weeks[weekIndex].sicknessesdates.other.push(employeeContentModel.date);
+				
+				if(nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].identities[employeeContentModel.ID] == undefined)
+				{
+					nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].identities[employeeContentModel.ID] = employeeContentModel;
+				}
 			}/*
 			else
 			{ 
@@ -5405,6 +5417,11 @@
 				nodupTemp.empDic[employeeContentModel.ID].absencedates.other.push(employeeContentModel.date);
 				nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].absencedates.other.push(employeeContentModel.date);
 				nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].weeks[weekIndex].absencedates.other.push(employeeContentModel.date);
+				
+				if(nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].identities[employeeContentModel.ID] == undefined)
+				{
+					nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].identities[employeeContentModel.ID] = employeeContentModel;
+				}
 			}/*
 			else
 			{ 
@@ -5522,6 +5539,12 @@
 				nodupTemp.empDic[employeeContentModel.ID].overallretarddates.other.push(employeeContentModel.date);
 				nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].overallretarddates.other.push(employeeContentModel.date);
 				nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].weeks[weekIndex].overallretarddates.other.push(employeeContentModel.date);
+			
+				if(nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].identities[employeeContentModel.ID] == undefined)
+				{
+					nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].identities[employeeContentModel.ID] = employeeContentModel;
+				}
+			
 			}/*
 			else
 			{ 
@@ -5656,6 +5679,12 @@
 				nodupTemp.empDic[employeeContentModel.ID].overallretarddates.other.push(employeeContentModel.date);
 				nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].overallretarddates.other.push(employeeContentModel.date);
 				nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].weeks[weekIndex].overallretarddates.other.push(employeeContentModel.date);
+				
+				if(nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].identities[employeeContentModel.ID] == undefined)
+				{
+					nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].identities[employeeContentModel.ID] = employeeContentModel;
+				}
+			
 			}/*
 			else
 			{
@@ -5758,6 +5787,11 @@
 				nodupTemp.empDic[employeeContentModel.ID].missiondates.other.push(employeeContentModel.date);
 				nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].missiondates.other.push(employeeContentModel.date);
 				nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].weeks[weekIndex].missiondates.other.push(employeeContentModel.date);
+			
+				if(nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].identities[employeeContentModel.ID] == undefined)
+				{
+					nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].identities[employeeContentModel.ID] = employeeContentModel;
+				}
 			}
 			/*else
 			{
