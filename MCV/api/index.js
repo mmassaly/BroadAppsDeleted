@@ -1132,6 +1132,7 @@
 		let datereversed = date.getFullYear()+"-"+(date.getMonth()+1)+"-"+date.getDate();
 		let query = "Select * from \"manuel des tables d'entrées et de sorties\" where \"manuel des tables d'entrées et de sorties\".Année = '"+date.getFullYear()+"'";
 		let results  = await faire_un_simple_query(query);
+							
 		
 		if(results.first.length > 0 )
 		{
@@ -1145,10 +1146,18 @@
 			return;
 		}
 		
-		query = "insert into \""+nomdelaTable+"\" values ('"
-		+ ID+"','"+datereversed+"','"+startTime+"',"+((endTime == undefined)?null:"'"+endTime+"'")+")"
-		+" ON CONFLICT (IdIndividu,Date,Entrées) "+((endTime == undefined)?(" WHERE Sorties = null DO UPDATE SET Sorties = null;\n") : (" WHERE Sorties = null OR Sorties <= '"+endTime+"'" + " DO UPDATE SET Sorties ='"+endTime+"';\n") );
-		
+		if(empHoursObj.typicalupdate == "true")
+		{
+			query = "update table \""+nomdelaTable+"\" set entrées = '"+empHoursObj["oldentry"]+"' , sorties = '"
+			+empHoursObj["oldexit"]+"' where idindividu = '"+ID+"' AND entrées = '"+empHoursObj["entry"]+"' AND sorties = '"
+			+empHoursObj["exit"]+"' AND date = '"+datereversed+"';";
+		}
+		else
+		{	
+			query = "insert into \""+nomdelaTable+"\" values ('"
+			+ ID+"','"+datereversed+"','"+startTime+"',"+((endTime == undefined)?null:"'"+endTime+"'")+")"
+			+" ON CONFLICT (IdIndividu,Date,Entrées) "+((endTime == undefined)?(" WHERE Sorties = null DO UPDATE SET Sorties = null;\n") : (" WHERE Sorties = null OR Sorties <= '"+endTime+"'" + " DO UPDATE SET Sorties ='"+endTime+"';\n") );
+		}
 		//console.log(query);
 		results  = await faire_un_simple_query(query);
 		
