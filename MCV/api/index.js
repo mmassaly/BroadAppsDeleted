@@ -1158,7 +1158,7 @@
 			+ ID+"','"+datereversed+"','"+startTime+"',"+((endTime == undefined)?null:"'"+endTime+"'")+")"
 			+" ON CONFLICT (IdIndividu,Date,Entrées) "+((endTime == undefined)?(" WHERE Sorties = null DO UPDATE SET Sorties = null;\n") : (" WHERE Sorties = null OR Sorties <= '"+endTime+"'" + " DO UPDATE SET Sorties ='"+endTime+"';\n") );
 		}
-		//console.log(query);
+		console.log(query);
 		results  = await faire_un_simple_query(query);
 		
 		if(results.second == false && !results.second instanceof Array)
@@ -1233,14 +1233,14 @@
 			if(primaryObject == undefined)
 			{
 				//console.log("Your response should be with the 200 code");
-				result.writeHeader(200,{"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+				res.writeHeader(200,{"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
 					,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
 					,"Access-Control-Max-Age":'86400'
 					,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
 				});
-				result.write(JSON.stringify({first: undefined,res:"Call index is "+callIndex+"\n"
+				res.write(JSON.stringify({first: undefined,res:"Call index is "+callIndex+"\n"
 					+"Charging pourcentage "+ charging_percentage+"",third:true,text:"Still Charging",charging:true}));
-					result.end();
+					res.end();
 					return;
 			} 
 			
