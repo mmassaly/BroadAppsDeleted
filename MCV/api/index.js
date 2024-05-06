@@ -1613,7 +1613,7 @@
 									}
 								}
 								
-								if(command =="update" && commandArg ="hours")
+								if(command =="update" && commandArg =="hours")
 								{
 									let resultb = res;
 									forced_authentification_query(userAuthentification,undefined).then(async ( tempresult )=>
