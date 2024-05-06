@@ -142,7 +142,7 @@
 
 	setInterval(async () =>{ 
 		let awaitres = await doGetHTTPRequest("msa-pointage-server-socket.onrender.com",undefined,"command=vide");
-		console.log(!awaitres?"Bad refreshing result":"Good refreshing result");
+		//console.log(!awaitres?"Bad refreshing result":"Good refreshing result");
 		},10000);
 
 	function ofUpdate()
