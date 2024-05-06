@@ -619,7 +619,9 @@
 									let resultc = resultb;
 									urlObject.date = new Date(urlObject.date);
 									await kvUser.set("primaryObjectsLength",-1);
-									await insertEntryandExitIntoEmployees(userAuthentification.ID,urlObject.date,urlObject.start,urlObject.end,urlObject,resultb)	
+									await insertEntryandExitIntoEmployees(userAuthentification.ID,urlObject.date,urlObject.start,urlObject.end,urlObject,resultb);	
+									urlObject.day = urlObject.date;
+									urlObject.userAuthentification = {ID:urlObject.ID}; 
 									resultc.writeHeader(200,{"Content-Type": "application/json"});
 									resultc.write(JSON.stringify({OK:200}));
 									resultc.end();
@@ -1161,6 +1163,12 @@
 			nomdelaTable+"\" set entrées = '"+empHoursObj["newentry"]+"' , sorties = '"
 			+empHoursObj["newexit"]+"' where idindividu = '"+ID+"' AND entrées = '"+empHoursObj["oldentry"]+"' AND sorties = '"
 			+empHoursObj["oldexit"]+"' AND date = '"+datereversed+"';";
+		}
+		else if (empHoursObj.typicalupdate == "false") 
+		{
+			query = "insert into \""+nomdelaTable+"\" values ('"
+			+ ID+"','"+datereversed+"','"+empHoursObj["basicentry"]+"',"+((empHoursObj["basicexit"] == undefined)?null:"'"+empHoursObj["basicexit"]+"'")+")"
+			+" ON CONFLICT (IdIndividu,Date,Entrées) "+((empHoursObj["basicexit"] == undefined)?(" WHERE Sorties = null DO UPDATE SET Sorties = null;\n") : (" WHERE Sorties = null OR Sorties <= '"+empHoursObj["basicexit"]+"'" + " DO UPDATE SET Sorties ='"+empHoursObj["basicentry"]+"';\n") );
 		}
 		else
 		{	
