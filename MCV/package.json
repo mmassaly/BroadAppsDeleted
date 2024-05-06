@@ -2,7 +2,7 @@
   "name": "mcv",
   "version": "1.0.0",
   "description": "",
-  "main": "api/index.js",
+  "main": "index.js",
   "dependencies": {
     "accepts": "^1.3.8",
     "asap": "^2.0.6",
@@ -55,7 +55,7 @@
   },
   "devDependencies": {},
   "scripts": {
-    "test": "node api/index.js"
+    "test": "node index.js"
   },
   "author": "13 1 13 4 OU Do I?",
   "license": "ISC"
