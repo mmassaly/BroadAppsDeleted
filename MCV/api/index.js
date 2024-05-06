@@ -1158,9 +1158,10 @@
 			+ ID+"','"+datereversed+"','"+startTime+"',"+((endTime == undefined)?null:"'"+endTime+"'")+")"
 			+" ON CONFLICT (IdIndividu,Date,Entrées) "+((endTime == undefined)?(" WHERE Sorties = null DO UPDATE SET Sorties = null;\n") : (" WHERE Sorties = null OR Sorties <= '"+endTime+"'" + " DO UPDATE SET Sorties ='"+endTime+"';\n") );
 		}
+		
 		console.log(query);
 		results  = await faire_un_simple_query(query);
-		
+		console.log(results);
 		if(results.second == false && !results.second instanceof Array)
 		{
 			dummyResponseSimple(res);
