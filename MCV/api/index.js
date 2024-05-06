@@ -1490,7 +1490,8 @@
 							let aresult = await faire_un_simple_query(querySQL);
 							//console.log(aresult);
 							console.log("aresult.second "+(aresult.second != false || (aresult.second instanceof Array))+" "+aresult.second);
-							if(command =="update" && commandArg =="hours")
+							console.log(command+"---------"+commandArg);
+							if(command == "update" && commandArg =="hours")
 							{
 									let resultb = res;
 									forced_authentification_query(userAuthentification,undefined).then(async ( tempresult )=>
