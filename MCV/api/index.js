@@ -2349,8 +2349,8 @@
 						let officeLatitude = result.first[i][result.second[4].name];
 						let officeLongitude = result.first[i][result.second[5].name];
 						let passed = true;
-						console.log(i);
-						console.log(officeName);
+						//console.log(i);
+						//console.log(officeName);
 						//waitFunction(5000);
 						
 						var unitLocation = 
@@ -2454,8 +2454,8 @@
 						
 						unitLocation.yearIndexes = [];
 						//console.log(result_.first);
-						console.log(0 < result_.first.length);
-						console.log("--------------------------------------------------------------");
+						//console.log(0 < result_.first.length);
+						//console.log("--------------------------------------------------------------");
 						//waitFunction(10000);
 						for (let l = 0; l < result_.first.length; ++l)
 						{
@@ -2683,13 +2683,13 @@
 									going_yearly_count = empHoursObj.date.getMonth()+1;
 							}
 							
-							console.log("Test count "+testCount+" year_count "+going_yearly_count+" year "+year);
+							//console.log("Test count "+testCount+" year_count "+going_yearly_count+" year "+year);
 							//waitFunction(3000);
 									
 							while( testCount < going_yearly_count )
 							{
 								
-								console.log("Test count "+testCount+" year_count "+going_yearly_count+" year "+year);
+								//console.log("Test count "+testCount+" year_count "+going_yearly_count+" year "+year);
 								//waitFunction(1000);
 								
 								++monthCounts;
@@ -3794,7 +3794,7 @@
 																	let value_to_deal_with = compareHoursOneSuperior(a,b)< 0;
 																	if(startIndex != -1)
 																	{
-																		console.log("Empty Second");
+																		//console.log("Empty Second");
 																		if(value_to_deal_with )
 																		{
 																			employeeContentModel.exits[startIndex] = b;
@@ -3808,7 +3808,7 @@
 																	}
 																	else
 																	{
-																		console.log("Full Second");
+																		//console.log("Full Second");
 																		if(value_to_deal_with)
 																		{
 																			employeeContentModel.entries.push(a);
@@ -4129,7 +4129,7 @@
 												}
 												else if (empHoursObj != undefined)
 												{
-													console.log(secondresult.first[1]);
+													//console.log(secondresult.first[1]);
 												}
 											}
 											else
