@@ -1157,9 +1157,10 @@
 		
 		if(empHoursObj.typicalupdate == "true")
 		{
-			query = "update table \""+nomdelaTable+"\" set entrées = '"+empHoursObj["oldentry"]+"' , sorties = '"
-			+empHoursObj["oldexit"]+"' where idindividu = '"+ID+"' AND entrées = '"+empHoursObj["entry"]+"' AND sorties = '"
-			+empHoursObj["exit"]+"' AND date = '"+datereversed+"';";
+			query = "update table \""+
+			nomdelaTable+"\" set entrées = '"+empHoursObj["newentry"]+"' , sorties = '"
+			+empHoursObj["newexit"]+"' where idindividu = '"+ID+"' AND entrées = '"+empHoursObj["oldentry"]+"' AND sorties = '"
+			+empHoursObj["oldexit"]+"' AND date = '"+datereversed+"';";
 		}
 		else
 		{	
