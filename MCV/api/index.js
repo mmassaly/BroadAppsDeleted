@@ -1493,166 +1493,161 @@
 					{
 						try
 						{
-							console.log(querySQL);
-							
-							await kvUser.set("primaryObjectsLength",-1);
-							let aresult = await faire_un_simple_query(querySQL);
-							//console.log(aresult);
-							console.log("aresult.second "+(aresult.second != false || (aresult.second instanceof Array))+" "+aresult.second);
-							console.log(command+"---------"+commandArg);
 							if(command == "update" && commandArg =="hours")
 							{
 									let resultb = res;
-									forced_authentification_query(userAuthentification,undefined).then(async ( tempresult )=>
-									{
-										let othertempResult = check_super_admin(userAuthentification,undefined,undefined);
-										let resultc = resultb;
-										urlObject.date = new Date(urlObject.date);
-										await kvUser.set("primaryObjectsLength",-1);
-										await insertEntryandExitIntoEmployees(userAuthentification.ID,urlObject.date,urlObject.start,urlObject.end,urlObject,resultb)	
-										resultc.writeHeader(200,{"Content-Type": "application/json"});
-										resultc.write(JSON.stringify({OK:200}));
-										resultc.end();
-										urlObject.day = undefined; urlObject.startDay = undefined; urlObject.endDay = undefined;
-										console.log("Awaiting refreshing from getDataForAdmin");
-										await getDataForAdmin(undefined,undefined,undefined,urlObject,undefined,undefined,undefined,false);
-										console.log("Done Awaiting refreshing from getDataForAdmin");
-									}
-									,(ex) =>
-									{
-										console.log(ex);
-										dummyResponseSimple(resultb);
-										return;
-									});
-							}
-							else if(aresult.second != false || (aresult.second instanceof Array))
-							{
-								let userTimeObject = undefined;
-								let userOfficeObject = undefined;
-								let userAdditionObject = undefined;
-								//console.log(commandArg[0]);
-								//console.log(commandArg);
-								//console.log(dealingWithArray);
-								if(commandArg == "events")
-								{
-									res.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
-																	,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
-																	,"Access-Control-Max-Age":'86400'
-																	,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
-																	});
-										
-									res.write(JSON.stringify({customtext:"OK"}));
-									console.log("no problems");
-									res.end();
-									let date = new Date((dealingWithArray)?fields.date:fields.date[0]);
-									await getDataForAdmin(undefined,undefined,undefined,undefined,date.getFullYear(),date.getMonth()+1,date.getDate(),false);
-								}
-								
-								if (commandArg === "reasonsforabsences" || (dealingWithArray && commandArg[0] === "reasonsforabsences"))
-								{
-									console.log("Passed reasonsforabsences");
-									console.log("Inside response");
-										
-									if(res.writableEnded)
-									{	
-										console.log("Response writable ended ..."+res.writableEnded);	
-										return;
-									}
-
-									res.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
-																	,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
-																	,"Access-Control-Max-Age":'86400'
-																	,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
-																	});
-										
-									res.write(JSON.stringify({customtext:"OK"}));
-									console.log("no problems");
-									res.end();
-									await getDataForAdmin(undefined,undefined,undefined,userPresenceObject,undefined,undefined,undefined,false);
-								}
-								
-								if(commandArg === "offices" || (dealingWithArray && commandArg[0] === "offices") )
-								{
-										//let okresult = //console.log("after offices getDataForAdmin");
-										//console.log("res writable ended is " +res.writableEnded);
-										//console.log(primaryObject.container);
-										
-										if(res.writableEnded)
-												return;
-										res.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
-																	,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
-																	,"Access-Control-Max-Age":'86400'
-																	,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
-																	});
-										
-										res.write(JSON.stringify({customtext:"OK"}));
-											//console.log("no problems");
-										res.end();
-										await getDataForAdmin(undefined,userOfficeObject,undefined,undefined,undefined,undefined,undefined,false);
-										
-										/*	
-										if(okresult)
-										{
-											
-										}
-										else
-										{
-											dummyResponse(res,"Error");
-											//console.log("errors problems");
-										}*/
-								}
-								
-
-								if(commandArg === "employees" || (dealingWithArray && commandArg[0] === "employees"))
-								{
+									let resultc = resultb;
+									urlObject.date = new Date(urlObject.date);
 									await kvUser.set("primaryObjectsLength",-1);
-									let bresult = await faire_un_simple_query(doubleQuerySQL);
-									if(bresult.second != false || bresult.second instanceof Array)
+									console.log(urlObject);
+									await insertEntryandExitIntoEmployees(urlObject.ID,urlObject.date,urlObject.start,urlObject.end,urlObject,resultb)	
+									resultc.writeHeader(200,{"Content-Type": "application/json"});
+									resultc.write(JSON.stringify({OK:200}));
+									resultc.end();
+									urlObject.day = undefined; urlObject.startDay = undefined; urlObject.endDay = undefined;
+									console.log("Awaiting refreshing from getDataForAdmin");
+									await getDataForAdmin(undefined,undefined,undefined,urlObject,undefined,undefined,undefined,false);
+									console.log("Done Awaiting refreshing from getDataForAdmin");
+							}
+							else
+							{
+								console.log(querySQL);
+							
+								//await kvUser.set("primaryObjectsLength",-1);
+								let aresult = await faire_un_simple_query(querySQL);
+								//console.log(aresult);
+								console.log("aresult.second "+(aresult.second != false || (aresult.second instanceof Array))+" "+aresult.second);
+								console.log(command+"---------"+commandArg);
+								
+								if(aresult.second != false || (aresult.second instanceof Array))
+								{
+									let userTimeObject = undefined;
+									let userOfficeObject = undefined;
+									let userAdditionObject = undefined;
+									//console.log(commandArg[0]);
+									//console.log(commandArg);
+									//console.log(dealingWithArray);
+									if(commandArg == "events")
 									{
-										let cresult = await faire_un_simple_query(thirdQuerySQL);
-										if(cresult.second != false || cresult.second instanceof Array)
-										{
-											let dresult = await faire_un_simple_query(url_query);
+										res.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+																		,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
+																		,"Access-Control-Max-Age":'86400'
+																		,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
+																		});
+											
+										res.write(JSON.stringify({customtext:"OK"}));
+										console.log("no problems");
+										res.end();
+										let date = new Date((dealingWithArray)?fields.date:fields.date[0]);
+										await getDataForAdmin(undefined,undefined,undefined,undefined,date.getFullYear(),date.getMonth()+1,date.getDate(),false);
+									}
+									
+									if (commandArg === "reasonsforabsences" || (dealingWithArray && commandArg[0] === "reasonsforabsences"))
+									{
+										console.log("Passed reasonsforabsences");
+										console.log("Inside response");
+											
+										if(res.writableEnded)
+										{	
+											console.log("Response writable ended ..."+res.writableEnded);	
+											return;
+										}
+
+										res.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+																		,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
+																		,"Access-Control-Max-Age":'86400'
+																		,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
+																		});
+											
+										res.write(JSON.stringify({customtext:"OK"}));
+										console.log("no problems");
+										res.end();
+										await getDataForAdmin(undefined,undefined,undefined,userPresenceObject,undefined,undefined,undefined,false);
+									}
+									
+									if(commandArg === "offices" || (dealingWithArray && commandArg[0] === "offices") )
+									{
+											//let okresult = //console.log("after offices getDataForAdmin");
+											//console.log("res writable ended is " +res.writableEnded);
+											//console.log(primaryObject.container);
+											
+											if(res.writableEnded)
+													return;
 											res.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
-																	,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
-																	,"Access-Control-Max-Age":'86400'
-																	,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
-																	});
+																		,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
+																		,"Access-Control-Max-Age":'86400'
+																		,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
+																		});
 											
 											res.write(JSON.stringify({customtext:"OK"}));
+												//console.log("no problems");
 											res.end();
-												
-											if (dresult.second != false || dresult.second instanceof Array)
+											await getDataForAdmin(undefined,userOfficeObject,undefined,undefined,undefined,undefined,undefined,false);
+											
+											/*	
+											if(okresult)
 											{
-												userAdditionObject = urlObject;
-												//let fs = require('fs');
-												//await fs.rename(filesDup.filepath, path + filesDup.originalFilename,function(err_){});
-												await getDataForAdmin(undefined,undefined,userAdditionObject,undefined,undefined,undefined,undefined,false);
+												
+											}
+											else
+											{
+												dummyResponse(res,"Error");
+												//console.log("errors problems");
+											}*/
+									}
+									
+
+									if(commandArg === "employees" || (dealingWithArray && commandArg[0] === "employees"))
+									{
+										await kvUser.set("primaryObjectsLength",-1);
+										let bresult = await faire_un_simple_query(doubleQuerySQL);
+										if(bresult.second != false || bresult.second instanceof Array)
+										{
+											let cresult = await faire_un_simple_query(thirdQuerySQL);
+											if(cresult.second != false || cresult.second instanceof Array)
+											{
+												let dresult = await faire_un_simple_query(url_query);
+												res.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+																		,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
+																		,"Access-Control-Max-Age":'86400'
+																		,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
+																		});
+												
+												res.write(JSON.stringify({customtext:"OK"}));
+												res.end();
+													
+												if (dresult.second != false || dresult.second instanceof Array)
+												{
+													userAdditionObject = urlObject;
+													//let fs = require('fs');
+													//await fs.rename(filesDup.filepath, path + filesDup.originalFilename,function(err_){});
+													await getDataForAdmin(undefined,undefined,userAdditionObject,undefined,undefined,undefined,undefined,false);
+												}
+												else
+												{
+													dummyResponse(res,"Erreur Interne.");	
+													console.log(dresult.first);	
+												}
 											}
 											else
 											{
 												dummyResponse(res,"Erreur Interne.");	
-												console.log(dresult.first);	
+												//console.log(cresult.first);	
 											}
 										}
 										else
 										{
-											dummyResponse(res,"Erreur Interne.");	
-											//console.log(cresult.first);	
+											dummyResponse(res,"IDExistant");
+											//console.log(bresult.first);
 										}
 									}
-									else
-									{
-										dummyResponse(res,"IDExistant");
-										//console.log(bresult.first);
-									}
+									
 								}
-								
-							}
-							else
-							{
-								//console.log(aresult.first);
-								dummyResponse(res,"IDExistant");
+								else
+								{
+									//console.log(aresult.first);
+									dummyResponse(res,"IDExistant");
+								}
 							}
 						}catch(ex)
 						{
