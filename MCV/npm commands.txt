@@ -1,0 +1,4 @@
+npm audit fix --force
+npm install something --save
+npm install something
+npm init generate package.json
