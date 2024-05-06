@@ -1213,7 +1213,7 @@
 			
 			let command = fields.command;
 			//console.log(fields);
-			//console.log(command);
+			console.log(command);
 			//console.log(files);
 			let filesDup = files;
 			//console.log(filesDup);
@@ -1238,7 +1238,7 @@
 			{
 				urlObject = fields;
 			}
-			
+			console.log(urlObject);
 			/*blob.url;
 			blob.contentDisposition;
 			blob.contentType;
