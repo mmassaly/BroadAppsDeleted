@@ -1490,7 +1490,32 @@
 							let aresult = await faire_un_simple_query(querySQL);
 							//console.log(aresult);
 							console.log("aresult.second "+(aresult.second != false || (aresult.second instanceof Array))+" "+aresult.second);
-							if(aresult.second != false || (aresult.second instanceof Array))
+							if(command =="update" && commandArg =="hours")
+							{
+									let resultb = res;
+									forced_authentification_query(userAuthentification,undefined).then(async ( tempresult )=>
+									{
+										let othertempResult = check_super_admin(userAuthentification,undefined,undefined);
+										let resultc = resultb;
+										urlObject.date = new Date(urlObject.date);
+										await kvUser.set("primaryObjectsLength",-1);
+										await insertEntryandExitIntoEmployees(userAuthentification.ID,urlObject.date,urlObject.start,urlObject.end,urlObject,resultb)	
+										resultc.writeHeader(200,{"Content-Type": "application/json"});
+										resultc.write(JSON.stringify({OK:200}));
+										resultc.end();
+										urlObject.day = undefined; urlObject.startDay = undefined; urlObject.endDay = undefined;
+										console.log("Awaiting refreshing from getDataForAdmin");
+										await getDataForAdmin(undefined,undefined,undefined,urlObject,undefined,undefined,undefined,false);
+										console.log("Done Awaiting refreshing from getDataForAdmin");
+									}
+									,(ex) =>
+									{
+										console.log(ex);
+										dummyResponseSimple(resultb);
+										return;
+									});
+							}
+							else if(aresult.second != false || (aresult.second instanceof Array))
 							{
 								let userTimeObject = undefined;
 								let userOfficeObject = undefined;
@@ -1613,31 +1638,6 @@
 									}
 								}
 								
-								if(command =="update" && commandArg =="hours")
-								{
-									let resultb = res;
-									forced_authentification_query(userAuthentification,undefined).then(async ( tempresult )=>
-									{
-										let othertempResult = check_super_admin(userAuthentification,undefined,undefined);
-										let resultc = resultb;
-										urlObject.date = new Date(urlObject.date);
-										await kvUser.set("primaryObjectsLength",-1);
-										await insertEntryandExitIntoEmployees(userAuthentification.ID,urlObject.date,urlObject.start,urlObject.end,urlObject,resultb)	
-										resultc.writeHeader(200,{"Content-Type": "application/json"});
-										resultc.write(JSON.stringify({OK:200}));
-										resultc.end();
-										urlObject.day = undefined; urlObject.startDay = undefined; urlObject.endDay = undefined;
-										console.log("Awaiting refreshing from getDataForAdmin");
-										await getDataForAdmin(undefined,undefined,undefined,urlObject,undefined,undefined,undefined,false);
-										console.log("Done Awaiting refreshing from getDataForAdmin");
-									}
-									,(ex) =>
-									{
-										console.log(ex);
-										dummyResponseSimple(resultb);
-										return;
-									});
-								}
 							}
 							else
 							{
