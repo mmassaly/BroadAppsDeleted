@@ -3758,7 +3758,11 @@
 														}
 														
 														retard = false;	
-														
+														if(employeeContentModel.absence)
+														{
+															calculateAbsence(unitLocation,year,-1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
+															employeeContentModel.absence = false;
+														}
 													}
 
 													let index_of_entries_into = 0;
