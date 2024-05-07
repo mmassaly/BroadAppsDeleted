@@ -1162,7 +1162,7 @@
 		
 		if(empHoursObj.typicalupdate == "true")
 		{
-			query = "update table \""+
+			query = "update \""+
 			nomdelaTable+"\" set entrées = '"+empHoursObj["newentry"]+"' , sorties = '"
 			+empHoursObj["newexit"]+"' where idindividu = '"+ID+"' AND entrées = '"+empHoursObj["oldentry"]+"' AND sorties = '"
 			+empHoursObj["oldexit"]+"' AND date = '"+datereversed+"';";
