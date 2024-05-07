@@ -1171,7 +1171,7 @@
 		{
 			query = "insert into \""+nomdelaTable+"\" values ('"
 			+ ID+"','"+datereversed+"','"+empHoursObj["entry"]+"',"+((empHoursObj["exit"] == undefined)?null:"'"+empHoursObj["exit"]+"'")+")"
-			+" ON CONFLICT (IdIndividu,Date,Entrées) "+((empHoursObj["exit"] == undefined)?(" WHERE Sorties = null DO UPDATE SET Sorties = null;\n") : (" WHERE Sorties = null OR Sorties <= '"+empHoursObj["exit"]+"'" + " DO UPDATE SET Sorties ='"+empHoursObj["entry"]+"';\n") );
+			+" ON CONFLICT (IdIndividu,Date,Entrées) "+((empHoursObj["exit"] == undefined)?(" WHERE Sorties IS NULL DO UPDATE SET Sorties = null;\n") : (" WHERE Sorties IS NULL OR Sorties <= '"+empHoursObj["exit"]+"'" + " DO UPDATE SET Sorties ='"+empHoursObj["exit"]+"';\n") );
 		}
 		else
 		{	
