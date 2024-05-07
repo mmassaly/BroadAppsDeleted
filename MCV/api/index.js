@@ -626,7 +626,7 @@
 																	,"Access-Control-Max-Age":'86400'
 																	,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
 																});
-									resultc.write(JSON.stringify({OK:200,customText:"OK"}));
+									resultc.write(JSON.stringify({OK:200,customtext:"OK"}));
 									resultc.end();
 									urlObject.day = undefined; urlObject.startDay = undefined; urlObject.endDay = undefined;
 									console.log("Awaiting refreshing from getDataForAdmin");
@@ -1518,7 +1518,7 @@
 																	,"Access-Control-Max-Age":'86400'
 																	,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
 																});
-									resultc.write(JSON.stringify({OK:200,customText:"OK"}));
+									resultc.write(JSON.stringify({OK:200,customtext:"OK"}));
 									resultc.end();
 									urlObject.day = undefined; urlObject.startDay = undefined; urlObject.endDay = undefined;
 									console.log("Awaiting refreshing from getDataForAdmin");
