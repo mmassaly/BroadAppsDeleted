@@ -1177,7 +1177,7 @@
 		{	
 			query = "insert into \""+nomdelaTable+"\" values ('"
 			+ ID+"','"+datereversed+"','"+startTime+"',"+((endTime == undefined)?null:"'"+endTime+"'")+")"
-			+" ON CONFLICT (IdIndividu,Date,Entrées) "+((endTime == undefined)?(" WHERE Sorties = null DO UPDATE SET Sorties = null;\n") : (" WHERE Sorties = null OR Sorties <= '"+endTime+"'" + " DO UPDATE SET Sorties ='"+endTime+"';\n") );
+			+" ON CONFLICT (IdIndividu,Date,Entrées) "+((endTime == undefined)?(" WHERE Sorties IS NULL DO UPDATE SET Sorties = null;\n") : (" WHERE Sorties IS NULL OR Sorties <= '"+endTime+"'" + " DO UPDATE SET Sorties ='"+endTime+"';\n") );
 		}
 		
 		console.log(query);
