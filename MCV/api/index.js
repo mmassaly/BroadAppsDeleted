@@ -1170,8 +1170,8 @@
 		else if (empHoursObj.typicalupdate == "false") 
 		{
 			query = "insert into \""+nomdelaTable+"\" values ('"
-			+ ID+"','"+datereversed+"','"+empHoursObj["basicentry"]+"',"+((empHoursObj["basicexit"] == undefined)?null:"'"+empHoursObj["basicexit"]+"'")+")"
-			+" ON CONFLICT (IdIndividu,Date,Entrées) "+((empHoursObj["basicexit"] == undefined)?(" WHERE Sorties = null DO UPDATE SET Sorties = null;\n") : (" WHERE Sorties = null OR Sorties <= '"+empHoursObj["basicexit"]+"'" + " DO UPDATE SET Sorties ='"+empHoursObj["basicentry"]+"';\n") );
+			+ ID+"','"+datereversed+"','"+empHoursObj["entry"]+"',"+((empHoursObj["exit"] == undefined)?null:"'"+empHoursObj["exit"]+"'")+")"
+			+" ON CONFLICT (IdIndividu,Date,Entrées) "+((empHoursObj["exit"] == undefined)?(" WHERE Sorties = null DO UPDATE SET Sorties = null;\n") : (" WHERE Sorties = null OR Sorties <= '"+empHoursObj["exit"]+"'" + " DO UPDATE SET Sorties ='"+empHoursObj["entry"]+"';\n") );
 		}
 		else
 		{	
