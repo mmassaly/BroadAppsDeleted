@@ -1164,8 +1164,8 @@
 		{
 			query = "update \""+
 			nomdelaTable+"\" set entrées = '"+empHoursObj["newentry"]+"' , sorties = '"
-			+empHoursObj["newexit"]+"' where idindividu = '"+ID+"' AND entrées = '"+empHoursObj["oldentry"]+"' AND sorties = '"
-			+empHoursObj["oldexit"]+"' AND date = '"+datereversed+"';";
+			+empHoursObj["newexit"]+"' where idindividu = '"+ID+"' AND "+(empHoursObj["oldentry"] =='null'?"entrées IS NULL":"entrées = '"+empHoursObj["oldentry"]+"'")+"' AND "+
+			(empHoursObj["oldexit"] =='null'?"sorties IS NULL":"sorties = '"+empHoursObj["oldexit"]+"'")+" AND date = '"+datereversed+"';";
 		}
 		else if (empHoursObj.typicalupdate == "false") 
 		{
