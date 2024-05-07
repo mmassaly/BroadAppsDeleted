@@ -621,7 +621,11 @@
 									await kvUser.set("primaryObjectsLength",-1);
 									await insertEntryandExitIntoEmployees(userAuthentification.ID,urlObject.date,urlObject.start,urlObject.end,urlObject,resultb);	
 									urlObject.day = urlObject.date;
-									resultc.writeHeader(200,{"Content-Type": "application/json"});
+									resultc.writeHeader(200,{"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+																	,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
+																	,"Access-Control-Max-Age":'86400'
+																	,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
+																});
 									resultc.write(JSON.stringify({OK:200}));
 									resultc.end();
 									urlObject.day = undefined; urlObject.startDay = undefined; urlObject.endDay = undefined;
@@ -1177,7 +1181,7 @@
 		}
 		
 		console.log(query);
-		if(!empHoursObj.typicalupdate == "true")
+		if( empHoursObj.typicalupdate == "true" || empHoursObj.typicalupdate == undefined)
 		{
 			results  = await faire_un_simple_query(query);
 		
@@ -1509,7 +1513,11 @@
 									await kvUser.set("primaryObjectsLength",-1);
 									console.log(urlObject);
 									await insertEntryandExitIntoEmployees(urlObject.ID,urlObject.date,urlObject.start,urlObject.end,urlObject,resultb)	
-									resultc.writeHeader(200,{"Content-Type": "application/json"});
+									resultc.writeHeader(200,{"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+																	,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
+																	,"Access-Control-Max-Age":'86400'
+																	,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
+																});
 									resultc.write(JSON.stringify({OK:200}));
 									resultc.end();
 									urlObject.day = undefined; urlObject.startDay = undefined; urlObject.endDay = undefined;
