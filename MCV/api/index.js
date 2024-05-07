@@ -621,7 +621,6 @@
 									await kvUser.set("primaryObjectsLength",-1);
 									await insertEntryandExitIntoEmployees(userAuthentification.ID,urlObject.date,urlObject.start,urlObject.end,urlObject,resultb);	
 									urlObject.day = urlObject.date;
-									urlObject.userAuthentification = {ID:urlObject.ID}; 
 									resultc.writeHeader(200,{"Content-Type": "application/json"});
 									resultc.write(JSON.stringify({OK:200}));
 									resultc.end();
@@ -1515,6 +1514,7 @@
 									resultc.end();
 									urlObject.day = undefined; urlObject.startDay = undefined; urlObject.endDay = undefined;
 									console.log("Awaiting refreshing from getDataForAdmin");
+									urlObject.userAuthentification = {ID: urlObject.ID };
 									await getDataForAdmin(undefined,undefined,undefined,urlObject,undefined,undefined,undefined,false);
 									console.log("Done Awaiting refreshing from getDataForAdmin");
 							}
