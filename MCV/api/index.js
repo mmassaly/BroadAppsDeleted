@@ -626,7 +626,7 @@
 																	,"Access-Control-Max-Age":'86400'
 																	,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
 																});
-									resultc.write(JSON.stringify({OK:200}));
+									resultc.write(JSON.stringify({OK:200,customText:"OK"}));
 									resultc.end();
 									urlObject.day = undefined; urlObject.startDay = undefined; urlObject.endDay = undefined;
 									console.log("Awaiting refreshing from getDataForAdmin");
@@ -1181,7 +1181,7 @@
 		}
 		
 		console.log(query);
-		if( empHoursObj.typicalupdate == "true" || empHoursObj.typicalupdate == undefined)
+		if( empHoursObj.typicalupdate == "true" || empHoursObj.typicalupdate == "false" || empHoursObj.typicalupdate == undefined)
 		{
 			results  = await faire_un_simple_query(query);
 		
@@ -1518,7 +1518,7 @@
 																	,"Access-Control-Max-Age":'86400'
 																	,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
 																});
-									resultc.write(JSON.stringify({OK:200}));
+									resultc.write(JSON.stringify({OK:200,customText:"OK"}));
 									resultc.end();
 									urlObject.day = undefined; urlObject.startDay = undefined; urlObject.endDay = undefined;
 									console.log("Awaiting refreshing from getDataForAdmin");
