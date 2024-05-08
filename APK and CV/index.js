@@ -172,6 +172,15 @@
 		{
 			res.end();	
 		}
+		else
+		{
+			res.writeHead(200, {"Access-Control-Allow-Origin":"*"
+				,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
+				,"Access-Control-Max-Age":'86400'
+				,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
+			});
+			res.end();
+		}
 	}
 	);
 	
