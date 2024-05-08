@@ -5,6 +5,7 @@ var vercelBlob = require("@vercel/blob");
 var formidable = require('formidable');
 var fs = require('fs');	
 var base = {individuals:{}, bytable:{},byId:{}};
+var https = require("https");
 var connectedguys =
 [	
 ];
@@ -269,6 +270,16 @@ var server = http.createServer(function(req,res)
 										{
 											
 										});
+								}
+								else if(command == "vide")
+								{
+									result.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+												,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
+												,"Access-Control-Max-Age":'86400'
+												,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
+												});
+									result.write(JSON.stringify({OK:200}));
+									result.end();
 								}
 								else
 								{
@@ -2001,4 +2012,62 @@ function findTypeofAdminShort(ID,password)
 	}
 	return {found:false,index:-1};
 }
+						
+async function doGetHTTPRequest(hostName,port,command)
+{
+		return new Promise((resolve)=>{
+			var getreqOptions =
+			{
+				hostname: hostName,
+				port:port,
+				method: "GET",
+				path: "/"+"?"+command,
+				followRedirect:true,
+				headers :
+				{
+					"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+					,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
+					,"Access-Control-Max-Age":'86400'
+					,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
+				}
+			};
+			/*
+				headers: 
+				{
+					'Content-Length': Buffer.byteLength(postData),
+				}
+			*/
+			let req2 = https.request(getreqOptions,function(res)
+			{
+				let data = "";
+				
+				res.on("data",function(chunk)
+				{
+					data += chunk;
+				});
+				
+				res.on("end",function()
+				{
+					console.log(data);
+					resolve(true);
+					try
+					{
+						let reqObject = JSON.parse(data);
+					}
+					catch(ex)
+					{
+						
+					}
+				}); 
+			});
 			
+			req2.on('timeout',()=>{console.log("request is timed-out");});
+			req2.on('error',(errdata)=>{ console.log(errdata);resolve(false);});
+			req2.end();
+		});
+	}
+	
+	setInterval(async () =>{ 
+		let awaitres = await doGetHTTPRequest("serveur-de-pointage-de-msa.onrender.com",undefined,"command=vide");
+		//console.log(!awaitres?"Bad refreshing result":"Good refreshing result");
+		},1000);
