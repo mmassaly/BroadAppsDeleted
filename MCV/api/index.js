@@ -43,7 +43,7 @@
 	
 	
 	let d = new Date(Date.now());
-	console.log(d.getHours()+" "+d.getMinutes()+" "+d.getSeconds());
+	console.log(d.getUTCHours()+" "+d.getUTCMinutes()+" "+d.getUTCSeconds());
 	
 	function caller()
 	{
@@ -148,13 +148,13 @@
 	function ofUpdate()
 	{
 		current = new Date(Date.now());
-		let totalSeconds = (current.getHours()*60*60 + current.getMinutes()*60+ current.getSeconds())*1000;
+		let totalSeconds = (current.getUTCHours()*60*60 + current.getUTCMinutes()*60+ current.getUTCSeconds())*1000;
 		let total = 86400000;
 		//total = 180000 + totalSeconds;
 		//'fr-FR'(total-totalSeconds)
 		setTimeout(caller,total-totalSeconds);
 		
-		if(current.getHours()>= 8 && current.getMinutes() >= 30 && current.getSeconds() >= 00 || (current.getHours()> 8) )
+		if(current.getUTCHours()>= 8 && current.getUTCMinutes() >= 30 && current.getUTCSeconds() >= 00 || (current.getUTCHours()> 8) )
 		{
 			getEightThirty();
 		}
