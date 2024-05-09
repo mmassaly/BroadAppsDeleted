@@ -172,6 +172,10 @@
 			let currentDatedetails = getDateDetailsFromCorruptJavascript();
 			getDataForAdmin(undefined,undefined,undefined,undefined,currentDatedetails[2],currentDatedetails[1],currentDatedetails[0],true);
 		}
+		else
+		{
+			setTimeout(getEightThirty,10000);
+		}
 	}
 	
 	function getCommandGivenID(ID)
