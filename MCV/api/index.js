@@ -144,7 +144,7 @@
 		let awaitres = await doGetHTTPRequest("msa-pointage-server-socket.onrender.com",undefined,"command=vide");
 		//console.log(!awaitres?"Bad refreshing result":"Good refreshing result");
 		},10000);
-	//test
+	
 	function ofUpdate()
 	{
 		current = new Date(Date.now());
@@ -167,10 +167,12 @@
 	
 	function getEightThirty()
 	{
+		console.log("Called eight thirty.............");
 		if(primaryObject != undefined)
 		{
 			let currentDatedetails = getDateDetailsFromCorruptJavascript();
 			getDataForAdmin(undefined,undefined,undefined,undefined,currentDatedetails[2],currentDatedetails[1],currentDatedetails[0],true);
+			console.log("Called eight thirty successfully...");
 		}
 		else
 		{
