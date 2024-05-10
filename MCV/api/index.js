@@ -160,7 +160,14 @@
 		}
 		else
 		{
-			setTimeout(getEightThirty,(8*60*60+30*60)*1000-totalSeconds);
+			totalSeconds = (current.getUTCHours()*60*60 + current.getUTCMinutes()*60+ current.getUTCSeconds())*1000;
+			let difference = (8*60*60+30*60)*1000 - totalSeconds;
+			if( difference > -1)
+			{
+				setTimeout(getEightThirty,(8*60*60+30*60)*1000-totalSeconds);
+			}
+			else
+				getEightThirty();
 		}
 		
 	}
