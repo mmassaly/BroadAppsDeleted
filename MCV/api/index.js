@@ -162,7 +162,7 @@
 		{
 			totalSeconds = (current.getUTCHours()*60*60 + current.getUTCMinutes()*60+ current.getUTCSeconds())*1000;
 			let difference = (8*60*60+30*60)*1000 - totalSeconds;
-			setTimeout(getEightThirty,120000);
+			
 			if( difference > -1)
 			{
 				setTimeout(getEightThirty,(8*60*60+30*60)*1000-totalSeconds);
@@ -170,7 +170,6 @@
 			else
 				getEightThirty();
 		}
-		
 	}
 	
 	function getEightThirty()
@@ -2569,7 +2568,7 @@
 							if(empHoursObj)
 							{console.log(query);}
 							
-							console.log(query);
+							//console.log(query);
 							
 							//console.log(empHoursObj);
 							let threeResults = await faire_un_simple_query(query);
