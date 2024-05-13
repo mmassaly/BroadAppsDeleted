@@ -162,6 +162,7 @@
 		{
 			totalSeconds = (current.getUTCHours()*60*60 + current.getUTCMinutes()*60+ current.getUTCSeconds())*1000;
 			let difference = (8*60*60+30*60)*1000 - totalSeconds;
+			setTimeout(getEightThirty,120000);
 			if( difference > -1)
 			{
 				setTimeout(getEightThirty,(8*60*60+30*60)*1000-totalSeconds);
@@ -178,6 +179,7 @@
 		if(primaryObject != undefined)
 		{
 			let currentDatedetails = getDateDetailsFromCorruptJavascript();
+			console.log(currentDatedetails);
 			getDataForAdmin(undefined,undefined,undefined,undefined,currentDatedetails[2],currentDatedetails[1],currentDatedetails[0],true);
 			console.log("Called eight thirty successfully...");
 		}
@@ -2276,7 +2278,7 @@
 			async function getDataForAdmin(response,locationArgObj,empObj,empHoursObj,paramyear,parammonth,paramday,setDateofToday)
 			{
 				console.trace("Inside getDataForAdmin");
-				//console.log(" paramyear "+paramyear+" other paramday "+paramday+" other parammonth "+parammonth);
+				console.log(" paramyear "+paramyear+" other paramday "+paramday+" other parammonth "+parammonth);
 				//console.log("Location argument "+locationArgObj+" employee argument "+empObj);
 				console.log("set date of today "+setDateofToday);
 				const updating = (paramyear || parammonth || paramday || empHoursObj || empObj || locationArgObj )
@@ -2534,6 +2536,7 @@
 							let table = result_.first[l][result_.second[2].name];
 							let events = result_.first[l][result_.second[3].name];
 							let param_year_month_day = (paramday != undefined && parammonth != undefined && paramyear != undefined)?paramyear+"-"+parammonth+"-"+paramday : undefined;
+							console.log(param_year_month_day);
 							let query = "Select * from individu inner join appartenance";
 							
 							query += " ON appartenance.IDIndividu =  individu.ID";
@@ -2565,6 +2568,9 @@
 							
 							if(empHoursObj)
 							{console.log(query);}
+							
+							console.log(query);
+							
 							//console.log(empHoursObj);
 							let threeResults = await faire_un_simple_query(query);
 							let resultTwo = threeResults[0];
@@ -4877,9 +4883,9 @@
 	function getDateDetailsFromCorruptJavascript()
 	{
 		let tempdate = new Date(Date.now());
-		let tempday = Number.parseInt(tempdate.toLocaleString().split("/")[0]);
-		let tempmonth = Number.parseInt(tempdate.toLocaleString().split("/")[1]);
-		let tempyear = Number.parseInt(tempdate.toLocaleString().split("/")[2]);
+		let tempday = tempdate.getDate();
+		let tempmonth = tempdate.getMont()+1;
+		let tempyear = tempdate.getFullYear();
 		return [tempday,tempmonth,tempyear];
 	}
 

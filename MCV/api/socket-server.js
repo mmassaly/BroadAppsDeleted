@@ -42,9 +42,9 @@ var server2 = http.createServer(function(req,res)
 				else if(reqUrl.query.command == "updateALL")
 				{
 					console.log("Inside updateALL");
-					console.log(connected_guys);
+					//console.log(connected_guys);
 					Object.values(connected_guys).forEach(value => { 
-						console.log(value);
+						//console.log(value);
 						value.sockets.forEach( asocket => 
 						{
 							console.log(asocket)
