@@ -47,7 +47,6 @@ var server2 = http.createServer(function(req,res)
 						//console.log(value);
 						value.sockets.forEach( asocket => 
 						{
-							console.log(asocket)
 							if(asocket)
 							{
 								console.log("Found a value to emit");
