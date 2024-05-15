@@ -50,7 +50,14 @@ var server2 = http.createServer(function(req,res)
 							if(asocket)
 							{
 								console.log("Found a value to emit");
-								asocket.emit("askforupdate","from socket-server");
+								asocket.timeout(3500).emit("askforupdate","from socket-server",(err,value)=>
+								{
+									if(err)
+									{
+										console.log("I am disconnecting the socket");
+										asocket.disconnect(true);
+									}
+								});
 							}
 						});
 					});
