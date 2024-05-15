@@ -75,7 +75,7 @@ var server2 = http.createServer(function(req,res)
 				reqData += data;
 			}).on("end",()=>
 			{
-				console.log("At 3037")
+				console.log("At 3037");
 			});
 		}
 		else
@@ -125,10 +125,10 @@ var server2 = http.createServer(function(req,res)
 		socket.on("disconnect",()=>
 		{
 			let result = Object.keys(connected_guys).find( el=>{ connected_guys[el].sockets.find( el2 => el2 == socket)});
+			console.log("A client disconnected");
 			if(result)
 			{
 				console.log(result +"disconnected");
-				connected_guys[result].sockets.splice(connected_guys[result].sockets.indexOf(socket),1);
 			}
 		});
 		
