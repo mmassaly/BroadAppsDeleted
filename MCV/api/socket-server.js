@@ -128,10 +128,25 @@ var server2 = http.createServer(function(req,res)
 			let result = Object.keys(connected_guys).find( el=>{ connected_guys[el].sockets.find( el2 => el2 == socket)});
 			if(result)
 			{
+				console.log(result +"disconnected");
 				connected_guys[result].sockets.splice(connected_guys[result].sockets.indexOf(socket),1);
 			}
 		});
 		
 	  });
 	});
-	server2.listen(3037)
+	server2.listen(3037);
+	
+	setInterval( () =>
+	{
+		Object.keys(connected_guys).forEach( key => 
+		{
+			connected_guys[key].sockets.forEach(sockEl=>
+			{
+				if(sockEl.connected)
+				{
+					sockEl.emit("per 3000ms event","Hello client");
+				}
+			});;
+		});
+	},3000);
