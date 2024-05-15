@@ -129,6 +129,7 @@ var server2 = http.createServer(function(req,res)
 			if(result)
 			{
 				console.log(result +"disconnected");
+				connected_guys[result].sockets.splice(connected_guys[result].sockets.indexOf(socket),1);
 			}
 		});
 		
