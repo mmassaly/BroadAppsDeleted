@@ -10,7 +10,7 @@ var connectedguys =
 [	
 ];
 var individuals_interest = []; 
-
+const connections = {};
 let callIndex = 0;
 var max = 0;
 
@@ -19,6 +19,13 @@ let data_type_converter = {'character varying':'text',date:'Date',text:'text',ti
 		,'decimal(7,2)':'Decimal(7,2)','decimal(8,2)':'Decimal(8,2)','decimal(9,2)':'Decimal(9,2)','decimal(9,2)':'Decimal(9,2)','decimal(10,2)':'Decimal(10,2)','decimal(11,2)':'Decimal(11,2)'
 		,'decimal(12,2)':'Decimal(12,2)','decimal(13,2)':'Decimal(13,2)','decimal(14,2)':'Decimal(14,2)','decimal(15,2)':'Decimal(15,2)','decimal(16,2)':'Decimal(16,2)'
 		,'decimal(17,2)':'Decimal(17,2)','decimal(18,2)':'Decimal(18,2)','decimal(19,2)':'Decimal(19,2)','decimal(20,2)':'Decimal(20,2)','decimal(21,2)':'Decimal(21,2)'};
+
+const IDs = {};
+IDs["9999"] = {ID:"9999",password:getPassword(),admin:true,subadmin:false,collector:false};
+const model = {projects:{},employees:{},localities:[]};
+const password = getPassword();
+
+
 //msa-beesas		
 var server = http.createServer(function(req,res)
 {
@@ -84,215 +91,228 @@ var server = http.createServer(function(req,res)
 							}
 
 							//console.log("Able to continue to step 2");
-							
-							let command = urlObject.command;
-							//console.log("Command is update "+ command == "update");
-							
-							
-							if(command === "login")
-							{	
-								let resultb = res;
-								
-								forced_authentification_query_login(urlObject.userAuthentification,resultb).then((ares)=>
-								{
-										//console.log(ares);
-										if(JSON.stringify(ares.first) == "false" && JSON.stringify(ares.second) == "false" )
-										{
-											resultb.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
-											,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
-											,"Access-Control-Max-Age":'86400'
-											,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"});
-											//console.log("Sending response");
-											resultb.write(JSON.stringify(ares));
-											resultb.end();
-											return;
-										}
-										
-										check_super_admin(urlObject.userAuthentification,undefined,undefined).then((othertempResult)=>
-										{
-											//console.log(othertempResult);
-												if(ares.first == true || ares.second == true )
-												{
-													//console.log("Inside setting");
-													if (othertempResult.first)
-													{
-														ares.element.superadmin = true;
-														ares.element.user = false; 
-													}
-													else if(othertempResult.second)
-													{
-														ares.element.superadmin = false;
-														ares.element.user = true;
-													}
-												}
-												
-												if(ares.first)
-												{
-													resultb.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
-													,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
-													,"Access-Control-Max-Age":'86400'
-													,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
-													});
-													console.log("Sending response");
-													resultb.write(JSON.stringify(ares));
-													resultb.end();
-												}
-												else if(ares.second)
-												{
-													
-													resultb.writeHead(200,{"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
-													,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
-													,"Access-Control-Max-Age":'86400'
-													,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
-													});
-
-													resultb.write(JSON.stringify(ares));
-													resultb.end();
-													
-												}
-												else
-												{
-													dummyResponse(resultb,{text:"NOT LOGGED IN"});
-												}
-
-											
-										}
-										,(ex)=>
-										{
-											console.log(ex);
-											dummyResponse(resultb,ex);
-											return;
-										});
-									}
-									,(ex2)=>
-									{
-										console.log(ex2);
-										dummyResponse(resultb,ex2);
-										return;
-									});
-							}
-							else if(command === "pull") 
+							if(req.url == "/themeBase")
 							{
-								let commandArg = urlObject.cmdArg;
-								if(commandArg == undefined)
+								try
 								{
-									//console.log("undefined commandArg");
-									dummyResponseSimple(result);
-									return;
+									findCommand(urlObject,res);
 								}
+								catch(ex)
+								{
+									console.log(ex);
+								}
+							}
+							else
+							{
+								let command = urlObject.command;
+								//console.log("Command is update "+ command == "update");
 								
-								let userAuthentification = urlObject.userAuthentification;
-								if(userAuthentification == undefined) 
-								{
-									console.log("undefined userAuthentification");
-									dummyResponseSimple(result);
-									return;
-								}
-								else
-								{
-									//console.log("user authentification request received");
-								}
 								
-								if(userAuthentification.ID == undefined || userAuthentification.Prenom == undefined
-									|| userAuthentification.Nom == undefined || userAuthentification.genre == undefined
-									|| userAuthentification.pass == undefined)
-									{
-										console.log(userAuthentification);
-										console.log("undefined credentials");
-										dummyResponseSimple(result);
-										return;
-									} 
-									else
-									{
-										//console.log("all credentials received");
-									}
+								if(command === "login")
+								{	
+									let resultb = res;
 									
-								let queries = [];
-
-								if(commandArg === "all" || commandArg === "update") 
-								{
-									let resultc = res;
-									
-									forced_authentification_query(userAuthentification,undefined).then((tempResult)=>
+									forced_authentification_query_login(urlObject.userAuthentification,resultb).then((ares)=>
 									{
-											if(tempResult)
+											//console.log(ares);
+											if(JSON.stringify(ares.first) == "false" && JSON.stringify(ares.second) == "false" )
 											{
-												//console.log("This guy is authenticated");
-												let resultd = resultc;
-												check_super_admin(userAuthentification,undefined,undefined).then((othertempResult)=>
-												{
-													//console.log("Inside checking admin type");
-													if(othertempResult.first)
+												resultb.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+												,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
+												,"Access-Control-Max-Age":'86400'
+												,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"});
+												//console.log("Sending response");
+												resultb.write(JSON.stringify(ares));
+												resultb.end();
+												return;
+											}
+											
+											check_super_admin(urlObject.userAuthentification,undefined,undefined).then((othertempResult)=>
+											{
+												//console.log(othertempResult);
+													if(ares.first == true || ares.second == true )
 													{
-														//console.log("This guy is a primary admin");
-														///console.log("responding");
-														resultd.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
-														,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
-														,"Access-Control-Max-Age":'86400'
-														,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
-														});
-														//console.log(primaryObject);
-														resultd.write(JSON.stringify({individuals:Object.entries(base.individuals),tables:base.bytable}));
-														resultd.end();
+														//console.log("Inside setting");
+														if (othertempResult.first)
+														{
+															ares.element.superadmin = true;
+															ares.element.user = false; 
+														}
+														else if(othertempResult.second)
+														{
+															ares.element.superadmin = false;
+															ares.element.user = true;
+														}
 													}
-													else if(othertempResult.second)
+													
+													if(ares.first)
 													{
-														//console.log("This guy is a secondary kind of  admin");
-														
-														resultd.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+														resultb.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
 														,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
 														,"Access-Control-Max-Age":'86400'
 														,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
 														});
-																
-														//resultd.write(JSON.stringify({individuals:[base.individuals[userAuthentification.ID]],tables:base.byId[userAuthentification.ID]}));
-														resultd.write(JSON.stringify({individuals:Object.entries(base.individuals),tables:base.bytable}));
-														resultd.end();
+														console.log("Sending response");
+														resultb.write(JSON.stringify(ares));
+														resultb.end();
+													}
+													else if(ares.second)
+													{
+														
+														resultb.writeHead(200,{"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+														,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
+														,"Access-Control-Max-Age":'86400'
+														,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
+														});
+
+														resultb.write(JSON.stringify(ares));
+														resultb.end();
 														
 													}
 													else
 													{
-														//console.log("No answer");
-														dummyResponseSimple(resultd);
-													}	
-												},(error)=>
-												{
-													console.log(error);
-												});
+														dummyResponse(resultb,{text:"NOT LOGGED IN"});
+													}
+
+												
 											}
-											else
+											,(ex)=>
 											{
-												dummyResponseSimple(resultc);
+												console.log(ex);
+												dummyResponse(resultb,ex);
 												return;
-											}
-										} ,
-										(ex)=>
+											});
+										}
+										,(ex2)=>
 										{
-											
+											console.log(ex2);
+											dummyResponse(resultb,ex2);
+											return;
 										});
 								}
-								else if(command == "vide")
+								else if(command === "pull") 
 								{
-									result.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
-												,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
-												,"Access-Control-Max-Age":'86400'
-												,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
-												});
-									result.write(JSON.stringify({OK:200}));
-									result.end();
-								}
-								else
-								{
-									//console.log("You are at area with response 500");
-									result.writeHead(500, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
-												,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
-												,"Access-Control-Max-Age":'86400'
-												,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
-												});
-									result.end();
-								}
-							
+									let commandArg = urlObject.cmdArg;
+									if(commandArg == undefined)
+									{
+										//console.log("undefined commandArg");
+										dummyResponseSimple(result);
+										return;
+									}
+									
+									let userAuthentification = urlObject.userAuthentification;
+									if(userAuthentification == undefined) 
+									{
+										console.log("undefined userAuthentification");
+										dummyResponseSimple(result);
+										return;
+									}
+									else
+									{
+										//console.log("user authentification request received");
+									}
+									
+									if(userAuthentification.ID == undefined || userAuthentification.Prenom == undefined
+										|| userAuthentification.Nom == undefined || userAuthentification.genre == undefined
+										|| userAuthentification.pass == undefined)
+										{
+											console.log(userAuthentification);
+											console.log("undefined credentials");
+											dummyResponseSimple(result);
+											return;
+										} 
+										else
+										{
+											//console.log("all credentials received");
+										}
+										
+									let queries = [];
+
+									if(commandArg === "all" || commandArg === "update") 
+									{
+										let resultc = res;
+										
+										forced_authentification_query(userAuthentification,undefined).then((tempResult)=>
+										{
+												if(tempResult)
+												{
+													//console.log("This guy is authenticated");
+													let resultd = resultc;
+													check_super_admin(userAuthentification,undefined,undefined).then((othertempResult)=>
+													{
+														//console.log("Inside checking admin type");
+														if(othertempResult.first)
+														{
+															//console.log("This guy is a primary admin");
+															///console.log("responding");
+															resultd.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+															,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
+															,"Access-Control-Max-Age":'86400'
+															,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
+															});
+															//console.log(primaryObject);
+															resultd.write(JSON.stringify({individuals:Object.entries(base.individuals),tables:base.bytable}));
+															resultd.end();
+														}
+														else if(othertempResult.second)
+														{
+															//console.log("This guy is a secondary kind of  admin");
+															
+															resultd.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+															,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
+															,"Access-Control-Max-Age":'86400'
+															,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
+															});
+																	
+															//resultd.write(JSON.stringify({individuals:[base.individuals[userAuthentification.ID]],tables:base.byId[userAuthentification.ID]}));
+															resultd.write(JSON.stringify({individuals:Object.entries(base.individuals),tables:base.bytable}));
+															resultd.end();
+															
+														}
+														else
+														{
+															//console.log("No answer");
+															dummyResponseSimple(resultd);
+														}	
+													},(error)=>
+													{
+														console.log(error);
+													});
+												}
+												else
+												{
+													dummyResponseSimple(resultc);
+													return;
+												}
+											} ,
+											(ex)=>
+											{
+												
+											});
+									}
+									else if(command == "vide")
+									{
+										result.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+													,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
+													,"Access-Control-Max-Age":'86400'
+													,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
+													});
+										result.write(JSON.stringify({OK:200}));
+										result.end();
+									}
+									else
+									{
+										//console.log("You are at area with response 500");
+										result.writeHead(500, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+													,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
+													,"Access-Control-Max-Age":'86400'
+													,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
+													});
+										result.end();
+									}
+								
 							}
+						}
 						});
 		}
 	}
@@ -301,6 +321,7 @@ var server = http.createServer(function(req,res)
 async function start()
 {
 	await add_all_users();
+	Load();	
 	server.listen(process.env.PORT || 3035);
 	console.log("Listening at port 3035.............");
 }
@@ -670,7 +691,7 @@ async function formidableFileUpload(req,path,res)
 										base.bytable[tableId].rows.push(rows);
 										if(index_of_input_row != '-1' && base.bytable[tableId].rowsInput.length > 0)
 										{
-											let value = base.bytable[tableId].rowsInput.find((el)=> el.index.toString() == index_of_input_row);
+											let value = base.bytable[tableId].rowsInput.find(el=> el.index.toString() == index_of_input_row);
 											
 											if(value != undefined)
 											{
@@ -704,7 +725,7 @@ async function formidableFileUpload(req,path,res)
 										
 										if(index_of_input_row != '-1' &&  base.byId[tempuserAuthentification.ID][tableId].rowsInput.length > 0)
 										{
-											let value = base.byId[tempuserAuthentification.ID][tableId].rowsInput.find((el)=> el.index.toString() == index_of_input_row);
+											let value = base.byId[tempuserAuthentification.ID][tableId].rowsInput.find(el=> el.index.toString() == index_of_input_row);
 											if(value != undefined )
 											{
 													let found_elements_index = base.byId[tempuserAuthentification.ID][tableId].rowsInput.indexOf(value);
@@ -2048,7 +2069,7 @@ async function doGetHTTPRequest(hostName,port,command)
 				
 				res.on("end",function()
 				{
-					console.log(data);
+					//console.log(data);
 					resolve(true);
 					try
 					{
@@ -2071,3 +2092,780 @@ async function doGetHTTPRequest(hostName,port,command)
 		let awaitres = await doGetHTTPRequest("serveur-de-pointage-de-msa.onrender.com",undefined,"command=vide");
 		//console.log(!awaitres?"Bad refreshing result":"Good refreshing result");
 		},1000);
+		
+	function Load()
+	{
+		
+		let employees = read("employees.txt");
+		if(employees)
+		{
+			model.employees = employees;
+			console.log(employees);
+		}
+		
+		let localities = read("localities.txt");
+		if(localities)
+		{
+			model.localities = localities;
+			console.log(localities);
+		}
+		
+		let projects = read("projects.txt");
+		if(projects)
+		{
+			model.projects = projects;
+			console.log(projects);
+		}
+
+		let IDsFile = read("IDs.txt");
+		if(IDsFile)
+		{
+			Object.assign(IDs,IDsFile);
+			console.log(IDs);
+		}
+		
+	}
+		
+	function findCommand(command,res)
+	{
+		res.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+												,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
+												,"Access-Control-Max-Age":'86400'
+												,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"});
+												//console.log("Sending response");
+		console.log(command);	
+		//set added list element to question during fill up,
+		//set added theme of project into references of employee
+		if( command && command.obj && command.obj.ID && command.type == "wait_for_update" )
+		{
+			if(!connections[command.obj.ID])
+				connections[command.obj.ID] = [];
+			connections[command.obj.ID].push(res);
+			return;
+		}
+		
+		if(command &&  command.obj && command.obj.project && command.obj.project.rank  && command.type == "add-project-object")
+		{	
+			if( model.projects[command.obj.project.rank] == undefined )
+			{
+				model.projects[command.obj.project.rank] = command.obj.project;
+				save(model.projects,"projects.txt");
+				
+				res.write(JSON.stringify({command:"update_added_projects"}));
+				res.end();
+				const values = Object.values(IDs).filter(emp => emp.admin);
+				
+				if(values)
+				{
+					values.forEach(el=> 
+					{
+						let allValues = connections[el.ID];
+						if(allValues && el.ID != command.obj.employee_ID)
+						allValues.forEach(temp =>{
+							if(temp && !temp.writableEnded)
+							{
+								temp.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+									,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
+									,"Access-Control-Max-Age":'86400'
+									,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"});
+								temp.write(JSON.stringify({command:"update_added_projects",obj:command.obj.project}));
+								//connections[el.ID] = undefined;
+								console.log("response to "+el.ID);temp.end();
+							}
+						});
+					});
+				}
+				
+				return;
+			}
+			else
+			{	
+				model.projects[command.obj.project.rank] = command.obj.project;
+				save(model.projects,"projects.txt");
+				
+				res.write(JSON.stringify({command:"update_added_projects"}));
+				res.end();
+				
+				const values = Object.values(IDs).filter(emp => emp.admin);
+				
+				if(values)
+				{
+					values.forEach(el=> 
+					{
+						let allValues = connections[el.ID];
+						if(allValues && el.ID != command.obj.employee_ID)
+						allValues.forEach(temp =>{
+							if(temp && !temp.writableEnded)
+							{
+								temp.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+									,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
+									,"Access-Control-Max-Age":'86400'
+									,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"});
+								temp.write(JSON.stringify({command:"update_added_projects",obj:command.obj.project}));
+								//connections[el.ID] = undefined;
+								console.log("response to "+el.ID);temp.end();
+							}
+						});
+					});
+				}
+				
+				return;
+			}
+		}
+		
+		if(command  && command.obj && command.obj.project && command.obj.project.rank && command.type == "update-theme-quest")
+		{	
+			if( command.obj && model.projects[command.obj.project.rank] == undefined )
+			{
+				let result = model.projects[command.obj.project.rank].themes.find(th => th.rank == command.obj.rank);
+				if(result)
+				{
+					update(result,command.commandArg);
+					save(model.projects,"projects.txt");
+					let otherThemes = [];
+					let empsThemes  =  [];
+					Object.Values(model.employees).forEach(emp =>
+					{
+						emp.themes.forEach(el => {
+							if(el.rank == command.obj.rank)
+							{
+								let theme = el.locality.theme;
+								update(theme,command.commandArg);
+								save(result,"employee"+emp.ID+".txt");
+								otherThemes.push({empID: emp.ID,theme:theme});
+								empsThemes.push(el);
+							}
+						});
+					});
+					
+					res.write(JSON.stringify({command:"update_theme",main:result,empsTheme:empsThemes,empsLocalityThemes:otherThemes}));
+					res.end();
+					return;
+				}
+				else
+				{						
+					res.write(JSON.stringify({res:"No changes"}));
+					res.end();
+					return;
+				}
+			}
+		}
+		
+		if(command &&  command.type == "update_project_desc" && command.obj)
+		{
+			let change = false;
+			console.log(command);
+			Object.values(model.employees).forEach(el=>{
+				if( emp.ID == command.obj.employee_ID )
+				{
+						const foundtheme = emp.themes.find(th=> th.rank == command.obj.themeRank);
+						if( foundtheme )
+						{
+							//console.log("foundtheme");
+							const foundSubtheme = foundtheme.subthemes.find(subth=> subth.rank == command.obj.subthemeRank);
+							if( foundSubtheme )
+							{	
+								//console.log("foundsubtheme");
+								const question = foundSubtheme.questions.find(qu => qu.rank == command.obj.questionRank);
+								if( question )
+								{
+									question[command.obj.key] = command.obj.value;
+									change = true;
+								}
+							}
+						}
+				}
+			});
+			
+			if(change)
+			{
+				const values = Object.values(IDs).filter(emp => emp.subadmin || emp.admin || model.employees[emp.ID].themes.find(th=> th.rank == command.obj.themeRank) != undefined);
+				
+				if(values)
+				{
+					values.forEach(el=> 
+					{
+						let allValues = connections[el.ID];
+						if(allValues && el.ID != command.obj.employee_ID)
+						allValues.forEach(temp =>{
+							if(temp && !temp.writableEnded)
+							{
+								temp.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+									,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
+									,"Access-Control-Max-Age":'86400'
+									,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"});
+								temp.write(JSON.stringify({command:"update_project_desc",obj:command.obj}));
+								//connections[el.ID] = undefined;
+								console.log("response to "+el.ID);temp.end();
+							}
+						});
+					});
+				}
+				
+				res.write(JSON.stringify({command:"update_project_desc",obj:command.obj}));
+				res.end();
+				
+				save(model.employees,"employees.txt");
+				return;
+			}
+		}
+		
+		if(command && command.type == "update_flll_anwer_to_question" && command.obj)
+		{
+			console.log(command.obj);
+			let change_command = {};
+			const emp = model.employees[command.obj.employee_ID];
+			
+			change_command["empID"] = command.obj.employee_ID;
+			change_command["themeRank"] = command.obj.themeRank;
+			change_command["subthemeRank"] = command.obj.subthemeRank;
+			change_command["questionRank"] = command.obj.questionRank;
+			change_command["themeRank"] = command.obj.themeRank;
+			change_command["changes"] = [];
+			
+			if( emp )
+			{
+					const foundtheme = emp.themes.find(th=> th.rank == command.obj.themeRank);
+					if( foundtheme )
+					{
+						console.log("foundtheme");
+						const foundSubtheme = foundtheme.subthemes.find(subth=> subth.rank == command.obj.subthemeRank);
+						if( foundSubtheme )
+						{	
+							console.log("foundsubtheme");
+							const question = foundSubtheme.questions.find(qu => qu.rank == command.obj.questionRank);
+							if( question )
+							{
+								console.log("question");
+							
+								let changedTemp = false;
+								if( command.obj.valueQuestion && !command.obj.multipleValuesReference )
+								{
+									question.value = command.obj.value;
+									changedTemp = true;
+									console.log("valueQuestion");
+									change_command["changes"].push({single_value_change:true,change:"value",into:command.obj.value});
+								}
+								else if ( command.obj.valueQuestion && command.obj.multipleValuesReference ) 
+								{
+									if( question.type.singleChoice)
+									{
+										if(command.obj.checkedValue)
+										{
+											const ref = {change:"values",each:[],into:[]};
+											change_command["changes"].push(ref);
+											question.values.forEach(el=>
+											{
+												el.checked = false;
+												ref.each.push("checked");
+												ref.into.push(false);
+											});
+										}
+									}
+									
+									console.log("valueQuestion with multiple refs");
+									question.values[command.obj.index] = command.obj.value;	
+									changedTemp = true;	
+								}
+								else if(command.obj.radioValue)
+								{
+									if(command.obj.fromRefValues)
+									{
+										console.log("radioValue with fromRefValues");
+										if(command.obj.checkedValue)
+										{
+											question.values.forEach(item,aindex=> 
+											{
+												const ref = {change:"values",each:[],into:[],indexedSpecially: true,specialIndex:command.obj.index,indexedSpeciallyValue:command.obj.value};
+												change_command["changes"].push(ref);
+												if(item.checked)
+												{
+													item.checked = false;
+													changedTemp = true;
+													//ref.each.push("checked");
+													//ref.into.push(false);
+												}
+											});
+										}
+										question.values[command.obj.index] = command.obj.modelValue;	
+										changedTemp = true;
+									}
+									else
+									{
+										
+										console.log("radioValue without fromRefValues");
+										console.log(command.obj);
+										console.log(2397);
+										if(command.obj.checkedValue)
+										{
+											console.log("Inside checkedValue");
+											console.log(question.items[command.obj.index]);
+											const ref = {change:"items",each:[],into:[],indexedSpecially: true,specialIndex:command.obj.index,
+											indexedSpeciallyValue:command.obj.value};
+											change_command["changes"].push(ref);
+											
+											if(command.obj.modelValue.checked)
+											{
+												question.items.forEach(item=> 
+												{
+													item.checked = false;
+													changedTemp = true;		
+													//ref.each.push("checked");
+													//ref.into.push(false);	
+												});
+											}
+										}
+										question.items[command.obj.index] = command.obj.modelValue;
+										console.log(command.obj.modelValue);
+										console.log("Item given");changedTemp = true;
+									}
+								}
+								else if(command.obj.checkValue)
+								{
+									if(command.obj.fromRefValues)
+									{
+										console.log("checkValue with fromRefValues");
+										question.values[command.obj.index] = command.obj.modelValue;	
+										change_command["changes"].push({change:"values",indexed:true,index:command.obj.index,into:command.obj.modelValue});
+									}
+									else
+									{
+										question.items[command.obj.index] = command.obj.modelValue;	
+										console.log(command.obj);
+										console.log("checkValue without fromRefValues");
+										console.log(question.items[command.obj.index] );
+										change_command["changes"].push({change:"items",indexed:true,index:command.obj.index,into:command.obj.modelValue});
+									}
+									changedTemp = true;
+								}
+								else if (command.obj.listQuestion) 
+								{
+									question.list[command.obj.outterIndex].items[command.obj.index].value = command.obj.value;			
+									change_command["changes"].push({nested:[{prop:"list",index:command.obj.outterIndex},{prop:"items",index:command.obj.index,value:"value",into:command.obj.value}]});
+									changedTemp = true;
+								}
+								
+								
+								if(changedTemp)
+								{
+									console.log(model.employees)
+			
+									console.log("saved to model");
+									save(model.employees,"employees.txt");
+									res.write(JSON.stringify({command:"updated_flll_anwer_to_question"}));
+									res.end();
+									
+									let values = [];
+									Object.values(IDs).forEach(emp => 
+									{ 
+										if( emp.admin || emp.subadmin ||  model.employees[emp.ID]?.themes.find(th=> th.rank == command.obj.themeRank) )
+										{
+											values.push(emp);
+										}
+										
+									});
+									
+									if(values)
+									{
+										values.forEach(el=> 
+										{
+											//console.log(el);
+										
+											let allValues = connections[el.ID]; 
+											console.log("Before all values");
+											//console.log(allValues);
+											//console.log(connections);
+											if(allValues && el.ID != command.obj.employee_ID)
+												allValues.forEach(temp =>{
+												if(temp && !temp.writableEnded)
+												{
+													temp.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+														,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
+														,"Access-Control-Max-Age":'86400'
+														,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"});
+													temp.write(JSON.stringify({command:"updated_flll_anwer_to_question",change_commands:change_command}));
+													//connections[el.ID] = undefined;
+													console.log("response to "+el.ID);temp.end();
+												}
+											});
+										});
+									}
+									
+								}
+								else
+								{
+									res.write(JSON.stringify({command:"no changes"}));
+									res.end();
+								}
+								return;
+							}
+						}
+					}
+			}
+		}
+		
+		if( command && command.type == "link-employee-theme-location" && command.obj && command.obj.emp
+			&& command.obj.theme && command.obj.locality)
+		{
+			let result = model.employees[command.obj.emp.ID];
+			if(result)
+			{
+				let resulttheme = result.themes.find(th=> 
+				th.rank == command.obj.theme.rank && ( th.locality.country == command.obj.theme.country && th.locality.region == command.obj.theme.region
+				&& th.locality.department == command.obj.theme.department && th.locality.commune == command.obj.theme.commune && th.locality.street == command.obj.theme.street) );
+				
+				if(resulttheme)
+				{
+					console.log("Theme already existant");
+					result.themes[result.themes.indexOf(resulttheme)] = command.obj.theme;
+					command.obj.theme.locality = command.obj.locality; 
+					save(model.employees,"employees.txt");
+					res.write(JSON.stringify({command:"update_employee_projects",obj:{thRank:command.obj.theme.rank,locality:resulttheme.locality,ID:command.obj.emp.ID}}));
+					res.end();
+					
+					const values = Object.values(IDs).find(emp => emp.admin || emp.subadmin || model.employees[emp.ID].find(aEmp=>   aEmp.themes.find(th=>  th.rank == command.obj.themeRank) != undefined) != undefined );
+					
+					if(values)
+					{
+						values.forEach(el=> 
+						{
+							let allValues = connections[el.ID];
+							if(allValues && el.ID != command.obj.employee_ID)
+							allValues.forEach(temp =>{
+								if(temp && !temp.writableEnded)
+								{
+									temp.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+										,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
+										,"Access-Control-Max-Age":'86400'
+										,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"});
+									temp.write(JSON.stringify({command:"update_employee_projects",obj:{theme: command.obj.theme,thRank:command.obj.theme.rank,locality:command.obj.locality,ID:command.obj.emp.ID}}));
+									//connections[el.ID] = undefined;
+									console.log("response to "+el.ID);temp.end();
+								}
+							});
+						});
+					}
+					return;
+									
+				}
+				else
+				{
+					let copy = JSON.parse(JSON.stringify(command.obj.theme));
+					command.obj.theme.locality = command.obj.locality; 
+					command.obj.theme.locality.theme = copy; 
+					console.log("Theme not already existant");
+					result.themes.push(command.obj.theme);
+					save(model.employees,"employees.txt");
+					res.write(JSON.stringify({command:"update_employee_projects",obj:{theme: command.obj.theme,thRank:command.obj.theme.rank,locality:command.obj.theme.locality,ID:command.obj.emp.ID}}));
+					res.end();
+					
+					const values =[];
+					Object.values(IDs).forEach(emp => 
+					{
+						console.log(emp);
+						if(emp.admin || emp.subadmin || (model.employees[emp.ID] && model.employees[emp.ID].themes && model.employees[emp.ID].themes.find(th=>  th.rank == command.obj.themeRank) != undefined)  )
+						{
+							values.push(emp);
+						}
+					});
+					
+					if(values)
+					{
+						values.forEach(el=> 
+						{
+							let allValues = connections[el.ID];
+							if(allValues && el.ID != command.obj.employee_ID)
+							allValues.forEach(temp =>{
+								if(temp && !temp.writableEnded)
+								{
+									temp.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+										,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
+										,"Access-Control-Max-Age":'86400'
+										,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"});
+									temp.write(JSON.stringify({command:"update_employee_projects",obj:{theme: command.obj.theme,thRank:command.obj.theme.rank,locality:command.obj.locality,ID:command.obj.emp.ID}}));
+									//connections[el.ID] = undefined;
+									console.log("response to "+el.ID);temp.end();
+								}
+							});
+						});
+					}
+									
+					return;
+				}
+			}
+			else
+			{
+				res.write(JSON.stringify({res:"No changes"}));
+				res.end();
+				return;
+			}
+			
+			res.write(JSON.stringify({res:"No changes"}));
+			res.end();
+			return;
+		}
+		
+		if(command.type == "login-quest")
+		{	
+			if(IDs[command.obj.ID] && command.obj.pass == getPassword())
+			{
+				res.write(JSON.stringify({loggedIn:true,obj:IDs[command.obj.ID]}));
+				res.end();
+				return;
+			}
+			
+			res.write(JSON.stringify({loggedIn:false}));
+			res.end();
+			return;
+		}
+		
+		if(command.type == "add-locality-object" && command.obj)
+		{
+			if(!model.localities.find( loc => 
+			
+				loc.country == command.obj.country && loc.region == command.obj.region && loc.department == command.obj.department 
+				&& loc.commune == command.obj.commune && loc.street == command.obj.street
+			))
+			{
+				model.localities.push(command.obj);
+				save(model.localities,"localities.txt");
+				
+				
+				res.write(JSON.stringify({command:"update_localities"}));
+				res.end();
+				
+				const values = Object.values(IDs).filter(emp => emp.admin );
+				
+				
+				if(values)
+				{
+					values.forEach(el=> 
+					{
+						const temp = connections[el.ID];
+						let allValues = connections[el.ID];
+						if(allValues && el.ID != command.obj.employee_ID)
+							allValues.forEach(temp => {
+								
+							if(temp && !temp.writableEnded)
+							{
+								temp.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+								,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
+								,"Access-Control-Max-Age":'86400'
+								,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"});
+								temp.write(JSON.stringify({command:"add-locality-object",obj:command.obj}));
+								
+								connections[el.ID] = undefined;
+								console.log("response to "+el.ID);temp.end();
+							}});
+					});
+				}
+									
+				
+				return;
+			}
+			else
+			{
+				res.write(JSON.stringify({res:"No changes"}));
+				res.end();
+				return;
+			}
+		}
+		if(command.type == "assign_to_subadmin" && command.obj)
+		{
+			if(!model.employees[command.obj.ID])
+			{
+				const emp = model.employees[command.obj.IDSubadmin];
+				if(IDS[command.obj.IDSubadmin].subadmin)
+				{
+					if(!emp.employees)
+					{
+						emp.employees = [];
+						emp.employees.push(command.obj.newemp);
+					
+					}
+					else if (!emp.employees.find(emp=> emp.ID == command.obj.IDSubadmin))
+					{
+						emp.employees.push(command.obj.newemp);
+						
+					}
+					
+					
+					const values = Object.values(IDs).filter(emp => emp.admin || emp.subadmin );
+				
+					if(values)
+					{
+						values.forEach(el=> 
+						{
+							const allValues = connections[el.ID];
+							if(el.ID != command.obj.employee_ID)
+							{
+								allValues.forEach(temp => {
+									if(temp && !temp.writableEnded)
+									{
+										console.log(el.ID);
+										temp.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+										,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
+										,"Access-Control-Max-Age":'86400'
+										,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"});
+										temp.write(JSON.stringify({command:"assign_to_subadmin"}));
+										
+										connections[el.ID] = undefined;
+										temp.end();
+									}
+								});
+							}
+						});
+					}
+									
+					return;
+				}
+				model.employees[command.obj.ID] = command.obj;
+				
+			}
+		}
+		if(command.type == "add-emp-object" && command.obj)
+		{
+			if(!model.employees[command.obj.ID])
+			{
+				model.employees[command.obj.ID] = command.obj;
+				command.obj.admin = command.obj.admin == "admin";
+				command.obj.subadmin = command.obj.subadmin == "subadmin";
+				command.obj.themes = [];
+				let guy = {ID:command.obj.ID,password:password,admin:command.obj.admin == "admin",subadmin:command.obj.admin == "subadmin"};
+				add(guy);
+				console.log(model);
+				console.log(IDs);
+				save(model.employees,"employees.txt");
+				save(IDs,"IDs.txt");
+				
+				res.write(JSON.stringify({command:"update_employees"}));
+				res.end();
+				
+				console.log(IDs);
+				console.log(model.employees);
+				
+				const values = Object.values(IDs).filter(emp => emp.admin || emp.subadmin );
+				
+				if(values)
+				{
+					values.forEach(el=> 
+					{
+						const allValues = connections[el.ID];
+						if(el.ID != command.obj.employee_ID)
+						{
+							allValues.forEach(temp => {
+								if(temp && !temp.writableEnded)
+								{
+									console.log(el.ID);
+									temp.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+									,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
+									,"Access-Control-Max-Age":'86400'
+									,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"});
+									temp.write(JSON.stringify({command:"update_employees",obj:command.obj}));
+									
+									connections[el.ID] = undefined;
+									console.log("response to "+el.ID);temp.end();
+								}
+							});
+						}
+					});
+				}
+									
+				
+				return;
+			}
+			
+			res.write(JSON.stringify({res:"No changes"}));
+			res.end();
+			return;
+		}
+		
+		if(command.type == "update-quest" && command.obj.pass == getPassword())
+		{
+			if(IDs[command.obj.ID].admin)
+			{
+				res.write(JSON.stringify({obj:{ employees:Object.values(model.employees),
+					localities:Object.values(model.localities),
+					projects: Object.values(model.projects) 
+				}}));
+			}
+			else
+			{
+				const response = {obj:{ employees:[model.employees[command.obj.ID]],
+					localities: model.employees[command.obj.ID].themes.map( th=> th.locality),
+					projects: Object.values(model.projects).filter(el=> el.themes.find(th=>  model.employees[command.obj.ID].themes.find(th2 => th2.rank == th.rank) != undefined) != undefined ) 
+				}};
+				
+				if(!response.projects)
+				{
+					response.projects = [];
+				}
+				
+				res.write(JSON.stringify(response));
+			}
+			res.end();
+			return;
+		}
+		
+		res.write(JSON.stringify({res:"Hey Looser..."}));
+		res.end();
+		
+	}
+
+
+	function add(guy)
+	{
+		let result = Object.keys(IDs).find(el => (IDs[el].password == password == guy.password) &&  el == guy.ID);
+		if(!result && guy.password == password)
+		{
+			IDs[guy.ID] = guy;
+		}
+	}
+
+	function update(given,commands)
+	{
+		let curr = given;
+		commands.forEach( el => 
+		{
+			if( el.set )
+			{
+				curr[el.setKey] = el.setValue;
+			}
+			else if( el.find)
+			{
+				curr = curr[el.findKey];
+			}
+		});
+	}
+
+	function save(object,fname)
+	{
+		fs.writeFile(fname,JSON.stringify(object),(err,res)=>
+		{
+			if(err)
+			{
+				console.log(err);
+				setTimeout(save,1000,object,fname);
+			}
+		});
+	}
+
+	function read(fname)
+	{
+		if(fs.existsSync(fname))
+		{
+			let data = fs.readFileSync(fname,'utf8');
+			if(data.length > 0)
+			{
+				const object = JSON.parse(data);
+				console.log(object);
+				return object;
+			}
+		}
+		return undefined;
+	}
+	
+	function getPassword() 
+	{
+			return "ADOBE";
+	}
