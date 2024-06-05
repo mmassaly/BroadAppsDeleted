@@ -1,0 +1,3 @@
+Doit lier question 5 avec un texte pour le choix radio PJ rank 1 theme 1 and PJ rank 1 theme 2
+Remove question 12 from PJ rank 1 theme 2
+Remove question 3 from PJ rank 1 theme 2 subquestion 4

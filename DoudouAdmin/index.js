@@ -21,8 +21,8 @@ let data_type_converter = {'character varying':'text',date:'Date',text:'text',ti
 		,'decimal(17,2)':'Decimal(17,2)','decimal(18,2)':'Decimal(18,2)','decimal(19,2)':'Decimal(19,2)','decimal(20,2)':'Decimal(20,2)','decimal(21,2)':'Decimal(21,2)'};
 
 const IDs = {};
-IDs["9999"] = {ID:"9999",password:getPassword(),admin:true,subadmin:false,collector:false};
-const model = {projects:{},employees:{},localities:[]};
+IDs["9999"] = {ID:"9999",password:getPassword(),supadmin:true,admin:true,subadmin:false,collector:false};
+const model = {projects:{},employees:{},localities:[],subadmins:{}};
 const password = getPassword();
 
 
@@ -2124,6 +2124,11 @@ async function doGetHTTPRequest(hostName,port,command)
 			console.log(IDs);
 		}
 		
+		let subadminsFile = read("subadmins.txt");
+		if(subadminsFile)
+		{
+			Object.assign(model.subadmins,subadminsFile);
+		}
 	}
 		
 	function findCommand(command,res)
@@ -2146,8 +2151,10 @@ async function doGetHTTPRequest(hostName,port,command)
 		
 		if(command &&  command.obj && command.obj.project && command.obj.project.rank  && command.type == "add-project-object")
 		{	
+			
 			if( model.projects[command.obj.project.rank] == undefined )
 			{
+				
 				model.projects[command.obj.project.rank] = command.obj.project;
 				save(model.projects,"projects.txt");
 				
@@ -2180,6 +2187,7 @@ async function doGetHTTPRequest(hostName,port,command)
 			}
 			else
 			{	
+				console.log("inside");
 				model.projects[command.obj.project.rank] = command.obj.project;
 				save(model.projects,"projects.txt");
 				
@@ -2256,7 +2264,7 @@ async function doGetHTTPRequest(hostName,port,command)
 			let change = false;
 			console.log(command);
 			Object.values(model.employees).forEach(el=>{
-				if( emp.ID == command.obj.employee_ID )
+				if( el.ID == command.obj.employee_ID )
 				{
 						const foundtheme = emp.themes.find(th=> th.rank == command.obj.themeRank);
 						if( foundtheme )
@@ -2674,30 +2682,31 @@ async function doGetHTTPRequest(hostName,port,command)
 		{
 			if(!model.employees[command.obj.ID])
 			{
-				const emp = model.employees[command.obj.IDSubadmin];
-				if(IDS[command.obj.IDSubadmin].subadmin)
+				const emp = model.subadmins[command.obj.subadmin.ID];
+				if(IDs[command.obj.subadmin.ID].subadmin)
 				{
+					console.log(command.obj.subadmin.ID+" found");
 					if(!emp.employees)
 					{
 						emp.employees = [];
 						emp.employees.push(command.obj.newemp);
-					
+						save(model.subadmins,"subadmins.txt");
 					}
-					else if (!emp.employees.find(emp=> emp.ID == command.obj.IDSubadmin))
+					else if (!emp.employees.find(emp=> emp.ID == command.obj.newemp.ID))
 					{
 						emp.employees.push(command.obj.newemp);
-						
+						save(model.subadmins,"subadmins.txt");
 					}
 					
-					
-					const values = Object.values(IDs).filter(emp => emp.admin || emp.subadmin );
+					const values = Object.values(IDs).filter(emp => emp.admin || ( emp.subadmin && emp.ID == command.obj.subadmin.ID ) ) ;
 				
 					if(values)
 					{
+						console.log(values);
 						values.forEach(el=> 
 						{
 							const allValues = connections[el.ID];
-							if(el.ID != command.obj.employee_ID)
+							if(el.ID != command.obj.newemp.ID && allValues)
 							{
 								allValues.forEach(temp => {
 									if(temp && !temp.writableEnded)
@@ -2707,7 +2716,7 @@ async function doGetHTTPRequest(hostName,port,command)
 										,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
 										,"Access-Control-Max-Age":'86400'
 										,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"});
-										temp.write(JSON.stringify({command:"assign_to_subadmin"}));
+										temp.write(JSON.stringify({command:"assign_to_subadmin",obj:command.obj}));
 										
 										connections[el.ID] = undefined;
 										temp.end();
@@ -2719,39 +2728,54 @@ async function doGetHTTPRequest(hostName,port,command)
 									
 					return;
 				}
-				model.employees[command.obj.ID] = command.obj;
-				
+				else
+				{
+					console.log(command.obj.subadmin.ID+" not found");
+					res.write(JSON.stringify({res:"No changes"}));
+					res.end();
+					return;
+				}
 			}
 		}
 		if(command.type == "add-emp-object" && command.obj)
 		{
 			if(!model.employees[command.obj.ID])
 			{
-				model.employees[command.obj.ID] = command.obj;
-				command.obj.admin = command.obj.admin == "admin";
-				command.obj.subadmin = command.obj.subadmin == "subadmin";
+				let guy = {ID:command.obj.ID,password:password,first: command.obj.first, second: command.obj.second,
+				gender:command.obj.gender ,admin:command.obj.admin == "admin",
+				subadmin:command.obj.admin == "subadmin",collector:command.obj.admin == "collector"};
+				/*
+				command.obj.admin = guy.admin;
+				command.obj.subadmin = guy.subadmin;
+				command.obj.collector = guy.collector;
 				command.obj.themes = [];
-				let guy = {ID:command.obj.ID,password:password,admin:command.obj.admin == "admin",subadmin:command.obj.admin == "subadmin"};
+				*/
 				add(guy);
-				console.log(model);
-				console.log(IDs);
+				console.log(command.obj);
+				console.log(guy);
+				model.employees[command.obj.ID] = guy;
 				save(model.employees,"employees.txt");
 				save(IDs,"IDs.txt");
-				
-				res.write(JSON.stringify({command:"update_employees"}));
+				if(guy.subadmin)
+				{
+					if(!model.subadmins[command.obj.ID])
+					{
+						model.subadmins[command.obj.ID] = guy;
+					}
+					save(model.subadmins,"subadmins.txt");	
+				}
+				guy.themes = [];
+				res.write(JSON.stringify({command:"update_employees",collector:guy.collector,obj:guy}));
 				res.end();
 				
-				console.log(IDs);
-				console.log(model.employees);
-				
-				const values = Object.values(IDs).filter(emp => emp.admin || emp.subadmin );
+				const values = Object.values(IDs).filter(emp => emp.admin );
 				
 				if(values)
 				{
 					values.forEach(el=> 
 					{
 						const allValues = connections[el.ID];
-						if(el.ID != command.obj.employee_ID)
+						if(el.ID != command.obj.employee_ID && allValues)
 						{
 							allValues.forEach(temp => {
 								if(temp && !temp.writableEnded)
@@ -2761,7 +2785,7 @@ async function doGetHTTPRequest(hostName,port,command)
 									,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
 									,"Access-Control-Max-Age":'86400'
 									,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"});
-									temp.write(JSON.stringify({command:"update_employees",obj:command.obj}));
+									temp.write(JSON.stringify({command:"update_employees",obj:guy}));
 									
 									connections[el.ID] = undefined;
 									console.log("response to "+el.ID);temp.end();
@@ -2786,14 +2810,16 @@ async function doGetHTTPRequest(hostName,port,command)
 			{
 				res.write(JSON.stringify({obj:{ employees:Object.values(model.employees),
 					localities:Object.values(model.localities),
-					projects: Object.values(model.projects) 
+					projects: Object.values(model.projects),
+					subadmins: Object.values(model.subadmins)
 				}}));
 			}
 			else
 			{
-				const response = {obj:{ employees:[model.employees[command.obj.ID]],
+				const response = {obj:{ employees:Object.values(model.employees),
 					localities: model.employees[command.obj.ID].themes.map( th=> th.locality),
-					projects: Object.values(model.projects).filter(el=> el.themes.find(th=>  model.employees[command.obj.ID].themes.find(th2 => th2.rank == th.rank) != undefined) != undefined ) 
+					projects: Object.values(model.projects).filter(el=> el.themes.find(th=>  model.employees[command.obj.ID].themes.find(th2 => th2.rank == th.rank) != undefined) != undefined ), 
+					subadmins: Object.values(model.subadmins)
 				}};
 				
 				if(!response.projects)
