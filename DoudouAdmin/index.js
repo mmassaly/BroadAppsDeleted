@@ -52,6 +52,7 @@ var server = http.createServer(function(req,res)
 	{
 		callIndex++;
 		var reqData = "";
+		console.log(req.url);
 		if(req.url == "/form")
 		{
 			//console.log("incomming request but primary object is "+primaryObject);
@@ -74,7 +75,7 @@ var server = http.createServer(function(req,res)
 							}
 							catch(ex)
 							{
-								//console.log(ex);
+								console.log(ex);
 								dummyResponseSimple(res);
 								return;
 							}
@@ -2133,14 +2134,32 @@ async function doGetHTTPRequest(hostName,port,command)
 		
 	function findCommand(command,res,req)
 	{
+		
+		console.log(command);	
+		//set added list element to question during fill up,
+		//set added theme of project into references of employee
+		if( command && command.obj && command.obj.ID && command.type == "getProjectsFile" )
+		{
+			res.writeHead(200, {"Content-Disposition":"attachment;filename="+command.fileName,"Content-Type": "text/plain","Access-Control-Allow-Origin":"*"
+												,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
+												,"Access-Control-Max-Age":'86400'
+												,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"});
+												//console.log("Sending response");
+			if(fs.existsSync(command.fileName))
+			{
+				const rStream = fs.createReadStream(command.fileName);
+				rStream.pipe(res);
+			}
+			else
+				res.end();
+			return;
+		}
+		
 		res.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
 												,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
 												,"Access-Control-Max-Age":'86400'
 												,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"});
 												//console.log("Sending response");
-		console.log(command);	
-		//set added list element to question during fill up,
-		//set added theme of project into references of employee
 		if( command && command.obj && command.obj.ID && command.type == "wait_for_update" )
 		{
 			console.log(req.headers.host); 
