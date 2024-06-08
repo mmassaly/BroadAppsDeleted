@@ -1,1 +1,0 @@
-{"9999":{"ID":"9999","password":"ADOBE","supadmin":true,"admin":true,"subadmin":false,"collector":false},"KhadySambe1":{"ID":"KhadySambe1","password":"ADOBE","first":"Khady","second":"Sambe","gender":"Femme","admin":true,"subadmin":false,"collector":false}}

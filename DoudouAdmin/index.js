@@ -13,7 +13,7 @@ var individuals_interest = [];
 const connections = {};
 let callIndex = 0;
 var max = 0;
-
+const login_id_and_network = {loggins:{},responses:{}};
 let blob_stuff = "vercel_blob_rw_AhayNnM8BUTRk7li_Pirrs7p4aeFH5cnD9hONM9peBfDhxd";
 let data_type_converter = {'character varying':'text',date:'Date',text:'text',time:'Time',integer:'Integer',boolean:'Boolean',decimal:'Decimal','decimal(3,2)':'Decimal(3,2)','decimal(3,2)':'Decimal(4,2)','decimal(5,2)':'Decimal(5,2)','decimal(6,2)':'Decimal(6,2)'
 		,'decimal(7,2)':'Decimal(7,2)','decimal(8,2)':'Decimal(8,2)','decimal(9,2)':'Decimal(9,2)','decimal(9,2)':'Decimal(9,2)','decimal(10,2)':'Decimal(10,2)','decimal(11,2)':'Decimal(11,2)'
@@ -22,7 +22,7 @@ let data_type_converter = {'character varying':'text',date:'Date',text:'text',ti
 
 const IDs = {};
 IDs["9999"] = {ID:"9999",password:getPassword(),supadmin:true,admin:true,subadmin:false,collector:false};
-const model = {projects:{},employees:{},localities:[],subadmins:{}};
+const model = {projects:{},employees:{},localities:[],subadmins:{},zones:["PIKINE","SAINT-LOUIS"]};
 const password = getPassword();
 
 
@@ -95,7 +95,7 @@ var server = http.createServer(function(req,res)
 							{
 								try
 								{
-									findCommand(urlObject,res);
+									findCommand(urlObject,res,req);
 								}
 								catch(ex)
 								{
@@ -2131,7 +2131,7 @@ async function doGetHTTPRequest(hostName,port,command)
 		}
 	}
 		
-	function findCommand(command,res)
+	function findCommand(command,res,req)
 	{
 		res.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
 												,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
@@ -2143,15 +2143,58 @@ async function doGetHTTPRequest(hostName,port,command)
 		//set added theme of project into references of employee
 		if( command && command.obj && command.obj.ID && command.type == "wait_for_update" )
 		{
-			if(!connections[command.obj.ID])
-				connections[command.obj.ID] = [];
-			connections[command.obj.ID].push(res);
+			console.log(req.headers.host); 
+			console.log(req.headers['user-agent']);
+			let temp = login_id_and_network.responses[command.obj.ID];
+			if(temp)
+			{
+				let tconnectedGuy = login_id_and_network.loggins[command.obj.ID];
+				if(tconnectedGuy)
+				{
+					tconnectedGuy = tconnectedGuy.find(guy=> req.headers.host == guy.reqSource && req.headers['user-agent'] == guy.userAgent);
+				}
+				
+				temp = temp.find(guy=> req.headers.host == guy.reqSource && req.headers['user-agent'] == guy.userAgent); 
+				if(tconnectedGuy && (temp && tconnectedGuy.date <= temp.date) )
+				{
+					res.write(JSON.stringify(temp.first));
+					res.end();
+				}
+				else if( temp )
+				{
+					res.end();
+					const tempIndex = temp.findIndex(guy=> req.headers.host == guy.reqSource && req.headers['user-agent'] == guy.userAgent);
+					temp.splice(tempIndex,1);
+				}
+				else
+				{
+					if(!connections[command.obj.ID])
+						connections[command.obj.ID] = [];
+					connections[command.obj.ID].push(res); 
+				}
+			}
+			else
+			{
+				let tconnectedGuy = login_id_and_network.loggins[command.obj.ID];
+				if(!tconnectedGuy)
+				{
+					login_id_and_network.loggins[command.obj.ID] = [command.obj];
+				}
+				else if(!tconnectedGuy.find(guy=> req.headers.host == guy.reqSource && req.headers['user-agent'] == guy.userAgent))
+				{
+					login_id_and_network.loggins[command.obj.ID].push({reqSource:req.headers.host,reqUserAgent : req.headers['user-agent'],date: new Date()});
+				}
+				
+				if(!connections[command.obj.ID])
+					connections[command.obj.ID] = [];
+				connections[command.obj.ID].push(res);
+				
+			}
 			return;
 		}
 		
 		if(command &&  command.obj && command.obj.project && command.obj.project.rank  && command.type == "add-project-object")
 		{	
-			
 			if( model.projects[command.obj.project.rank] == undefined )
 			{
 				
@@ -2160,7 +2203,55 @@ async function doGetHTTPRequest(hostName,port,command)
 				
 				res.write(JSON.stringify({command:"update_added_projects"}));
 				res.end();
-				const values = Object.values(IDs).filter(emp => emp.admin);
+				const values = Object.values(IDs);
+				
+				if(values)
+				{
+					values.forEach(el=> 
+					{
+						let allValues = connections[el.ID];
+						if(allValues )
+						allValues.forEach(temp =>{
+							if(temp && !temp.writableEnded)
+							{
+								temp.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+									,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
+									,"Access-Control-Max-Age":'86400'
+									,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"});
+								temp.write(JSON.stringify({command:"update_added_projects",obj:command.obj.project}));
+								
+								//connections[el.ID] = undefined;
+								console.log("response to "+el.ID);temp.end();
+							}
+							else if(temp.writableEnded)
+							{
+								if(login_id_and_network.responses[el.ID] == undefined )
+								{
+									login_id_and_network.responses[el.ID] = [{first:{command:"update_added_projects",obj:command.obj.project}
+									,reqSource:req.headers.host,reqUserAgent : req.headers['user-agent'],date: new Date()}];
+								}
+								else
+								{
+									login_id_and_network.responses[el.ID].push({first:{command:"update_added_projects",obj:command.obj.project}
+									,reqSource:req.headers.host,reqUserAgent : req.headers['user-agent'],date: new Date()});
+								}
+							}
+						});
+					});
+				}
+				
+				return;
+			}
+			else
+			{	
+				console.log("inside");
+				model.projects[command.obj.project.rank] = command.obj.project;
+				save(model.projects,"projects.txt");
+				
+				res.write(JSON.stringify({command:"update_added_projects"}));
+				res.end();
+				
+				const values = Object.values(IDs);
 				
 				if(values)
 				{
@@ -2179,39 +2270,18 @@ async function doGetHTTPRequest(hostName,port,command)
 								//connections[el.ID] = undefined;
 								console.log("response to "+el.ID);temp.end();
 							}
-						});
-					});
-				}
-				
-				return;
-			}
-			else
-			{	
-				console.log("inside");
-				model.projects[command.obj.project.rank] = command.obj.project;
-				save(model.projects,"projects.txt");
-				
-				res.write(JSON.stringify({command:"update_added_projects"}));
-				res.end();
-				
-				const values = Object.values(IDs).filter(emp => emp.admin);
-				
-				if(values)
-				{
-					values.forEach(el=> 
-					{
-						let allValues = connections[el.ID];
-						if(allValues && el.ID != command.obj.employee_ID)
-						allValues.forEach(temp =>{
-							if(temp && !temp.writableEnded)
+							else if(temp.writableEnded)
 							{
-								temp.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
-									,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
-									,"Access-Control-Max-Age":'86400'
-									,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"});
-								temp.write(JSON.stringify({command:"update_added_projects",obj:command.obj.project}));
-								//connections[el.ID] = undefined;
-								console.log("response to "+el.ID);temp.end();
+								if(login_id_and_network.responses[el.ID] == undefined )
+								{
+									login_id_and_network.responses[el.ID] = [{first:{command:"update_added_projects",obj:command.obj.project}
+									,reqSource:req.headers.host,reqUserAgent : req.headers['user-agent'],date: new Date()}];
+								}
+								else
+								{
+									login_id_and_network.responses[el.ID].push({first:{command:"update_added_projects",obj:command.obj.project}
+									,reqSource:req.headers.host,reqUserAgent : req.headers['user-agent'],date: new Date()});
+								}
 							}
 						});
 					});
@@ -2287,8 +2357,7 @@ async function doGetHTTPRequest(hostName,port,command)
 			
 			if(change)
 			{
-				const values = Object.values(IDs).filter(emp => emp.subadmin || emp.admin || model.employees[emp.ID].themes.find(th=> th.rank == command.obj.themeRank) != undefined);
-				
+				const values = Object.values(IDs);
 				if(values)
 				{
 					values.forEach(el=> 
@@ -2306,6 +2375,19 @@ async function doGetHTTPRequest(hostName,port,command)
 								//connections[el.ID] = undefined;
 								console.log("response to "+el.ID);temp.end();
 							}
+							else if(temp.writableEnded)
+							{
+								if(login_id_and_network.responses[el.ID] == undefined )
+								{
+									login_id_and_network.responses[el.ID] = [{first:{command:"update_project_desc",obj:command.obj}
+									,reqSource:req.headers.host,reqUserAgent : req.headers['user-agent'],date: new Date()}];
+								}
+								else
+								{
+									login_id_and_network.responses[el.ID].push({first:{command:"update_project_desc",obj:command.obj}
+									,reqSource:req.headers.host,reqUserAgent : req.headers['user-agent'],date: new Date()});
+								}
+							}
 						});
 					});
 				}
@@ -2317,198 +2399,465 @@ async function doGetHTTPRequest(hostName,port,command)
 				return;
 			}
 		}
-		
+		if(command && command.type == "add_list_category_item")
+		{
+			let changed = false;
+			const emp = model.employees[command.obj.employee_ID];
+			if(emp)
+			{
+				const rp = emp.reports.find(rp=>  rp.reportRank == command.obj.reportRank);
+					console.log(rp);console.log("responseRank");
+					if(rp)
+					{
+						const foundtheme = rp.project.themes.find(th=> th.rank == command.obj.themeRank);
+						if( foundtheme )
+						{
+							console.log("foundtheme");
+							const foundSubtheme = foundtheme.subthemes.find(subth=> subth.rank == command.obj.subthemeRank);
+							if( foundSubtheme )
+							{	
+								console.log("foundsubtheme");
+								const question = foundSubtheme.questions.find(qu => qu.rank == command.obj.questionRank);
+								if( question )
+								{
+									console.log("question");
+									const listFound = question.list.find(li=> li.rank == command.obj.listRank);
+									let tempIndex = 0;
+									while(listFound.items.length < command.obj.targetLength)
+									{
+										listFound.items.push({title:{basic:""},rank:listFound.items.length+1+tempIndex,value:
+										{
+											textual: "",
+											numeric: undefined,
+											decimal: undefined,
+											birthdate: "",
+											password: "",
+											GPS1: undefined,
+											GPS2: undefined,
+											GPS3: undefined,
+											GPS1Any: undefined,
+											GPS2Any: undefined,
+											GPS3Any: undefined,
+											email:"",
+											checked: false,
+											quality:""
+										}});
+										console.log("list count is "+listFound.items.length);
+										console.log("list item added ");
+										changed = true;
+										//save(model.employees,"employees.txt");
+										++tempIndex;
+									}
+								}
+							}
+						}
+					}
+			}		
+			if(changed)
+			{
+				save(model.employees,"employees.txt");
+				res.write(JSON.stringify({command:"update_list_category_item"}));
+				res.end();
+										
+				let values = [];
+				Object.values(IDs).forEach(curremp => 
+				{ 
+					if( curremp.admin || (curremp.subadmin && curremp.subadmin.zone == curremp.zone ) 
+						||  (model.employees[curremp.ID] && model.employees[curremp.ID].collector && curremp.ID == emp.ID) )
+					{
+						values.push(curremp);
+					}
+											
+				});
+				console.log(values);
+				
+				if(values)
+				{
+					values.forEach(el=> 
+					{
+												//console.log(el);
+											
+												let allValues = connections[el.ID]; 
+												console.log("Before all values");
+												//console.log(allValues);
+												//console.log(connections);
+												if(allValues)
+													allValues.forEach(temp =>{
+													console.log(el.ID);
+													if(temp && !temp.writableEnded)
+													{
+														temp.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+															,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
+															,"Access-Control-Max-Age":'86400'
+															,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"});
+														const newCommand = {command:"update_list_category_item"};
+														Object.assign(newCommand,command);
+														console.log(newCommand);
+														temp.write(JSON.stringify(newCommand));
+														//connections[el.ID] = undefined;
+														console.log("response to "+el.ID);temp.end();
+													}																			
+													else if(temp.writableEnded)
+													{
+														const newCommand = {command:"update_list_category_item"};
+														Object.assign(newCommand,command);
+														
+														temp.write(JSON.stringify(newCommand ));
+														if(login_id_and_network.responses[el.ID] == undefined )
+														{
+															login_id_and_network.responses[el.ID] = [{first:newCommand 
+															,reqSource:req.headers.host,reqUserAgent : req.headers['user-agent'],date: new Date()}];
+														}
+														else
+														{
+															login_id_and_network.responses[el.ID].push({first:newCommand 
+															,reqSource:req.headers.host,reqUserAgent : req.headers['user-agent'],date: new Date()});
+														}
+													}
+												});
+					});
+					
+					return;					
+				}
+			}
+					
+		}
 		if(command && command.type == "update_flll_anwer_to_question" && command.obj)
 		{
 			console.log(command.obj);
+			
 			let change_command = {};
 			const emp = model.employees[command.obj.employee_ID];
-			
+			console.log("Employee.................");
+			console.log(emp);
 			change_command["empID"] = command.obj.employee_ID;
+			change_command["reportRank"] = command.obj.reportRank;
 			change_command["themeRank"] = command.obj.themeRank;
 			change_command["subthemeRank"] = command.obj.subthemeRank;
 			change_command["questionRank"] = command.obj.questionRank;
-			change_command["themeRank"] = command.obj.themeRank;
 			change_command["changes"] = [];
 			
 			if( emp )
 			{
-					const foundtheme = emp.themes.find(th=> th.rank == command.obj.themeRank);
-					if( foundtheme )
+					const rp = emp.reports.find(rp=>  rp.reportRank == command.obj.reportRank);
+					console.log(rp);console.log("responseRank");
+					if(rp)
 					{
-						console.log("foundtheme");
-						const foundSubtheme = foundtheme.subthemes.find(subth=> subth.rank == command.obj.subthemeRank);
-						if( foundSubtheme )
-						{	
-							console.log("foundsubtheme");
-							const question = foundSubtheme.questions.find(qu => qu.rank == command.obj.questionRank);
-							if( question )
-							{
-								console.log("question");
-							
-								let changedTemp = false;
-								if( command.obj.valueQuestion && !command.obj.multipleValuesReference )
+						const foundtheme = rp.project.themes.find(th=> th.rank == command.obj.themeRank);
+						
+						if( foundtheme )
+						{
+							console.log("foundtheme");
+							const foundSubtheme = foundtheme.subthemes.find(subth=> subth.rank == command.obj.subthemeRank);
+							if( foundSubtheme )
+							{	
+								console.log("foundsubtheme");
+								const question = foundSubtheme.questions.find(qu => qu.rank == command.obj.questionRank);
+								if( question )
 								{
-									question.value = command.obj.value;
-									changedTemp = true;
-									console.log("valueQuestion");
-									change_command["changes"].push({single_value_change:true,change:"value",into:command.obj.value});
-								}
-								else if ( command.obj.valueQuestion && command.obj.multipleValuesReference ) 
-								{
-									if( question.type.singleChoice)
+									console.log("question");
+								
+									let changedTemp = false;
+									if(command.obj.valueQuestion && command.obj.sliderType)
 									{
-										if(command.obj.checkedValue)
-										{
-											const ref = {change:"values",each:[],into:[]};
-											change_command["changes"].push(ref);
-											question.values.forEach(el=>
-											{
-												el.checked = false;
-												ref.each.push("checked");
-												ref.into.push(false);
-											});
-										}
-									}
-									
-									console.log("valueQuestion with multiple refs");
-									question.values[command.obj.index] = command.obj.value;	
-									changedTemp = true;	
-								}
-								else if(command.obj.radioValue)
-								{
-									if(command.obj.fromRefValues)
-									{
-										console.log("radioValue with fromRefValues");
-										if(command.obj.checkedValue)
-										{
-											question.values.forEach(item,aindex=> 
-											{
-												const ref = {change:"values",each:[],into:[],indexedSpecially: true,specialIndex:command.obj.index,indexedSpeciallyValue:command.obj.value};
-												change_command["changes"].push(ref);
-												if(item.checked)
-												{
-													item.checked = false;
-													changedTemp = true;
-													//ref.each.push("checked");
-													//ref.into.push(false);
-												}
-											});
-										}
-										question.values[command.obj.index] = command.obj.modelValue;	
+										change_command["changes"].push({single_value_change:true,change:"value",
+										sliderValue:command.obj.sliderValue,sliderType:command.obj.sliderType});
+										question.answered = command.obj.sliderValue;
+										console.log("answered question");
 										changedTemp = true;
 									}
-									else
+									else if( command.obj.valueQuestion && !command.obj.multipleValuesReference )
 									{
-										
-										console.log("radioValue without fromRefValues");
-										console.log(command.obj);
-										console.log(2397);
-										if(command.obj.checkedValue)
+										question.value = command.obj.value;
+										changedTemp = true;
+										console.log("valueQuestion");
+										change_command["changes"].push({single_value_change:true,change:"value",into:command.obj.value});
+									}
+									else if ( command.obj.valueQuestion && command.obj.multipleValuesReference ) 
+									{
+										if( question.type.singleChoice)
 										{
-											console.log("Inside checkedValue");
-											console.log(question.items[command.obj.index]);
-											const ref = {change:"items",each:[],into:[],indexedSpecially: true,specialIndex:command.obj.index,
-											indexedSpeciallyValue:command.obj.value};
-											change_command["changes"].push(ref);
-											
-											if(command.obj.modelValue.checked)
+											if(command.obj.checkedValue)
 											{
-												question.items.forEach(item=> 
+												const ref = {change:"values",each:[],into:[]};
+												change_command["changes"].push(ref);
+												question.values.forEach(el=>
 												{
-													item.checked = false;
-													changedTemp = true;		
-													//ref.each.push("checked");
-													//ref.into.push(false);	
+													el.checked = false;
+													ref.each.push("checked");
+													ref.into.push(false);
 												});
 											}
 										}
-										question.items[command.obj.index] = command.obj.modelValue;
-										console.log(command.obj.modelValue);
-										console.log("Item given");changedTemp = true;
+										
+										console.log("valueQuestion with multiple refs");
+										question.values[command.obj.index] = command.obj.value;	
+										changedTemp = true;	
 									}
-								}
-								else if(command.obj.checkValue)
-								{
-									if(command.obj.fromRefValues)
+									else if(command.obj.radioValue)
 									{
-										console.log("checkValue with fromRefValues");
-										question.values[command.obj.index] = command.obj.modelValue;	
-										change_command["changes"].push({change:"values",indexed:true,index:command.obj.index,into:command.obj.modelValue});
+										if(command.obj.fromRefValues)
+										{
+											console.log("radioValue with fromRefValues");
+											if(command.obj.checkedValue)
+											{
+												question.values.forEach(item,aindex=> 
+												{
+													const ref = {change:"values",each:[],into:[],indexedSpecially: true,specialIndex:command.obj.index,indexedSpeciallyValue:command.obj.value};
+													change_command["changes"].push(ref);
+													if(item.checked)
+													{
+														item.checked = false;
+														changedTemp = true;
+														//ref.each.push("checked");
+														//ref.into.push(false);
+													}
+												});
+											}
+											question.values[command.obj.index] = command.obj.modelValue;	
+											changedTemp = true;
+										}
+										else
+										{
+											
+											console.log("radioValue without fromRefValues");
+											console.log(command.obj);
+											console.log(2397);
+											if(command.obj.checkedValue)
+											{
+												console.log("Inside checkedValue");
+												console.log(question.items[command.obj.index]);
+												const ref = {change:"items",each:[],into:[],indexedSpecially: true,specialIndex:command.obj.index,
+												indexedSpeciallyValue:command.obj.value};
+												change_command["changes"].push(ref);
+												
+												if(command.obj.modelValue.checked)
+												{
+													question.items.forEach(item=> 
+													{
+														item.checked = false;
+														changedTemp = true;		
+														//ref.each.push("checked");
+														//ref.into.push(false);	
+													});
+												}
+											}
+											question.items[command.obj.index] = command.obj.modelValue;
+											console.log(command.obj.modelValue);
+											console.log("Item given");changedTemp = true;
+										}
+									}
+									else if(command.obj.checkValue)
+									{
+										if(command.obj.fromRefValues)
+										{
+											console.log("checkValue with fromRefValues");
+											question.values[command.obj.index] = command.obj.modelValue;	
+											change_command["changes"].push({change:"values",indexed:true,index:command.obj.index,into:command.obj.modelValue});
+										}
+										else
+										{
+											question.items[command.obj.index] = command.obj.modelValue;	
+											console.log(command.obj);
+											console.log("checkValue without fromRefValues");
+											console.log(question.items[command.obj.index] );
+											change_command["changes"].push({change:"items",indexed:true,index:command.obj.index,into:command.obj.modelValue});
+										}
+										changedTemp = true;
+									}
+									else if (command.obj.listQuestion) 
+									{
+										console.log(question.list[command.obj.outterIndex].items.length); console.log("****************************");
+										question.list[command.obj.outterIndex].items[command.obj.index].value = command.obj.value;			
+										change_command["changes"].push({nested:[{prop:"list",index:command.obj.outterIndex},{prop:"items",index:command.obj.index,value:"value",into:command.obj.value}]});
+										changedTemp = true;
+									}
+									
+									
+									if(changedTemp)
+									{
+										console.log("saved to model");
+										save(model.employees,"employees.txt");
+										res.write(JSON.stringify({command:"updated_flll_anwer_to_question"}));
+										res.end();
+										
+										let values = [];
+										Object.values(IDs).forEach(curremp => 
+										{ 
+											
+											
+											if( curremp.admin || (curremp.subadmin && curremp.subadmin.zone == curremp.zone ) 
+												||  (model.employees[curremp.ID] && model.employees[curremp.ID].collector && curremp.ID == emp.ID) )
+											{
+												values.push(curremp);
+											}
+											
+										});
+										console.log(values);
+										if(values)
+										{
+											values.forEach(el=> 
+											{
+												//console.log(el);
+											
+												let allValues = connections[el.ID]; 
+												console.log("Before all values");
+												//console.log(allValues);
+												//console.log(connections);
+												if(allValues)
+													allValues.forEach(temp =>{
+													console.log(el.ID);
+													if(temp && !temp.writableEnded)
+													{
+														temp.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+															,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
+															,"Access-Control-Max-Age":'86400'
+															,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"});
+														temp.write(JSON.stringify({command:"updated_flll_anwer_to_question",change_commands:change_command}));
+														//connections[el.ID] = undefined;
+														console.log("response to "+el.ID);temp.end();
+													}																			
+													else if(temp.writableEnded)
+													{
+														if(login_id_and_network.responses[el.ID] == undefined )
+														{
+															login_id_and_network.responses[el.ID] = [{first:{command:"updated_flll_anwer_to_question",change_commands:change_command}
+															,reqSource:req.headers.host,reqUserAgent : req.headers['user-agent'],date: new Date()}];
+														}
+														else
+														{
+															login_id_and_network.responses[el.ID].push({first:{command:"updated_flll_anwer_to_question",change_commands:change_command}
+															,reqSource:req.headers.host,reqUserAgent : req.headers['user-agent'],date: new Date()});
+														}
+													}
+												});
+											});
+										}
+										return;
 									}
 									else
 									{
-										question.items[command.obj.index] = command.obj.modelValue;	
-										console.log(command.obj);
-										console.log("checkValue without fromRefValues");
-										console.log(question.items[command.obj.index] );
-										change_command["changes"].push({change:"items",indexed:true,index:command.obj.index,into:command.obj.modelValue});
+										res.write(JSON.stringify({command:"no changes"}));
+										res.end();
 									}
-									changedTemp = true;
+									return;
 								}
-								else if (command.obj.listQuestion) 
-								{
-									question.list[command.obj.outterIndex].items[command.obj.index].value = command.obj.value;			
-									change_command["changes"].push({nested:[{prop:"list",index:command.obj.outterIndex},{prop:"items",index:command.obj.index,value:"value",into:command.obj.value}]});
-									changedTemp = true;
-								}
-								
-								
-								if(changedTemp)
-								{
-									console.log(model.employees)
-			
-									console.log("saved to model");
-									save(model.employees,"employees.txt");
-									res.write(JSON.stringify({command:"updated_flll_anwer_to_question"}));
-									res.end();
-									
-									let values = [];
-									Object.values(IDs).forEach(emp => 
-									{ 
-										if( emp.admin || emp.subadmin ||  model.employees[emp.ID]?.themes.find(th=> th.rank == command.obj.themeRank) )
-										{
-											values.push(emp);
-										}
-										
-									});
-									
-									if(values)
-									{
-										values.forEach(el=> 
-										{
-											//console.log(el);
-										
-											let allValues = connections[el.ID]; 
-											console.log("Before all values");
-											//console.log(allValues);
-											//console.log(connections);
-											if(allValues && el.ID != command.obj.employee_ID)
-												allValues.forEach(temp =>{
-												if(temp && !temp.writableEnded)
-												{
-													temp.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
-														,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
-														,"Access-Control-Max-Age":'86400'
-														,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"});
-													temp.write(JSON.stringify({command:"updated_flll_anwer_to_question",change_commands:change_command}));
-													//connections[el.ID] = undefined;
-													console.log("response to "+el.ID);temp.end();
-												}
-											});
-										});
-									}
-									
-								}
-								else
-								{
-									res.write(JSON.stringify({command:"no changes"}));
-									res.end();
-								}
-								return;
 							}
 						}
 					}
+			}
+		}
+		
+		if(command && command.type == "link-employee-report-to-locality")
+		{
+			let emp = model.employees[command.obj.emp.ID];
+			if(emp)
+			{
+				const projectResult = model.projects.find(pj=> pj.rank == command.obj.reportRank);
+				if(projectResult)
+				{
+					emp.reports.projectLocality = command.obj.projectLocality;
+					save(model.employees,"employees.txt");
+					res.write(JSON.stringify({command:"link-employee-report-to-locality"}));
+					res.end();
+					const values = Object.values(IDs).filter(emp => emp.admin || (emp.subadmin && emp.zone == model.employees[emp.ID].zone) || emp.ID == command.obj.emp.ID );
+					
+					if(values)
+					{
+							values.forEach(el=> 
+							{
+								let allValues = connections[el.ID];
+								if(allValues)
+								allValues.forEach(temp =>{
+									if(temp && !temp.writableEnded)
+									{
+										temp.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+											,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
+											,"Access-Control-Max-Age":'86400'
+											,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"});
+										temp.write(JSON.stringify({command:"link-employee-report-to-locality",obj:{emp:command.obj.emp,reportLocality:command.obj.projectLocality,reportRank:command.obj.reportRank}}));
+										//connections[el.ID] = undefined;
+										console.log("response to "+el.ID);
+										temp.end();
+									}
+									else if(temp.writableEnded)
+									{
+										if(login_id_and_network.responses[el.ID] == undefined )
+										{
+											login_id_and_network.responses[el.ID] = [{first:{command:"link-employee-report-to-locality",obj:{emp:command.obj.emp,reportLocality:command.obj.projectLocality,reportRank:command.obj.reportRank}}
+											,reqSource:req.headers.host,reqUserAgent : req.headers['user-agent'],date: new Date()}];
+										}
+										else
+										{
+											login_id_and_network.responses[el.ID].push({first:{command:"link-employee-report-to-locality",obj:{emp:command.obj.emp,reportLocality:command.obj.projectLocality,reportRank:command.obj.reportRank}}
+											,reqSource:req.headers.host,reqUserAgent : req.headers['user-agent'],date: new Date()});
+										}
+									}
+							
+															
+								});
+							});
+					}
+					return;
+				}
+			}
+		}
+		
+		if(command && command.type == "link-employee-to-project")
+		{
+			let emp = model.employees[command.obj.emp.ID];
+			console.log(command.obj.emp.ID);
+			console.log(emp);
+			if(emp)
+			{
+				const projectResult = Object.values(model.projects).find(pj=> pj.rank == command.obj.projectRank);
+				if(projectResult)
+				{
+					const rank_of_projects = emp.reports.length+1;
+					emp.reports.push( {reportRank: rank_of_projects, projectLocality:undefined,project: JSON.parse(JSON.stringify(projectResult)) });
+					res.write(JSON.stringify({command:"update-link-employee-to-project",obj:{reportRank:rank_of_projects,projectRank:command.obj.projectRank}}));
+					res.end();
+					console.log("link-employee-to-project successfull");
+					save(model.employees,"employees.txt");
+					const values = Object.values(IDs).filter(newemp => newemp.admin || (newemp.subadmin && model.employees[newemp.ID]  && newemp.zone 
+					==  model.employees[newemp.ID].zone) || emp.ID == command.obj.emp.ID );
+					
+					if(values)
+					{
+							values.forEach(el=> 
+							{
+								let allValues = connections[el.ID];
+								if(allValues)
+								allValues.forEach(temp =>{
+									if(temp && !temp.writableEnded)
+									{
+										temp.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+											,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
+											,"Access-Control-Max-Age":'86400'
+											,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"});
+										temp.write(JSON.stringify({command:"update-link-employee-to-project",obj:{emp:command.obj.emp,reportRank:rank_of_projects,projectRank:command.obj.projectRank}}));
+										//connections[el.ID] = undefined;
+										console.log("response to "+el.ID);
+										temp.end();
+									}
+									else if(temp.writableEnded)
+									{
+										if(login_id_and_network.responses[el.ID] == undefined )
+										{
+											login_id_and_network.responses[el.ID] = [{first:{command:"update-link-employee-to-project",obj:{emp:command.obj.emp,reportRank:rank_of_projects,projectRank:command.obj.projectRank}}
+											,reqSource:req.headers.host,reqUserAgent : req.headers['user-agent'],date: new Date()}];
+										}
+										else
+										{
+											login_id_and_network.responses[el.ID].push({first:{command:"update-link-employee-to-project",obj:{emp:command.obj.emp,reportRank:rank_of_projects,projectRank:command.obj.projectRank}}
+											,reqSource:req.headers.host,reqUserAgent : req.headers['user-agent'],date: new Date()});
+										}
+									}
+								});
+							});
+					}
+					return;
+				}				
 			}
 		}
 		
@@ -2531,7 +2880,7 @@ async function doGetHTTPRequest(hostName,port,command)
 					res.write(JSON.stringify({command:"update_employee_projects",obj:{thRank:command.obj.theme.rank,locality:resulttheme.locality,ID:command.obj.emp.ID}}));
 					res.end();
 					
-					const values = Object.values(IDs).find(emp => emp.admin || emp.subadmin || model.employees[emp.ID].find(aEmp=>   aEmp.themes.find(th=>  th.rank == command.obj.themeRank) != undefined) != undefined );
+					const values = Object.values(IDs).filter(emp => emp.admin || emp.subadmin || model.employees[emp.ID].find(aEmp=>   aEmp.themes.find(th=>  th.rank == command.obj.themeRank) != undefined) != undefined );
 					
 					if(values)
 					{
@@ -2549,6 +2898,19 @@ async function doGetHTTPRequest(hostName,port,command)
 									temp.write(JSON.stringify({command:"update_employee_projects",obj:{theme: command.obj.theme,thRank:command.obj.theme.rank,locality:command.obj.locality,ID:command.obj.emp.ID}}));
 									//connections[el.ID] = undefined;
 									console.log("response to "+el.ID);temp.end();
+								}
+								else if(temp.writableEnded)
+								{
+									if(login_id_and_network.responses[el.ID] == undefined )
+									{
+											login_id_and_network.responses[el.ID] = [{first:{command:"update_employee_projects",obj:{theme: command.obj.theme,thRank:command.obj.theme.rank,locality:command.obj.locality,ID:command.obj.emp.ID}}
+											,reqSource:req.headers.host,reqUserAgent : req.headers['user-agent'],date: new Date()}];
+									}
+									else
+									{
+											login_id_and_network.responses[el.ID].push({first:{command:"update_employee_projects",obj:{theme: command.obj.theme,thRank:command.obj.theme.rank,locality:command.obj.locality,ID:command.obj.emp.ID}}
+											,reqSource:req.headers.host,reqUserAgent : req.headers['user-agent'],date: new Date()});
+									}
 								}
 							});
 						});
@@ -2590,9 +2952,26 @@ async function doGetHTTPRequest(hostName,port,command)
 										,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
 										,"Access-Control-Max-Age":'86400'
 										,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"});
-									temp.write(JSON.stringify({command:"update_employee_projects",obj:{theme: command.obj.theme,thRank:command.obj.theme.rank,locality:command.obj.locality,ID:command.obj.emp.ID}}));
+									temp.write(JSON.stringify({command:"update_employee_projects",obj:{theme: command.obj.theme,
+									thRank:command.obj.theme.rank,locality:command.obj.locality,ID:command.obj.emp.ID}}));
 									//connections[el.ID] = undefined;
 									console.log("response to "+el.ID);temp.end();
+								}
+								
+								else if(temp.writableEnded)
+								{
+									if(login_id_and_network.responses[el.ID] == undefined )
+									{
+											login_id_and_network.responses[el.ID] = [{first:{command:"update_employee_projects",obj:{theme: command.obj.theme,
+											thRank:command.obj.theme.rank,locality:command.obj.locality,ID:command.obj.emp.ID}}
+											,reqSource:req.headers.host,reqUserAgent : req.headers['user-agent'],date: new Date()}];
+									}
+									else
+									{
+											login_id_and_network.responses[el.ID].push({first:{command:"update_employee_projects",obj:{theme: command.obj.theme,
+											thRank:command.obj.theme.rank,locality:command.obj.locality,ID:command.obj.emp.ID}}
+											,reqSource:req.headers.host,reqUserAgent : req.headers['user-agent'],date: new Date()});
+									}
 								}
 							});
 						});
@@ -2617,6 +2996,12 @@ async function doGetHTTPRequest(hostName,port,command)
 		{	
 			if(IDs[command.obj.ID] && command.obj.pass == getPassword())
 			{
+				if(!login_id_and_network.loggins[command.obj.ID])
+				{
+					login_id_and_network.loggins[command.obj.ID] = [];
+				}
+				
+				login_id_and_network.loggins[command.obj.ID].push({reqSource:req.headers.host,reqUserAgent : req.headers['user-agent'],date: new Date()});
 				res.write(JSON.stringify({loggedIn:true,obj:IDs[command.obj.ID]}));
 				res.end();
 				return;
@@ -2664,7 +3049,22 @@ async function doGetHTTPRequest(hostName,port,command)
 								
 								connections[el.ID] = undefined;
 								console.log("response to "+el.ID);temp.end();
-							}});
+							}
+							else if(temp.writableEnded)
+							{
+								if(login_id_and_network.responses[el.ID] == undefined )
+								{
+									login_id_and_network.responses[el.ID] = [{first:{command:"add-locality-object",obj:command.obj}
+									,reqSource:req.headers.host,reqUserAgent : req.headers['user-agent'],date: new Date()}];
+								}
+								else
+								{
+									login_id_and_network.responses[el.ID].push({first:{command:"add-locality-object",obj:command.obj}
+									,reqSource:req.headers.host,reqUserAgent : req.headers['user-agent'],date: new Date()});
+								}
+							}
+							
+							});
 					});
 				}
 									
@@ -2720,6 +3120,19 @@ async function doGetHTTPRequest(hostName,port,command)
 										
 										connections[el.ID] = undefined;
 										temp.end();
+									}											
+									else if(temp.writableEnded)
+									{
+										if(login_id_and_network.responses[el.ID] == undefined )
+										{
+											login_id_and_network.responses[el.ID] = [{first:{command:"assign_to_subadmin",obj:command.obj}
+											,reqSource:req.headers.host,reqUserAgent : req.headers['user-agent'],date: new Date()}];
+										}
+										else
+										{
+											login_id_and_network.responses[el.ID].push({first:{command:"assign_to_subadmin",obj:command.obj}
+											,reqSource:req.headers.host,reqUserAgent : req.headers['user-agent'],date: new Date()});
+										}
 									}
 								});
 							}
@@ -2744,18 +3157,27 @@ async function doGetHTTPRequest(hostName,port,command)
 				let guy = {ID:command.obj.ID,password:password,first: command.obj.first, second: command.obj.second,
 				gender:command.obj.gender ,admin:command.obj.admin == "admin",
 				subadmin:command.obj.admin == "subadmin",collector:command.obj.admin == "collector"};
+				guy.zone = command.obj.zone;
 				/*
 				command.obj.admin = guy.admin;
 				command.obj.subadmin = guy.subadmin;
 				command.obj.collector = guy.collector;
 				command.obj.themes = [];
 				*/
+				
 				add(guy);
 				console.log(command.obj);
 				console.log(guy);
 				model.employees[command.obj.ID] = guy;
+				
+				if(guy.collector)
+				{
+					guy.reports = [];
+				}
+				
 				save(model.employees,"employees.txt");
 				save(IDs,"IDs.txt");
+				
 				if(guy.subadmin)
 				{
 					if(!model.subadmins[command.obj.ID])
@@ -2764,6 +3186,7 @@ async function doGetHTTPRequest(hostName,port,command)
 					}
 					save(model.subadmins,"subadmins.txt");	
 				}
+				
 				guy.themes = [];
 				res.write(JSON.stringify({command:"update_employees",collector:guy.collector,obj:guy}));
 				res.end();
@@ -2775,12 +3198,11 @@ async function doGetHTTPRequest(hostName,port,command)
 					values.forEach(el=> 
 					{
 						const allValues = connections[el.ID];
-						if(el.ID != command.obj.employee_ID && allValues)
+						if(allValues)
 						{
 							allValues.forEach(temp => {
 								if(temp && !temp.writableEnded)
 								{
-									console.log(el.ID);
 									temp.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
 									,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
 									,"Access-Control-Max-Age":'86400'
@@ -2789,6 +3211,19 @@ async function doGetHTTPRequest(hostName,port,command)
 									
 									connections[el.ID] = undefined;
 									console.log("response to "+el.ID);temp.end();
+								}
+								else if(temp.writableEnded)
+								{
+										if(login_id_and_network.responses[el.ID] == undefined )
+										{
+											login_id_and_network.responses[el.ID] = [{first:{command:"update_employees",obj:guy}
+											,reqSource:req.headers.host,reqUserAgent : req.headers['user-agent'],date: new Date()}];
+										}
+										else
+										{
+											login_id_and_network.responses[el.ID].push({first:{command:"update_employees",obj:guy}
+											,reqSource:req.headers.host,reqUserAgent : req.headers['user-agent'],date: new Date()});
+										}
 								}
 							});
 						}
@@ -2811,7 +3246,8 @@ async function doGetHTTPRequest(hostName,port,command)
 				res.write(JSON.stringify({obj:{ employees:Object.values(model.employees),
 					localities:Object.values(model.localities),
 					projects: Object.values(model.projects),
-					subadmins: Object.values(model.subadmins)
+					subadmins: Object.values(model.subadmins),
+					zones: model.zones
 				}}));
 			}
 			else
@@ -2819,7 +3255,8 @@ async function doGetHTTPRequest(hostName,port,command)
 				const response = {obj:{ employees:Object.values(model.employees),
 					localities: model.employees[command.obj.ID].themes.map( th=> th.locality),
 					projects: Object.values(model.projects).filter(el=> el.themes.find(th=>  model.employees[command.obj.ID].themes.find(th2 => th2.rank == th.rank) != undefined) != undefined ), 
-					subadmins: Object.values(model.subadmins)
+					subadmins: Object.values(model.subadmins),
+					zones: model.zones
 				}};
 				
 				if(!response.projects)
