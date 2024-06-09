@@ -2170,26 +2170,28 @@ async function doGetHTTPRequest(hostName,port,command)
 				let tconnectedGuy = login_id_and_network.loggins[command.obj.ID];
 				if(tconnectedGuy)
 				{
-					tconnectedGuy = tconnectedGuy.find(guy=> req.headers.host == guy.reqSource && req.headers['user-agent'] == guy.userAgent);
+					tconnectedGuy = tconnectedGuy.find(guy=> guy.rank == command.obj.rank && req.headers.host == guy.reqSource && req.headers['user-agent'] == guy.userAgent);
 				}
-				
-				temp = temp.find(guy=> req.headers.host == guy.reqSource && req.headers['user-agent'] == guy.userAgent); 
+				const oldTemp = temp;
+				temp = temp.find(guy=> guy.rank == command.obj.rank && req.headers.host == guy.reqSource && req.headers['user-agent'] == guy.userAgent); 
 				if(tconnectedGuy && (temp && tconnectedGuy.date <= temp.date) )
 				{
 					res.write(JSON.stringify(temp.first));
 					res.end();
+					const tempIndex = oldTemp.findIndex(guy=>  req.headers.host == guy.reqSource && req.headers['user-agent'] == guy.userAgent && guy.rank == command.obj.rank);
+					oldTemp.splice(tempIndex,1);
 				}
 				else if( temp )
 				{
 					res.end();
-					const tempIndex = temp.findIndex(guy=> req.headers.host == guy.reqSource && req.headers['user-agent'] == guy.userAgent);
+					const tempIndex = temp.findIndex(guy=> guy.rank == command.obj.rank && req.headers.host == guy.reqSource && req.headers['user-agent'] == guy.userAgent);
 					temp.splice(tempIndex,1);
 				}
 				else
 				{
 					if(!connections[command.obj.ID])
 						connections[command.obj.ID] = [];
-					connections[command.obj.ID].push(res); 
+					connections[command.obj.ID].push({rank:command.obj.rank,ID:command.obj.ID,res:res,reqSource: req.headers.host,userAgent:req.headers['user-agent']}); 
 				}
 			}
 			else
@@ -2199,14 +2201,14 @@ async function doGetHTTPRequest(hostName,port,command)
 				{
 					login_id_and_network.loggins[command.obj.ID] = [command.obj];
 				}
-				else if(!tconnectedGuy.find(guy=> req.headers.host == guy.reqSource && req.headers['user-agent'] == guy.userAgent))
+				else if(!tconnectedGuy.find(guy=> req.headers.host == guy.reqSource && req.headers['user-agent'] == guy.userAgent && command.userAuthentification.rank == guy.rank))
 				{
-					login_id_and_network.loggins[command.obj.ID].push({reqSource:req.headers.host,reqUserAgent : req.headers['user-agent'],date: new Date()});
+					login_id_and_network.loggins[command.obj.ID].push({rank:command.obj.rank,reqSource:req.headers.host,reqUserAgent : req.headers['user-agent'],date: new Date()});
 				}
 				
 				if(!connections[command.obj.ID])
 					connections[command.obj.ID] = [];
-				connections[command.obj.ID].push(res);
+				connections[command.obj.ID].push({rank:command.obj.rank,ID:command.obj.ID,res:res,reqSource: req.headers.host,userAgent:req.headers['user-agent']}); 
 				
 			}
 			return;
@@ -2231,28 +2233,39 @@ async function doGetHTTPRequest(hostName,port,command)
 						let allValues = connections[el.ID];
 						if(allValues )
 						allValues.forEach(temp =>{
-							if(temp && !temp.writableEnded)
+							if(temp && !temp.writableEnded && (temp.ID != command.userAuthentification.ID || temp.rank != command.userAuthentification.rank) )
 							{
-								temp.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+								temp.res.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
 									,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
 									,"Access-Control-Max-Age":'86400'
 									,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"});
-								temp.write(JSON.stringify({command:"update_added_projects",obj:command.obj.project}));
+								
+								temp.res.write(JSON.stringify({command:"update_added_projects",obj:command.obj.project}));
 								
 								//connections[el.ID] = undefined;
-								console.log("response to "+el.ID);temp.end();
+								console.log("response to "+el.ID);temp.res.end()
 							}
-							else if(temp.writableEnded)
+							else if(temp.writableEnded && (temp.ID != command.userAuthentification.ID || temp.rank != command.userAuthentification.rank))
 							{
+								console.log("response to "+el.ID+"differed");
 								if(login_id_and_network.responses[el.ID] == undefined )
 								{
 									login_id_and_network.responses[el.ID] = [{first:{command:"update_added_projects",obj:command.obj.project}
-									,reqSource:req.headers.host,reqUserAgent : req.headers['user-agent'],date: new Date()}];
+									,reqSource:req.headers.host,reqUserAgent : req.headers['user-agent'],date: new Date(),rank:command.userAuthentification.rank}];
 								}
 								else
 								{
 									login_id_and_network.responses[el.ID].push({first:{command:"update_added_projects",obj:command.obj.project}
-									,reqSource:req.headers.host,reqUserAgent : req.headers['user-agent'],date: new Date()});
+									,reqSource:req.headers.host,reqUserAgent : req.headers['user-agent'],date: new Date(),rank:command.userAuthentification.rank});
+									const count = login_id_and_network.responses[el.ID].length-1;
+									const value = login_id_and_network.responses[el.ID][count];
+									while(count >= 0 && value.date < login_id_and_network.responses[el.ID][count-2].date)
+									{
+										const swapValue = login_id_and_network.responses[el.ID][count-2];
+										login_id_and_network.responses[el.ID][count-2] = value;
+										login_id_and_network.responses[el.ID][count-1] = swapValue;
+										++count;
+									}
 								}
 							}
 						});
@@ -2279,27 +2292,39 @@ async function doGetHTTPRequest(hostName,port,command)
 						let allValues = connections[el.ID];
 						if(allValues && el.ID != command.obj.employee_ID)
 						allValues.forEach(temp =>{
-							if(temp && !temp.writableEnded)
+							if(temp && !temp.writableEnded && (temp.ID != command.userAuthentification.ID || temp.rank != command.userAuthentification.rank) )
 							{
-								temp.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+								temp.res.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
 									,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
 									,"Access-Control-Max-Age":'86400'
 									,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"});
-								temp.write(JSON.stringify({command:"update_added_projects",obj:command.obj.project}));
+								
+								temp.res.write(JSON.stringify({command:"update_added_projects",obj:command.obj.project}));
 								//connections[el.ID] = undefined;
-								console.log("response to "+el.ID);temp.end();
+								console.log("response to "+el.ID);temp.res.end()
 							}
-							else if(temp.writableEnded)
+							else if(temp.writableEnded && (temp.ID != command.userAuthentification.ID || temp.rank != command.userAuthentification.rank) )
 							{
+								console.log("response to "+el.ID+"differed");
+								
 								if(login_id_and_network.responses[el.ID] == undefined )
 								{
 									login_id_and_network.responses[el.ID] = [{first:{command:"update_added_projects",obj:command.obj.project}
-									,reqSource:req.headers.host,reqUserAgent : req.headers['user-agent'],date: new Date()}];
+									,reqSource:req.headers.host,reqUserAgent : req.headers['user-agent'],date: new Date(),rank:command.userAuthentification.rank}];
 								}
 								else
 								{
 									login_id_and_network.responses[el.ID].push({first:{command:"update_added_projects",obj:command.obj.project}
-									,reqSource:req.headers.host,reqUserAgent : req.headers['user-agent'],date: new Date()});
+									,reqSource:req.headers.host,reqUserAgent : req.headers['user-agent'],date: new Date(),rank:command.userAuthentification.rank});
+									const count = login_id_and_network.responses[el.ID].length-1;
+									const value = login_id_and_network.responses[el.ID][count];
+									while(count >= 0 && value.date < login_id_and_network.responses[el.ID][count-2].date)
+									{
+										const swapValue = login_id_and_network.responses[el.ID][count-2];
+										login_id_and_network.responses[el.ID][count-2] = value;
+										login_id_and_network.responses[el.ID][count-1] = swapValue;
+										++count;
+									}
 								}
 							}
 						});
@@ -2384,27 +2409,38 @@ async function doGetHTTPRequest(hostName,port,command)
 						let allValues = connections[el.ID];
 						if(allValues && el.ID != command.obj.employee_ID)
 						allValues.forEach(temp =>{
-							if(temp && !temp.writableEnded)
+							if(temp && !temp.writableEnded && (temp.ID != command.userAuthentification.ID || temp.rank != command.userAuthentification.rank))
 							{
-								temp.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+								temp.res.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
 									,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
 									,"Access-Control-Max-Age":'86400'
 									,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"});
-								temp.write(JSON.stringify({command:"update_project_desc",obj:command.obj}));
+								temp.res.write(JSON.stringify({command:"update_project_desc",obj:command.obj}));
 								//connections[el.ID] = undefined;
-								console.log("response to "+el.ID);temp.end();
+								console.log("response to "+el.ID);temp.res.end()
 							}
-							else if(temp.writableEnded)
+							else if(temp.writableEnded && (temp.ID != command.userAuthentification.ID || temp.rank != command.userAuthentification.rank))
 							{
+								console.log("response to "+el.ID+"differed");
+								
 								if(login_id_and_network.responses[el.ID] == undefined )
 								{
 									login_id_and_network.responses[el.ID] = [{first:{command:"update_project_desc",obj:command.obj}
-									,reqSource:req.headers.host,reqUserAgent : req.headers['user-agent'],date: new Date()}];
+									,reqSource:req.headers.host,reqUserAgent : req.headers['user-agent'],date: new Date(),rank:command.userAuthentification.rank}];
 								}
 								else
 								{
 									login_id_and_network.responses[el.ID].push({first:{command:"update_project_desc",obj:command.obj}
-									,reqSource:req.headers.host,reqUserAgent : req.headers['user-agent'],date: new Date()});
+									,reqSource:req.headers.host,reqUserAgent : req.headers['user-agent'],date: new Date(),rank:command.userAuthentification.rank});
+									const count = login_id_and_network.responses[el.ID].length-1;
+									const value = login_id_and_network.responses[el.ID][count];
+									while(count >= 0 && value.date < login_id_and_network.responses[el.ID][count-2].date)
+									{
+										const swapValue = login_id_and_network.responses[el.ID][count-2];
+										login_id_and_network.responses[el.ID][count-2] = value;
+										login_id_and_network.responses[el.ID][count-1] = swapValue;
+										++count;
+									}
 								}
 							}
 						});
@@ -2422,6 +2458,7 @@ async function doGetHTTPRequest(hostName,port,command)
 		{
 			let changed = false;
 			const emp = model.employees[command.obj.employee_ID];
+			const account = model.employees[command.userAuthentification.ID]?model.employees[command.userAuthentification.ID]:IDs[command.userAuthentification.ID];
 			if(emp)
 			{
 				const rp = emp.reports.find(rp=>  rp.reportRank == command.obj.reportRank);
@@ -2479,10 +2516,11 @@ async function doGetHTTPRequest(hostName,port,command)
 				res.end();
 										
 				let values = [];
+				let account = model.employees[command.userAuthentification.ID]?model.employees[command.userAuthentification.ID]:IDs[command.userAuthentification.ID];
 				Object.values(IDs).forEach(curremp => 
 				{ 
-					if( curremp.admin || (curremp.subadmin && curremp.subadmin.zone == curremp.zone ) 
-						||  (model.employees[curremp.ID] && model.employees[curremp.ID].collector && curremp.ID == emp.ID) )
+					if( curremp.admin || (curremp.subadmin && curremp.zone == emp.zone)
+					|| (curremp.collector && curremp.ID == emp.ID) )
 					{
 						values.push(curremp);
 					}
@@ -2503,34 +2541,45 @@ async function doGetHTTPRequest(hostName,port,command)
 												if(allValues)
 													allValues.forEach(temp =>{
 													console.log(el.ID);
-													if(temp && !temp.writableEnded)
+													if(temp && !temp.writableEnded && (temp.ID != command.userAuthentification.ID || temp.rank != command.userAuthentification.rank))
 													{
-														temp.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+														temp.res.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
 															,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
 															,"Access-Control-Max-Age":'86400'
 															,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"});
 														const newCommand = {command:"update_list_category_item"};
 														Object.assign(newCommand,command);
 														console.log(newCommand);
-														temp.write(JSON.stringify(newCommand));
+														temp.res.write(JSON.stringify(newCommand));
 														//connections[el.ID] = undefined;
-														console.log("response to "+el.ID);temp.end();
+														console.log("response to "+el.ID);temp.res.end()
 													}																			
-													else if(temp.writableEnded)
+													else if(temp.writableEnded && (temp.ID != command.userAuthentification.ID || temp.rank != command.userAuthentification.rank))
 													{
+														console.log("response to "+el.ID+"differed");
+								
 														const newCommand = {command:"update_list_category_item"};
 														Object.assign(newCommand,command);
 														
-														temp.write(JSON.stringify(newCommand ));
+														temp.res.write(JSON.stringify(newCommand ));
 														if(login_id_and_network.responses[el.ID] == undefined )
 														{
 															login_id_and_network.responses[el.ID] = [{first:newCommand 
-															,reqSource:req.headers.host,reqUserAgent : req.headers['user-agent'],date: new Date()}];
+															,reqSource:req.headers.host,reqUserAgent : req.headers['user-agent'],date: new Date(),rank:command.userAuthentification.rank}];
 														}
 														else
 														{
 															login_id_and_network.responses[el.ID].push({first:newCommand 
-															,reqSource:req.headers.host,reqUserAgent : req.headers['user-agent'],date: new Date()});
+															,reqSource:req.headers.host,reqUserAgent : req.headers['user-agent'],date: new Date(),rank:command.userAuthentification.rank});
+															const count = login_id_and_network.responses[el.ID].length-1;
+															const value = login_id_and_network.responses[el.ID][count];
+															while(count >= 0 && value.date < login_id_and_network.responses[el.ID][count-2].date)
+															{
+																const swapValue = login_id_and_network.responses[el.ID][count-2];
+																login_id_and_network.responses[el.ID][count-2] = value;
+																login_id_and_network.responses[el.ID][count-1] = swapValue;
+																++count;
+															}
 														}
 													}
 												});
@@ -2547,6 +2596,7 @@ async function doGetHTTPRequest(hostName,port,command)
 			
 			let change_command = {};
 			const emp = model.employees[command.obj.employee_ID];
+			const empBoss = (model.employees[command.userAuthentification.ID])?(model.employees[command.userAuthentification.ID]):IDs[command.userAuthentification.ID];
 			console.log("Employee.................");
 			console.log(emp);
 			change_command["empID"] = command.obj.employee_ID;
@@ -2703,10 +2753,8 @@ async function doGetHTTPRequest(hostName,port,command)
 										let values = [];
 										Object.values(IDs).forEach(curremp => 
 										{ 
-											
-											
-											if( curremp.admin || (curremp.subadmin && curremp.subadmin.zone == curremp.zone ) 
-												||  (model.employees[curremp.ID] && model.employees[curremp.ID].collector && curremp.ID == emp.ID) )
+											if( curremp.admin || (curremp.subadmin && curremp.zone == emp.zone)
+												|| (curremp.collector && curremp.ID== emp.ID) )
 											{
 												values.push(curremp);
 											}
@@ -2726,27 +2774,43 @@ async function doGetHTTPRequest(hostName,port,command)
 												if(allValues)
 													allValues.forEach(temp =>{
 													console.log(el.ID);
-													if(temp && !temp.writableEnded)
+													console.log(temp.ID);
+													console.log(command.userAuthentification.ID);
+													console.log(temp.rank);
+													console.log(command.userAuthentification.rank);
+													if(temp && !temp.writableEnded && (temp.ID != command.userAuthentification.ID || temp.rank != command.userAuthentification.rank))
 													{
-														temp.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+														temp.res.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
 															,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
 															,"Access-Control-Max-Age":'86400'
 															,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"});
-														temp.write(JSON.stringify({command:"updated_flll_anwer_to_question",change_commands:change_command}));
+															
+														temp.res.write(JSON.stringify({command:"updated_flll_anwer_to_question",change_commands:change_command}));
 														//connections[el.ID] = undefined;
-														console.log("response to "+el.ID);temp.end();
+														console.log("response to "+el.ID);temp.res.end()
 													}																			
-													else if(temp.writableEnded)
+													else if(temp.writableEnded && (temp.ID != command.userAuthentification.ID || temp.rank != command.userAuthentification.rank))
 													{
+														console.log("response to "+el.ID+"differed");
+								
 														if(login_id_and_network.responses[el.ID] == undefined )
 														{
 															login_id_and_network.responses[el.ID] = [{first:{command:"updated_flll_anwer_to_question",change_commands:change_command}
-															,reqSource:req.headers.host,reqUserAgent : req.headers['user-agent'],date: new Date()}];
+															,reqSource:req.headers.host,reqUserAgent : req.headers['user-agent'],date: new Date(),rank:command.userAuthentification.rank}];
 														}
 														else
 														{
 															login_id_and_network.responses[el.ID].push({first:{command:"updated_flll_anwer_to_question",change_commands:change_command}
-															,reqSource:req.headers.host,reqUserAgent : req.headers['user-agent'],date: new Date()});
+															,reqSource:req.headers.host,reqUserAgent : req.headers['user-agent'],date: new Date(),rank:command.userAuthentification.rank});
+															const count = login_id_and_network.responses[el.ID].length-1;
+															const value = login_id_and_network.responses[el.ID][count];
+															while(count >= 0 && value.date < login_id_and_network.responses[el.ID][count-2].date)
+															{
+																const swapValue = login_id_and_network.responses[el.ID][count-2];
+																login_id_and_network.responses[el.ID][count-2] = value;
+																login_id_and_network.responses[el.ID][count-1] = swapValue;
+																++count;
+															}
 														}
 													}
 												});
@@ -2788,28 +2852,40 @@ async function doGetHTTPRequest(hostName,port,command)
 								let allValues = connections[el.ID];
 								if(allValues)
 								allValues.forEach(temp =>{
-									if(temp && !temp.writableEnded)
+									if(temp && !temp.writableEnded && (temp.ID != command.userAuthentification.ID || temp.rank != command.userAuthentification.rank))
 									{
-										temp.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+										temp.res.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
 											,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
 											,"Access-Control-Max-Age":'86400'
 											,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"});
-										temp.write(JSON.stringify({command:"link-employee-report-to-locality",obj:{emp:command.obj.emp,reportLocality:command.obj.projectLocality,reportRank:command.obj.reportRank}}));
+										
+										temp.res.write(JSON.stringify({command:"link-employee-report-to-locality",obj:{emp:command.obj.emp,reportLocality:command.obj.projectLocality,reportRank:command.obj.reportRank}}));
 										//connections[el.ID] = undefined;
 										console.log("response to "+el.ID);
-										temp.end();
+										temp.res.end()
 									}
-									else if(temp.writableEnded)
+									else if(temp.writableEnded && (temp.ID != command.userAuthentification.ID || temp.rank != command.userAuthentification.rank))
 									{
+										console.log("response to "+el.ID+"differed");
+								
 										if(login_id_and_network.responses[el.ID] == undefined )
 										{
 											login_id_and_network.responses[el.ID] = [{first:{command:"link-employee-report-to-locality",obj:{emp:command.obj.emp,reportLocality:command.obj.projectLocality,reportRank:command.obj.reportRank}}
-											,reqSource:req.headers.host,reqUserAgent : req.headers['user-agent'],date: new Date()}];
+											,reqSource:req.headers.host,reqUserAgent : req.headers['user-agent'],date: new Date(),rank:command.userAuthentification.rank}];
 										}
 										else
 										{
 											login_id_and_network.responses[el.ID].push({first:{command:"link-employee-report-to-locality",obj:{emp:command.obj.emp,reportLocality:command.obj.projectLocality,reportRank:command.obj.reportRank}}
-											,reqSource:req.headers.host,reqUserAgent : req.headers['user-agent'],date: new Date()});
+											,reqSource:req.headers.host,reqUserAgent : req.headers['user-agent'],date: new Date(),rank:command.userAuthentification.rank});
+											const count = login_id_and_network.responses[el.ID].length-1;
+											const value = login_id_and_network.responses[el.ID][count];
+											while(count >= 0 && value.date < login_id_and_network.responses[el.ID][count-2].date)
+											{
+												const swapValue = login_id_and_network.responses[el.ID][count-2];
+												login_id_and_network.responses[el.ID][count-2] = value;
+												login_id_and_network.responses[el.ID][count-1] = swapValue;
+												--count;
+											}
 										}
 									}
 							
@@ -2848,28 +2924,40 @@ async function doGetHTTPRequest(hostName,port,command)
 								let allValues = connections[el.ID];
 								if(allValues)
 								allValues.forEach(temp =>{
-									if(temp && !temp.writableEnded)
+									if(temp && !temp.writableEnded && (temp.ID != command.userAuthentification.ID || temp.rank != command.userAuthentification.rank))
 									{
-										temp.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+										temp.res.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
 											,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
 											,"Access-Control-Max-Age":'86400'
 											,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"});
-										temp.write(JSON.stringify({command:"update-link-employee-to-project",obj:{emp:command.obj.emp,reportRank:rank_of_projects,projectRank:command.obj.projectRank}}));
+										
+										temp.res.write(JSON.stringify({command:"update-link-employee-to-project",obj:{emp:command.obj.emp,reportRank:rank_of_projects,projectRank:command.obj.projectRank}}));
 										//connections[el.ID] = undefined;
 										console.log("response to "+el.ID);
-										temp.end();
+										temp.res.end()
 									}
-									else if(temp.writableEnded)
+									else if(temp.writableEnded && (temp.ID != command.userAuthentification.ID || temp.rank != command.userAuthentification.rank))
 									{
+										console.log("response to "+el.ID+"differed");
+								
 										if(login_id_and_network.responses[el.ID] == undefined )
 										{
 											login_id_and_network.responses[el.ID] = [{first:{command:"update-link-employee-to-project",obj:{emp:command.obj.emp,reportRank:rank_of_projects,projectRank:command.obj.projectRank}}
-											,reqSource:req.headers.host,reqUserAgent : req.headers['user-agent'],date: new Date()}];
+											,reqSource:req.headers.host,reqUserAgent : req.headers['user-agent'],date: new Date(),rank:command.userAuthentification.rank}];
 										}
 										else
 										{
 											login_id_and_network.responses[el.ID].push({first:{command:"update-link-employee-to-project",obj:{emp:command.obj.emp,reportRank:rank_of_projects,projectRank:command.obj.projectRank}}
-											,reqSource:req.headers.host,reqUserAgent : req.headers['user-agent'],date: new Date()});
+											,reqSource:req.headers.host,reqUserAgent : req.headers['user-agent'],date: new Date(),rank:command.userAuthentification.rank});
+											const count = login_id_and_network.responses[el.ID].length-1;
+											const value = login_id_and_network.responses[el.ID][count];
+											while(count >= 0 && value.date < login_id_and_network.responses[el.ID][count-2].date)
+											{
+												const swapValue = login_id_and_network.responses[el.ID][count-2];
+												login_id_and_network.responses[el.ID][count-2] = value;
+												login_id_and_network.responses[el.ID][count-1] = swapValue;
+												--count;
+											}
 										}
 									}
 								});
@@ -2884,6 +2972,7 @@ async function doGetHTTPRequest(hostName,port,command)
 			&& command.obj.theme && command.obj.locality)
 		{
 			let result = model.employees[command.obj.emp.ID];
+			let account = model.employees[command.obj.emp.ID];
 			if(result)
 			{
 				let resulttheme = result.themes.find(th=> 
@@ -2906,29 +2995,41 @@ async function doGetHTTPRequest(hostName,port,command)
 						values.forEach(el=> 
 						{
 							let allValues = connections[el.ID];
-							if(allValues && el.ID != command.obj.employee_ID)
+							if(allValues )
 							allValues.forEach(temp =>{
-								if(temp && !temp.writableEnded)
+								if(temp && !temp.writableEnded && (temp.ID != command.userAuthentification.ID || temp.rank != command.userAuthentification.rank))
 								{
-									temp.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+									temp.res.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
 										,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
 										,"Access-Control-Max-Age":'86400'
 										,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"});
-									temp.write(JSON.stringify({command:"update_employee_projects",obj:{theme: command.obj.theme,thRank:command.obj.theme.rank,locality:command.obj.locality,ID:command.obj.emp.ID}}));
+									 
+									temp.res.write(JSON.stringify({command:"update_employee_projects",obj:{theme: command.obj.theme,thRank:command.obj.theme.rank,locality:command.obj.locality,ID:command.obj.emp.ID}}));
 									//connections[el.ID] = undefined;
-									console.log("response to "+el.ID);temp.end();
+									console.log("response to "+el.ID);temp.res.end()
 								}
-								else if(temp.writableEnded)
+								else if(temp.writableEnded && (temp.ID != command.userAuthentification.ID || temp.rank != command.userAuthentification.rank))
 								{
+									console.log("response to "+el.ID+"differed");
+								
 									if(login_id_and_network.responses[el.ID] == undefined )
 									{
 											login_id_and_network.responses[el.ID] = [{first:{command:"update_employee_projects",obj:{theme: command.obj.theme,thRank:command.obj.theme.rank,locality:command.obj.locality,ID:command.obj.emp.ID}}
-											,reqSource:req.headers.host,reqUserAgent : req.headers['user-agent'],date: new Date()}];
+											,reqSource:req.headers.host,reqUserAgent : req.headers['user-agent'],date: new Date(),rank:command.userAuthentification.rank}];
 									}
 									else
 									{
 											login_id_and_network.responses[el.ID].push({first:{command:"update_employee_projects",obj:{theme: command.obj.theme,thRank:command.obj.theme.rank,locality:command.obj.locality,ID:command.obj.emp.ID}}
-											,reqSource:req.headers.host,reqUserAgent : req.headers['user-agent'],date: new Date()});
+											,reqSource:req.headers.host,reqUserAgent : req.headers['user-agent'],date: new Date(),rank:command.userAuthentification.rank});
+											const count = login_id_and_network.responses[el.ID].length-1;
+											const value = login_id_and_network.responses[el.ID][count];
+											while(count >= 0 && value.date < login_id_and_network.responses[el.ID][count-2].date)
+											{
+												const swapValue = login_id_and_network.responses[el.ID][count-2];
+												login_id_and_network.responses[el.ID][count-2] = value;
+												login_id_and_network.responses[el.ID][count-1] = swapValue;
+												--count;
+											}
 									}
 								}
 							});
@@ -2963,33 +3064,44 @@ async function doGetHTTPRequest(hostName,port,command)
 						values.forEach(el=> 
 						{
 							let allValues = connections[el.ID];
-							if(allValues && el.ID != command.obj.employee_ID)
+							if(allValues)
 							allValues.forEach(temp =>{
-								if(temp && !temp.writableEnded)
+								if(temp && !temp.writableEnded && (temp.ID != command.userAuthentification.ID || temp.rank != command.userAuthentification.rank) )
 								{
-									temp.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+									temp.res.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
 										,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
 										,"Access-Control-Max-Age":'86400'
 										,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"});
-									temp.write(JSON.stringify({command:"update_employee_projects",obj:{theme: command.obj.theme,
+									
+									temp.res.write(JSON.stringify({command:"update_employee_projects",obj:{theme: command.obj.theme,
 									thRank:command.obj.theme.rank,locality:command.obj.locality,ID:command.obj.emp.ID}}));
 									//connections[el.ID] = undefined;
-									console.log("response to "+el.ID);temp.end();
+									console.log("response to "+el.ID);temp.res.end()
 								}
-								
-								else if(temp.writableEnded)
+								else if(temp.writableEnded && (temp.ID != command.userAuthentification.ID || temp.rank != command.userAuthentification.rank))
 								{
+									console.log("response to "+el.ID+"differed");
+								
 									if(login_id_and_network.responses[el.ID] == undefined )
 									{
-											login_id_and_network.responses[el.ID] = [{first:{command:"update_employee_projects",obj:{theme: command.obj.theme,
-											thRank:command.obj.theme.rank,locality:command.obj.locality,ID:command.obj.emp.ID}}
-											,reqSource:req.headers.host,reqUserAgent : req.headers['user-agent'],date: new Date()}];
+										login_id_and_network.responses[el.ID] = [{first:{command:"update_employee_projects",obj:{theme: command.obj.theme,
+										thRank:command.obj.theme.rank,locality:command.obj.locality,ID:command.obj.emp.ID}}
+										,reqSource:req.headers.host,reqUserAgent : req.headers['user-agent'],date: new Date(),rank:command.userAuthentification.rank}];
 									}
 									else
 									{
 											login_id_and_network.responses[el.ID].push({first:{command:"update_employee_projects",obj:{theme: command.obj.theme,
 											thRank:command.obj.theme.rank,locality:command.obj.locality,ID:command.obj.emp.ID}}
-											,reqSource:req.headers.host,reqUserAgent : req.headers['user-agent'],date: new Date()});
+											,reqSource:req.headers.host,reqUserAgent : req.headers['user-agent'],date: new Date(),rank:command.userAuthentification.rank});
+											const count = login_id_and_network.responses[el.ID].length-1;
+											const value = login_id_and_network.responses[el.ID][count];
+											while(count >= 0 && value.date < login_id_and_network.responses[el.ID][count-2].date)
+											{
+												const swapValue = login_id_and_network.responses[el.ID][count-2];
+												login_id_and_network.responses[el.ID][count-2] = value;
+												login_id_and_network.responses[el.ID][count-1] = swapValue;
+												--count;
+											}
 									}
 								}
 							});
@@ -3018,10 +3130,20 @@ async function doGetHTTPRequest(hostName,port,command)
 				if(!login_id_and_network.loggins[command.obj.ID])
 				{
 					login_id_and_network.loggins[command.obj.ID] = [];
-				}
+				}	
 				
-				login_id_and_network.loggins[command.obj.ID].push({reqSource:req.headers.host,reqUserAgent : req.headers['user-agent'],date: new Date()});
-				res.write(JSON.stringify({loggedIn:true,obj:IDs[command.obj.ID]}));
+				var index = 0;
+				do
+				{
+					++index;
+				}
+				while(login_id_and_network.loggins[command.obj.ID].find(el=> el.rank == index));
+				
+				login_id_and_network.loggins[command.obj.ID].push({rank:index,
+				reqSource:req.headers.host,
+				reqUserAgent : req.headers['user-agent'],
+				date: new Date(),ID:command.obj.ID});
+				res.write(JSON.stringify({loggedIn:true,obj:IDs[command.obj.ID],rank:index}));
 				res.end();
 				return;
 			}
@@ -3058,28 +3180,40 @@ async function doGetHTTPRequest(hostName,port,command)
 						if(allValues && el.ID != command.obj.employee_ID)
 							allValues.forEach(temp => {
 								
-							if(temp && !temp.writableEnded)
+							if(temp && !temp.writableEnded && (temp.ID != command.userAuthentification.ID || temp.rank != command.userAuthentification.rank))
 							{
-								temp.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+								temp.res.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
 								,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
 								,"Access-Control-Max-Age":'86400'
 								,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"});
-								temp.write(JSON.stringify({command:"add-locality-object",obj:command.obj}));
+								
+								temp.res.write(JSON.stringify({command:"add-locality-object",obj:command.obj}));
 								
 								connections[el.ID] = undefined;
-								console.log("response to "+el.ID);temp.end();
+								console.log("response to "+el.ID);temp.res.end()
 							}
-							else if(temp.writableEnded)
+							else if(temp.writableEnded && (temp.ID != command.userAuthentification.ID || temp.rank != command.userAuthentification.rank))
 							{
+								console.log("response to "+el.ID+"differed");
+								
 								if(login_id_and_network.responses[el.ID] == undefined )
 								{
 									login_id_and_network.responses[el.ID] = [{first:{command:"add-locality-object",obj:command.obj}
-									,reqSource:req.headers.host,reqUserAgent : req.headers['user-agent'],date: new Date()}];
+									,reqSource:req.headers.host,reqUserAgent : req.headers['user-agent'],date: new Date(),rank:command.userAuthentification.rank}];
 								}
 								else
 								{
 									login_id_and_network.responses[el.ID].push({first:{command:"add-locality-object",obj:command.obj}
-									,reqSource:req.headers.host,reqUserAgent : req.headers['user-agent'],date: new Date()});
+									,reqSource:req.headers.host,reqUserAgent : req.headers['user-agent'],date: new Date(),rank:command.userAuthentification.rank});
+									const count = login_id_and_network.responses[el.ID].length-1;
+									const value = login_id_and_network.responses[el.ID][count];
+									while(count >= 0 && value.date < login_id_and_network.responses[el.ID][count-2].date)
+									{
+										const swapValue = login_id_and_network.responses[el.ID][count-2];
+										login_id_and_network.responses[el.ID][count-2] = value;
+										login_id_and_network.responses[el.ID][count-1] = swapValue;
+										++count;
+									}
 								}
 							}
 							
@@ -3125,32 +3259,42 @@ async function doGetHTTPRequest(hostName,port,command)
 						values.forEach(el=> 
 						{
 							const allValues = connections[el.ID];
-							if(el.ID != command.obj.newemp.ID && allValues)
+							if(allValues)
 							{
 								allValues.forEach(temp => {
-									if(temp && !temp.writableEnded)
+									if(temp && !temp.writableEnded &&  (temp.ID != command.userAuthentification.ID || temp.rank != command.userAuthentification.rank))
 									{
 										console.log(el.ID);
-										temp.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+										temp.res.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
 										,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
 										,"Access-Control-Max-Age":'86400'
 										,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"});
-										temp.write(JSON.stringify({command:"assign_to_subadmin",obj:command.obj}));
+										
+										temp.res.write(JSON.stringify({command:"assign_to_subadmin",obj:command.obj}));
 										
 										connections[el.ID] = undefined;
-										temp.end();
+										temp.res.end()
 									}											
-									else if(temp.writableEnded)
+									else if(temp.writableEnded && (temp.ID != command.userAuthentification.ID || temp.rank != command.userAuthentification.rank))
 									{
+										console.log("response to "+el.ID+"differed");
+								
 										if(login_id_and_network.responses[el.ID] == undefined )
 										{
 											login_id_and_network.responses[el.ID] = [{first:{command:"assign_to_subadmin",obj:command.obj}
-											,reqSource:req.headers.host,reqUserAgent : req.headers['user-agent'],date: new Date()}];
+											,reqSource:req.headers.host,reqUserAgent : req.headers['user-agent'],date: new Date(),rank:command.userAuthentification.rank}];
 										}
 										else
 										{
 											login_id_and_network.responses[el.ID].push({first:{command:"assign_to_subadmin",obj:command.obj}
-											,reqSource:req.headers.host,reqUserAgent : req.headers['user-agent'],date: new Date()});
+											,reqSource:req.headers.host,reqUserAgent : req.headers['user-agent'],date: new Date(),rank:command.userAuthentification.rank});
+											while(count >= 0 && value.date < login_id_and_network.responses[el.ID][count-2].date)
+											{
+												const swapValue = login_id_and_network.responses[el.ID][count-2];
+												login_id_and_network.responses[el.ID][count-2] = value;
+												login_id_and_network.responses[el.ID][count-1] = swapValue;
+												--count;
+											}
 										}
 									}
 								});
@@ -3220,28 +3364,38 @@ async function doGetHTTPRequest(hostName,port,command)
 						if(allValues)
 						{
 							allValues.forEach(temp => {
-								if(temp && !temp.writableEnded)
+								if(temp && !temp.writableEnded && (temp.ID != command.userAuthentification.ID || temp.rank != command.userAuthentification.rank))
 								{
-									temp.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+									temp.res.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
 									,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
 									,"Access-Control-Max-Age":'86400'
 									,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"});
-									temp.write(JSON.stringify({command:"update_employees",obj:guy}));
+									
+									temp.res.write(JSON.stringify({command:"update_employees",obj:guy}));
 									
 									connections[el.ID] = undefined;
-									console.log("response to "+el.ID);temp.end();
+									console.log("response to "+el.ID);temp.res.end()
 								}
-								else if(temp.writableEnded)
+								else if(temp.writableEnded && (temp.ID != command.userAuthentification.ID || temp.rank != command.userAuthentification.rank))
 								{
+										console.log("response to "+el.ID+"differed");
+								
 										if(login_id_and_network.responses[el.ID] == undefined )
 										{
 											login_id_and_network.responses[el.ID] = [{first:{command:"update_employees",obj:guy}
-											,reqSource:req.headers.host,reqUserAgent : req.headers['user-agent'],date: new Date()}];
+											,reqSource:req.headers.host,reqUserAgent : req.headers['user-agent'],date: new Date(),rank:command.userAuthentification.rank}];
 										}
 										else
 										{
 											login_id_and_network.responses[el.ID].push({first:{command:"update_employees",obj:guy}
-											,reqSource:req.headers.host,reqUserAgent : req.headers['user-agent'],date: new Date()});
+											,reqSource:req.headers.host,reqUserAgent : req.headers['user-agent'],date: new Date(),rank:command.userAuthentification.rank});
+											while(count >= 0 && value.date < login_id_and_network.responses[el.ID][count-2].date)
+											{
+												const swapValue = login_id_and_network.responses[el.ID][count-2];
+												login_id_and_network.responses[el.ID][count-2] = value;
+												login_id_and_network.responses[el.ID][count-1] = swapValue;
+												--count;
+											}
 										}
 								}
 							});
@@ -3260,6 +3414,7 @@ async function doGetHTTPRequest(hostName,port,command)
 		
 		if(command.type == "update-quest" && command.obj.pass == getPassword())
 		{
+			const startDate = new Date();
 			if(IDs[command.obj.ID].admin)
 			{
 				res.write(JSON.stringify({obj:{ employees:Object.values(model.employees),
@@ -3271,9 +3426,12 @@ async function doGetHTTPRequest(hostName,port,command)
 			}
 			else
 			{
+			
+				//projects: Object.values(model.projects).filter(el=> el.themes.find(th=>  model.employees[command.obj.ID].themes.find(th2 => th2.rank == th.rank) != undefined) != undefined ), 
+					
 				const response = {obj:{ employees:Object.values(model.employees),
-					localities: model.employees[command.obj.ID].themes.map( th=> th.locality),
-					projects: Object.values(model.projects).filter(el=> el.themes.find(th=>  model.employees[command.obj.ID].themes.find(th2 => th2.rank == th.rank) != undefined) != undefined ), 
+					localities: Object.values(model.localities),
+					projects: Object.values(model.projects), 
 					subadmins: Object.values(model.subadmins),
 					zones: model.zones
 				}};
@@ -3285,6 +3443,13 @@ async function doGetHTTPRequest(hostName,port,command)
 				
 				res.write(JSON.stringify(response));
 			}
+			
+			if(login_id_and_network.responses[command.obj.ID])
+			{
+				var respValues = login_id_and_network.responses[command.obj.ID].filter(el=> el.reqSource != req.headers.host || req.headers['user-agent'] != el.reqUserAgent || el.date > startDate ); 
+				login_id_and_network.responses[command.obj.ID] = respValues;
+			}
+				
 			res.end();
 			return;
 		}
