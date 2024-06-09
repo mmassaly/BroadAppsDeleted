@@ -2233,7 +2233,7 @@ async function doGetHTTPRequest(hostName,port,command)
 						let allValues = connections[el.ID];
 						if(allValues )
 						allValues.forEach(temp =>{
-							if(temp && !temp.writableEnded && (temp.ID != command.userAuthentification.ID || temp.rank != command.userAuthentification.rank) )
+							if(temp && !temp.res.writableEnded && (temp.ID != command.userAuthentification.ID || temp.rank != command.userAuthentification.rank) )
 							{
 								temp.res.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
 									,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
@@ -2245,7 +2245,7 @@ async function doGetHTTPRequest(hostName,port,command)
 								//connections[el.ID] = undefined;
 								console.log("response to "+el.ID);temp.res.end()
 							}
-							else if(temp.writableEnded && (temp.ID != command.userAuthentification.ID || temp.rank != command.userAuthentification.rank))
+							else if(temp.res.writableEnded && (temp.ID != command.userAuthentification.ID || temp.rank != command.userAuthentification.rank))
 							{
 								console.log("response to "+el.ID+"differed");
 								if(login_id_and_network.responses[el.ID] == undefined )
@@ -2292,7 +2292,7 @@ async function doGetHTTPRequest(hostName,port,command)
 						let allValues = connections[el.ID];
 						if(allValues && el.ID != command.obj.employee_ID)
 						allValues.forEach(temp =>{
-							if(temp && !temp.writableEnded && (temp.ID != command.userAuthentification.ID || temp.rank != command.userAuthentification.rank) )
+							if(temp && !temp.res.writableEnded && (temp.ID != command.userAuthentification.ID || temp.rank != command.userAuthentification.rank) )
 							{
 								temp.res.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
 									,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
@@ -2303,7 +2303,7 @@ async function doGetHTTPRequest(hostName,port,command)
 								//connections[el.ID] = undefined;
 								console.log("response to "+el.ID);temp.res.end()
 							}
-							else if(temp.writableEnded && (temp.ID != command.userAuthentification.ID || temp.rank != command.userAuthentification.rank) )
+							else if(temp.res.writableEnded && (temp.ID != command.userAuthentification.ID || temp.rank != command.userAuthentification.rank) )
 							{
 								console.log("response to "+el.ID+"differed");
 								
@@ -2409,7 +2409,7 @@ async function doGetHTTPRequest(hostName,port,command)
 						let allValues = connections[el.ID];
 						if(allValues && el.ID != command.obj.employee_ID)
 						allValues.forEach(temp =>{
-							if(temp && !temp.writableEnded && (temp.ID != command.userAuthentification.ID || temp.rank != command.userAuthentification.rank))
+							if(temp && !temp.res.writableEnded && (temp.ID != command.userAuthentification.ID || temp.rank != command.userAuthentification.rank))
 							{
 								temp.res.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
 									,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
@@ -2419,7 +2419,7 @@ async function doGetHTTPRequest(hostName,port,command)
 								//connections[el.ID] = undefined;
 								console.log("response to "+el.ID);temp.res.end()
 							}
-							else if(temp.writableEnded && (temp.ID != command.userAuthentification.ID || temp.rank != command.userAuthentification.rank))
+							else if(temp.res.writableEnded && (temp.ID != command.userAuthentification.ID || temp.rank != command.userAuthentification.rank))
 							{
 								console.log("response to "+el.ID+"differed");
 								
@@ -2541,7 +2541,7 @@ async function doGetHTTPRequest(hostName,port,command)
 												if(allValues)
 													allValues.forEach(temp =>{
 													console.log(el.ID);
-													if(temp && !temp.writableEnded && (temp.ID != command.userAuthentification.ID || temp.rank != command.userAuthentification.rank))
+													if(temp && !temp.res.writableEnded && (temp.ID != command.userAuthentification.ID || temp.rank != command.userAuthentification.rank))
 													{
 														temp.res.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
 															,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
@@ -2554,7 +2554,7 @@ async function doGetHTTPRequest(hostName,port,command)
 														//connections[el.ID] = undefined;
 														console.log("response to "+el.ID);temp.res.end()
 													}																			
-													else if(temp.writableEnded && (temp.ID != command.userAuthentification.ID || temp.rank != command.userAuthentification.rank))
+													else if(temp.res.writableEnded && (temp.ID != command.userAuthentification.ID || temp.rank != command.userAuthentification.rank))
 													{
 														console.log("response to "+el.ID+"differed");
 								
@@ -2778,7 +2778,7 @@ async function doGetHTTPRequest(hostName,port,command)
 													console.log(command.userAuthentification.ID);
 													console.log(temp.rank);
 													console.log(command.userAuthentification.rank);
-													if(temp && !temp.writableEnded && (temp.ID != command.userAuthentification.ID || temp.rank != command.userAuthentification.rank))
+													if(temp && !temp.res.writableEnded && (temp.ID != command.userAuthentification.ID || temp.rank != command.userAuthentification.rank))
 													{
 														temp.res.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
 															,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
@@ -2789,7 +2789,7 @@ async function doGetHTTPRequest(hostName,port,command)
 														//connections[el.ID] = undefined;
 														console.log("response to "+el.ID);temp.res.end()
 													}																			
-													else if(temp.writableEnded && (temp.ID != command.userAuthentification.ID || temp.rank != command.userAuthentification.rank))
+													else if(temp.res.writableEnded && (temp.ID != command.userAuthentification.ID || temp.rank != command.userAuthentification.rank))
 													{
 														console.log("response to "+el.ID+"differed");
 								
@@ -2852,7 +2852,7 @@ async function doGetHTTPRequest(hostName,port,command)
 								let allValues = connections[el.ID];
 								if(allValues)
 								allValues.forEach(temp =>{
-									if(temp && !temp.writableEnded && (temp.ID != command.userAuthentification.ID || temp.rank != command.userAuthentification.rank))
+									if(temp && !temp.res.writableEnded && (temp.ID != command.userAuthentification.ID || temp.rank != command.userAuthentification.rank))
 									{
 										temp.res.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
 											,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
@@ -2864,7 +2864,7 @@ async function doGetHTTPRequest(hostName,port,command)
 										console.log("response to "+el.ID);
 										temp.res.end()
 									}
-									else if(temp.writableEnded && (temp.ID != command.userAuthentification.ID || temp.rank != command.userAuthentification.rank))
+									else if(temp.res.writableEnded && (temp.ID != command.userAuthentification.ID || temp.rank != command.userAuthentification.rank))
 									{
 										console.log("response to "+el.ID+"differed");
 								
@@ -2924,7 +2924,7 @@ async function doGetHTTPRequest(hostName,port,command)
 								let allValues = connections[el.ID];
 								if(allValues)
 								allValues.forEach(temp =>{
-									if(temp && !temp.writableEnded && (temp.ID != command.userAuthentification.ID || temp.rank != command.userAuthentification.rank))
+									if(temp && !temp.res.writableEnded && (temp.ID != command.userAuthentification.ID || temp.rank != command.userAuthentification.rank))
 									{
 										temp.res.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
 											,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
@@ -2936,7 +2936,7 @@ async function doGetHTTPRequest(hostName,port,command)
 										console.log("response to "+el.ID);
 										temp.res.end()
 									}
-									else if(temp.writableEnded && (temp.ID != command.userAuthentification.ID || temp.rank != command.userAuthentification.rank))
+									else if(temp.res.writableEnded && (temp.ID != command.userAuthentification.ID || temp.rank != command.userAuthentification.rank))
 									{
 										console.log("response to "+el.ID+"differed");
 								
@@ -2997,7 +2997,7 @@ async function doGetHTTPRequest(hostName,port,command)
 							let allValues = connections[el.ID];
 							if(allValues )
 							allValues.forEach(temp =>{
-								if(temp && !temp.writableEnded && (temp.ID != command.userAuthentification.ID || temp.rank != command.userAuthentification.rank))
+								if(temp && !temp.res.writableEnded && (temp.ID != command.userAuthentification.ID || temp.rank != command.userAuthentification.rank))
 								{
 									temp.res.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
 										,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
@@ -3008,7 +3008,7 @@ async function doGetHTTPRequest(hostName,port,command)
 									//connections[el.ID] = undefined;
 									console.log("response to "+el.ID);temp.res.end()
 								}
-								else if(temp.writableEnded && (temp.ID != command.userAuthentification.ID || temp.rank != command.userAuthentification.rank))
+								else if(temp.res.writableEnded && (temp.ID != command.userAuthentification.ID || temp.rank != command.userAuthentification.rank))
 								{
 									console.log("response to "+el.ID+"differed");
 								
@@ -3066,7 +3066,7 @@ async function doGetHTTPRequest(hostName,port,command)
 							let allValues = connections[el.ID];
 							if(allValues)
 							allValues.forEach(temp =>{
-								if(temp && !temp.writableEnded && (temp.ID != command.userAuthentification.ID || temp.rank != command.userAuthentification.rank) )
+								if(temp && !temp.res.writableEnded && (temp.ID != command.userAuthentification.ID || temp.rank != command.userAuthentification.rank) )
 								{
 									temp.res.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
 										,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
@@ -3078,7 +3078,7 @@ async function doGetHTTPRequest(hostName,port,command)
 									//connections[el.ID] = undefined;
 									console.log("response to "+el.ID);temp.res.end()
 								}
-								else if(temp.writableEnded && (temp.ID != command.userAuthentification.ID || temp.rank != command.userAuthentification.rank))
+								else if(temp.res.writableEnded && (temp.ID != command.userAuthentification.ID || temp.rank != command.userAuthentification.rank))
 								{
 									console.log("response to "+el.ID+"differed");
 								
@@ -3180,7 +3180,7 @@ async function doGetHTTPRequest(hostName,port,command)
 						if(allValues && el.ID != command.obj.employee_ID)
 							allValues.forEach(temp => {
 								
-							if(temp && !temp.writableEnded && (temp.ID != command.userAuthentification.ID || temp.rank != command.userAuthentification.rank))
+							if(temp && !temp.res.writableEnded && (temp.ID != command.userAuthentification.ID || temp.rank != command.userAuthentification.rank))
 							{
 								temp.res.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
 								,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
@@ -3192,7 +3192,7 @@ async function doGetHTTPRequest(hostName,port,command)
 								connections[el.ID] = undefined;
 								console.log("response to "+el.ID);temp.res.end()
 							}
-							else if(temp.writableEnded && (temp.ID != command.userAuthentification.ID || temp.rank != command.userAuthentification.rank))
+							else if(temp.res.writableEnded && (temp.ID != command.userAuthentification.ID || temp.rank != command.userAuthentification.rank))
 							{
 								console.log("response to "+el.ID+"differed");
 								
@@ -3262,7 +3262,7 @@ async function doGetHTTPRequest(hostName,port,command)
 							if(allValues)
 							{
 								allValues.forEach(temp => {
-									if(temp && !temp.writableEnded &&  (temp.ID != command.userAuthentification.ID || temp.rank != command.userAuthentification.rank))
+									if(temp && !temp.res.writableEnded &&  (temp.ID != command.userAuthentification.ID || temp.rank != command.userAuthentification.rank))
 									{
 										console.log(el.ID);
 										temp.res.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
@@ -3275,7 +3275,7 @@ async function doGetHTTPRequest(hostName,port,command)
 										connections[el.ID] = undefined;
 										temp.res.end()
 									}											
-									else if(temp.writableEnded && (temp.ID != command.userAuthentification.ID || temp.rank != command.userAuthentification.rank))
+									else if(temp.res.writableEnded && (temp.ID != command.userAuthentification.ID || temp.rank != command.userAuthentification.rank))
 									{
 										console.log("response to "+el.ID+"differed");
 								
@@ -3364,7 +3364,7 @@ async function doGetHTTPRequest(hostName,port,command)
 						if(allValues)
 						{
 							allValues.forEach(temp => {
-								if(temp && !temp.writableEnded && (temp.ID != command.userAuthentification.ID || temp.rank != command.userAuthentification.rank))
+								if(temp && !temp.res.writableEnded && (temp.ID != command.userAuthentification.ID || temp.rank != command.userAuthentification.rank))
 								{
 									temp.res.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
 									,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
@@ -3376,7 +3376,7 @@ async function doGetHTTPRequest(hostName,port,command)
 									connections[el.ID] = undefined;
 									console.log("response to "+el.ID);temp.res.end()
 								}
-								else if(temp.writableEnded && (temp.ID != command.userAuthentification.ID || temp.rank != command.userAuthentification.rank))
+								else if(temp.res.writableEnded && (temp.ID != command.userAuthentification.ID || temp.rank != command.userAuthentification.rank))
 								{
 										console.log("response to "+el.ID+"differed");
 								
