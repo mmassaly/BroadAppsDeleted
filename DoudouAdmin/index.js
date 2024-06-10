@@ -2133,9 +2133,9 @@ async function doGetHTTPRequest(hostName,port,command)
 	}
 	function swap(array,prop)
 	{
-		var count =  array.length -2;
-						var valuue = array[array.length -1];
-						var swap = array[array.length -1];
+						var count =  array.length -2;
+						var value = array[array.length -1];
+						var swap;
 						while( value[prop].rank < array[count][prop] && count >= 0 )
 						{
 							var swap = array[count][prop];
@@ -2144,6 +2144,134 @@ async function doGetHTTPRequest(hostName,port,command)
 							--count;
 						}
 	}
+	function deleteList(pj,command)
+	{
+		if(pj)
+		{
+					const theme = pj.themes.find(theme => theme.rank == command.obj.themeRank);
+					if(theme)
+					{
+						const subtheme = theme.subthemes.find(sub=> sub.rank == command.obj.subthemeRank);
+						if( subtheme )
+						{
+							const question = subtheme.questions.find(qu=> qu.rank == command.obj.questionRank);
+							if(question)
+							{
+								const question_list = question.list.find(lst=> lst.rank == command.obj.listRank);			
+								if(question_list)
+								{
+									const question_list_index = question.list.indexOf(question_list);
+									question.list.splice(question_list_index,1);
+									let start == question_list_index;
+									while( start < question_list.length)
+									{
+										--question.list[start].rank;
+										++start;
+									}
+								}
+							}
+						}
+					}
+		}
+	}
+	function deleteQuestion(pj,command)
+	{
+		if(pj)
+		{
+			const theme = pj.themes.find(theme => theme.rank == command.obj.themeRank);
+			if(theme)
+			{
+					const subtheme = theme.subthemes.find(sub=> sub.rank == command.obj.subthemeRank);
+					if( subtheme )
+					{
+						const question = subtheme.questions.find(qu=> qu.rank == command.obj.questionRank);
+						if(question)
+						{
+							let index = subtheme.questions.indexOf(question);
+							subtheme.questions.splice(index,1);
+							if( subtheme.questions.length > index)
+							{
+								let start == index;
+								while( start <subtheme.questions.length)
+								{
+									--subtheme.questions[start].rank ;
+									start++;
+								}
+							}
+						}
+					}
+			}
+		}
+	}
+	
+	function deleteSubtheme(pj,command)
+	{
+		if(pj)
+		{
+			const theme = pj.themes.find(theme => theme.rank == command.obj.themeRank);
+			if(theme)
+			{
+					const subtheme = theme.subthemes.find(sub=> sub.rank == command.obj.subthemeRank);
+					if( subtheme )
+					{
+							let index = theme.subthemes.indexOf(question);
+							theme.subthemes.splice(index,1);
+							if( theme.subthemes.length > index)
+							{
+								let start == index;
+								while( start <theme.subthemes.length)
+								{
+									--theme.subthemes[start].rank ;
+									start++;
+								}
+							}
+						
+					}
+			}
+		}
+	}
+	
+	function deleteTheme(pj,command)
+	{
+		if(pj)
+		{
+			const theme = pj.themes.find(theme => theme.rank == command.obj.themeRank);
+			if(theme)
+			{
+					let index = pj.themes.indexOf(theme);
+					pj.themes.splice(index,1);
+					if( pj.themes.length > index)
+					{
+						let start == index;
+						while( start <pj.themes.length)
+						{
+							--pj.themes[start].rank ;
+							start++;
+						}
+					}
+			}
+		}
+	}
+	
+	function deleteItems(pj,command)
+	{
+		if(pj)
+		{
+			const theme = pj.themes.find(theme => theme.rank == command.obj.themeRank);
+			if(theme)
+			{
+				const subtheme = theme.subthemes.find(sub=> sub.rank == command.obj.subthemeRank);
+				if( subtheme )
+				{
+					const question = subtheme.questions.find(qu=> qu.rank == command.obj.questionRank);
+					if(question)
+					{
+						const question_list = question.items.splice(0,question.items.length);
+					}
+				}
+			}
+		}
+	} 
 	function findCommand(command,res,req)
 	{
 		
@@ -2172,6 +2300,141 @@ async function doGetHTTPRequest(hostName,port,command)
 												,"Access-Control-Max-Age":'86400'
 												,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"});
 												//console.log("Sending response");
+		if( command && command.obj && command.obj.ID && command.type == "deleteStuff" )
+		{
+			if( command.subType == "report")
+			{
+				const report = model.employees[command.obj.ID].reports.find(rp=> rp.reportRank == command.obj.reportRank);
+				if(report)
+				{
+					const reportIndex = model.employees[command.obj.ID].reports.indexOf(report);
+					model.employees[command.obj.ID].reports.splice(reportIndex,1);
+					let start = reportIndex;
+					while(start < model.employees[command.obj.ID].reports.length)
+					{
+						model.employees[command.obj.ID].reports[start].rank--;
+						++start;
+					}
+				}	
+			}
+			if( command.subType == "subtheme")
+			{
+				const pj = model.projects[command.obj.projectRank]; 
+				deleteSubtheme(pj,command);
+				Object.values(model.employees).forEach(emp=> {
+					let empReport = emp.reports.find(rp=> rp.project.rank == command.obj.projectRank);
+					if(empReport)
+					{
+						deleteSubtheme(empReport,command);
+						changedReports.push(emp.ID);
+					}
+				}); 
+			}
+			
+			if( command.subType == "theme")
+			{
+				const pj = model.projects[command.obj.projectRank]; 
+				deleteTheme(pj,command);
+				Object.values(model.employees).forEach(emp=> {
+					let empReport = emp.reports.find(rp=> rp.project.rank == command.obj.projectRank);
+					if(empReport)
+					{
+						deleteTheme(empReport,command);
+						changedReports.push(emp.ID);
+					}
+				}); 
+			}
+			if( command.subType == "question")
+			{
+				const pj = model.projects[command.obj.projectRank]; 
+				deleteQuestion(pj,command);
+				Object.values(model.employees).forEach(emp=> {
+					let empReport = emp.reports.find(rp=> rp.project.rank == command.obj.projectRank);
+					if(empReport)
+					{
+						deleteQuestion(empReport,command);
+						changedReports.push(emp.ID);
+					}
+				}); 
+			}
+			if(command.subtype == "questionList")
+			{
+				const pj = model.projects[command.obj.projectRank]; 
+				deleteList(pj,command);
+				Object.values(model.employees).forEach(emp=> {
+					let empReport = emp.reports.find(rp=> rp.project.rank == command.obj.projectRank);
+					if(empReport)
+					{
+						deleteList(empReport,command);
+						changedReports.push(emp.ID);
+					}
+				}); 
+			}
+			if(command.subtype == "questionItem")
+			{
+				const pj = model.projects[command.obj.projectRank]; 
+				Object.values(model.employees).forEach(emp=> {
+					let empReport = emp.reports.find(rp=> rp.project.rank == command.obj.projectRank);
+					if(empReport)
+					{
+						deleteItems(empReport,command);
+						changedReports.push(emp.ID);
+					}
+				});
+			}
+			
+			res.write(JSON.stringify({command:"deleteStuff"}));
+			res.end();
+			
+			const values = Object.values(IDs);
+	
+			if(values)
+			{
+					values.forEach(el=> 
+					{
+						let allValues = connections[el.ID];
+						if(allValues )
+						allValues.forEach(temp =>{
+							if(temp && !temp.res.writableEnded && (temp.ID != command.userAuthentification.ID || temp.rank != command.userAuthentification.rank) )
+							{
+								temp.res.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+									,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
+									,"Access-Control-Max-Age":'86400'
+									,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"});
+								
+								temp.res.write(JSON.stringify({command:"deleteStuff","subType":command.subType,obj:command.obj.project}));
+								
+								//connections[el.ID] = undefined;
+								console.log("response to "+el.ID);temp.res.end()
+							}
+							else if(temp.res.writableEnded && (temp.ID != command.userAuthentification.ID || temp.rank != command.userAuthentification.rank))
+							{
+								console.log("response to "+el.ID+"differed");
+								if(login_id_and_network.responses[el.ID] == undefined )
+								{
+									login_id_and_network.responses[el.ID] = [{first:{command:"deleteStuff","subType":command.subType,obj:command.obj.project}
+									,reqSource:req.headers.host,reqUserAgent : req.headers['user-agent'],date: new Date(),rank:command.userAuthentification.rank}];
+								}
+								else
+								{
+									login_id_and_network.responses[el.ID].push({first:{command:"deleteStuff","subType":command.subType,obj:command.obj.project}
+									,reqSource:req.headers.host,reqUserAgent : req.headers['user-agent'],date: new Date(),rank:command.userAuthentification.rank});
+									const count = login_id_and_network.responses[el.ID].length-1;
+									const value = login_id_and_network.responses[el.ID][count];
+									while(count >= 0 && value.date < login_id_and_network.responses[el.ID][count-2].date)
+									{
+										const swapValue = login_id_and_network.responses[el.ID][count-2];
+										login_id_and_network.responses[el.ID][count-2] = value;
+										login_id_and_network.responses[el.ID][count-1] = swapValue;
+										++count;
+									}
+								}
+							}
+						});
+					});
+			}
+			return;
+		}
 		if( command && command.obj && command.obj.ID && command.type == "wait_for_update" )
 		{
 			console.log(req.headers.host); 
