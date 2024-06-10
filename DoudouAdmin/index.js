@@ -2131,7 +2131,19 @@ async function doGetHTTPRequest(hostName,port,command)
 			Object.assign(model.subadmins,subadminsFile);
 		}
 	}
-		
+	function swap(array,prop)
+	{
+		var count =  array.length -2;
+						var valuue = array[array.length -1];
+						var swap = array[array.length -1];
+						while( value[prop].rank < array[count][prop] && count >= 0 )
+						{
+							var swap = array[count][prop];
+							array[count][prop] = array[count+1][prop];
+							array[count+1][prop] = swap;
+							--count;
+						}
+	}
 	function findCommand(command,res,req)
 	{
 		
@@ -2224,7 +2236,71 @@ async function doGetHTTPRequest(hostName,port,command)
 				
 				res.write(JSON.stringify({command:"update_added_projects"}));
 				res.end();
+				
 				const values = Object.values(IDs);
+				/*
+				model.employees.forEach(emp=>
+				{
+					const rpCopy = JSON.parse(JSON.stringify(command.obj.project));
+					rpCopy .themes.forced_authentification_query_login(th=>
+					const retRep = emp.reports.project.find(rp=> rp.reportRank == rpCopy.rank && rp.rank == rpCopy.rank );
+					
+					if(retRep)
+					{
+						retCopy.themes.forEach(th=>
+						{
+							const thsFound = retRep.themes.find(oldTheme=> oldTheme.rank == th.rank);
+							if(thsFound)
+							{
+								th.subthemes.forEach(sub=>
+								{
+									const subFound = thsFound.subthemes.find( subA => subA.rank == sub.rank);
+									if(!subFound)
+									{
+										thsFound.subthemes.push(th);
+										swap(thsFound.subthemes,"rank");
+									}
+									else
+									{
+										sub.questions.forEach( q=>
+										{
+											const qFound = subFound.find(qus=> q.rank == qus.rank);
+											if(!qFound)
+											{
+												subFound.questions.push(q);
+												swap(subFound.questions,"rank");
+											}
+											else
+											{
+												Object.keys(q).forEach(key=>
+												{
+													if(!qFound[key])
+													{
+														qFound[key] = ;q[key]
+													}
+													else
+													{
+														
+													}
+												});
+											}
+										})
+									}
+								});
+							}
+							else
+							{
+								
+							}
+						});
+						th.subthemes.find(sub=> sub.rank == ret.subthe);
+					}
+					else
+					{
+						emp.reports.themes.push(th);
+						
+					}
+				});*/
 				
 				if(values)
 				{
