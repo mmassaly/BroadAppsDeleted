@@ -2162,7 +2162,7 @@ async function doGetHTTPRequest(hostName,port,command)
 								{
 									const question_list_index = question.list.indexOf(question_list);
 									question.list.splice(question_list_index,1);
-									let start == question_list_index;
+									let start = question_list_index;
 									while( start < question_list.length)
 									{
 										--question.list[start].rank;
@@ -2191,7 +2191,7 @@ async function doGetHTTPRequest(hostName,port,command)
 							subtheme.questions.splice(index,1);
 							if( subtheme.questions.length > index)
 							{
-								let start == index;
+								let start = index;
 								while( start <subtheme.questions.length)
 								{
 									--subtheme.questions[start].rank ;
@@ -2218,7 +2218,7 @@ async function doGetHTTPRequest(hostName,port,command)
 							theme.subthemes.splice(index,1);
 							if( theme.subthemes.length > index)
 							{
-								let start == index;
+								let start = index;
 								while( start <theme.subthemes.length)
 								{
 									--theme.subthemes[start].rank ;
@@ -2242,7 +2242,7 @@ async function doGetHTTPRequest(hostName,port,command)
 					pj.themes.splice(index,1);
 					if( pj.themes.length > index)
 					{
-						let start == index;
+						let start = index;
 						while( start <pj.themes.length)
 						{
 							--pj.themes[start].rank ;
