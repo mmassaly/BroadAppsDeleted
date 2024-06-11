@@ -2300,9 +2300,12 @@ async function doGetHTTPRequest(hostName,port,command)
 												,"Access-Control-Max-Age":'86400'
 												,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"});
 												//console.log("Sending response");
-		if( command && command.obj && command.obj.ID && command.type == "deleteStuff" )
+		if( command && command.obj  && command.type == "deleteStuff" )
 		{
-			if( command.subType == "report")
+			var changedSome = false;
+			var reportRange = false;
+			
+			if( command.subType == "report" && command.obj.ID)
 			{
 				const report = model.employees[command.obj.ID].reports.find(rp=> rp.reportRank == command.obj.reportRank);
 				if(report)
@@ -2310,23 +2313,28 @@ async function doGetHTTPRequest(hostName,port,command)
 					const reportIndex = model.employees[command.obj.ID].reports.indexOf(report);
 					model.employees[command.obj.ID].reports.splice(reportIndex,1);
 					let start = reportIndex;
+					reportRange = true;
 					while(start < model.employees[command.obj.ID].reports.length)
 					{
 						model.employees[command.obj.ID].reports[start].rank--;
 						++start;
 					}
-				}	
+				}
+				
 			}
+			
 			if( command.subType == "subtheme")
 			{
 				const pj = model.projects[command.obj.projectRank]; 
 				deleteSubtheme(pj,command);
 				Object.values(model.employees).forEach(emp=> {
 					let empReport = emp.reports.find(rp=> rp.project.rank == command.obj.projectRank);
+					changedSome = true;
 					if(empReport)
 					{
-						deleteSubtheme(empReport,command);
-						changedReports.push(emp.ID);
+						deleteSubtheme(empReport.project,command);
+						//changedReports.push(emp.ID);
+						reportRange = true;
 					}
 				}); 
 			}
@@ -2337,48 +2345,61 @@ async function doGetHTTPRequest(hostName,port,command)
 				deleteTheme(pj,command);
 				Object.values(model.employees).forEach(emp=> {
 					let empReport = emp.reports.find(rp=> rp.project.rank == command.obj.projectRank);
+					changedSome = true;
 					if(empReport)
 					{
-						deleteTheme(empReport,command);
-						changedReports.push(emp.ID);
+						deleteTheme(empReport.project,command);
+						//changedReports.push(emp.ID);
+						reportRange = true;
 					}
 				}); 
 			}
+			
 			if( command.subType == "question")
 			{
 				const pj = model.projects[command.obj.projectRank]; 
 				deleteQuestion(pj,command);
 				Object.values(model.employees).forEach(emp=> {
-					let empReport = emp.reports.find(rp=> rp.project.rank == command.obj.projectRank);
-					if(empReport)
+					changedSome = true;
+					if(emp.reports)
 					{
-						deleteQuestion(empReport,command);
-						changedReports.push(emp.ID);
+						let empReport = emp.reports.find(rp=> rp.project.rank == command.obj.projectRank);
+						if(empReport)
+						{
+							deleteQuestion(empReport.project,command);
+							reportRange = true;
+						}
 					}
 				}); 
 			}
+			
 			if(command.subtype == "questionList")
 			{
 				const pj = model.projects[command.obj.projectRank]; 
 				deleteList(pj,command);
 				Object.values(model.employees).forEach(emp=> {
 					let empReport = emp.reports.find(rp=> rp.project.rank == command.obj.projectRank);
+					changedSome = true;
 					if(empReport)
 					{
-						deleteList(empReport,command);
-						changedReports.push(emp.ID);
+						deleteList(empReport.project,command);
+						//changedReports.push(emp.ID);
+						reportRange = true;
 					}
 				}); 
 			}
+			
 			if(command.subtype == "questionItem")
 			{
 				const pj = model.projects[command.obj.projectRank]; 
 				Object.values(model.employees).forEach(emp=> {
 					let empReport = emp.reports.find(rp=> rp.project.rank == command.obj.projectRank);
+					changedSome = true;
 					if(empReport)
 					{
-						deleteItems(empReport,command);
-						changedReports.push(emp.ID);
+						deleteItems(empReport.project,command);
+						//changedReports.push(emp.ID);
+						reportRange = true;
 					}
 				});
 			}
@@ -2433,6 +2454,17 @@ async function doGetHTTPRequest(hostName,port,command)
 						});
 					});
 			}
+			
+			if(changedSome)
+			{
+				save(model.projects,"projects.txt");
+			}
+			
+			if(reportRange) 
+			{
+				save(model.employees,"employees.txt");
+			}
+			
 			return;
 		}
 		if( command && command.obj && command.obj.ID && command.type == "wait_for_update" )
