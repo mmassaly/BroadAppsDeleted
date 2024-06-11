@@ -2304,23 +2304,17 @@ async function doGetHTTPRequest(hostName,port,command)
 		{
 			var changedSome = false;
 			var reportRange = false;
-			
+			console.log(command.obj);
 			if( command.subType == "report" && command.obj.ID)
 			{
 				const report = model.employees[command.obj.ID].reports.find(rp=> rp.reportRank == command.obj.reportRank);
+				console.log(report);
 				if(report)
 				{
 					const reportIndex = model.employees[command.obj.ID].reports.indexOf(report);
 					model.employees[command.obj.ID].reports.splice(reportIndex,1);
-					let start = reportIndex;
 					reportRange = true;
-					while(start < model.employees[command.obj.ID].reports.length)
-					{
-						model.employees[command.obj.ID].reports[start].rank--;
-						++start;
-					}
 				}
-				
 			}
 			
 			if( command.subType == "subtheme")
@@ -2423,7 +2417,7 @@ async function doGetHTTPRequest(hostName,port,command)
 									,"Access-Control-Max-Age":'86400'
 									,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"});
 								
-								temp.res.write(JSON.stringify({command:"deleteStuff","subType":command.subType,obj:command.obj.project}));
+								temp.res.write(JSON.stringify({command:"deleteStuff","subType":command.subType,obj:command.obj}));
 								
 								//connections[el.ID] = undefined;
 								console.log("response to "+el.ID);temp.res.end()
@@ -2433,20 +2427,20 @@ async function doGetHTTPRequest(hostName,port,command)
 								console.log("response to "+el.ID+"differed");
 								if(login_id_and_network.responses[el.ID] == undefined )
 								{
-									login_id_and_network.responses[el.ID] = [{first:{command:"deleteStuff","subType":command.subType,obj:command.obj.project}
+									login_id_and_network.responses[el.ID] = [{first:{command:"deleteStuff","subType":command.subType,obj:command.obj}
 									,reqSource:req.headers.host,reqUserAgent : req.headers['user-agent'],date: new Date(),rank:command.userAuthentification.rank}];
 								}
 								else
 								{
-									login_id_and_network.responses[el.ID].push({first:{command:"deleteStuff","subType":command.subType,obj:command.obj.project}
+									login_id_and_network.responses[el.ID].push({first:{command:"deleteStuff","subType":command.subType,obj:command.obj}
 									,reqSource:req.headers.host,reqUserAgent : req.headers['user-agent'],date: new Date(),rank:command.userAuthentification.rank});
 									const count = login_id_and_network.responses[el.ID].length-1;
 									const value = login_id_and_network.responses[el.ID][count];
-									while(count >= 0 && value.date < login_id_and_network.responses[el.ID][count-2].date)
+									while(count >= 1 && value.date < login_id_and_network.responses[el.ID][count-1].date)
 									{
-										const swapValue = login_id_and_network.responses[el.ID][count-2];
-										login_id_and_network.responses[el.ID][count-2] = value;
-										login_id_and_network.responses[el.ID][count-1] = swapValue;
+										const swapValue = login_id_and_network.responses[el.ID][count-1];
+										login_id_and_network.responses[el.ID][count-1] = value;
+										login_id_and_network.responses[el.ID][count] = swapValue;
 										++count;
 									}
 								}
@@ -2630,11 +2624,12 @@ async function doGetHTTPRequest(hostName,port,command)
 									,reqSource:req.headers.host,reqUserAgent : req.headers['user-agent'],date: new Date(),rank:command.userAuthentification.rank});
 									const count = login_id_and_network.responses[el.ID].length-1;
 									const value = login_id_and_network.responses[el.ID][count];
-									while(count >= 0 && value.date < login_id_and_network.responses[el.ID][count-2].date)
+									
+									while(count >= 1 && value.date < login_id_and_network.responses[el.ID][count-1].date)
 									{
-										const swapValue = login_id_and_network.responses[el.ID][count-2];
-										login_id_and_network.responses[el.ID][count-2] = value;
-										login_id_and_network.responses[el.ID][count-1] = swapValue;
+										const swapValue = login_id_and_network.responses[el.ID][count-1];
+										login_id_and_network.responses[el.ID][count-1] = value;
+										login_id_and_network.responses[el.ID][count] = swapValue;
 										++count;
 									}
 								}
@@ -2689,11 +2684,11 @@ async function doGetHTTPRequest(hostName,port,command)
 									,reqSource:req.headers.host,reqUserAgent : req.headers['user-agent'],date: new Date(),rank:command.userAuthentification.rank});
 									const count = login_id_and_network.responses[el.ID].length-1;
 									const value = login_id_and_network.responses[el.ID][count];
-									while(count >= 0 && value.date < login_id_and_network.responses[el.ID][count-2].date)
+									while(count >= 1 && value.date < login_id_and_network.responses[el.ID][count-1].date)
 									{
-										const swapValue = login_id_and_network.responses[el.ID][count-2];
-										login_id_and_network.responses[el.ID][count-2] = value;
-										login_id_and_network.responses[el.ID][count-1] = swapValue;
+										const swapValue = login_id_and_network.responses[el.ID][count-1];
+										login_id_and_network.responses[el.ID][count-1] = value;
+										login_id_and_network.responses[el.ID][count] = swapValue;
 										++count;
 									}
 								}
@@ -2805,11 +2800,11 @@ async function doGetHTTPRequest(hostName,port,command)
 									,reqSource:req.headers.host,reqUserAgent : req.headers['user-agent'],date: new Date(),rank:command.userAuthentification.rank});
 									const count = login_id_and_network.responses[el.ID].length-1;
 									const value = login_id_and_network.responses[el.ID][count];
-									while(count >= 0 && value.date < login_id_and_network.responses[el.ID][count-2].date)
+									while(count >= 1 && value.date < login_id_and_network.responses[el.ID][count-1].date)
 									{
-										const swapValue = login_id_and_network.responses[el.ID][count-2];
-										login_id_and_network.responses[el.ID][count-2] = value;
-										login_id_and_network.responses[el.ID][count-1] = swapValue;
+										const swapValue = login_id_and_network.responses[el.ID][count-1];
+										login_id_and_network.responses[el.ID][count-1] = value;
+										login_id_and_network.responses[el.ID][count] = swapValue;
 										++count;
 									}
 								}
@@ -2944,11 +2939,11 @@ async function doGetHTTPRequest(hostName,port,command)
 															,reqSource:req.headers.host,reqUserAgent : req.headers['user-agent'],date: new Date(),rank:command.userAuthentification.rank});
 															const count = login_id_and_network.responses[el.ID].length-1;
 															const value = login_id_and_network.responses[el.ID][count];
-															while(count >= 0 && value.date < login_id_and_network.responses[el.ID][count-2].date)
+															while(count >= 1 && value.date < login_id_and_network.responses[el.ID][count-1].date)
 															{
-																const swapValue = login_id_and_network.responses[el.ID][count-2];
-																login_id_and_network.responses[el.ID][count-2] = value;
-																login_id_and_network.responses[el.ID][count-1] = swapValue;
+																const swapValue = login_id_and_network.responses[el.ID][count-1];
+																login_id_and_network.responses[el.ID][count-1] = value;
+																login_id_and_network.responses[el.ID][count] = swapValue;
 																++count;
 															}
 														}
@@ -3175,11 +3170,11 @@ async function doGetHTTPRequest(hostName,port,command)
 															,reqSource:req.headers.host,reqUserAgent : req.headers['user-agent'],date: new Date(),rank:command.userAuthentification.rank});
 															const count = login_id_and_network.responses[el.ID].length-1;
 															const value = login_id_and_network.responses[el.ID][count];
-															while(count >= 0 && value.date < login_id_and_network.responses[el.ID][count-2].date)
+															while(count >= 1 && value.date < login_id_and_network.responses[el.ID][count-1].date)
 															{
-																const swapValue = login_id_and_network.responses[el.ID][count-2];
-																login_id_and_network.responses[el.ID][count-2] = value;
-																login_id_and_network.responses[el.ID][count-1] = swapValue;
+																const swapValue = login_id_and_network.responses[el.ID][count-1];
+																login_id_and_network.responses[el.ID][count-1] = value;
+																login_id_and_network.responses[el.ID][count] = swapValue;
 																++count;
 															}
 														}
@@ -3250,12 +3245,12 @@ async function doGetHTTPRequest(hostName,port,command)
 											,reqSource:req.headers.host,reqUserAgent : req.headers['user-agent'],date: new Date(),rank:command.userAuthentification.rank});
 											const count = login_id_and_network.responses[el.ID].length-1;
 											const value = login_id_and_network.responses[el.ID][count];
-											while(count >= 0 && value.date < login_id_and_network.responses[el.ID][count-2].date)
+											while(count >= 1 && value.date < login_id_and_network.responses[el.ID][count-1].date)
 											{
-												const swapValue = login_id_and_network.responses[el.ID][count-2];
-												login_id_and_network.responses[el.ID][count-2] = value;
-												login_id_and_network.responses[el.ID][count-1] = swapValue;
-												--count;
+												const swapValue = login_id_and_network.responses[el.ID][count-1];
+												login_id_and_network.responses[el.ID][count-1] = value;
+												login_id_and_network.responses[el.ID][count] = swapValue;
+												++count;
 											}
 										}
 									}
@@ -3322,12 +3317,12 @@ async function doGetHTTPRequest(hostName,port,command)
 											,reqSource:req.headers.host,reqUserAgent : req.headers['user-agent'],date: new Date(),rank:command.userAuthentification.rank});
 											const count = login_id_and_network.responses[el.ID].length-1;
 											const value = login_id_and_network.responses[el.ID][count];
-											while(count >= 0 && value.date < login_id_and_network.responses[el.ID][count-2].date)
+											while(count >= 1 && value.date < login_id_and_network.responses[el.ID][count-1].date)
 											{
-												const swapValue = login_id_and_network.responses[el.ID][count-2];
-												login_id_and_network.responses[el.ID][count-2] = value;
-												login_id_and_network.responses[el.ID][count-1] = swapValue;
-												--count;
+												const swapValue = login_id_and_network.responses[el.ID][count-1];
+												login_id_and_network.responses[el.ID][count-1] = value;
+												login_id_and_network.responses[el.ID][count] = swapValue;
+												++count;
 											}
 										}
 									}
@@ -3395,11 +3390,12 @@ async function doGetHTTPRequest(hostName,port,command)
 											const count = login_id_and_network.responses[el.ID].length-1;
 											const value = login_id_and_network.responses[el.ID][count];
 											while(count >= 0 && value.date < login_id_and_network.responses[el.ID][count-2].date)
+											while(count >= 1 && value.date < login_id_and_network.responses[el.ID][count-1].date)
 											{
-												const swapValue = login_id_and_network.responses[el.ID][count-2];
-												login_id_and_network.responses[el.ID][count-2] = value;
-												login_id_and_network.responses[el.ID][count-1] = swapValue;
-												--count;
+												const swapValue = login_id_and_network.responses[el.ID][count-1];
+												login_id_and_network.responses[el.ID][count-1] = value;
+												login_id_and_network.responses[el.ID][count] = swapValue;
+												++count;
 											}
 									}
 								}
@@ -3466,12 +3462,12 @@ async function doGetHTTPRequest(hostName,port,command)
 											,reqSource:req.headers.host,reqUserAgent : req.headers['user-agent'],date: new Date(),rank:command.userAuthentification.rank});
 											const count = login_id_and_network.responses[el.ID].length-1;
 											const value = login_id_and_network.responses[el.ID][count];
-											while(count >= 0 && value.date < login_id_and_network.responses[el.ID][count-2].date)
+											while(count >= 1 && value.date < login_id_and_network.responses[el.ID][count-1].date)
 											{
-												const swapValue = login_id_and_network.responses[el.ID][count-2];
-												login_id_and_network.responses[el.ID][count-2] = value;
-												login_id_and_network.responses[el.ID][count-1] = swapValue;
-												--count;
+												const swapValue = login_id_and_network.responses[el.ID][count-1];
+												login_id_and_network.responses[el.ID][count-1] = value;
+												login_id_and_network.responses[el.ID][count] = swapValue;
+												++count;
 											}
 									}
 								}
@@ -3578,11 +3574,11 @@ async function doGetHTTPRequest(hostName,port,command)
 									,reqSource:req.headers.host,reqUserAgent : req.headers['user-agent'],date: new Date(),rank:command.userAuthentification.rank});
 									const count = login_id_and_network.responses[el.ID].length-1;
 									const value = login_id_and_network.responses[el.ID][count];
-									while(count >= 0 && value.date < login_id_and_network.responses[el.ID][count-2].date)
+									while(count >= 1 && value.date < login_id_and_network.responses[el.ID][count-1].date)
 									{
-										const swapValue = login_id_and_network.responses[el.ID][count-2];
-										login_id_and_network.responses[el.ID][count-2] = value;
-										login_id_and_network.responses[el.ID][count-1] = swapValue;
+										const swapValue = login_id_and_network.responses[el.ID][count-1];
+										login_id_and_network.responses[el.ID][count-1] = value;
+										login_id_and_network.responses[el.ID][count] = swapValue;
 										++count;
 									}
 								}
@@ -3659,12 +3655,12 @@ async function doGetHTTPRequest(hostName,port,command)
 										{
 											login_id_and_network.responses[el.ID].push({first:{command:"assign_to_subadmin",obj:command.obj}
 											,reqSource:req.headers.host,reqUserAgent : req.headers['user-agent'],date: new Date(),rank:command.userAuthentification.rank});
-											while(count >= 0 && value.date < login_id_and_network.responses[el.ID][count-2].date)
+											while(count >= 1 && value.date < login_id_and_network.responses[el.ID][count-1].date)
 											{
-												const swapValue = login_id_and_network.responses[el.ID][count-2];
-												login_id_and_network.responses[el.ID][count-2] = value;
-												login_id_and_network.responses[el.ID][count-1] = swapValue;
-												--count;
+												const swapValue = login_id_and_network.responses[el.ID][count-1];
+												login_id_and_network.responses[el.ID][count-1] = value;
+												login_id_and_network.responses[el.ID][count] = swapValue;
+												++count;
 											}
 										}
 									}
