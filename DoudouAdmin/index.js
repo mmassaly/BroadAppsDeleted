@@ -3316,6 +3316,10 @@ async function doGetHTTPRequest(hostName,port,command)
 				const projectResult = Object.values(model.projects).find(pj=> pj.rank == command.obj.projectRank);
 				if(projectResult)
 				{
+					if(!emp.reports)
+					{
+						emp.reports = [];
+					}
 					const rank_of_projects = emp.reports.length+1;
 					emp.reports.push( {reportRank: rank_of_projects, projectLocality:undefined,project: JSON.parse(JSON.stringify(projectResult)) });
 					res.write(JSON.stringify({command:"update-link-employee-to-project",obj:{reportRank:rank_of_projects,projectRank:command.obj.projectRank}}));
