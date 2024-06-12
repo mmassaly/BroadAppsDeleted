@@ -2412,11 +2412,17 @@ async function doGetHTTPRequest(hostName,port,command)
 						allValues.forEach(temp =>{
 							if(temp && !temp.res.writableEnded && (temp.ID != command.userAuthentification.ID || temp.rank != command.userAuthentification.rank) )
 							{
-								temp.res.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
-									,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
-									,"Access-Control-Max-Age":'86400'
-									,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"});
-								
+								try
+														{
+															temp.res.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+															,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
+															,"Access-Control-Max-Age":'86400'
+															,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"});
+														}
+														catch(problem)
+														{
+															console.log(problem);
+														}
 								temp.res.write(JSON.stringify({command:"deleteStuff","subType":command.subType,obj:command.obj}));
 								
 								//connections[el.ID] = undefined;
@@ -2600,11 +2606,17 @@ async function doGetHTTPRequest(hostName,port,command)
 						allValues.forEach(temp =>{
 							if(temp && !temp.res.writableEnded && (temp.ID != command.userAuthentification.ID || temp.rank != command.userAuthentification.rank) )
 							{
-								temp.res.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
-									,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
-									,"Access-Control-Max-Age":'86400'
-									,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"});
-								
+								try
+														{
+															temp.res.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+															,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
+															,"Access-Control-Max-Age":'86400'
+															,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"});
+														}
+														catch(problem)
+														{
+															console.log(problem);
+														}
 								temp.res.write(JSON.stringify({command:"update_added_projects",obj:command.obj.project}));
 								
 								//connections[el.ID] = undefined;
@@ -2660,11 +2672,17 @@ async function doGetHTTPRequest(hostName,port,command)
 						allValues.forEach(temp =>{
 							if(temp && !temp.res.writableEnded && (temp.ID != command.userAuthentification.ID || temp.rank != command.userAuthentification.rank) )
 							{
-								temp.res.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
-									,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
-									,"Access-Control-Max-Age":'86400'
-									,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"});
-								
+								try
+														{
+															temp.res.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+															,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
+															,"Access-Control-Max-Age":'86400'
+															,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"});
+														}
+														catch(problem)
+														{
+															console.log(problem);
+														}
 								temp.res.write(JSON.stringify({command:"update_added_projects",obj:command.obj.project}));
 								//connections[el.ID] = undefined;
 								console.log("response to "+el.ID);temp.res.end()
@@ -2777,11 +2795,17 @@ async function doGetHTTPRequest(hostName,port,command)
 						allValues.forEach(temp =>{
 							if(temp && !temp.res.writableEnded && (temp.ID != command.userAuthentification.ID || temp.rank != command.userAuthentification.rank))
 							{
-								temp.res.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
-									,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
-									,"Access-Control-Max-Age":'86400'
-									,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"});
-								temp.res.write(JSON.stringify({command:"update_project_desc",obj:command.obj}));
+								try
+														{
+															temp.res.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+															,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
+															,"Access-Control-Max-Age":'86400'
+															,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"});
+														}
+														catch(problem)
+														{
+															console.log(problem);
+														}temp.res.write(JSON.stringify({command:"update_project_desc",obj:command.obj}));
 								//connections[el.ID] = undefined;
 								console.log("response to "+el.ID);temp.res.end()
 							}
@@ -2909,11 +2933,17 @@ async function doGetHTTPRequest(hostName,port,command)
 													console.log(el.ID);
 													if(temp && !temp.res.writableEnded && (temp.ID != command.userAuthentification.ID || temp.rank != command.userAuthentification.rank))
 													{
-														temp.res.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+														try
+														{
+															temp.res.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
 															,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
 															,"Access-Control-Max-Age":'86400'
 															,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"});
-														const newCommand = {command:"update_list_category_item"};
+														}
+														catch(problem)
+														{
+															console.log(problem);
+														}const newCommand = {command:"update_list_category_item"};
 														Object.assign(newCommand,command);
 														console.log(newCommand);
 														temp.res.write(JSON.stringify(newCommand));
@@ -3146,11 +3176,17 @@ async function doGetHTTPRequest(hostName,port,command)
 													console.log(command.userAuthentification.rank);
 													if(temp && !temp.res.writableEnded && (temp.ID != command.userAuthentification.ID || temp.rank != command.userAuthentification.rank))
 													{
-														temp.res.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+														try
+														{
+															temp.res.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
 															,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
 															,"Access-Control-Max-Age":'86400'
 															,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"});
-															
+														}
+														catch(problem)
+														{
+															console.log(problem);
+														}
 														temp.res.write(JSON.stringify({command:"updated_flll_anwer_to_question",change_commands:change_command}));
 														//connections[el.ID] = undefined;
 														console.log("response to "+el.ID);temp.res.end()
@@ -3220,11 +3256,17 @@ async function doGetHTTPRequest(hostName,port,command)
 								allValues.forEach(temp =>{
 									if(temp && !temp.res.writableEnded && (temp.ID != command.userAuthentification.ID || temp.rank != command.userAuthentification.rank))
 									{
-										temp.res.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
-											,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
-											,"Access-Control-Max-Age":'86400'
-											,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"});
-										
+										try
+														{
+															temp.res.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+															,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
+															,"Access-Control-Max-Age":'86400'
+															,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"});
+														}
+														catch(problem)
+														{
+															console.log(problem);
+														}
 										temp.res.write(JSON.stringify({command:"link-employee-report-to-locality",obj:{emp:command.obj.emp,reportLocality:command.obj.projectLocality,reportRank:command.obj.reportRank}}));
 										//connections[el.ID] = undefined;
 										console.log("response to "+el.ID);
@@ -3292,11 +3334,17 @@ async function doGetHTTPRequest(hostName,port,command)
 								allValues.forEach(temp =>{
 									if(temp && !temp.res.writableEnded && (temp.ID != command.userAuthentification.ID || temp.rank != command.userAuthentification.rank))
 									{
-										temp.res.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
-											,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
-											,"Access-Control-Max-Age":'86400'
-											,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"});
-										
+										try
+														{
+															temp.res.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+															,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
+															,"Access-Control-Max-Age":'86400'
+															,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"});
+														}
+														catch(problem)
+														{
+															console.log(problem);
+														}
 										temp.res.write(JSON.stringify({command:"update-link-employee-to-project",obj:{emp:command.obj.emp,reportRank:rank_of_projects,projectRank:command.obj.projectRank}}));
 										//connections[el.ID] = undefined;
 										console.log("response to "+el.ID);
@@ -3365,11 +3413,17 @@ async function doGetHTTPRequest(hostName,port,command)
 							allValues.forEach(temp =>{
 								if(temp && !temp.res.writableEnded && (temp.ID != command.userAuthentification.ID || temp.rank != command.userAuthentification.rank))
 								{
-									temp.res.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
-										,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
-										,"Access-Control-Max-Age":'86400'
-										,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"});
-									 
+									try
+														{
+															temp.res.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+															,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
+															,"Access-Control-Max-Age":'86400'
+															,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"});
+														}
+														catch(problem)
+														{
+															console.log(problem);
+														} 
 									temp.res.write(JSON.stringify({command:"update_employee_projects",obj:{theme: command.obj.theme,thRank:command.obj.theme.rank,locality:command.obj.locality,ID:command.obj.emp.ID}}));
 									//connections[el.ID] = undefined;
 									console.log("response to "+el.ID);temp.res.end()
@@ -3435,11 +3489,17 @@ async function doGetHTTPRequest(hostName,port,command)
 							allValues.forEach(temp =>{
 								if(temp && !temp.res.writableEnded && (temp.ID != command.userAuthentification.ID || temp.rank != command.userAuthentification.rank) )
 								{
-									temp.res.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
-										,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
-										,"Access-Control-Max-Age":'86400'
-										,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"});
-									
+									try
+														{
+															temp.res.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+															,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
+															,"Access-Control-Max-Age":'86400'
+															,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"});
+														}
+														catch(problem)
+														{
+															console.log(problem);
+														}
 									temp.res.write(JSON.stringify({command:"update_employee_projects",obj:{theme: command.obj.theme,
 									thRank:command.obj.theme.rank,locality:command.obj.locality,ID:command.obj.emp.ID}}));
 									//connections[el.ID] = undefined;
@@ -3549,11 +3609,17 @@ async function doGetHTTPRequest(hostName,port,command)
 								
 							if(temp && !temp.res.writableEnded && (temp.ID != command.userAuthentification.ID || temp.rank != command.userAuthentification.rank))
 							{
-								temp.res.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
-								,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
-								,"Access-Control-Max-Age":'86400'
-								,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"});
-								
+								try
+														{
+															temp.res.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+															,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
+															,"Access-Control-Max-Age":'86400'
+															,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"});
+														}
+														catch(problem)
+														{
+															console.log(problem);
+														}
 								temp.res.write(JSON.stringify({command:"add-locality-object",obj:command.obj}));
 								
 								connections[el.ID] = undefined;
@@ -3632,11 +3698,17 @@ async function doGetHTTPRequest(hostName,port,command)
 									if(temp && !temp.res.writableEnded &&  (temp.ID != command.userAuthentification.ID || temp.rank != command.userAuthentification.rank))
 									{
 										console.log(el.ID);
-										temp.res.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
-										,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
-										,"Access-Control-Max-Age":'86400'
-										,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"});
-										
+										try
+														{
+															temp.res.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+															,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
+															,"Access-Control-Max-Age":'86400'
+															,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"});
+														}
+														catch(problem)
+														{
+															console.log(problem);
+														}
 										temp.res.write(JSON.stringify({command:"assign_to_subadmin",obj:command.obj}));
 										
 										connections[el.ID] = undefined;
@@ -3733,11 +3805,17 @@ async function doGetHTTPRequest(hostName,port,command)
 							allValues.forEach(temp => {
 								if(temp && !temp.res.writableEnded && (temp.ID != command.userAuthentification.ID || temp.rank != command.userAuthentification.rank))
 								{
-									temp.res.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
-									,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
-									,"Access-Control-Max-Age":'86400'
-									,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"});
-									
+									try
+														{
+															temp.res.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+															,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
+															,"Access-Control-Max-Age":'86400'
+															,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"});
+														}
+														catch(problem)
+														{
+															console.log(problem);
+														}
 									temp.res.write(JSON.stringify({command:"update_employees",obj:guy}));
 									
 									connections[el.ID] = undefined;
