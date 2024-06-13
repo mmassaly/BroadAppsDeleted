@@ -3031,6 +3031,14 @@ async function doGetHTTPRequest(hostName,port,command)
 										console.log("answered question");
 										changedTemp = true;
 									}
+									else if(command.obj.valueQuestion && command.obj.yesnoType)
+									{
+										change_command["changes"].push({single_value_change:true,change:"yesno",
+										yesnoValue:command.obj.yesnoValue,yesnoType:command.obj.yesnoType});
+										question.yesno = command.obj.yesnoValue;
+										console.log("answered question");
+										changedTemp = true;
+									}
 									else if( command.obj.valueQuestion && !command.obj.multipleValuesReference )
 									{
 										question.value = command.obj.value;
