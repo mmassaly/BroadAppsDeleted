@@ -3035,7 +3035,7 @@ async function doGetHTTPRequest(hostName,port,command)
 									{
 										change_command["changes"].push({single_value_change:true,change:"yesno",
 										yesnoValue:command.obj.yesnoValue,yesnoType:command.obj.yesnoType});
-										question.yesno = command.obj.yesnoValue;
+										question.yes = command.obj.yesnoValue;
 										console.log("answered question");
 										changedTemp = true;
 									}
