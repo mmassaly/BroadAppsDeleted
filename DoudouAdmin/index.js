@@ -2413,18 +2413,17 @@ async function doGetHTTPRequest(hostName,port,command)
 							if(temp && !temp.res.writableEnded && (temp.ID != command.userAuthentification.ID || temp.rank != command.userAuthentification.rank) )
 							{
 								try
-														{
-															temp.res.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
-															,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
-															,"Access-Control-Max-Age":'86400'
-															,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"});
-														}
-														catch(problem)
-														{
-															console.log(problem);
-														}
+								{
+									temp.res.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+									,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
+									,"Access-Control-Max-Age":'86400'
+									,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"});
+								}
+								catch(problem)
+								{
+									console.log(problem);
+								}													
 								temp.res.write(JSON.stringify({command:"deleteStuff","subType":command.subType,obj:command.obj}));
-								
 								//connections[el.ID] = undefined;
 								console.log("response to "+el.ID);temp.res.end()
 							}
@@ -2715,6 +2714,72 @@ async function doGetHTTPRequest(hostName,port,command)
 					});
 				}
 				
+				return;
+			}
+		}
+		
+		if(command  && command.type == "update_report"  && command.obj && command.obj.ID)
+		{
+			const emp = model.employees[command.obj.ID];
+			const rpI = emp.reports.findIndex(rp => rp.reportRank == command.obj.reportRank);
+			if(rpI > -1)
+			{
+				emp.reports[rpI] = command.obj.report;
+				res.write(JSON.stringify({command:"update_report"}));
+				res.end();
+				save(model.employees,"employees.txt");
+				const values = Object.values(IDs);
+		
+				if(values)
+				{
+						values.forEach(el=> 
+						{
+							let allValues = connections[el.ID];
+							if(allValues )
+							allValues.forEach(temp =>{
+								if(temp && !temp.res.writableEnded && (temp.ID != command.userAuthentification.ID || temp.rank != command.userAuthentification.rank) )
+								{
+									try
+									{
+										temp.res.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+										,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
+										,"Access-Control-Max-Age":'86400'
+										,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"});
+									}
+									catch(problem)
+									{
+										console.log(problem);
+									}													
+									temp.res.write(JSON.stringify({command:"update_report",obj:command.obj}));
+									//connections[el.ID] = undefined;
+									console.log("response to "+el.ID);temp.res.end()
+								}
+								else if(temp.res.writableEnded && (temp.ID != command.userAuthentification.ID || temp.rank != command.userAuthentification.rank))
+								{
+									console.log("response to "+el.ID+"differed");
+									if(login_id_and_network.responses[el.ID] == undefined )
+									{
+										login_id_and_network.responses[el.ID] = [{first:{command:"update_report",obj:command.obj}
+										,reqSource:req.headers.host,reqUserAgent : req.headers['user-agent'],date: new Date(),rank:command.userAuthentification.rank}];
+									}
+									else
+									{
+										login_id_and_network.responses[el.ID].push({first:{command:"update_report",obj:command.obj}
+										,reqSource:req.headers.host,reqUserAgent : req.headers['user-agent'],date: new Date(),rank:command.userAuthentification.rank});
+										const count = login_id_and_network.responses[el.ID].length-1;
+										const value = login_id_and_network.responses[el.ID][count];
+										while(count >= 1 && value.date < login_id_and_network.responses[el.ID][count-1].date)
+										{
+											const swapValue = login_id_and_network.responses[el.ID][count-1];
+											login_id_and_network.responses[el.ID][count-1] = value;
+											login_id_and_network.responses[el.ID][count] = swapValue;
+											++count;
+										}
+									}
+								}
+							});
+						});
+				}
 				return;
 			}
 		}
