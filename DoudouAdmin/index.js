@@ -2456,7 +2456,7 @@ async function doGetHTTPRequest(hostName,port,command)
 						
 						nvalues.forEach(avalue=>
 						{
-							allValues.splice(allValues.findIndex(avalue),1);
+							allValues.splice(allValues.findIndex(bvalue=> bvalue == avalue),1);
 						});
 					});
 			}
@@ -2656,7 +2656,7 @@ async function doGetHTTPRequest(hostName,port,command)
 						});
 						nvalues.forEach(avalue=>
 						{
-							allValues.splice(allValues.findIndex(avalue),1);
+							allValues.splice(allValues.findIndex(bvalue=> bvalue == avalue),1);
 						});
 					});
 				}
@@ -2727,7 +2727,7 @@ async function doGetHTTPRequest(hostName,port,command)
 						});
 						nvalues.forEach(avalue=>
 						{
-							allValues.splice(allValues.findIndex(avalue),1);
+							allValues.splice(allValues.findIndex(bvalue=> bvalue == avalue),1);
 						});
 					});
 				}
@@ -2800,7 +2800,7 @@ async function doGetHTTPRequest(hostName,port,command)
 							});
 							nvalues.forEach(avalue=>
 							{
-								allValues.splice(allValues.findIndex(avalue),1);
+								allValues.splice(allValues.findIndex(bvalue=> bvalue == avalue),1);
 							});
 						});
 				}
@@ -2928,7 +2928,7 @@ async function doGetHTTPRequest(hostName,port,command)
 						
 						nvalues.forEach(avalue=>
 						{
-							allValues.splice(allValues.findIndex(avalue),1);
+							allValues.splice(allValues.findIndex(bvalue=> bvalue == avalue),1);
 						});
 					});
 				}
@@ -3080,7 +3080,7 @@ async function doGetHTTPRequest(hostName,port,command)
 													
 													nvalues.forEach(avalue=>
 													{
-														allValues.splice(allValues.findIndex(avalue),1);
+														allValues.splice(allValues.findIndex(bvalue=> bvalue == avalue),1);
 													});
 												});
 					});
@@ -3329,11 +3329,14 @@ async function doGetHTTPRequest(hostName,port,command)
 															}
 														}
 													}
+													
+													
 												});
 												
 												nvalues.forEach(avalue=>
 												{
-													allValues.splice(allValues.findIndex(avalue),1);
+													allValues.splice(allValues.findIndex(bvalue=> bvalue == avalue),1);
+													console.log("splicing don2");
 												});
 												
 											});
@@ -3423,7 +3426,7 @@ async function doGetHTTPRequest(hostName,port,command)
 								});
 								nvalues.forEach(avalue=>
 								{
-									allValues.splice(allValues.findIndex(avalue),1);
+									allValues.splice(allValues.findIndex(bvalue=> bvalue == avalue),1);
 								});
 							});
 					}
@@ -3510,7 +3513,7 @@ async function doGetHTTPRequest(hostName,port,command)
 								
 								nvalues.forEach(avalue=>
 								{
-									allValues.splice(allValues.findIndex(avalue),1);
+									allValues.splice(allValues.findIndex(bvalue=> bvalue == avalue),1);
 								});
 							});
 					}
@@ -3595,7 +3598,7 @@ async function doGetHTTPRequest(hostName,port,command)
 							});
 							nvalues.forEach(avalue=>
 							{
-								allValues.splice(allValues.findIndex(avalue),1);
+								allValues.splice(allValues.findIndex(bvalue=> bvalue == avalue),1);
 							});
 						});
 					}
@@ -3680,7 +3683,7 @@ async function doGetHTTPRequest(hostName,port,command)
 							
 							nvalues.forEach(avalue=>
 							{
-								allValues.splice(allValues.findIndex(avalue),1);
+								allValues.splice(allValues.findIndex(bvalue=> bvalue == avalue),1);
 							});
 							
 						});
@@ -3806,7 +3809,7 @@ async function doGetHTTPRequest(hostName,port,command)
 							
 							nvalues.forEach(avalue=>
 							{
-								allValues.splice(allValues.findIndex(avalue),1);
+								allValues.splice(allValues.findIndex(bvalue=> bvalue == avalue),1);
 							});
 					});
 				}
@@ -3899,7 +3902,7 @@ async function doGetHTTPRequest(hostName,port,command)
 								
 								nvalues.forEach(avalue=>
 								{
-										allValues.splice(allValues.findIndex(avalue),1);
+										allValues.splice(allValues.findIndex(bvalue=> bvalue == avalue),1);
 								});
 							}
 						});
@@ -4012,7 +4015,7 @@ async function doGetHTTPRequest(hostName,port,command)
 							});
 							nvalues.forEach(avalue=>
 								{
-									allValues.splice(allValues.findIndex(avalue),1);
+									allValues.splice(allValues.findIndex(bvalue=> bvalue == avalue),1);
 								});
 						}
 					});
