@@ -2408,6 +2408,7 @@ async function doGetHTTPRequest(hostName,port,command)
 					values.forEach(el=> 
 					{
 						let allValues = connections[el.ID];
+						const nvalues = [];
 						if(allValues )
 						allValues.forEach(temp =>{
 							if(temp && !temp.res.writableEnded && (temp.ID != command.userAuthentification.ID || temp.rank != command.userAuthentification.rank) )
@@ -2425,7 +2426,8 @@ async function doGetHTTPRequest(hostName,port,command)
 								}													
 								temp.res.write(JSON.stringify({command:"deleteStuff","subType":command.subType,obj:command.obj}));
 								//connections[el.ID] = undefined;
-								console.log("response to "+el.ID);temp.res.end()
+								console.log("response to "+el.ID);temp.res.end();
+								nvalues.push(temp);
 							}
 							else if(temp.res.writableEnded && (temp.ID != command.userAuthentification.ID || temp.rank != command.userAuthentification.rank))
 							{
@@ -2450,6 +2452,11 @@ async function doGetHTTPRequest(hostName,port,command)
 									}
 								}
 							}
+						});
+						
+						nvalues.forEach(avalue=>
+						{
+							allValues.splice(allValues.findIndex(avalue),1);
 						});
 					});
 			}
@@ -2601,6 +2608,7 @@ async function doGetHTTPRequest(hostName,port,command)
 					values.forEach(el=> 
 					{
 						let allValues = connections[el.ID];
+						const nvalues = [];
 						if(allValues )
 						allValues.forEach(temp =>{
 							if(temp && !temp.res.writableEnded && (temp.ID != command.userAuthentification.ID || temp.rank != command.userAuthentification.rank) )
@@ -2617,7 +2625,7 @@ async function doGetHTTPRequest(hostName,port,command)
 															console.log(problem);
 														}
 								temp.res.write(JSON.stringify({command:"update_added_projects",obj:command.obj.project}));
-								
+								nvalues.push(temp);
 								//connections[el.ID] = undefined;
 								console.log("response to "+el.ID);temp.res.end()
 							}
@@ -2646,6 +2654,10 @@ async function doGetHTTPRequest(hostName,port,command)
 								}
 							}
 						});
+						nvalues.forEach(avalue=>
+						{
+							allValues.splice(allValues.findIndex(avalue),1);
+						});
 					});
 				}
 				
@@ -2667,10 +2679,12 @@ async function doGetHTTPRequest(hostName,port,command)
 					values.forEach(el=> 
 					{
 						let allValues = connections[el.ID];
+						const nvalues = [];
 						if(allValues && el.ID != command.obj.employee_ID)
 						allValues.forEach(temp =>{
 							if(temp && !temp.res.writableEnded && (temp.ID != command.userAuthentification.ID || temp.rank != command.userAuthentification.rank) )
 							{
+								nvalues.push(temp);
 								try
 														{
 															temp.res.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
@@ -2711,6 +2725,10 @@ async function doGetHTTPRequest(hostName,port,command)
 								}
 							}
 						});
+						nvalues.forEach(avalue=>
+						{
+							allValues.splice(allValues.findIndex(avalue),1);
+						});
 					});
 				}
 				
@@ -2735,6 +2753,7 @@ async function doGetHTTPRequest(hostName,port,command)
 						values.forEach(el=> 
 						{
 							let allValues = connections[el.ID];
+							const nvalues = [];
 							if(allValues )
 							allValues.forEach(temp =>{
 								if(temp && !temp.res.writableEnded && (temp.ID != command.userAuthentification.ID || temp.rank != command.userAuthentification.rank) )
@@ -2753,6 +2772,7 @@ async function doGetHTTPRequest(hostName,port,command)
 									temp.res.write(JSON.stringify({command:"update_report",obj:command.obj}));
 									//connections[el.ID] = undefined;
 									console.log("response to "+el.ID);temp.res.end()
+									nvalues.push(temp);
 								}
 								else if(temp.res.writableEnded && (temp.ID != command.userAuthentification.ID || temp.rank != command.userAuthentification.rank))
 								{
@@ -2777,6 +2797,10 @@ async function doGetHTTPRequest(hostName,port,command)
 										}
 									}
 								}
+							});
+							nvalues.forEach(avalue=>
+							{
+								allValues.splice(allValues.findIndex(avalue),1);
 							});
 						});
 				}
@@ -2856,6 +2880,7 @@ async function doGetHTTPRequest(hostName,port,command)
 					values.forEach(el=> 
 					{
 						let allValues = connections[el.ID];
+						const nvalues = [];
 						if(allValues && el.ID != command.obj.employee_ID)
 						allValues.forEach(temp =>{
 							if(temp && !temp.res.writableEnded && (temp.ID != command.userAuthentification.ID || temp.rank != command.userAuthentification.rank))
@@ -2871,8 +2896,9 @@ async function doGetHTTPRequest(hostName,port,command)
 														{
 															console.log(problem);
 														}temp.res.write(JSON.stringify({command:"update_project_desc",obj:command.obj}));
+								nvalues.push(temp);
 								//connections[el.ID] = undefined;
-								console.log("response to "+el.ID);temp.res.end()
+								console.log("response to "+el.ID);temp.res.end();
 							}
 							else if(temp.res.writableEnded && (temp.ID != command.userAuthentification.ID || temp.rank != command.userAuthentification.rank))
 							{
@@ -2898,6 +2924,11 @@ async function doGetHTTPRequest(hostName,port,command)
 									}
 								}
 							}
+						});
+						
+						nvalues.forEach(avalue=>
+						{
+							allValues.splice(allValues.findIndex(avalue),1);
 						});
 					});
 				}
@@ -2990,6 +3021,8 @@ async function doGetHTTPRequest(hostName,port,command)
 												//console.log(el);
 											
 												let allValues = connections[el.ID]; 
+												const nvalues = [];
+												
 												console.log("Before all values");
 												//console.log(allValues);
 												//console.log(connections);
@@ -3013,7 +3046,8 @@ async function doGetHTTPRequest(hostName,port,command)
 														console.log(newCommand);
 														temp.res.write(JSON.stringify(newCommand));
 														//connections[el.ID] = undefined;
-														console.log("response to "+el.ID);temp.res.end()
+														console.log("response to "+el.ID);temp.res.end();
+														nvalues.push(temp);
 													}																			
 													else if(temp.res.writableEnded && (temp.ID != command.userAuthentification.ID || temp.rank != command.userAuthentification.rank))
 													{
@@ -3043,6 +3077,11 @@ async function doGetHTTPRequest(hostName,port,command)
 															}
 														}
 													}
+													
+													nvalues.forEach(avalue=>
+													{
+														allValues.splice(allValues.findIndex(avalue),1);
+													});
 												});
 					});
 					
@@ -3238,6 +3277,7 @@ async function doGetHTTPRequest(hostName,port,command)
 											
 												let allValues = connections[el.ID]; 
 												console.log("Before all values");
+												const nvalues = [];
 												//console.log(allValues);
 												//console.log(connections);
 												if(allValues)
@@ -3262,7 +3302,8 @@ async function doGetHTTPRequest(hostName,port,command)
 														}
 														temp.res.write(JSON.stringify({command:"updated_flll_anwer_to_question",change_commands:change_command}));
 														//connections[el.ID] = undefined;
-														console.log("response to "+el.ID);temp.res.end()
+														console.log("response to "+el.ID);temp.res.end();
+														nvalues.push(temp);
 													}																			
 													else if(temp.res.writableEnded && (temp.ID != command.userAuthentification.ID || temp.rank != command.userAuthentification.rank))
 													{
@@ -3289,6 +3330,12 @@ async function doGetHTTPRequest(hostName,port,command)
 														}
 													}
 												});
+												
+												nvalues.forEach(avalue=>
+												{
+													allValues.splice(allValues.findIndex(avalue),1);
+												});
+												
 											});
 										}
 										return;
@@ -3325,6 +3372,7 @@ async function doGetHTTPRequest(hostName,port,command)
 							values.forEach(el=> 
 							{
 								let allValues = connections[el.ID];
+								const nvalues = [];
 								if(allValues)
 								allValues.forEach(temp =>{
 									if(temp && !temp.res.writableEnded && (temp.ID != command.userAuthentification.ID || temp.rank != command.userAuthentification.rank))
@@ -3343,7 +3391,8 @@ async function doGetHTTPRequest(hostName,port,command)
 										temp.res.write(JSON.stringify({command:"link-employee-report-to-locality",obj:{emp:command.obj.emp,reportLocality:command.obj.projectLocality,reportRank:command.obj.reportRank}}));
 										//connections[el.ID] = undefined;
 										console.log("response to "+el.ID);
-										temp.res.end()
+										temp.res.end();
+										nvalues.push(temp);
 									}
 									else if(temp.res.writableEnded && (temp.ID != command.userAuthentification.ID || temp.rank != command.userAuthentification.rank))
 									{
@@ -3371,6 +3420,10 @@ async function doGetHTTPRequest(hostName,port,command)
 									}
 							
 															
+								});
+								nvalues.forEach(avalue=>
+								{
+									allValues.splice(allValues.findIndex(avalue),1);
 								});
 							});
 					}
@@ -3407,6 +3460,7 @@ async function doGetHTTPRequest(hostName,port,command)
 							values.forEach(el=> 
 							{
 								let allValues = connections[el.ID];
+								const nvalues = [];
 								if(allValues)
 								allValues.forEach(temp =>{
 									if(temp && !temp.res.writableEnded && (temp.ID != command.userAuthentification.ID || temp.rank != command.userAuthentification.rank))
@@ -3425,7 +3479,8 @@ async function doGetHTTPRequest(hostName,port,command)
 										temp.res.write(JSON.stringify({command:"update-link-employee-to-project",obj:{emp:command.obj.emp,reportRank:rank_of_projects,projectRank:command.obj.projectRank}}));
 										//connections[el.ID] = undefined;
 										console.log("response to "+el.ID);
-										temp.res.end()
+										temp.res.end();
+										nvalues.push(temp);
 									}
 									else if(temp.res.writableEnded && (temp.ID != command.userAuthentification.ID || temp.rank != command.userAuthentification.rank))
 									{
@@ -3451,6 +3506,11 @@ async function doGetHTTPRequest(hostName,port,command)
 											}
 										}
 									}
+								});
+								
+								nvalues.forEach(avalue=>
+								{
+									allValues.splice(allValues.findIndex(avalue),1);
 								});
 							});
 					}
@@ -3486,6 +3546,7 @@ async function doGetHTTPRequest(hostName,port,command)
 						values.forEach(el=> 
 						{
 							let allValues = connections[el.ID];
+							const nvalues = [];
 							if(allValues )
 							allValues.forEach(temp =>{
 								if(temp && !temp.res.writableEnded && (temp.ID != command.userAuthentification.ID || temp.rank != command.userAuthentification.rank))
@@ -3503,7 +3564,8 @@ async function doGetHTTPRequest(hostName,port,command)
 														} 
 									temp.res.write(JSON.stringify({command:"update_employee_projects",obj:{theme: command.obj.theme,thRank:command.obj.theme.rank,locality:command.obj.locality,ID:command.obj.emp.ID}}));
 									//connections[el.ID] = undefined;
-									console.log("response to "+el.ID);temp.res.end()
+									console.log("response to "+el.ID);temp.res.end();
+									nvalues.push(temp);
 								}
 								else if(temp.res.writableEnded && (temp.ID != command.userAuthentification.ID || temp.rank != command.userAuthentification.rank))
 								{
@@ -3530,6 +3592,10 @@ async function doGetHTTPRequest(hostName,port,command)
 											}
 									}
 								}
+							});
+							nvalues.forEach(avalue=>
+							{
+								allValues.splice(allValues.findIndex(avalue),1);
 							});
 						});
 					}
@@ -3562,6 +3628,7 @@ async function doGetHTTPRequest(hostName,port,command)
 						values.forEach(el=> 
 						{
 							let allValues = connections[el.ID];
+							const nvalues = [];
 							if(allValues)
 							allValues.forEach(temp =>{
 								if(temp && !temp.res.writableEnded && (temp.ID != command.userAuthentification.ID || temp.rank != command.userAuthentification.rank) )
@@ -3580,7 +3647,8 @@ async function doGetHTTPRequest(hostName,port,command)
 									temp.res.write(JSON.stringify({command:"update_employee_projects",obj:{theme: command.obj.theme,
 									thRank:command.obj.theme.rank,locality:command.obj.locality,ID:command.obj.emp.ID}}));
 									//connections[el.ID] = undefined;
-									console.log("response to "+el.ID);temp.res.end()
+									console.log("response to "+el.ID);temp.res.end();
+									nvalues.push(temp);
 								}
 								else if(temp.res.writableEnded && (temp.ID != command.userAuthentification.ID || temp.rank != command.userAuthentification.rank))
 								{
@@ -3609,6 +3677,12 @@ async function doGetHTTPRequest(hostName,port,command)
 									}
 								}
 							});
+							
+							nvalues.forEach(avalue=>
+							{
+								allValues.splice(allValues.findIndex(avalue),1);
+							});
+							
 						});
 					}
 									
@@ -3674,13 +3748,13 @@ async function doGetHTTPRequest(hostName,port,command)
 				
 				const values = Object.values(IDs).filter(emp => emp.admin );
 				
-				
 				if(values)
 				{
 					values.forEach(el=> 
 					{
 						const temp = connections[el.ID];
 						let allValues = connections[el.ID];
+						const nvalues = [];
 						if(allValues && el.ID != command.obj.employee_ID)
 							allValues.forEach(temp => {
 								
@@ -3700,7 +3774,8 @@ async function doGetHTTPRequest(hostName,port,command)
 								temp.res.write(JSON.stringify({command:"add-locality-object",obj:command.obj}));
 								
 								connections[el.ID] = undefined;
-								console.log("response to "+el.ID);temp.res.end()
+								console.log("response to "+el.ID);temp.res.end();
+								nvalues.push(temp);
 							}
 							else if(temp.res.writableEnded && (temp.ID != command.userAuthentification.ID || temp.rank != command.userAuthentification.rank))
 							{
@@ -3727,6 +3802,11 @@ async function doGetHTTPRequest(hostName,port,command)
 								}
 							}
 							
+							});
+							
+							nvalues.forEach(avalue=>
+							{
+								allValues.splice(allValues.findIndex(avalue),1);
 							});
 					});
 				}
@@ -3762,13 +3842,14 @@ async function doGetHTTPRequest(hostName,port,command)
 					}
 					
 					const values = Object.values(IDs).filter(emp => emp.admin || ( emp.subadmin && emp.ID == command.obj.subadmin.ID ) ) ;
-				
+					
 					if(values)
 					{
 						console.log(values);
 						values.forEach(el=> 
 						{
 							const allValues = connections[el.ID];
+							const nvalues = [];
 							if(allValues)
 							{
 								allValues.forEach(temp => {
@@ -3789,7 +3870,8 @@ async function doGetHTTPRequest(hostName,port,command)
 										temp.res.write(JSON.stringify({command:"assign_to_subadmin",obj:command.obj}));
 										
 										connections[el.ID] = undefined;
-										temp.res.end()
+										temp.res.end();
+										nvalues.push(temp);
 									}											
 									else if(temp.res.writableEnded && (temp.ID != command.userAuthentification.ID || temp.rank != command.userAuthentification.rank))
 									{
@@ -3813,6 +3895,11 @@ async function doGetHTTPRequest(hostName,port,command)
 											}
 										}
 									}
+								});
+								
+								nvalues.forEach(avalue=>
+								{
+										allValues.splice(allValues.findIndex(avalue),1);
 								});
 							}
 						});
@@ -3877,6 +3964,7 @@ async function doGetHTTPRequest(hostName,port,command)
 					values.forEach(el=> 
 					{
 						const allValues = connections[el.ID];
+						const nvalues = [];
 						if(allValues)
 						{
 							allValues.forEach(temp => {
@@ -3896,7 +3984,8 @@ async function doGetHTTPRequest(hostName,port,command)
 									temp.res.write(JSON.stringify({command:"update_employees",obj:guy}));
 									
 									connections[el.ID] = undefined;
-									console.log("response to "+el.ID);temp.res.end()
+									console.log("response to "+el.ID);temp.res.end();
+									nvalues.push(temp);
 								}
 								else if(temp.res.writableEnded && (temp.ID != command.userAuthentification.ID || temp.rank != command.userAuthentification.rank))
 								{
@@ -3921,6 +4010,10 @@ async function doGetHTTPRequest(hostName,port,command)
 										}
 								}
 							});
+							nvalues.forEach(avalue=>
+								{
+									allValues.splice(allValues.findIndex(avalue),1);
+								});
 						}
 					});
 				}
