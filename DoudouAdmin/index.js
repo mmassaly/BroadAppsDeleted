@@ -3127,6 +3127,7 @@ async function doGetHTTPRequest(hostName,port,command)
 									console.log("question");
 								
 									let changedTemp = false;
+									
 									if(command.obj.valueQuestion && command.obj.sliderType)
 									{
 										change_command["changes"].push({single_value_change:true,change:"value",
@@ -3134,6 +3135,13 @@ async function doGetHTTPRequest(hostName,port,command)
 										question.answered = command.obj.sliderValue;
 										console.log("answered question");
 										changedTemp = true;
+									}
+									else if(command.obj.changeQuestionType)
+									{
+										question.type = command.obj.questionType;
+										changedTemp = true;
+										console.log("changed question type...");
+										change_command["changes"].push({changeQuestionType:true,change:"type",questionType:command.obj.questionType});
 									}
 									else if(command.obj.valueQuestion && command.obj.yesnoType)
 									{
