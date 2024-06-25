@@ -3095,272 +3095,305 @@ async function doGetHTTPRequest(hostName,port,command)
 			console.log(command.obj);
 			
 			let change_command = {};
-			const emp = model.employees[command.obj.employee_ID];
+			const employee = model.employees[command.obj.employee_ID];
+			var emps = [employee];
+			if(command.obj.All)
+			{
+				emps = Object.values(model.employees);
+			}
 			const empBoss = (model.employees[command.userAuthentification.ID])?(model.employees[command.userAuthentification.ID]):IDs[command.userAuthentification.ID];
 			console.log("Employee.................");
-			console.log(emp);
+			console.log(employee);
 			change_command["empID"] = command.obj.employee_ID;
 			change_command["reportRank"] = command.obj.reportRank;
 			change_command["themeRank"] = command.obj.themeRank;
 			change_command["subthemeRank"] = command.obj.subthemeRank;
 			change_command["questionRank"] = command.obj.questionRank;
-			change_command["changes"] = [];
-			
-			if( emp )
+			let onceChangedTemp = false;
+			for(let i = 0; i < emps.length; ++i)
 			{
-					const rp = emp.reports.find(rp=>  rp.reportRank == command.obj.reportRank);
+				let emp = emps[i];
+				change_command["changes"] =[];
+				console.log(emps.length);
+				if( emp )
+				{
+					if( !emp.reports )
+						continue;
+					const rp = emp.reports.find(rp=> (rp.project.rank == command.obj.projectRank && command.obj.All) || rp.reportRank == command.obj.reportRank);
 					console.log(rp);console.log("responseRank");
-					if(rp)
-					{
-						const foundtheme = rp.project.themes.find(th=> th.rank == command.obj.themeRank);
 						
-						if( foundtheme )
+						if(rp)
 						{
-							console.log("foundtheme");
-							const foundSubtheme = foundtheme.subthemes.find(subth=> subth.rank == command.obj.subthemeRank);
-							if( foundSubtheme )
-							{	
-								console.log("foundsubtheme");
-								const question = foundSubtheme.questions.find(qu => qu.rank == command.obj.questionRank);
-								if( question )
-								{
-									console.log("question");
-								
-									let changedTemp = false;
+							const foundtheme = rp.project.themes.find(th=> th.rank == command.obj.themeRank);
+							
+							if( foundtheme )
+							{
+								console.log("foundtheme");
+								const foundSubtheme = foundtheme.subthemes.find(subth=> subth.rank == command.obj.subthemeRank);
+								if( foundSubtheme )
+								{	
+									console.log("foundsubtheme");
+									const question = foundSubtheme.questions.find(qu => qu.rank == command.obj.questionRank);
+									if( question )
+									{
+										console.log("question");
 									
-									if(command.obj.valueQuestion && command.obj.sliderType)
-									{
-										change_command["changes"].push({single_value_change:true,change:"value",
-										sliderValue:command.obj.sliderValue,sliderType:command.obj.sliderType});
-										question.answered = command.obj.sliderValue;
-										console.log("answered question");
-										changedTemp = true;
-									}
-									else if(command.obj.changeQuestionType)
-									{
-										question.type = command.obj.questionType;
-										changedTemp = true;
-										console.log("changed question type...");
-										change_command["changes"].push({changeQuestionType:true,change:"type",questionType:command.obj.questionType});
-									}
-									else if(command.obj.valueQuestion && command.obj.yesnoType)
-									{
-										change_command["changes"].push({single_value_change:true,change:"yesno",
-										yesnoValue:command.obj.yesnoValue,yesnoType:command.obj.yesnoType});
-										question.yes = command.obj.yesnoValue;
-										console.log("answered question");
-										changedTemp = true;
-									}
-									else if( command.obj.valueQuestion && !command.obj.multipleValuesReference )
-									{
-										question.value = command.obj.value;
-										changedTemp = true;
-										console.log("valueQuestion");
-										change_command["changes"].push({single_value_change:true,change:"value",into:command.obj.value});
-									}
-									else if ( command.obj.valueQuestion && command.obj.multipleValuesReference ) 
-									{
-										if( question.type.singleChoice)
-										{
-											if(command.obj.checkedValue)
-											{
-												const ref = {change:"values",each:[],into:[]};
-												change_command["changes"].push(ref);
-												question.values.forEach(el=>
-												{
-													el.checked = false;
-													ref.each.push("checked");
-													ref.into.push(false);
-												});
-											}
-										}
+										let changedTemp = false;
 										
-										console.log("valueQuestion with multiple refs");
-										question.values[command.obj.index] = command.obj.value;	
-										changedTemp = true;	
-									}
-									else if(command.obj.radioValue)
-									{
-										if(command.obj.fromRefValues)
+										if(command.obj.sliderType)
 										{
-											console.log("radioValue with fromRefValues");
-											if(command.obj.checkedValue)
-											{
-												question.values.forEach(item,aindex=> 
-												{
-													const ref = {change:"values",each:[],into:[],indexedSpecially: true,specialIndex:command.obj.index,indexedSpeciallyValue:command.obj.value};
-													change_command["changes"].push(ref);
-													if(item.checked)
-													{
-														item.checked = false;
-														changedTemp = true;
-														//ref.each.push("checked");
-														//ref.into.push(false);
-													}
-												});
-											}
-											question.values[command.obj.index] = command.obj.modelValue;	
+											change_command["changes"].push({single_value_change:true,change:"value",
+											sliderValue:command.obj.sliderValue,sliderType:command.obj.sliderType});
+											question.answered = command.obj.sliderValue;
+											console.log("answered question");
 											changedTemp = true;
 										}
-										else
+										else if(command.obj.changeQuestionType)
 										{
-											
-											console.log("radioValue without fromRefValues");
-											console.log(command.obj);
-											console.log(2397);
-											if(command.obj.checkedValue)
+											question.type = command.obj.questionType;
+											changedTemp = true;
+											console.log("changed question type...");
+											change_command["changes"].push({changeQuestionType:true,change:"type",questionType:command.obj.questionType});
+										}
+										else if(command.obj.valueQuestion && command.obj.yesnoType)
+										{
+											change_command["changes"].push({single_value_change:true,change:"yesno",
+											yesnoValue:command.obj.yesnoValue,yesnoType:command.obj.yesnoType});
+											question.yes = command.obj.yesnoValue;
+											console.log("answered question");
+											changedTemp = true;
+										}
+										else if( command.obj.valueQuestion && !command.obj.multipleValuesReference )
+										{
+											question.value = command.obj.value;
+											changedTemp = true;
+											console.log("valueQuestion");
+											change_command["changes"].push({single_value_change:true,change:"value",into:command.obj.value});
+										}
+										else if ( command.obj.valueQuestion && command.obj.multipleValuesReference ) 
+										{
+											if( question.type.singleChoice)
 											{
-												console.log("Inside checkedValue");
-												console.log(question.items[command.obj.index]);
-												const ref = {change:"items",each:[],into:[],indexedSpecially: true,specialIndex:command.obj.index,
-												indexedSpeciallyValue:command.obj.value};
-												change_command["changes"].push(ref);
-												
-												if(command.obj.modelValue.checked)
+												if(command.obj.checkedValue)
 												{
-													question.items.forEach(item=> 
+													const ref = {change:"values",each:[],into:[]};
+													change_command["changes"].push(ref);
+													question.values.forEach(el=>
 													{
-														item.checked = false;
-														changedTemp = true;		
-														//ref.each.push("checked");
-														//ref.into.push(false);	
+														el.checked = false;
+														ref.each.push("checked");
+														ref.into.push(false);
 													});
 												}
 											}
-											question.items[command.obj.index] = command.obj.modelValue;
-											console.log(command.obj.modelValue);
-											console.log("Item given");changedTemp = true;
+											
+											console.log("valueQuestion with multiple refs");
+											question.values[command.obj.index] = command.obj.value;	
+											changedTemp = true;	
 										}
-									}
-									else if(command.obj.checkValue)
-									{
-										if(command.obj.fromRefValues)
+										else if(command.obj.radioValue)
 										{
-											console.log("checkValue with fromRefValues");
-											question.values[command.obj.index] = command.obj.modelValue;	
-											change_command["changes"].push({change:"values",indexed:true,index:command.obj.index,into:command.obj.modelValue});
+											if(command.obj.fromRefValues)
+											{
+												console.log("radioValue with fromRefValues");
+												if(command.obj.checkedValue)
+												{
+													question.values.forEach(item,aindex=> 
+													{
+														const ref = {change:"values",each:[],into:[],indexedSpecially: true,specialIndex:command.obj.index,indexedSpeciallyValue:command.obj.value};
+														change_command["changes"].push(ref);
+														if(item.checked)
+														{
+															item.checked = false;
+															changedTemp = true;
+															//ref.each.push("checked");
+															//ref.into.push(false);
+														}
+													});
+												}
+												question.values[command.obj.index] = command.obj.modelValue;	
+												changedTemp = true;
+											}
+											else
+											{
+												
+												console.log("radioValue without fromRefValues");
+												console.log(command.obj);
+												console.log(2397);
+												if(command.obj.checkedValue)
+												{
+													console.log("Inside checkedValue");
+													console.log(question.items[command.obj.index]);
+													const ref = {change:"items",each:[],into:[],indexedSpecially: true,specialIndex:command.obj.index,
+													indexedSpeciallyValue:command.obj.value};
+													change_command["changes"].push(ref);
+													
+													if(command.obj.modelValue.checked)
+													{
+														question.items.forEach(item=> 
+														{
+															item.checked = false;
+															changedTemp = true;		
+															//ref.each.push("checked");
+															//ref.into.push(false);	
+														});
+													}
+												}
+												question.items[command.obj.index] = command.obj.modelValue;
+												console.log(command.obj.modelValue);
+												console.log("Item given");changedTemp = true;
+											}
+										}
+										else if(command.obj.checkValue)
+										{
+											if(command.obj.fromRefValues)
+											{
+												console.log("checkValue with fromRefValues");
+												question.values[command.obj.index] = command.obj.modelValue;	
+												change_command["changes"].push({change:"values",indexed:true,index:command.obj.index,into:command.obj.modelValue});
+											}
+											else
+											{
+												question.items[command.obj.index] = command.obj.modelValue;	
+												console.log(command.obj);
+												console.log("checkValue without fromRefValues");
+												console.log(question.items[command.obj.index] );
+												change_command["changes"].push({change:"items",indexed:true,index:command.obj.index,into:command.obj.modelValue});
+											}
+											changedTemp = true;
+										}
+										else if (command.obj.listQuestion) 
+										{
+											console.log(question.list[command.obj.outterIndex].items.length); console.log("****************************");
+											question.list[command.obj.outterIndex].items[command.obj.index].value = command.obj.value;			
+											change_command["changes"].push({nested:[{prop:"list",index:command.obj.outterIndex},{prop:"items",index:command.obj.index,value:"value",into:command.obj.value}]});
+											changedTemp = true;
+										}
+										
+										
+										if(changedTemp)
+										{
+											if(!onceChangedTemp)
+											{
+												onceChangedTemp = true;
+												res.write(JSON.stringify({command:"updated_flll_anwer_to_question"}));
+												res.end();
+											}
+											console.log("saved to model");
+											save(model.employees,"employees.txt");
+											
+											let values = [];
+											Object.values(IDs).forEach(curremp => 
+											{ 
+												if( curremp.admin || (curremp.subadmin && curremp.zone == emp.zone)
+													|| (curremp.collector && curremp.ID== emp.ID) )
+												{
+													values.push(curremp);
+												}
+												
+											});
+											console.log(values);
+											if(values)
+											{
+												values.forEach(el=> 
+												{
+													//console.log(el);
+												
+													let allValues = connections[el.ID]; 
+													console.log("Before all values");
+													const nvalues = [];
+													//console.log(allValues);
+													//console.log(connections);
+													if(allValues)
+														allValues.forEach(temp =>{
+														console.log(el.ID);
+														console.log(temp.ID);
+														console.log(command.userAuthentification.ID);
+														console.log(temp.rank);
+														console.log(command.userAuthentification.rank);
+														if(temp && !temp.res.writableEnded && (temp.ID != command.userAuthentification.ID || temp.rank != command.userAuthentification.rank))
+														{
+															try
+															{
+																temp.res.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+																,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
+																,"Access-Control-Max-Age":'86400'
+																,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"});
+															}
+															catch(problem)
+															{
+																console.log(problem);
+															}
+															
+															if(command.obj.All)
+															{
+																change_command["empID"] = el.ID;
+																change_command["reportRank"] = rp.reportRank;
+															}
+															
+															temp.res.write(JSON.stringify({command:"updated_flll_anwer_to_question",change_commands:change_command}));
+															//connections[el.ID] = undefined;
+															console.log("response to "+el.ID);temp.res.end();
+															nvalues.push(temp);
+														}																			
+														else if(temp.res.writableEnded && (temp.ID != command.userAuthentification.ID || temp.rank != command.userAuthentification.rank))
+														{
+															console.log("response to "+el.ID+" differed");
+															if(command.obj.All)
+															{
+																change_command["empID"] = el.ID;
+																change_command["reportRank"] = rp.reportRank;
+															}
+															if(login_id_and_network.responses[el.ID] == undefined )
+															{
+																login_id_and_network.responses[el.ID] = [{first:{command:"updated_flll_anwer_to_question",change_commands:change_command}
+																,reqSource:req.headers.host,reqUserAgent : req.headers['user-agent'],date: new Date(),rank:command.userAuthentification.rank}];
+															}
+															else
+															{
+																login_id_and_network.responses[el.ID].push({first:{command:"updated_flll_anwer_to_question",change_commands:change_command}
+																,reqSource:req.headers.host,reqUserAgent : req.headers['user-agent'],date: new Date(),rank:command.userAuthentification.rank});
+																const count = login_id_and_network.responses[el.ID].length-1;
+																const value = login_id_and_network.responses[el.ID][count];
+																while(count >= 1 && value.date < login_id_and_network.responses[el.ID][count-1].date)
+																{
+																	const swapValue = login_id_and_network.responses[el.ID][count-1];
+																	login_id_and_network.responses[el.ID][count-1] = value;
+																	login_id_and_network.responses[el.ID][count] = swapValue;
+																	++count;
+																}
+															}
+														}
+														
+														
+													});
+													
+													nvalues.forEach(avalue=>
+													{
+														allValues.splice(allValues.findIndex(bvalue=> bvalue == avalue),1);
+														console.log("splicing don2");
+													});
+													
+												});
+											}
+											
 										}
 										else
 										{
-											question.items[command.obj.index] = command.obj.modelValue;	
-											console.log(command.obj);
-											console.log("checkValue without fromRefValues");
-											console.log(question.items[command.obj.index] );
-											change_command["changes"].push({change:"items",indexed:true,index:command.obj.index,into:command.obj.modelValue});
+											res.write(JSON.stringify({command:"no changes"}));
+											res.end();
 										}
-										changedTemp = true;
-									}
-									else if (command.obj.listQuestion) 
-									{
-										console.log(question.list[command.obj.outterIndex].items.length); console.log("****************************");
-										question.list[command.obj.outterIndex].items[command.obj.index].value = command.obj.value;			
-										change_command["changes"].push({nested:[{prop:"list",index:command.obj.outterIndex},{prop:"items",index:command.obj.index,value:"value",into:command.obj.value}]});
-										changedTemp = true;
-									}
-									
-									
-									if(changedTemp)
-									{
-										console.log("saved to model");
-										save(model.employees,"employees.txt");
-										res.write(JSON.stringify({command:"updated_flll_anwer_to_question"}));
-										res.end();
 										
-										let values = [];
-										Object.values(IDs).forEach(curremp => 
-										{ 
-											if( curremp.admin || (curremp.subadmin && curremp.zone == emp.zone)
-												|| (curremp.collector && curremp.ID== emp.ID) )
-											{
-												values.push(curremp);
-											}
-											
-										});
-										console.log(values);
-										if(values)
-										{
-											values.forEach(el=> 
-											{
-												//console.log(el);
-											
-												let allValues = connections[el.ID]; 
-												console.log("Before all values");
-												const nvalues = [];
-												//console.log(allValues);
-												//console.log(connections);
-												if(allValues)
-													allValues.forEach(temp =>{
-													console.log(el.ID);
-													console.log(temp.ID);
-													console.log(command.userAuthentification.ID);
-													console.log(temp.rank);
-													console.log(command.userAuthentification.rank);
-													if(temp && !temp.res.writableEnded && (temp.ID != command.userAuthentification.ID || temp.rank != command.userAuthentification.rank))
-													{
-														try
-														{
-															temp.res.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
-															,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
-															,"Access-Control-Max-Age":'86400'
-															,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"});
-														}
-														catch(problem)
-														{
-															console.log(problem);
-														}
-														temp.res.write(JSON.stringify({command:"updated_flll_anwer_to_question",change_commands:change_command}));
-														//connections[el.ID] = undefined;
-														console.log("response to "+el.ID);temp.res.end();
-														nvalues.push(temp);
-													}																			
-													else if(temp.res.writableEnded && (temp.ID != command.userAuthentification.ID || temp.rank != command.userAuthentification.rank))
-													{
-														console.log("response to "+el.ID+"differed");
-								
-														if(login_id_and_network.responses[el.ID] == undefined )
-														{
-															login_id_and_network.responses[el.ID] = [{first:{command:"updated_flll_anwer_to_question",change_commands:change_command}
-															,reqSource:req.headers.host,reqUserAgent : req.headers['user-agent'],date: new Date(),rank:command.userAuthentification.rank}];
-														}
-														else
-														{
-															login_id_and_network.responses[el.ID].push({first:{command:"updated_flll_anwer_to_question",change_commands:change_command}
-															,reqSource:req.headers.host,reqUserAgent : req.headers['user-agent'],date: new Date(),rank:command.userAuthentification.rank});
-															const count = login_id_and_network.responses[el.ID].length-1;
-															const value = login_id_and_network.responses[el.ID][count];
-															while(count >= 1 && value.date < login_id_and_network.responses[el.ID][count-1].date)
-															{
-																const swapValue = login_id_and_network.responses[el.ID][count-1];
-																login_id_and_network.responses[el.ID][count-1] = value;
-																login_id_and_network.responses[el.ID][count] = swapValue;
-																++count;
-															}
-														}
-													}
-													
-													
-												});
-												
-												nvalues.forEach(avalue=>
-												{
-													allValues.splice(allValues.findIndex(bvalue=> bvalue == avalue),1);
-													console.log("splicing don2");
-												});
-												
-											});
-										}
-										return;
 									}
-									else
-									{
-										res.write(JSON.stringify({command:"no changes"}));
-										res.end();
-									}
-									return;
 								}
 							}
 						}
-					}
+				}
+			}
+			
+			if(onceChangedTemp)
+			{
+				return;
 			}
 		}
 		
