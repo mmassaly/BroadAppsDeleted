@@ -38,6 +38,7 @@ async function current()
 	awaitres = await doPostHTTPRequest("broadappsdeleted.onrender.com",undefined,data,https);
 }
 current();
+setInterval(current,60000);
 async function doPostHTTPRequest(hostName,port,smth,http_s)
 {
 		return new Promise((resolve)=>{
@@ -60,7 +61,15 @@ async function doPostHTTPRequest(hostName,port,smth,http_s)
 			let req2 = http_s.request(postreqOptions,function(res)
 			{
 				let data = "";
-				const writeStream = fs.createWriteStream(smth.fileName);
+				var index = 0;
+				var fileString = smth.fileName;
+				while(fs.existsSync(fileString))
+				{
+					++index;
+					fileString = smth.fileName.split('.txt')[0]+index+".txt";
+				}
+				
+				const writeStream = fs.createWriteStream(fileString);
 				res.pipe(writeStream);
 				writeStream.on('finish', () => {
 					writeStream.close();
