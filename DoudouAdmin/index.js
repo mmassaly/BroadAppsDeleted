@@ -2475,36 +2475,60 @@ async function doGetHTTPRequest(hostName,port,command)
 		}
 		if( command && command.obj && command.obj.ID && command.type == "wait_for_update" )
 		{
+			
 			console.log(req.headers.host); 
 			console.log(req.headers['user-agent']);
 			let temp = login_id_and_network.responses[command.obj.ID];
+			
 			if(temp)
 			{
-				let tconnectedGuy = login_id_and_network.loggins[command.obj.ID];
-				if(tconnectedGuy)
+				console.log(command);
+				/*login_id_and_network.responses[command.obj.ID].forEach( el => 
 				{
-					tconnectedGuy = tconnectedGuy.find(guy=> guy.rank == command.obj.rank && req.headers.host == guy.reqSource && req.headers['user-agent'] == guy.userAgent);
+					console.log("You ar dsignd to b a liar");
+					console.log(el);
+				});*/
+				
+				let tconnectedGuy = login_id_and_network.loggins[command.obj.ID];
+				if(tconnectedGuy && command.obj.ID != '9999')
+				{
+					/* console.log("found guy array ------------------");
+					console.log(req.headers.host);
+					console.log(req.headers['user-agent']);
+					console.log(tconnectedGuy); */
+					tconnectedGuy = tconnectedGuy.find(guy=> guy.rank == command.obj.rank && req.headers.host == guy.reqSource && req.headers['user-agent'] == guy.reqUserAgent);
 				}
+				
+				if(tconnectedGuy && command.obj.ID != '9999')
+				{
+					/* console.log("found guy ------------------");
+					console.log(tconnectedGuy); */
+				}
+				
 				const oldTemp = temp;
-				temp = temp.find(guy=> guy.rank == command.obj.rank && req.headers.host == guy.reqSource && req.headers['user-agent'] == guy.userAgent); 
-				if(tconnectedGuy && (temp && tconnectedGuy.date <= temp.date) )
+				temp = temp.find(guy=> guy.rank == command.obj.rank && req.headers.host == guy.reqSource && req.headers['user-agent'] == guy.reqUserAgent); 
+				
+				if(tconnectedGuy && ( temp && tconnectedGuy.date <= temp.date ) && command.obj.ID != '9999')
 				{
 					res.write(JSON.stringify(temp.first));
+					console.log(" response went to "+command.obj.ID+" it is reportRank ");
+					//console.log(temp.first);
+					//console.log(temp.first.change_commands);
 					res.end();
-					const tempIndex = oldTemp.findIndex(guy=>  req.headers.host == guy.reqSource && req.headers['user-agent'] == guy.userAgent && guy.rank == command.obj.rank);
+					const tempIndex = oldTemp.findIndex(guy=>  req.headers.host == guy.reqSource && req.headers['user-agent'] == guy.reqUserAgent && guy.rank == command.obj.rank);
 					oldTemp.splice(tempIndex,1);
 				}
 				else if( temp )
 				{
 					res.end();
-					const tempIndex = temp.findIndex(guy=> guy.rank == command.obj.rank && req.headers.host == guy.reqSource && req.headers['user-agent'] == guy.userAgent);
+					const tempIndex = temp.findIndex(guy=> guy.rank == command.obj.rank && req.headers.host == guy.reqSource && req.headers['user-agent'] == guy.reqUserAgent);
 					temp.splice(tempIndex,1);
 				}
 				else
 				{
 					if(!connections[command.obj.ID])
 						connections[command.obj.ID] = [];
-					connections[command.obj.ID].push({rank:command.obj.rank,ID:command.obj.ID,res:res,reqSource: req.headers.host,userAgent:req.headers['user-agent']}); 
+					connections[command.obj.ID].push({rank:command.obj.rank,ID:command.obj.ID,res:res,reqSource: req.headers.host,reqUserAgent:req.headers['user-agent']}); 
 				}
 			}
 			else
@@ -2512,16 +2536,26 @@ async function doGetHTTPRequest(hostName,port,command)
 				let tconnectedGuy = login_id_and_network.loggins[command.obj.ID];
 				if(!tconnectedGuy)
 				{
-					login_id_and_network.loggins[command.obj.ID] = [command.obj];
+					tconnectedGuy = login_id_and_network.loggins[command.obj.ID] = [];
 				}
-				else if(!tconnectedGuy.find(guy=> req.headers.host == guy.reqSource && req.headers['user-agent'] == guy.userAgent && command.userAuthentification.rank == guy.rank))
+				
+				if(!tconnectedGuy.find(guy=> req.headers.host == guy.reqSource 
+					&& req.headers['user-agent'] == guy.reqUserAgent && command.userAuthentification.rank == guy.rank))
 				{
-					login_id_and_network.loggins[command.obj.ID].push({rank:command.obj.rank,reqSource:req.headers.host,reqUserAgent : req.headers['user-agent'],date: new Date()});
+					var index = 0;
+					do
+					{
+						++index;
+					}
+					while(login_id_and_network.loggins[command.obj.ID].find(elx=> elx.rank == index));
+					
+					login_id_and_network.loggins[command.obj.ID].push({rank:index,reqSource:req.headers.host,reqUserAgent : req.headers['user-agent'],date: new Date()});
+					command.obj.rank = index;
 				}
 				
 				if(!connections[command.obj.ID])
 					connections[command.obj.ID] = [];
-				connections[command.obj.ID].push({rank:command.obj.rank,ID:command.obj.ID,res:res,reqSource: req.headers.host,userAgent:req.headers['user-agent']}); 
+				connections[command.obj.ID].push({rank:command.obj.rank,ID:command.obj.ID,res:res,reqSource: req.headers.host,reqUserAgent:req.headers['user-agent']}); 
 				
 			}
 			return;
@@ -2614,16 +2648,16 @@ async function doGetHTTPRequest(hostName,port,command)
 							if(temp && !temp.res.writableEnded && (temp.ID != command.userAuthentification.ID || temp.rank != command.userAuthentification.rank) )
 							{
 								try
-														{
+								{
 															temp.res.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
 															,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
 															,"Access-Control-Max-Age":'86400'
 															,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"});
-														}
-														catch(problem)
-														{
-															console.log(problem);
-														}
+								}
+								catch(problem)
+								{
+									console.log(problem);
+								}						
 								temp.res.write(JSON.stringify({command:"update_added_projects",obj:command.obj.project}));
 								nvalues.push(temp);
 								//connections[el.ID] = undefined;
@@ -3119,13 +3153,28 @@ async function doGetHTTPRequest(hostName,port,command)
 				{
 					if( !emp.reports )
 						continue;
-					const rp = emp.reports.find(rp=> (rp.project.rank == command.obj.projectRank && command.obj.All) || rp.reportRank == command.obj.reportRank);
-					console.log(rp);console.log("responseRank");
-						
-						if(rp)
+					
+					const rps = [];
+					
+					emp.reports.forEach(rp=> 
+					{	
+						if( ((rp.project.rank == command.obj.projectRank) && command.obj.All) || rp.reportRank == command.obj.reportRank ) 
 						{
-							const foundtheme = rp.project.themes.find(th=> th.rank == command.obj.themeRank);
+							rps.push(rp);
+							console.log("pushed a report");
+						}
+					});
+					
+					console.log(command.obj);
+					console.log(rps.length+"***********************************************"+emp.first+"-"+emp.second);
+					rps.forEach( (rp,rpindex) =>
+					{
+							console.log("responseRank must send report "+rp.reportRank);
 							
+							if(rp)
+							{
+								const foundtheme = rp.project.themes.find(th=> th.rank == command.obj.themeRank);
+								change_command["changes"] =[];
 							if( foundtheme )
 							{
 								console.log("foundtheme");
@@ -3292,7 +3341,7 @@ async function doGetHTTPRequest(hostName,port,command)
 												}
 												
 											});
-											console.log(values);
+											//console.log(values);
 											if(values)
 											{
 												values.forEach(el=> 
@@ -3300,83 +3349,126 @@ async function doGetHTTPRequest(hostName,port,command)
 													//console.log(el);
 												
 													let allValues = connections[el.ID]; 
-													console.log("Before all values");
+													//console.log("Before all values");
 													const nvalues = [];
 													//console.log(allValues);
 													//console.log(connections);
-													if(allValues)
-														allValues.forEach(temp =>{
-														console.log(el.ID);
-														console.log(temp.ID);
-														console.log(command.userAuthentification.ID);
-														console.log(temp.rank);
-														console.log(command.userAuthentification.rank);
-														if(temp && !temp.res.writableEnded && (temp.ID != command.userAuthentification.ID || temp.rank != command.userAuthentification.rank))
-														{
-															try
-															{
-																temp.res.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
-																,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
-																,"Access-Control-Max-Age":'86400'
-																,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"});
-															}
-															catch(problem)
-															{
-																console.log(problem);
-															}
-															
-															if(command.obj.All)
-															{
-																change_command["empID"] = el.ID;
-																change_command["reportRank"] = rp.reportRank;
-															}
-															
-															temp.res.write(JSON.stringify({command:"updated_flll_anwer_to_question",change_commands:change_command}));
-															//connections[el.ID] = undefined;
-															console.log("response to "+el.ID);temp.res.end();
-															nvalues.push(temp);
-														}																			
-														else if(temp.res.writableEnded && (temp.ID != command.userAuthentification.ID || temp.rank != command.userAuthentification.rank))
-														{
-															console.log("response to "+el.ID+" differed");
-															if(command.obj.All)
-															{
-																change_command["empID"] = el.ID;
-																change_command["reportRank"] = rp.reportRank;
-															}
-															if(login_id_and_network.responses[el.ID] == undefined )
-															{
-																login_id_and_network.responses[el.ID] = [{first:{command:"updated_flll_anwer_to_question",change_commands:change_command}
-																,reqSource:req.headers.host,reqUserAgent : req.headers['user-agent'],date: new Date(),rank:command.userAuthentification.rank}];
-															}
-															else
-															{
-																login_id_and_network.responses[el.ID].push({first:{command:"updated_flll_anwer_to_question",change_commands:change_command}
-																,reqSource:req.headers.host,reqUserAgent : req.headers['user-agent'],date: new Date(),rank:command.userAuthentification.rank});
-																const count = login_id_and_network.responses[el.ID].length-1;
-																const value = login_id_and_network.responses[el.ID][count];
-																while(count >= 1 && value.date < login_id_and_network.responses[el.ID][count-1].date)
-																{
-																	const swapValue = login_id_and_network.responses[el.ID][count-1];
-																	login_id_and_network.responses[el.ID][count-1] = value;
-																	login_id_and_network.responses[el.ID][count] = swapValue;
-																	++count;
-																}
-															}
-														}
-														
-														
-													});
-													
-													nvalues.forEach(avalue=>
+													if( login_id_and_network.loggins[el.ID] )
 													{
-														allValues.splice(allValues.findIndex(bvalue=> bvalue == avalue),1);
-														console.log("splicing don2");
-													});
+														//rank:command.obj.rank,reqSource:req.headers.host,reqUserAgent : req.headers['user-agent'],date: new Date()
+														login_id_and_network.loggins[el.ID].forEach( el2 => 
+														{
+															const foundValue = (allValues)?allValues.find( val => val.rank == el2.rank && val.ID == el2.ID ):undefined;
+															if( !foundValue ) 
+															{
+																const change_command_copy = JSON.parse(JSON.stringify(change_command));
+																if(command.obj.All)
+																{
+																	change_command_copy["empID"] = el.ID;
+																	change_command_copy["reportRank"] = rp.reportRank;
+																}
+																
+																if(login_id_and_network.responses[el.ID] == undefined )
+																{
+																	login_id_and_network.responses[el.ID] = [{first:{command:"updated_flll_anwer_to_question",change_commands:change_command_copy}
+																	,reqSource:el2.reqSource,reqUserAgent : el2.reqUserAgent,date: new Date(),rank:el2.rank}];
+																	
+																	setTimeout(()=>{ login_id_and_network.responses[el.ID].splice(login_id_and_network.responses[el.ID].indexOf(login_id_and_network.responses[el.ID]),1);},30000);
+																}
+																else
+																{
+																	login_id_and_network.responses[el.ID].push({first:{command:"updated_flll_anwer_to_question",change_commands:change_command_copy}
+																	,reqSource:el2.reqSource,reqUserAgent : el2.reqUserAgent,date: new Date(),rank:el2.rank});
+																	const count = login_id_and_network.responses[el.ID].length-1;
+																	const value = login_id_and_network.responses[el.ID][count];
+																	while(count >= 1 && value.date < login_id_and_network.responses[el.ID][count-1].date)
+																	{
+																		const swapValue = login_id_and_network.responses[el.ID][count-1];
+																		login_id_and_network.responses[el.ID][count-1] = value;
+																		login_id_and_network.responses[el.ID][count] = swapValue;
+																		++count;
+																	}
+																	setTimeout(()=>{ login_id_and_network.responses[el.ID].splice(login_id_and_network.responses[el.ID].indexOf(login_id_and_network.responses[el.ID]),1);},30000);
+																}
+																console.log("loggedIn guy added");
+																console.log(" report "+change_command_copy["reportRank"]+" saved for "+ change_command_copy["empID"]);
+																	
+															}
+														});
+													}
+													
+													if(allValues)
+													{
+														allValues.forEach(temp =>{
+															console.log(el.ID);
+															//console.log(temp.ID);
+															//console.log(command.userAuthentification.ID);
+															console.log(temp.rank);
+															console.log(command.userAuthentification.rank);
+															if(temp && !temp.res.writableEnded && (temp.ID != command.userAuthentification.ID || temp.rank != command.userAuthentification.rank))
+															{
+																try
+																{
+																	temp.res.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+																	,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
+																	,"Access-Control-Max-Age":'86400'
+																	,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"});
+																}
+																catch(problem)
+																{
+																	console.log(problem);
+																}
+																
+																if(command.obj.All)
+																{
+																	change_command["empID"] = el.ID;
+																	change_command["reportRank"] = rp.reportRank;
+																}
+																
+																temp.res.write(JSON.stringify({command:"updated_flll_anwer_to_question",change_commands:change_command}));
+																//connections[el.ID] = undefined;
+																console.log("response to "+temp.ID);temp.res.end();
+																nvalues.push(temp);
+															}																			
+															else if(temp.res.writableEnded && (temp.ID != command.userAuthentification.ID || temp.rank != command.userAuthentification.rank))
+															{
+																console.log("response to "+temp.ID+" differed");
+																if(command.obj.All)
+																{
+																	change_command["empID"] = temp.ID;
+																	change_command["reportRank"] = rp.reportRank;
+																}
+																if(login_id_and_network.responses[temp.ID] == undefined )
+																{
+																	login_id_and_network.responses[temp.ID] = [{first:{command:"updated_flll_anwer_to_question",change_commands:change_command}
+																	,reqSource:temp.reqSource,reqUserAgent : temp.reqUserAgent,date: new Date(),rank:temp.rank}];
+																}
+																else
+																{
+																	login_id_and_network.responses[temp.ID].push({first:{command:"updated_flll_anwer_to_question",change_commands:change_command}
+																	,reqSource:temp.reqSource,reqUserAgent : temp.reqUserAgent,date: new Date(),rank:temp.rank});
+																	const count = login_id_and_network.responses[temp.ID].length-1;
+																	const value = login_id_and_network.responses[temp.ID][count];
+																	while(count >= 1 && value.date < login_id_and_network.responses[temp.ID][count-1].date)
+																	{
+																		const swapValue = login_id_and_network.responses[temp.ID][count-1];
+																		login_id_and_network.responses[temp.ID][count-1] = value;
+																		login_id_and_network.responses[temp.ID][count] = swapValue;
+																		++count;
+																	}
+																}
+																
+															}});
+														
+														nvalues.forEach(avalue=>
+														{
+															allValues.splice(allValues.findIndex(bvalue=> bvalue == avalue),1);
+															console.log("splicing don2");
+														});
+													}
 													
 												});
 											}
-											
 										}
 										else
 										{
@@ -3388,6 +3480,7 @@ async function doGetHTTPRequest(hostName,port,command)
 								}
 							}
 						}
+					});
 				}
 			}
 			
@@ -3765,6 +3858,7 @@ async function doGetHTTPRequest(hostName,port,command)
 				reqSource:req.headers.host,
 				reqUserAgent : req.headers['user-agent'],
 				date: new Date(),ID:command.obj.ID});
+				console.log(login_id_and_network.loggins);
 				res.write(JSON.stringify({loggedIn:true,obj:IDs[command.obj.ID],rank:index}));
 				res.end();
 				return;
