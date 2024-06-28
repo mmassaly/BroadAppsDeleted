@@ -2540,7 +2540,7 @@ async function doGetHTTPRequest(hostName,port,command)
 				}
 				
 				if(!tconnectedGuy.find(guy=> req.headers.host == guy.reqSource 
-					&& req.headers['user-agent'] == guy.reqUserAgent && command.userAuthentification.rank == guy.rank))
+					&& req.headers['user-agent'] == guy.reqUserAgent && command.obj.rank == guy.rank))
 				{
 					var index = 0;
 					do
