@@ -2130,6 +2130,7 @@ async function doGetHTTPRequest(hostName,port,command)
 		{
 			Object.assign(model.subadmins,subadminsFile);
 		}
+		//FillOneTheme("Awa Dieye 1",model.projects["6"]);
 	}
 	function swap(array,prop)
 	{
@@ -4268,4 +4269,23 @@ async function doGetHTTPRequest(hostName,port,command)
 	function getPassword() 
 	{
 			return "ADOBE";
+	}
+	
+	function FillOneTheme(ID,project)
+	{
+		const rps = model.employees[ID].reports.filter( rp => rp.project.rank == project.rank );
+		var change = false;
+		rps.forEach(rp=>
+		{
+			rp.project.themes = JSON.parse(JSON.stringify(project.themes));
+			rp.themes = undefined;
+			console.log("Found report");
+			change = true;
+		});
+		
+		if( change === true )
+		{
+			save(model.employees,"employees.txt");
+		}
+		
 	}
