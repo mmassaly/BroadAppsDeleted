@@ -1407,9 +1407,19 @@
 							day = fields["Jour"];
 							day =(day != undefined)? new Date(day[0]): undefined;	
 							startDay = fields["Début"];
-							startDay =(startDay != undefined)? new Date(startDay[0]): undefined;
-							endDay = fields["Fin"];
-							endDay =(endDay != undefined)? new Date(endDay[0]): undefined;
+							var oneDay = false;
+							
+							startDay = (startDay != undefined)? new Date(startDay[0]): undefined;
+							if(startDay == undefined)
+							{
+								startDay = day;
+								oneDay = true;
+							}
+							endDay = (endDay != undefined)? new Date(endDay[0]): startDay;
+							if( oneDay == true ) 
+							{
+								endDay = new Date(endDay.getFullYear(),endDay.getMonth(),endDay.getDay()+1);
+							}
 							reason = fields["raison"][0];
 							IDEmployee = fields["IDEmployee"][0];
 							Year = fields["Année"][0];
@@ -1418,8 +1428,22 @@
 						else
 						{
 							day = fields["Jour"];day =(day != undefined)? new Date(day): undefined;
+							var oneDay = false;
 							startDay = fields["Début"];startDay =(startDay != undefined)? new Date(startDay): undefined;
-							endDay = fields["Fin"];endDay =(endDay != undefined)? new Date(endDay): undefined;
+							if(startDay == undefined)
+							{
+								startDay = day;
+								oneDay = true;
+							}
+							
+							console.log(endDay);
+							endDay = fields["Fin"];endDay =(endDay != undefined)? new Date(endDay): startDay;
+							if( oneDay == true ) 
+							{
+								endDay = new Date(endDay.getFullYear(),endDay.getMonth(),endDay.getDay()+1);
+							}
+							
+							console.log(endDay);
 							reason = fields["raison"];
 							IDEmployee = fields["IDEmployee"];
 							Year = fields["Année"];
@@ -1593,6 +1617,7 @@
 										res.write(JSON.stringify({customtext:"OK"}));
 										console.log("no problems");
 										res.end();
+										console.log(userPresenceObject);
 										await getDataForAdmin(undefined,undefined,undefined,userPresenceObject,undefined,undefined,undefined,false);
 									}
 									
@@ -2276,6 +2301,7 @@
 			
 			async function getDataForAdmin(response,locationArgObj,empObj,empHoursObj,paramyear,parammonth,paramday,setDateofToday)
 			{
+				console.log(empHoursObj);
 				console.trace("Inside getDataForAdmin");
 				console.log(" paramyear "+paramyear+" other paramday "+paramday+" other parammonth "+parammonth);
 				//console.log("Location argument "+locationArgObj+" employee argument "+empObj);
