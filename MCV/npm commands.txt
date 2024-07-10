@@ -1,4 +1,6 @@
 npm audit fix --force
 npm install something --save
 npm install something
-npm init generate package.json
+or npm init generate package.json and npm install
+npm install (m-lol-m)
+-------------------------------
