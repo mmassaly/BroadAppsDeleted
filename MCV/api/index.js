@@ -2984,7 +2984,8 @@
 									if( empHoursObj )
 									{
 										console.log("Employee Hours...");
-										//console.log(currentDateOfYear);console.log(bresult);
+										console.log(currentDateOfYear);
+										//console.log(bresult);
 									}
 									
 									if( monthIndex == 9 )
