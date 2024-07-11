@@ -3253,7 +3253,12 @@
 										base_init_exiting = true;
 										return false;
 									}
-
+									
+									if( empHoursObj )
+									{
+										console.log(resultTwo.second);
+									}
+									
 									if(resultTwo.second !== false)
 									{
 										for( let m = 0; m < resultTwo.first.length; ++m)
