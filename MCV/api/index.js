@@ -3825,7 +3825,7 @@
 												}
 												
 												
-												if( empHours )
+												if( empHoursObj )
 													console.log("secondresult.first[2] does not have required length......"+secondresult.first[2].length);
 												
 												if(secondresult.first[2].length > 0)//beginning of hours section
@@ -3859,7 +3859,7 @@
 														let startIndex = employeeContentModel.entries.indexOf(element);
 														employeeContentModel.entries.splice(startIndex,1);
 														employeeContentModel.exits.splice(startIndex,1);
-														if( empHours )
+														if( empHoursObj )
 														console.log("No existant elements spliced..............");
 													});
 													
@@ -3888,7 +3888,7 @@
 																		//console.log("Empty Second");
 																		//console.log(employeeContentModel.entries);
 																		//console.log(employeeContentModel.exits);
-																		if( empHours )
+																		if( empHoursObj )
 																			console.log("Couple with b undefined set..............");
 																	}
 																	else if(startIndex == -1)
@@ -3898,7 +3898,7 @@
 																		employeeContentModel.exits.push(b);
 																		//console.log(employeeContentModel.entries);
 																		//console.log(employeeContentModel.exits);
-																		if( empHours )
+																		if( empHoursObj )
 																			console.log("Couple with b undefined added..............");
 																	}
 
@@ -3932,7 +3932,7 @@
 																		}*/
 																		//console.log(employeeContentModel.entries);
 																		//console.log(employeeContentModel.exits);
-																		if( empHours )
+																		if( empHoursObj )
 																			console.log("Couple with b defined set..............");
 																	}
 																	else
@@ -3945,7 +3945,7 @@
 																		}
 																		//console.log(employeeContentModel.entries);
 																		//console.log(employeeContentModel.exits);
-																		if( empHours )
+																		if( empHoursObj )
 																			console.log("Couple with b defined added..............");
 																	}	
 
