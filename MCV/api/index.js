@@ -3025,7 +3025,7 @@
 									
 									if(empHoursObj)
 									{
-										console.log(cresultFiltered );
+										//console.log(cresultFiltered );
 									}
 									
 									
@@ -3823,11 +3823,16 @@
 														}
 													}
 												}
+												
+												
+												if( empHours )
+													console.log("secondresult.first[2] does not have required length......"+secondresult.first[2].length);
+												
 												if(secondresult.first[2].length > 0)//beginning of hours section
 												{
 													let index_of_entries_into = 0;
 													let elements_not_found = [];
-
+													console.log("Inside hours section..............");
 													employeeContentModel.entries.forEach(element=>
 													{
 														let temp_found = false;
@@ -3854,8 +3859,10 @@
 														let startIndex = employeeContentModel.entries.indexOf(element);
 														employeeContentModel.entries.splice(startIndex,1);
 														employeeContentModel.exits.splice(startIndex,1);
+														if( empHours )
+														console.log("No existant elements spliced..............");
 													});
-
+													
 													for(let tempCount = 0; tempCount < secondresult.first[2].length ; ++tempCount)
 													{ 
 												
@@ -3875,20 +3882,24 @@
 																	b = "non définie";
 																	let startIndex = employeeContentModel.entries.indexOf(a);
 																	
-																	if(startIndex != -1)
+																	if(startIndex != -1 && employeeContentModel.exits[startIndex] == "non définie")
 																	{
 																		employeeContentModel.exits[startIndex] = b;
 																		//console.log("Empty Second");
 																		//console.log(employeeContentModel.entries);
 																		//console.log(employeeContentModel.exits);
+																		if( empHours )
+																			console.log("Couple with b undefined set..............");
 																	}
-																	else
+																	else if(startIndex == -1)
 																	{
 																		//console.log("Full Second");	
 																		employeeContentModel.entries.push(a);
 																		employeeContentModel.exits.push(b);
 																		//console.log(employeeContentModel.entries);
 																		//console.log(employeeContentModel.exits);
+																		if( empHours )
+																			console.log("Couple with b undefined added..............");
 																	}
 
 																}
@@ -3914,13 +3925,15 @@
 																		if(value_to_deal_with )
 																		{
 																			employeeContentModel.exits[startIndex] = b;
-																		}
+																		}/*
 																		else
 																		{
 																			employeeContentModel.entries.splice(startIndex,1);
-																		}
+																		}*/
 																		//console.log(employeeContentModel.entries);
 																		//console.log(employeeContentModel.exits);
+																		if( empHours )
+																			console.log("Couple with b defined set..............");
 																	}
 																	else
 																	{
@@ -3932,6 +3945,8 @@
 																		}
 																		//console.log(employeeContentModel.entries);
 																		//console.log(employeeContentModel.exits);
+																		if( empHours )
+																			console.log("Couple with b defined added..............");
 																	}	
 
 																	if(value_to_deal_with)
