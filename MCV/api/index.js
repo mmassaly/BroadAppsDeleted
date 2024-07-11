@@ -2981,12 +2981,12 @@
 								while( start_day <= nombre_de_jours)
 								{
 									currentDateOfYear = new Date(year,monthCounts-1,start_day);
-									if( empHoursObj )
+									/*if( empHoursObj )
 									{
 										console.log("Employee Hours...");
 										console.log(currentDateOfYear);
 										//console.log(bresult);
-									}
+									}*/
 									
 									if( monthIndex == 9 )
 									{
@@ -3258,10 +3258,6 @@
 									
 									if(resultTwo.second !== false)
 									{
-										if( empHoursObj )
-										{
-											console.log("inside resultTwo.second !== false "+resultTwo.firstresultTwo.first.length);
-										}
 										for( let m = 0; m < resultTwo.first.length; ++m)
 										{
 											let IDIndividu = resultTwo.first[m][resultTwo.second[9].name];
@@ -3270,10 +3266,10 @@
 											let profession = resultTwo.first[m][resultTwo.second[6].name];
 											let IDBureau = resultTwo.first[m][resultTwo.second[10].name];
 											//console.log("Inside m which is "+m);
-											if( empHoursObj )
+											/*if( empHoursObj )
 											{
 												console.log("Inside m which is "+m);
-											}
+											}*/
 											//console.log(IDIndividu);
 											//console.log(debut);
 											//console.log(end);
@@ -3741,8 +3737,9 @@
 												let dateNowOther = new Date(Date.now());
 												let criticallylate = false; 
 												let retard = false;
-												console.log("Inside attendance");
-												
+												/*if( empHoursObj )
+													console.log("Inside attendance");
+												*/
 												if(secondresult.first[0].length > 0)
 												{
 													if( secondresult.first[0][0][secondresult.second[0][0].name] == 1 && dresultFiltered.first.length == 0) 
@@ -3845,8 +3842,9 @@
 												}
 												
 												
-												if( empHoursObj )
+												/*if( empHoursObj )
 													console.log("secondresult.first[2] does not have required length......"+secondresult.first[2].length);
+												*/
 												
 												if(secondresult.first[2].length > 0)//beginning of hours section
 												{
@@ -3879,8 +3877,9 @@
 														let startIndex = employeeContentModel.entries.indexOf(element);
 														employeeContentModel.entries.splice(startIndex,1);
 														employeeContentModel.exits.splice(startIndex,1);
-														if( empHoursObj )
+														/*if( empHoursObj )
 														console.log("No existant elements spliced..............");
+														*/
 													});
 													
 													for(let tempCount = 0; tempCount < secondresult.first[2].length ; ++tempCount)
@@ -3908,8 +3907,9 @@
 																		//console.log("Empty Second");
 																		//console.log(employeeContentModel.entries);
 																		//console.log(employeeContentModel.exits);
-																		if( empHoursObj )
+																		/*if( empHoursObj )
 																			console.log("Couple with b undefined set..............");
+																		*/
 																	}
 																	else if(startIndex == -1)
 																	{
@@ -3918,8 +3918,9 @@
 																		employeeContentModel.exits.push(b);
 																		//console.log(employeeContentModel.entries);
 																		//console.log(employeeContentModel.exits);
-																		if( empHoursObj )
+																		/*if( empHoursObj )
 																			console.log("Couple with b undefined added..............");
+																		*/
 																	}
 
 																}
@@ -3952,8 +3953,9 @@
 																		}*/
 																		//console.log(employeeContentModel.entries);
 																		//console.log(employeeContentModel.exits);
-																		if( empHoursObj )
+																		/*if( empHoursObj )
 																			console.log("Couple with b defined set..............");
+																		*/
 																	}
 																	else
 																	{
@@ -3965,8 +3967,9 @@
 																		}
 																		//console.log(employeeContentModel.entries);
 																		//console.log(employeeContentModel.exits);
-																		if( empHoursObj )
+																		/*if( empHoursObj )
 																			console.log("Couple with b defined added..............");
+																		*/
 																	}	
 
 																	if(value_to_deal_with)
