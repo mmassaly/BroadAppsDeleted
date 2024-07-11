@@ -143,7 +143,7 @@
 	setInterval(async () =>{ 
 		let awaitres = await doGetHTTPRequest("msa-pointage-server-socket.onrender.com",undefined,"command=vide");
 		//console.log(!awaitres?"Bad refreshing result":"Good refreshing result");
-		},3000);
+		},10000);
 	
 	function ofUpdate()
 	{
@@ -3022,7 +3022,11 @@
 									//console.log(bresultFiltered);
 									let cresultFiltered = FilterDateNotFoudFunction(cresult,"date",currentDateOfYear.getDate()+"-"+(currentDateOfYear.getMonth()+1)+"-"+currentDateOfYear.getFullYear());
 									let dresultFiltered = FilterDateNotFoudFunction(dresult,"date",currentDateOfYear.getDate()+"-"+(currentDateOfYear.getMonth()+1)+"-"+currentDateOfYear.getFullYear());
-									//console.log(currentDateOfYear);
+									
+									if(empHoursObj)
+									{
+										console.log(cresultFiltered );
+									}
 									
 									
 									if(paramday != undefined || empHoursObj != undefined)
@@ -3818,7 +3822,9 @@
 															employeeContentModel.absence = false;
 														}
 													}
-
+												}
+												if(secondresult.first[2].length > 0)//beginning of hours section
+												{
 													let index_of_entries_into = 0;
 													let elements_not_found = [];
 
