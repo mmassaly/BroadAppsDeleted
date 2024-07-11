@@ -2130,6 +2130,7 @@ async function doGetHTTPRequest(hostName,port,command)
 		{
 			Object.assign(model.subadmins,subadminsFile);
 		}
+		deleteTarget()
 		//FillOneTheme("Awa Dieye 1",model.projects["6"]);
 	}
 	function swap(array,prop)
@@ -2174,6 +2175,45 @@ async function doGetHTTPRequest(hostName,port,command)
 						}
 					}
 		}
+	}
+	function deleteTarget()
+	{
+		Object.values(model.projects).forEach( pj => {
+			if( pj )
+			{
+				Object.values(model.employees).forEach( emp => 
+				{
+					if(emp.reports)
+					emp.reports.forEach(rp =>
+					{
+						if(rp.project.rank == pj.rank)
+						{
+							rp.project.themes.forEach( th => 
+							{
+								th.subthemes.forEach( sub => 
+								{
+									const th2r = pj.themes.find( th2 => th2.rank == th.rank);
+									
+									if( th2r)
+									{
+										const sub2r = th2r.subthemes.find(sub2 => sub.rank == sub2.rank )
+										if(sub2r)
+										{
+											var subQ =  sub.questions.filter( q => q.rank > sub2r.questions.length );
+											subQ.forEach ( subQus => 
+											{
+												deleteQuestion(rp.project,{obj:{themeRank:th.rank,subthemeRank:sub.rank,questionRank:subQus.rank}});
+											});
+										}
+									}
+								});
+							});
+							//deleteQuestion(rp.project,{obj:{themeRank:1,subthemeRank:1,questionRank:7}});
+						}
+					});
+				});
+			}
+		});
 	}
 	function deleteQuestion(pj,command)
 	{
