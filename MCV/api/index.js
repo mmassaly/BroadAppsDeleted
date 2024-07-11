@@ -1461,6 +1461,7 @@
 						userPresenceObject.ID = IDEmployee;
 						userPresenceObject.IDOffice = IDOffice;
 						userPresenceObject.year =  Year;
+						userPresenceObject.presence = true;
 						console.log(userPresenceObject);
 						
 						let tempuserAuthentification = {ID:urlObject.authID,Prenom:urlObject.authPrenom,Nom:urlObject.authNom,genre:urlObject.authGenre,naissance:urlObject.authnaissance,pass:urlObject.authpass};
@@ -1541,6 +1542,7 @@
 					if(skip_authentification == false)
 						tempResult = await forced_authentification_query(tempuserAuthentification,undefined);
 					userPresenceObject.userAuthentification = tempuserAuthentification;
+					userPresenceObject.butPresence = true;
 					//console.log(tempuserAuthentification);
 					//console.log(tempResult);
 					//console.log(querySQL);
@@ -2579,7 +2581,7 @@
 							
 							query += "Select * FROM";
 							query += " \""+state+"\" as A";
-							query += (param_year_month_day != undefined)?(" WHERE A.Date ='"+param_year_month_day+"'"):(empObj != undefined)?" WHERE Idindividu = '"+empObj.ID+"'":(empHoursObj != undefined)? " WHERE IdIndividu = '"+empHoursObj.ID+((empHoursObj.startDay == undefined && empHoursObj.endDay == undefined)?("' AND Date ='"+empHoursObj.date.getFullYear()+"-"+(empHoursObj.date.getMonth()+1)+"-"+empHoursObj.date.getDate()+"'"):(empHoursObj.startDay != undefined && empHoursObj.endDay == undefined)?("' AND Date >='"+empHoursObj.startDay.getFullYear()+"-"+(empHoursObj.startDay.getMonth()+1)+"-"+empHoursObj.startDay.getDate()+"'"):("' AND Date >='"+empHoursObj.startDay.getFullYear()+"-"+(empHoursObj.startDay.getMonth()+1)+"-"+empHoursObj.startDay.getDate()+"' AND Date <='"+empHoursObj.endDay.getFullYear()+"-"+(empHoursObj.endDay.getMonth()+1)+"-"+empHoursObj.endDay.getDate()+"'")):"";
+							query += (param_year_month_day != undefined)?(" WHERE A.Date ='"+param_year_month_day+"'"):(empObj != undefined)?" WHERE Idindividu = '"+empObj.ID+"'":(empHoursObj != undefined)? " WHERE IdIndividu = '"+(empHoursObj.butPresence||empHoursObj.subAdminRef?empHoursObj.ID:empHoursObj.userAuthentification.ID)+((empHoursObj.startDay == undefined && empHoursObj.endDay == undefined)?("' AND Date ='"+empHoursObj.date.getFullYear()+"-"+(empHoursObj.date.getMonth()+1)+"-"+empHoursObj.date.getDate()+"'"):(empHoursObj.startDay != undefined && empHoursObj.endDay == undefined)?("' AND Date >='"+empHoursObj.startDay.getFullYear()+"-"+(empHoursObj.startDay.getMonth()+1)+"-"+empHoursObj.startDay.getDate()+"'"):("' AND Date >='"+empHoursObj.startDay.getFullYear()+"-"+(empHoursObj.startDay.getMonth()+1)+"-"+empHoursObj.startDay.getDate()+"' AND Date <='"+empHoursObj.endDay.getFullYear()+"-"+(empHoursObj.endDay.getMonth()+1)+"-"+empHoursObj.endDay.getDate()+"'")):"";
 							query += " ORDER BY A.Date ASC;";
 							
 							query += "Select Case WHEN MIN(\""+table+"\".Entrées) >= '10:00:00' then 1 "; 
@@ -2587,14 +2589,14 @@
 							query += "Case WHEN  MIN(\""+table+"\".Entrées) > '8:30:00' then 1 ";
 							query += "WHEN MIN(\""+table+"\".Entrées) <= '8:30:00' then 0 END as CaseTwo,";
 							query += "MIN(\""+table+"\".Entrées), Date ,Idindividu FROM \""+table+"\"";
-							query += (param_year_month_day != undefined)?" WHERE Date ='"+param_year_month_day+"'":(empHoursObj== undefined)? ((empObj != undefined)?" WHERE Idindividu = '"+empObj.ID+"'":""):" WHERE Idindividu = '"+empHoursObj.ID+((empHoursObj.startDay == undefined && empHoursObj.endDay == undefined)?("' AND Date ='"+empHoursObj.date.getFullYear()+"-"+(empHoursObj.date.getMonth()+1)+"-"+empHoursObj.date.getDate()+"'"):(empHoursObj.startDay != undefined && empHoursObj.endDay == undefined)?(" AND Date >='"+empHoursObj.startDay.getFullYear()+"-"+(empHoursObj.startDay.getMonth()+1)+"-"+empHoursObj.startDay.getDate()+"'"):("' AND Date >='"+empHoursObj.startDay.getFullYear()+"-"+(empHoursObj.startDay.getMonth()+1)+"-"+empHoursObj.startDay.getDate()+"' AND Date <='"+empHoursObj.endDay.getFullYear()+"-"+(empHoursObj.endDay.getMonth()+1)+"-"+empHoursObj.endDay.getDate()+"'"));
+							query += (param_year_month_day != undefined)?" WHERE Date ='"+param_year_month_day+"'":(empHoursObj== undefined)? ((empObj != undefined)?" WHERE Idindividu = '"+(empHoursObj.butPresence||empHoursObj.subAdminRef?empHoursObj.ID:empHoursObj.userAuthentification.ID)+"'":""):" WHERE Idindividu = '"+(empHoursObj.butPresence||empHoursObj.subAdminRef?empHoursObj.ID:empHoursObj.userAuthentification.ID)+((empHoursObj.startDay == undefined && empHoursObj.endDay == undefined)?("' AND Date ='"+empHoursObj.date.getFullYear()+"-"+(empHoursObj.date.getMonth()+1)+"-"+empHoursObj.date.getDate()+"'"):(empHoursObj.startDay != undefined && empHoursObj.endDay == undefined)?(" AND Date >='"+empHoursObj.startDay.getFullYear()+"-"+(empHoursObj.startDay.getMonth()+1)+"-"+empHoursObj.startDay.getDate()+"'"):("' AND Date >='"+empHoursObj.startDay.getFullYear()+"-"+(empHoursObj.startDay.getMonth()+1)+"-"+empHoursObj.startDay.getDate()+"' AND Date <='"+empHoursObj.endDay.getFullYear()+"-"+(empHoursObj.endDay.getMonth()+1)+"-"+empHoursObj.endDay.getDate()+"'"));
 							query += " GROUP BY Date, Idindividu ORDER BY Date ASC;";
 							
 							/*When employee hours object is used for fulfilling missions
 							and the like the date must be changing not fixed to one value.*/
 							query += "Select * FROM";
 							query += " \""+table+"\" as A";
-							query += (empObj == undefined)?((empHoursObj == undefined)?"":" where A.Idindividu ='"+empHoursObj.ID+"'"):" where A.Idindividu ='"+empObj.ID+"'";
+							query += (empObj == undefined)?((empHoursObj == undefined)?"":" where A.Idindividu ='"+(empHoursObj.butPresence||empHoursObj.subAdminRef?empHoursObj.ID:empHoursObj.userAuthentification.ID)+"'"):" where A.Idindividu ='"+(empHoursObj.butPresence||empHoursObj.subAdminRef?empHoursObj.ID:empHoursObj.userAuthentification.ID)+"'";
 							query += " GROUP BY Entrées,Date,Idindividu ORDER BY Date ASC;";
 							query += "Select * from \""+events+"\";";
 							
