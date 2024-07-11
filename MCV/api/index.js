@@ -3607,6 +3607,8 @@
 											let bresultFilteredb = FilterNotFoundEqualsFunction(bresultFiltered,"idindividu",IDIndividu);
 											let cresultFilteredb = FilterNotFoundEqualsFunction(cresultFiltered,"idindividu",IDIndividu);
 											let date2 = new Date();
+											
+											
 											//console.log("done filtering "+ (date2 -date)%1000);
 		
 											secondresult.first.push(aresultFilteredb.first);
@@ -3616,6 +3618,13 @@
 											secondresult.second.push(aresultFilteredb.second);
 											secondresult.second.push(bresultFilteredb.second);
 											secondresult.second.push(cresultFilteredb.second);
+											
+											if(empHoursObj)
+											{
+												console.log("*************************");
+												console.log(secondresult);
+												console.log("*************************");
+											}
 											
 											if(yearContentModel.months[monthIndex].weeks[weekIndex].days[dayIndex].employeeHours[employeeContentModel.ID] == undefined)
 											{
@@ -3727,6 +3736,7 @@
 												let dateNowOther = new Date(Date.now());
 												let criticallylate = false; 
 												let retard = false;
+												console.log("Inside attendance");
 												
 												if(secondresult.first[0].length > 0)
 												{
