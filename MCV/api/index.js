@@ -3254,13 +3254,14 @@
 										return false;
 									}
 									
-									if( empHoursObj )
-									{
-										console.log(resultTwo.second);
-									}
+									
 									
 									if(resultTwo.second !== false)
 									{
+										if( empHoursObj )
+										{
+											console.log("inside resultTwo.second !== false");
+										}
 										for( let m = 0; m < resultTwo.first.length; ++m)
 										{
 											let IDIndividu = resultTwo.first[m][resultTwo.second[9].name];
@@ -3269,6 +3270,10 @@
 											let profession = resultTwo.first[m][resultTwo.second[6].name];
 											let IDBureau = resultTwo.first[m][resultTwo.second[10].name];
 											//console.log("Inside m which is "+m);
+											if( empHoursObj )
+											{
+												console.log("Inside m which is "+m);
+											}
 											//console.log(IDIndividu);
 											//console.log(debut);
 											//console.log(end);
@@ -3622,7 +3627,7 @@
 											if(empHoursObj)
 											{
 												console.log("*************************");
-												console.log(secondresult);
+												console.log("done filtering");
 												console.log("*************************");
 											}
 											
