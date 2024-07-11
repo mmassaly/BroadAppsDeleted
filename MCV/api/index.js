@@ -2577,7 +2577,7 @@
 							query += " inner join \"location du bureau\" ON  appartenance.IDBureau =";
 							query += " \"location du bureau\".ID AND EXTRACT(YEAR FROM individu.Début) <= ";
 							query += year + " AND EXTRACT(YEAR FROM individu.Fin) >="+year;
-							query +=(empObj != undefined)?" AND individu.ID = '"+empObj.ID+"';":((empHoursObj != undefined)?" AND individu.ID = '"+empHoursObj.ID+"';":";");
+							query +=(empObj != undefined)?" AND individu.ID = '"+empObj.ID+"';":((empHoursObj != undefined)?" AND individu.ID = '"+(empHoursObj.butPresence||empHoursObj.subAdminRef?empHoursObj.ID:empHoursObj.userAuthentification.ID)+"';":";");
 							
 							query += "Select * FROM";
 							query += " \""+state+"\" as A";
@@ -3260,7 +3260,7 @@
 									{
 										if( empHoursObj )
 										{
-											console.log("inside resultTwo.second !== false");
+											console.log("inside resultTwo.second !== false "+resultTwo.firstresultTwo.first.length);
 										}
 										for( let m = 0; m < resultTwo.first.length; ++m)
 										{
