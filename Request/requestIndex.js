@@ -16,13 +16,13 @@ async function currentLocal()
 {
 	let awaitres = await doPostHTTPRequest("localhost",3035,data,http);
 	data.fileName = "employees.txt";
-	awaitres = await doPostHTTPRequest("localhost",3035,data,http);
-	data.fileName = "IDs.txt";
-	awaitres = await doPostHTTPRequest("localhost",3035,data,http);
-	data.fileName = "subadmins.txt";
-	awaitres = await doPostHTTPRequest("localhost",3035,data,http);
-	data.fileName = "localities.txt";
-	awaitres = await doPostHTTPRequest("localhost",3035,data,http);
+	//awaitres = await doPostHTTPRequest("localhost",3035,data,http);
+	//data.fileName = "IDs.txt";
+	//awaitres = await doPostHTTPRequest("localhost",3035,data,http);
+	//data.fileName = "subadmins.txt";
+	//awaitres = await doPostHTTPRequest("localhost",3035,data,http);
+	//data.fileName = "localities.txt";
+	//awaitres = await doPostHTTPRequest("localhost",3035,data,http);
 }
 
 async function current()

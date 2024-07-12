@@ -84,4 +84,9 @@ export class ExceljsService {
 		});
   }
   
+  public MergeCells(str:string,sheet:any)
+  {
+		sheet.mergeCells(str);
+  }
+  
 }

@@ -1155,6 +1155,56 @@
 	whileFunction("Starting Server....");//update
 	async function insertEntryandExitIntoEmployees(ID,date,startTime,endTime,empHoursObj,res)
 	{
+		var datesPassed = [];
+		var vals = {};
+		if(typeof date == 'Array')
+		{	
+			let query = "";
+			
+			let nomdelaTable = "";	
+			date.forEach((dt,index) =>
+			{
+				
+				let date = dt;
+				if(datesPassed.indexOf(dt) == -1 && vals[dt.getFullYear()] == undefined )
+				{
+					datesPassed.push(dt);
+					query += "Select * from \"manuel des tables d'entrées et de sorties\" where \"manuel des tables d'entrées et de sorties\".Année = '"+date.getFullYear()+"'";
+					let results  = await faire_un_simple_query(query);
+					
+					if(results.first.length > 0 )
+					{
+						vals[dt.getFullYear] = results.first[0][results.second[2].name];
+						nomdelaTable = vals[dt.getFullYear];
+					}
+					else
+					{
+						dummyResponseSimple(res);
+						return;
+					}
+				}
+				
+				let datereversed = date.getFullYear()+"-"+(date.getMonth()+1)+"-"+date.getDate();
+									
+				query += "insert into \""+nomdelaTable+"\" values ('"
+				+ ID+"','"+datereversed+"','"+startTime[index]+"',"+((endTime[index] == undefined)?null:"'"+endTime[index]+"'")+")"
+				+" ON CONFLICT (IdIndividu,Date,Entrées) "+((endTime[index] == undefined)?
+				(" WHERE Sorties IS NULL DO UPDATE SET Sorties = null;\n") : 
+				(" WHERE Sorties IS NULL OR Sorties <= '"+endTime[index]+"'" + " DO UPDATE SET Sorties ='"+endTime[index]+"';\n") );
+				
+				console.log(query);
+				results  = await faire_un_simple_query(query);
+				
+				console.log(results);
+				if(results.second == false && !results.second instanceof Array)
+				{
+					dummyResponseSimple(res);
+					return;
+				}
+				
+			});
+			return;
+		}
 		
 		let nomdelaTable = "";
 		let datereversed = date.getFullYear()+"-"+(date.getMonth()+1)+"-"+date.getDate();
@@ -2499,9 +2549,13 @@
 						{
 							query = "Select * from \"manuel des tables d'entrées et de sorties\" where Année = "+paramyear+";";
 						}																																		
-						else if (empHoursObj != undefined)
+						else if (empHoursObj != undefined && !empHoursObj.withaGroup)
 						{
 							query = "Select * from \"manuel des tables d'entrées et de sorties\" where Année = "+empHoursObj.date.getFullYear()+";";
+						}
+						else if (empHoursObj != undefined && empHoursObj.withaGroup)
+						{
+							query = "Select * from \"manuel des tables d'entrées et de sorties\" where "+empHoursObj.date.map((dt,index)=> (index == 0)?" Année = "+dt.getFullYear():" OR Année = "+dt.getFullYear())+";";	
 						}
 						
 						let result_ = await faire_un_simple_query(query);
@@ -2525,7 +2579,7 @@
 						{
 							let aquery = "create table \""+ayear+" entrées et sorties\" (IDIndividu varchar(255),Date Date,Entrées Time NOT NULL,Sorties VARCHAR(10) DEFAULT NULL, PRIMARY KEY(Date,Entrées,IDIndividu));\n";
 							aquery += "create table \""+ayear+" état de l'individu\"  (IDIndividu varchar(255),Date Date,Absence BOOLEAN,Maladie BOOLEAN,Mission BOOLEAN,Congès BOOLEAN,PRIMARY KEY(Date,IDIndividu));\n";
-							aquery += " insert into \"manuel des tables d'entrées et de sorties\" values("+ayear+","+"$$"+ayear+" état de l'individu$$" +","+"$$"+ayear+" entrées et sorties$$);\n";
+							aquery += " insert into \"manuel des tables d'entrées et de sorties\" values ("+ayear+","+"$$"+ayear+" état de l'individu$$" +","+"$$"+ayear+" entrées et sorties$$);\n";
 							aquery += "create table \""+ayear+" jours de fêtes et de non travail\" (Name varchar(255),Date Date);"
 							aquery += "insert into \"manuel des tables d'entrées et de sorties\" values("+ayear+","+"$$"+ayear+" jours de fêtes et de non travail$$);";
 							await faire_un_simple_query(aquery);
