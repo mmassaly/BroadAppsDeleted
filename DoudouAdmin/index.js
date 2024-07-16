@@ -2609,74 +2609,89 @@ async function doGetHTTPRequest(hostName,port,command)
 				
 				model.projects[command.obj.project.rank] = command.obj.project;
 				save(model.projects,"projects.txt");
-				
+				Object.values(model.employees).forEach( emp=>
+				{
+					var rps = emp.reports.filter( rp => rp.project.rank == command.obj.project.rank);
+					command.obj.project.themes.forEach(th=> 
+					{
+						var foundIndex = -1;
+						rps.forEach(rp => 
+						{
+							foundIndex = rp.themes.findIndex(th2 => th2.rank == th.rank );
+							if(foundIndex < 0)
+							{
+								const currentTheme = JSON.parse(JSON.stringify(th));
+								rp.themes.push(currentTheme);
+								var curr = rp.themes.length -1;
+								while(curr > 0 && rp.themes[curr-1].rank > currentTheme.rank ) 
+								{
+									const swap = currentTheme;
+									rp.themes[curr] = rp.themes[curr-1];
+									rp.themes[curr-1] = swap;
+									--curr;
+								}
+								foundIndex = curr;
+							}
+						});
+						
+						var thFound = rp.themes[foundIndex];
+						
+						th.subthemes.forEach( sub => 
+						{
+							var subFound = undefined;
+						
+							subFound =  thFound.subthemes.find( sub2 => sub2.rank == sub.rank );
+							if( subFound ) 
+							{
+									
+							}
+							else 
+							{
+								const currentSubTheme = JSON.parse(JSON.stringify(sub));
+								thFound.subthemes.push(currentSubTheme);
+								var curr = thFound.subthemes.length - 1;
+								while(curr > 0 && thFound.subthemes[curr-1].rank > currentSubTheme.rank ) 
+								{
+									const swap = currentSubTheme;
+									thFound.subthemes[curr] = thFound.subthemes[curr-1];
+									thFound.subthemes[curr-1] = swap;
+									--curr;
+								}
+								subFound = currentSubTheme;
+							}
+							
+							sub.questions.forEach(qu => 
+							{
+								var quFound = undefined;
+						
+								quFound =  quFound.questions.find( qu2 => qu2.rank == qu.rank );
+								if( quFound ) 
+								{
+									quFound.quality = qu.quality;	
+								}
+								else 
+								{
+									const currentQu = JSON.parse(JSON.stringify(qu));
+									subFound.questions.push(currentQu);
+									
+									var curr = subFound.questions.length - 1;
+									while(curr > 0 && subFound.questions[curr-1].rank > currentQu.rank ) 
+									{
+										const swap = currentQu;
+										subFound.questions[curr] = subFound.questions[curr-1];
+										subFound.questions[curr-1] = swap;
+										--curr;
+									}
+									quFound = currentQu;
+								}
+							});
+						});
+					});
+				});
 				res.write(JSON.stringify({command:"update_added_projects"}));
 				res.end();
 				
 				const values = Object.values(IDs);
-				/*
-				model.employees.forEach(emp=>
-				{
-					const rpCopy = JSON.parse(JSON.stringify(command.obj.project));
-					rpCopy .themes.forced_authentification_query_login(th=>
-					const retRep = emp.reports.project.find(rp=> rp.reportRank == rpCopy.rank && rp.rank == rpCopy.rank );
-					
-					if(retRep)
-					{
-						retCopy.themes.forEach(th=>
-						{
-							const thsFound = retRep.themes.find(oldTheme=> oldTheme.rank == th.rank);
-							if(thsFound)
-							{
-								th.subthemes.forEach(sub=>
-								{
-									const subFound = thsFound.subthemes.find( subA => subA.rank == sub.rank);
-									if(!subFound)
-									{
-										thsFound.subthemes.push(th);
-										swap(thsFound.subthemes,"rank");
-									}
-									else
-									{
-										sub.questions.forEach( q=>
-										{
-											const qFound = subFound.find(qus=> q.rank == qus.rank);
-											if(!qFound)
-											{
-												subFound.questions.push(q);
-												swap(subFound.questions,"rank");
-											}
-											else
-											{
-												Object.keys(q).forEach(key=>
-												{
-													if(!qFound[key])
-													{
-														qFound[key] = ;q[key]
-													}
-													else
-													{
-														
-													}
-												});
-											}
-										})
-									}
-								});
-							}
-							else
-							{
-								
-							}
-						});
-						th.subthemes.find(sub=> sub.rank == ret.subthe);
-					}
-					else
-					{
-						emp.reports.themes.push(th);
-						
-					}
-				});*/
 				
 				if(values)
 				{
