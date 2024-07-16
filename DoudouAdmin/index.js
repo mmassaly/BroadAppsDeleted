@@ -2612,6 +2612,7 @@ async function doGetHTTPRequest(hostName,port,command)
 				Object.values(model.employees).forEach( emp=>
 				{
 					var rps = emp.reports.filter( rp => rp.project.rank == command.obj.project.rank);
+					var changeOccured = false;
 					command.obj.project.themes.forEach(th=> 
 					{
 						var foundIndex = -1;
@@ -2631,6 +2632,7 @@ async function doGetHTTPRequest(hostName,port,command)
 									--curr;
 								}
 								foundIndex = curr;
+								changeOccured = true;
 							}
 						});
 						
@@ -2657,13 +2659,14 @@ async function doGetHTTPRequest(hostName,port,command)
 									thFound.subthemes[curr-1] = swap;
 									--curr;
 								}
+								changeOccured = true;
 								subFound = currentSubTheme;
 							}
 							
 							sub.questions.forEach(qu => 
 							{
 								var quFound = undefined;
-						
+								changeOccured = true;
 								quFound =  quFound.questions.find( qu2 => qu2.rank == qu.rank );
 								if( quFound ) 
 								{
@@ -2690,7 +2693,10 @@ async function doGetHTTPRequest(hostName,port,command)
 				});
 				res.write(JSON.stringify({command:"update_added_projects"}));
 				res.end();
-				
+				if(changeOccured)
+				{
+					save(model.employees,"employees.txt");
+				}
 				const values = Object.values(IDs);
 				
 				if(values)
