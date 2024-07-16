@@ -2609,7 +2609,7 @@ async function doGetHTTPRequest(hostName,port,command)
 				
 				model.projects[command.obj.project.rank] = command.obj.project;
 				save(model.projects,"projects.txt");
-				Object.values(model.employees).forEach( emp=>
+				Object.values(model.employees).forEach( emp =>
 				{
 					var rps = emp.reports.filter( rp => rp.project.rank == command.obj.project.rank);
 					var changeOccured = false;
