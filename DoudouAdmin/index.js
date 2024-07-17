@@ -2604,99 +2604,115 @@ async function doGetHTTPRequest(hostName,port,command)
 		
 		if(command &&  command.obj && command.obj.project && command.obj.project.rank  && command.type == "add-project-object")
 		{	
+				var changeOccured = false;
+					
+				Object.values(model.employees).forEach( emp=>
+				{
+					if( emp.reports ) 
+					{
+						var rps = emp.reports.filter( rp => rp.project.rank == command.obj.project.rank); 
+						
+						command.obj.project.themes.forEach(th=> 
+						{
+							var foundIndex = -1;
+							rps.forEach(rp => 
+							{
+								foundIndex = rp.project.themes.findIndex(th2 => th2.rank == th.rank );
+								if(foundIndex < 0)
+								{
+									const currentTheme = JSON.parse(JSON.stringify(th));
+									rp.project.themes.push(currentTheme);
+									var curr = rp.project.themes.length -1;
+									
+									while(curr > 0 && rp.project.themes[curr-1].rank > currentTheme.rank ) 
+									{
+										const swap = currentTheme;
+										rp.project.themes[curr] = rp.project.themes[curr-1];
+										rp.project.themes[curr-1] = swap;
+										--curr;
+									}
+									foundIndex = curr;
+									changeOccured = true;
+									return;
+								}
+							
+							
+								var thFound = rp.project.themes[foundIndex];
+								
+								th.subthemes.forEach( sub => 
+								{
+									var subFound = undefined;
+								
+									subFound =  thFound.subthemes.find( sub2 => sub2.rank == sub.rank );
+									if( subFound ) 
+									{
+											
+									}
+									else 
+									{
+										const currentSubTheme = JSON.parse(JSON.stringify(sub));
+										thFound.subthemes.push(currentSubTheme);
+										var curr = thFound.subthemes.length - 1;
+										while(curr > 0 && thFound.subthemes[curr-1].rank > currentSubTheme.rank ) 
+										{
+											const swap = currentSubTheme;
+											thFound.subthemes[curr] = thFound.subthemes[curr-1];
+											thFound.subthemes[curr-1] = swap;
+											--curr;
+										}
+										changeOccured = true;
+										subFound = currentSubTheme;
+										return;
+									}
+									
+									sub.questions.forEach(qu => 
+									{
+										var quFound = undefined;
+										changeOccured = true;
+										quFound =  subFound.questions.find( qu2 => qu2.rank == qu.rank );
+										if( quFound ) 
+										{
+											quFound.quality = qu.quality;	
+										}
+										else 
+										{
+											const currentQu = JSON.parse(JSON.stringify(qu));
+											subFound.questions.push(currentQu);
+											
+											var curr = subFound.questions.length - 1;
+											while(curr > 0 && subFound.questions[curr-1].rank > currentQu.rank ) 
+											{
+												const swap = currentQu;
+												subFound.questions[curr] = subFound.questions[curr-1];
+												subFound.questions[curr-1] = swap;
+												--curr;
+											}
+											quFound = currentQu;
+											return;
+										}
+									});
+								});
+							});
+						});
+					}
+				});
+			if(changeOccured)
+			{
+				console.log("change occured......................***************");
+				save(model.employees,"employees.txt");
+			}
 			if( model.projects[command.obj.project.rank] == undefined )
 			{
 				
 				model.projects[command.obj.project.rank] = command.obj.project;
 				save(model.projects,"projects.txt");
-				Object.values(model.employees).forEach( emp =>
-				{
-					var rps = emp.reports.filter( rp => rp.project.rank == command.obj.project.rank);
-					var changeOccured = false;
-					command.obj.project.themes.forEach(th=> 
-					{
-						var foundIndex = -1;
-						rps.forEach(rp => 
-						{
-							foundIndex = rp.themes.findIndex(th2 => th2.rank == th.rank );
-							if(foundIndex < 0)
-							{
-								const currentTheme = JSON.parse(JSON.stringify(th));
-								rp.themes.push(currentTheme);
-								var curr = rp.themes.length -1;
-								while(curr > 0 && rp.themes[curr-1].rank > currentTheme.rank ) 
-								{
-									const swap = currentTheme;
-									rp.themes[curr] = rp.themes[curr-1];
-									rp.themes[curr-1] = swap;
-									--curr;
-								}
-								foundIndex = curr;
-								changeOccured = true;
-							}
-						});
-						
-						var thFound = rp.themes[foundIndex];
-						
-						th.subthemes.forEach( sub => 
-						{
-							var subFound = undefined;
-						
-							subFound =  thFound.subthemes.find( sub2 => sub2.rank == sub.rank );
-							if( subFound ) 
-							{
-									
-							}
-							else 
-							{
-								const currentSubTheme = JSON.parse(JSON.stringify(sub));
-								thFound.subthemes.push(currentSubTheme);
-								var curr = thFound.subthemes.length - 1;
-								while(curr > 0 && thFound.subthemes[curr-1].rank > currentSubTheme.rank ) 
-								{
-									const swap = currentSubTheme;
-									thFound.subthemes[curr] = thFound.subthemes[curr-1];
-									thFound.subthemes[curr-1] = swap;
-									--curr;
-								}
-								changeOccured = true;
-								subFound = currentSubTheme;
-							}
-							
-							sub.questions.forEach(qu => 
-							{
-								var quFound = undefined;
-								changeOccured = true;
-								quFound =  quFound.questions.find( qu2 => qu2.rank == qu.rank );
-								if( quFound ) 
-								{
-									quFound.quality = qu.quality;	
-								}
-								else 
-								{
-									const currentQu = JSON.parse(JSON.stringify(qu));
-									subFound.questions.push(currentQu);
-									
-									var curr = subFound.questions.length - 1;
-									while(curr > 0 && subFound.questions[curr-1].rank > currentQu.rank ) 
-									{
-										const swap = currentQu;
-										subFound.questions[curr] = subFound.questions[curr-1];
-										subFound.questions[curr-1] = swap;
-										--curr;
-									}
-									quFound = currentQu;
-								}
-							});
-						});
-					});
-				});
+				console.log("model project "+command.obj.project.rank+" set to given project ......................***************");
+					
+				
 				res.write(JSON.stringify({command:"update_added_projects"}));
 				res.end();
-				if(changeOccured)
-				{
-					save(model.employees,"employees.txt");
-				}
+				
+				
 				const values = Object.values(IDs);
 				
 				if(values)
