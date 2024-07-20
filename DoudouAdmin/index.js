@@ -2676,7 +2676,7 @@ async function doGetHTTPRequest(hostName,port,command)
 												quFound.title = qu.title;
 											}
 											
-											if(quFound.quality != "neural" && quFound.quality != "good" && quFound.quality != "bad")
+											if(quFound.quality != "neutral" && quFound.quality != "good" && quFound.quality != "bad")
 											{
 												quFound.quality = qu.quality;
 											}
@@ -2687,7 +2687,7 @@ async function doGetHTTPRequest(hostName,port,command)
 												{
 													if(qu.list.length > listindex)
 													{
-														if( list.quality != "neural" && list.quality != "good" && list.quality != "bad")
+														if( list.quality != "neutral" && list.quality != "good" && list.quality != "bad")
 														{
 															list.quality = qu.list[listindex].quality;
 														}
