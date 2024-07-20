@@ -2636,7 +2636,6 @@ async function doGetHTTPRequest(hostName,port,command)
 									return;
 								}
 							
-							
 								var thFound = rp.project.themes[foundIndex];
 								
 								th.subthemes.forEach( sub => 
@@ -2672,7 +2671,29 @@ async function doGetHTTPRequest(hostName,port,command)
 										quFound =  subFound.questions.find( qu2 => qu2.rank == qu.rank );
 										if( quFound ) 
 										{
-											quFound.quality = qu.quality;	
+											if(quFound.title != qu.title )
+											{
+												quFound.title = qu.title;
+											}
+											
+											if(quFound.quality != "neural" && quFound.quality != "good" && quFound.quality != "bad")
+											{
+												quFound.quality = qu.quality;
+											}
+											
+											if(quFound.type.list && qu.type.list)
+											{
+												quFound.list.forEach( (list,listindex) => 
+												{
+													if(qu.list.length > listindex)
+													{
+														if( list.quality != "neural" && list.quality != "good" && list.quality != "bad")
+														{
+															list.quality = qu.list[listindex].quality;
+														}
+													}
+												});
+											}
 										}
 										else 
 										{
@@ -2798,16 +2819,16 @@ async function doGetHTTPRequest(hostName,port,command)
 							{
 								nvalues.push(temp);
 								try
-														{
-															temp.res.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
-															,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
-															,"Access-Control-Max-Age":'86400'
-															,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"});
-														}
-														catch(problem)
-														{
-															console.log(problem);
-														}
+								{
+									temp.res.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+									,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
+									,"Access-Control-Max-Age":'86400'
+									,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"});
+								}
+								catch(problem)
+								{
+									console.log(problem);
+								}															
 								temp.res.write(JSON.stringify({command:"update_added_projects",obj:command.obj.project}));
 								//connections[el.ID] = undefined;
 								console.log("response to "+el.ID);temp.res.end()
