@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Mamadou Massaly-Software developer</title>
+<style>
+
+
+
+ul.menu
+{
+	background-color: none;
+	list-style-type:none;
+	overflow:auto;
+	color:white;
+	font-family:"Times New Roman", Times, serif;
+	display:table;
+	width: 97%;
+	font-size: 18px;
+	font-weight:bold;
+	top:0;
+	position:fixed;
+}
+
+
+li.floatRight
+{
+	padding-top: 20px;
+	padding-bottom: 20px;
+	float: right;
+	padding-left: 40px;
+	padding-right: 40px;
+	min-height: 100%;
+	display:table-cell;
+}
+
+li.floatLeft
+{
+	padding-top: 10px;
+	padding-bottom: 85px;
+	float: left;
+	padding-left: 5px;
+	padding-right: 40px;
+}
+
+li.imgOnly
+{
+	float: left;
+	margin:auto;
+	display: table-cell;
+	padding : 10px;
+}
+
+.menu li.floatRight:hover
+{
+	background-color: orange;
+	border-radius: 5px;
+	cursor: pointer;
+}
+
+div.content
+{
+	padding:100px,5%,100px,5%;
+	border-radius: 1%;
+	width: 35%;
+	visibility: hidden;
+	margin-left: 5%;
+	font-family:"Times New Roman", Times, serif;
+	transition: background-color 1s;
+}
+.popUpTest:hover
+{
+	opacity: 1;
+}
+.popUpTest
+{
+	top: 22%;
+	left: 25%;
+	position:fixed;
+	padding-left:5%;
+	padding-right:5%;
+	padding-top:0%;
+	padding-bottom:0%;
+	width:40%;
+	height:480px;
+	visibility:hidden;
+	box-shadow: 1px gray;
+	background-color:orange;
+	opacity: .9;
+	border-radius: 1%;
+	z-index: 1;
+}
+iframe.siteiframe
+{
+	width: 60%;
+	height: 400px;
+	display: inline;
+	float: right;
+	display:none;
+	border:none;
+}
+
+div.content:hover
+{
+	/*background-color: orange;*/
+	border-bottom: solid 5px orange;
+	color: white;
+	/*box-shadow: 3px 3px 3px 3px orange;*/
+}
+img.roundimage
+{
+	display:inline;
+	width: 100px;
+	height: 100px;
+	border-radius: 50%;
+	margin-right: 40px;
+	border: solid 5px DarkOrchid;
+}
+li.floatLeft span
+{
+	float: right;
+	display: inline-block;
+	font-size: 36px;
+}
+li.floatLeft img
+{
+	float: left;
+	display: inline-block;
+}
+img.roundimage:hover
+{		
+}
+.content ol,h1,h3
+{
+	padding:20px;
+}
+h2
+{
+	padding:0px 5px;
+	font-size: 20px;
+	background-color:white;
+	color:DarkSlateGray;
+	border:2px solid DarkSlateGray;
+	border-radius: 10px;
+}
+body
+{
+	color:white;
+	background-color: DarkSlateGrey;
+	font-family: "Times New Roman", Times, serif;
+	margin-top: 175px;
+}
+p.bioParragraph 
+{
+	padding-top: 10px;
+	padding-left: 40px;
+	width: 400px;
+	word-wrap: keep-all;
+	line-height : 2;
+}
+ol.paddedParra
+{
+	padding-left: 40px;
+	display:inline-block;
+}
+ol.paddedParra ol li
+{
+	margin-top: 1px;
+	/*padding: 2px 5px 2px 5px;
+	border: 1px solid DarkSlateGray;
+	border-radius: 2px;*/
+}
+a:active,a:visited
+{
+	color:white;
+}
+a:hover
+{
+	cursor:pointer;
+	text-decoration:underline;
+}
+.content ul
+{
+	list-style-type:none;
+}
+.closePopUp
+{
+	cursor: pointer;
+}
+</style>
+<script>
+function sendMail()
+{
+	var responseParra = document.getElementById("responseParra");
+	var request = new XMLHttpRequest();
+	request.onreadystatechange = function()
+	{
+		if(this.readyStateChange == 4)
+		{
+			responseSpan.innerHTML = this.responseText;
+			console.log(this.responseText);
+			if(this.statusCode == 200)
+			{
+				responseParra.style.Color = 'green';
+			}
+			else if(this.statusCode == 500)
+			{
+				responseParra.style.Color = 'red';
+			}
+		}
+	};
+	var one = document.getElementById("f1").value;
+	var two = document.getElementById("f4").value;
+	var three = document.getElementById("f3").value;
+	var four = document.getElementById("f2").value;
+	var mailContent = {senderMail:(one == undefined)?"":one,
+	senderPassword:(two == undefined)?"":two,
+	receiverEmails:['massalymamadou@gmail.com'],
+	senderSubject:(three == undefined)?"":three,
+	senderContent:(four == undefined)?"":four};
+	var doingIt = (one != undefined) && (two != undefined) && (three != undefined) && (four != undefined);
+	console.log(mailContent);
+	/*$.post("192.168.0.106:3033",mailContent);*/
+	if(doingIt)
+	{
+		request.open('POST',"192.168.0.106:3033");
+		request.setRequestHeader('Content-Type','application/json')
+		request.send(JSON.stringify(mailContent));
+	}
+}
+function displayFunctionBio()
+{
+	var divOfPageContent = document.getElementsByClassName("content")[0];
+	divOfPageContent.innerHTML = "<h2>Bonjour, vous êtes dans la Bio de Mamadou.</h2><p class = \"bioParragraph\"><ul><li>Contact<ol><li>Téléphone: (+221) 77 584 19 42</li><li><a onclick=\"displayPopUp()\">Email: massalymamadou@gmail.com</a></li></ol></li></ul></p>"
+	+"<p class = \"bioParragraph\">Je suis un développeur full Stack basé au sénégal avec deux ans d'experience sur le développement"
+	+" d'application d'ordinateurs avec Java,C#,"+
+	"sur le design des bases de données MYSQL,POSTGRESQL"
+	+"et sur le développement d'applications web avec HTML (javascript eg node,angular,jquery)/PHP et (d'interfaces d'utilisateurs HTML,CSS) </p>";
+	divOfPageContent.style.visibility = "visible";
+	var iframeOfPage = document.getElementsByClassName("siteiframe")[0];
+	iframeOfPage.style.visibility = "hidden";
+	divOfPageContent = document.getElementsByClassName("popUpTest")[0];
+	divOfPageContent.style.visibility = "hidden";
+	console.log("Function called");
+}
+
+function displayFunctionCompétences()
+{
+var compétences = "<ol class=\"paddedParra\">"
++"<li><a>Développement de logiciels</a>"
+	+"<ol>"
+		+"<li>Java logique,Interfaces,Réseaux,Java EE</li>"
+		+"<li>C# logique,Interfaces,Réseaux</li>"
+		+"<li>Python</li>"
+		+"<li>C Sytèmes Windows/C++</li>"
+		+"<li>Analyse des besoins</li>"
+		+"<li>Description des methodes d'algorithmes</li>"
+		+"<li>Testage des exigences des besoins</li>"
+		+"<li>Design de code</li>"
+	+"</ol>"
++"</li>"
++"<li><a>Développement Web</a>"
+	+"<ol>"
+		+"<li>Côté serveur PHP/Node.js</li>"
+		+"<li>Front javascript,angular,HTML,CSS</li>"
+		+"<li>MySQL</li>"
+	+"</ol>"
++"</li>"
++"</ol>";
+	var divOfPageContent = document.getElementsByClassName("content")[0];
+	divOfPageContent.innerHTML = "<h2>Bonjour, vous êtes dans les compétences de Mamadou.</h2><p>"+compétences+"</p>";
+	divOfPageContent.style.visibility = "visible";
+	var iframeOfPage = document.getElementsByClassName("siteiframe")[0];
+	iframeOfPage.style.visibility = "hidden";
+	divOfPageContent = document.getElementsByClassName("popUpTest")[0];
+	divOfPageContent.style.visibility = "hidden";
+	console.log("Function called");
+}
+
+function displayFunctionEducation()
+{
+	
+	var education = "<ol class=\"paddedParra\">"+
+"<li><a href=\"https://missioncollege.edu/\" target =\"siteiframe\">Mission College Santa-Clara (2012-2015)</a>"+"<ol>"+"<li>Anglais intensif niveau C et D </li>"
+		+"<li>Cursus ingénieurie et éducation générale<br>Concentration sur sciences informatique</li>"
+	+"</ol>"
++"</li>"
++"<li><a href=\"https://www.iastate.edu/\" target =\"siteiframe\">Iowa State University (2016-2018)</a>"
+	+"<ol>"
+	+"	<li>Sciences Informatiques</li>"
+	+"</ol>"
++"</li><li>"
++	"<a href = \"https://minotstateu.edu/\" target =\"siteiframe\">Minot State University (2018-2020)</a><ol><li>Bachelor en sciences informatique</li></ol>"
++"</li>"
++"</ol></p>";
+	var divOfPageContent = document.getElementsByClassName("content")[0];
+	divOfPageContent.innerHTML = "<h2>Bonjour, vous êtes dans l'éducation de Mamadou.</h2><p class=\"paddedParra\">"+education;
+	divOfPageContent.style.visibility = "visible";
+	var iframeOfPage = document.getElementsByClassName("siteiframe")[0];
+	iframeOfPage.style.visibility = "visible";
+	divOfPageContent = document.getElementsByClassName("popUpTest")[0];
+	divOfPageContent.style.visibility = "hidden";
+	console.log("Function called");
+}
+
+function displayPopUp()
+{
+	/*var divOfPageContent = document.getElementsByClassName("content")[1];
+	divOfPageContent.style.visibility = "visible";*/
+	var popUp = document.getElementsByClassName("popUpTest")[0];
+	popUp.style.visibility = "visible";
+}
+
+function hidePopUp()
+{
+	document.getElementById("popUpTest").style.visibility = "hidden";
+}
+
+</script>
+<ul class= "menu" name = "menuBar">
+<li class = "imgOnly">
+<a><img class ="roundimage" name = "profilepicutre" src ="Mamadou VCV Profil Photo 1.jpg"></img></a>
+</li>
+<li class = "floatLeft">
+<span>CV Digital</span>
+</li>
+<li  onclick= "displayFunctionBio()" class ="floatRight"><a>Bio</a></li>
+<li  onClick = "displayFunctionCompétences()" class ="floatRight"><a>Compétences</a></li>
+<li class ="floatRight" onClick="displayFunctionEducation()"><a>Education</a></li>
+</ul>
+</head>
+<body onLoad = "displayFunctionBio()" >
+<iframe id = "if1" name = "siteiframe" class="siteiframe"></iframe>
+<div class = "content"  name = "pageContent"></div>
+<form class = "popUpTest" id = "popUpTest" name = "pageContent2">
+	<p class ="closePopUp" style="float:right;width:10px;height:10px;margin-top:10px;margin-bottom:50px;" onclick="hidePopUp()">&#10062;</p><br>
+	<h2>Forme d'envoi d'email</h2>
+	<label for="senderMail">Votre Email:</label>
+	<input style= "margin-top:10px;margin-left:15px;" type ="Email" id = "f1" name="senderMail"></input><br>
+	<label for="senderSubject">Sujet:</label>
+	<input style= "margin-top:10px;margin-left:60px;" type ="text" id = "f3" name="senderSubject"></input><br>
+	<p style="max-width:100px;height:80px;word-wrap:keep-all;display:inline-block;">
+	<label  for="password">Mot de passe du compte email:</label>
+	</p>
+	<input style= "margin-left:0px;" type ="password" id = "f4" name="password"></input><br>
+	<label style= "margin-top:10px" for="yourContent">Votre Contenu:</label>
+	<textarea style= "margin-top:10px;width:80%;height:30%;"  id = "f2" name="yourContent"></textarea><br>
+	<p style= "margin-top:20px;float:right" id ="responseParra"></p>
+	<input style= "margin-top:10px;float:right" type = "button" value="Envoyer" onclick ="sendMail()"></input>
+</form>
+</body>
+<footer></footer>
+</html>
