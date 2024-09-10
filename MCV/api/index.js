@@ -141,7 +141,7 @@
 	}
 
 	setInterval(async () =>{ 
-		let awaitres = await doGetHTTPRequest("msa-pointage-server-socket.onrender.com",undefined,"command=vide");
+		let awaitres = await doGetHTTPRequest("msa-pointage-server-socket-tado.onrender.com",undefined,"command=vide");
 		//console.log(!awaitres?"Bad refreshing result":"Good refreshing result");
 		},10000);
 	
@@ -4552,7 +4552,7 @@
 						{
 							var func = async ()=>{
 								let resUpdating;
-								resUpdating = await doGetHTTPRequest("msa-pointage-server-socket.onrender.com",undefined,"command=updateALL");
+								resUpdating = await doGetHTTPRequest("msa-pointage-server-socket-tado.onrender.com",undefined,"command=updateALL");
 								if(!resUpdating)
 								{
 									console.log("Error reaching notifier server ....");
@@ -4576,7 +4576,7 @@
 						{
 							var func = async ()=>{
 								let resUpdating;
-								resUpdating = await doGetHTTPRequest("msa-pointage-server-socket.onrender.com",undefined,"command=updateALL");
+								resUpdating = await doGetHTTPRequest("msa-pointage-server-socket-tado.onrender.com",undefined,"command=updateALL");
 								
 								if(!resUpdating)
 								{

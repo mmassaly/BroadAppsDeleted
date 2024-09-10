@@ -16,7 +16,29 @@ export class ExceljsService {
 		workbook.created = new Date();
 		return workbook;
   }
-  
+  public dictionnaryFyWB(name:string):any
+  {
+		const workbook:any = new Workbook();
+		var sheets:any = {};
+			
+		workbook.xlsx.readFile(name).then(()=>
+		{
+			workbook.eachSheet((sheet:any,sheetid:any)=>
+			{
+				sheets[sheetid] = {rows:[]};
+				sheet.eachRow((row:any,rowId:any)=>
+				{
+					sheets[sheetid][sheets[sheetid].length-1].push({cells:[]});
+					row.eachCell((cell:any,cellId:any)=>
+					{
+						sheets[sheetid].rows[sheets[sheetid].length-1].cells[sheets[sheetid].rows[sheets[sheetid].length-1].length-1].cells.push(cell.text);
+					});
+				});
+			});
+		});
+		
+		return sheets;
+  }
   public addWorkSheet(name:string,workbook:any):any
   {
 		const sheet:any = workbook.addWorksheet(name,{
