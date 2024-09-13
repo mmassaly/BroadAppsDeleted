@@ -133,7 +133,7 @@ var server2 = http.createServer(function(req,res)
 				console.log(req.url);
 				if(req.url.endsWith("MCV"))
 				{
-					//console.log("Before MCV file");
+					//console.log("Before MCV file"); 
 					returnValid = true;
 					fs.readFile("SelfDescription.htm",function(err,data)
 					{
