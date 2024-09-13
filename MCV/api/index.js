@@ -632,7 +632,7 @@
 									let othertempResult = check_super_admin(userAuthentification,undefined,undefined);
 									let resultc = resultb;
 									urlObject.date = new Date(urlObject.date);
-									await kvUser.set("primaryObjectsLength",-1);
+									//await kvUser.set("primaryObjectsLength",-1);
 									await insertEntryandExitIntoEmployees(userAuthentification.ID,urlObject.date,urlObject.start,urlObject.end,urlObject,resultb);	
 									urlObject.day = undefined; urlObject.startDay = undefined; urlObject.endDay = undefined;
 									console.log("Awaiting refreshing from getDataForAdmin");
@@ -1408,12 +1408,12 @@
 	async function formidableFileUpload(req,path,res)
 	{
 		var form = new formidable.IncomingForm();
-		//console.log("Inside formidable");
+		console.log("Inside formidable");
     	await form.parse(req, async function (err, fields, files) 
 		{
 			
 			let command = fields.command;
-			//console.log(fields);
+			console.log(fields);
 			console.log(command);
 			//console.log(files);
 			let filesDup = files;
@@ -1645,7 +1645,7 @@
 						if(tempResult)
 						{
 							querySQL = "select \"Etat de l'individu\" from \"manuel des tables d'entrées et de sorties\" where Année= "+Year+";";
-							await kvUser.set("primaryObjectsLength",-1);
+							//await kvUser.set("primaryObjectsLength",-1);
 							let res = await faire_un_simple_query(querySQL);
 							console.log(querySQL);
 							if(res.second != false && res.second instanceof Array )
@@ -1721,20 +1721,35 @@
 					//console.log(tempuserAuthentification);
 					//console.log(tempResult);
 					//console.log(querySQL);
+					//console.log(command);
+					//console.log(commandArg);
 					//console.log("-----------------------Result of authentification----------------------");
+					if(command instanceof Array)
+					{
+						for(const [key, value] of Object.entries(fields))
+						{
+							mp.set(key,(value instanceof Array)?((value.length == 1)? value[0]: value):value );
+						}
+						urlObject = Object.fromEntries(mp);
+					}
 					
+					//console.log("Inside update hours authentication checking");
 					if(tempResult != false)
 					{
 						try
 						{
-							if(command == "update" && commandArg =="hours")
+							//console.log("Inside update hours checking");
+							//console.log(commandArg);
+							if((commandArg instanceof Array && commandArg[0] == "hours" ) && commandArg =="hours")
 							{
 									let resultb = res;
 									let resultc = resultb;
 									urlObject.date = new Date(urlObject.date);
-									await kvUser.set("primaryObjectsLength",-1);
-									console.log(urlObject);
-									if(command.updateManyHours)
+									//await kvUser.set("primaryObjectsLength",-1);
+									//console.log(urlObject);
+									//console.log(commandArg);
+									
+									if(command.updateManyHours != undefined)
 									{
 										const valueawait = await insertEntryandExitIntoEmployeesForaBunch(command.updateManyHoursDic,resultc);
 										await getDataForAdmin(undefined,undefined,undefined,undefined,undefined,undefined,undefined,false,valueawait);
@@ -1850,7 +1865,7 @@
 
 									if(commandArg === "employees" || (dealingWithArray && commandArg[0] === "employees"))
 									{
-										await kvUser.set("primaryObjectsLength",-1);
+										//await kvUser.set("primaryObjectsLength",-1);
 										let bresult = await faire_un_simple_query(doubleQuerySQL);
 										if(bresult.second != false || bresult.second instanceof Array)
 										{
@@ -1902,7 +1917,7 @@
 							}
 						}catch(ex)
 						{
-							//console.log(ex);
+							console.log(ex);
 							dummyResponse(res,"IDExistant");
 						}
 					}
