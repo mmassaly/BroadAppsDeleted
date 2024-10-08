@@ -334,7 +334,7 @@ async function f (value)
 	}
 	else
 		console.log(results);
-	
+
 	let indexes = [];
 	/*results.rows.forEach((el,index)=>
 	{
@@ -368,10 +368,9 @@ async function f (value)
 	let str = "";
 	let recoverStr ="";
 	
-	
-};
+	}
 
-	g(value)
+	async function g(value)
 	{
 		let results = await imageDictionary.queryGiven(value);
 		results.rows.forEach((el,index)=>
@@ -447,8 +446,16 @@ query += '"Solutions préconisées par le plaignant","Plainte enregistrée par",
   query += '"Actions effectuées par l’entreprise",';
   query += '"Date de clôture de la plainte",id,idindividu';
  query += ' HAVING COUNT(*) > 1;'
+/*let results = f('Select * from individu inner join appartenance ON appartenance.IDIndividu =  individu.ID inner join "location du bureau" ON  appartenance.IDBureau = "location du bureau".ID AND EXTRACT(YEAR FROM individu.Début) <= 2023 AND EXTRACT(YEAR FROM individu.Fin) >=2023 AND individu.ID = \'1-23\' union select * from individu inner join appartenance ON appartenance.IDIndividu =  individu.ID inner join "location du bureau" ON  appartenance.IDBureau = "location du bureau".ID AND EXTRACT(YEAR FROM individu.Début) <= 2024 AND EXTRACT(YEAR FROM individu.Fin) >=2024 AND individu.ID = \'1-24\';'
++'Select * FROM "2023 état de l\'individu" as A0 WHERE A0.Date = \'2023-01-12\' AND A0.Idindividu = \'1-23\' union select * FROM "2024 état de l\'individu" as A1 WHERE A1.Date =\'2024-01-12\' AND A1.Idindividu = \'1-24\' ORDER BY Date ASC;');
+*/
+f('Select Date, Case WHEN MIN("2023 entrées et sorties".Entrées) >= \'10:00:00\' then 1 WHEN MIN("2023 entrées et sorties".Entrées) < \'10:00:00\' then 0 END as CaseOne,Case WHEN  MIN("2023 entrées et sorties".Entrées) > \'8:30:00\' then 1 WHEN MIN("2023 entrées et sorties".Entrées) <= \'8:30:00\' then 0 END as CaseTwo,MIN("2023 entrées et sorties".Entrées) FROM "2023 entrées et sorties" WHERE Date =\'2023-01-12\' AND Idindividu = \'1-23\' Group By "2023 entrées et sorties".Date union select Date,Case WHEN MIN("2024 entrées et sorties".Entrées) >= \'10:00:00\' then 1 WHEN MIN("2024 entrées et sorties".Entrées) < \'10:00:00\' then 0 END as CaseOne,Case WHEN  MIN("2024 entrées et sorties".Entrées) > \'8:30:00\' then 1 WHEN MIN("2024 entrées et sorties".Entrées) <= \'8:30:00\' then 0 END as CaseTwo,MIN("2024 entrées et sorties".Entrées) FROM "2024 entrées et sorties" WHERE Date =\'2024-01-12\' AND Idindividu = \'1-24\' Group By "2024 entrées et sorties".Date;')
 
-let results = f(query);
+/*
+f('Select Case WHEN MIN("2023 entrées et sorties".Entrées) >= \'10:00:00\' then 1 WHEN MIN("2023 entrées et sorties".Entrées) < \'10:00:00\' then 0 END as CaseOne,Case WHEN  MIN("2023 entrées et sorties".Entrées) > \'8:30:00\' then 1 WHEN MIN("2023 entrées et sorties".Entrées) <= \'8:30:00\' then 0 END as CaseTwo,MIN("2023 entrées et sorties".Entrées) FROM "2023 entrées et sorties" WHERE Date =\'2023-01-12\' AND Idindividu = \'1-23\' union select Case WHEN MIN("2024 entrées et sorties".Entrées) >= \'10:00:00\' then 1 WHEN MIN("2024 entrées et sorties".Entrées) < \'10:00:00\' then 0 END as CaseOne,Case WHEN  MIN("2024 entrées et sorties".Entrées) > \'8:30:00\' then 1 WHEN MIN("2024 entrées et sorties".Entrées) <= \'8:30:00\' then 0 END as CaseTwo,MIN("2024 entrées et sorties".Entrées) FROM "2024 entrées et sorties" WHERE Date =\'2024-01-12\' AND Idindividu = \'1-24\' ;')
+*/
+
+//let results = f(query);
 //let results.filter(
 
 

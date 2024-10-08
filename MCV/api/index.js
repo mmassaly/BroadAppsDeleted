@@ -44,6 +44,9 @@
 	
 	let d = new Date(Date.now());
 	console.log(d.getUTCHours()+" "+d.getUTCMinutes()+" "+d.getUTCSeconds());
+	const dicPreparedvalues2 = {"location":[1,2],"Année":[2023,2024],"entry":['9:45:00','9:48:00'],"exit":['17:45:00','19:45:00'],"Jour":['12-01-2023','12-01-2024'],"ID":['1-23','1-24']}
+	
+	//insertEntryandExitIntoEmployeesForaBunch(dicPreparedvalues2,undefined,true);
 	
 	function caller()
 	{
@@ -1061,7 +1064,9 @@
 							{		
 								await getDataForAdminFiveArgs();
 								console.log("-------------------------------------------------------");
-								insertEntryandExitIntoEmployeesForaBunch(dicPreparedvalues,undefined,false);
+								//insertEntryandExitIntoEmployeesForaBunch(dicPreparedvalues,undefined,false);
+								console.log("-------------------------------------------------------");
+								insertEntryandExitIntoEmployeesForaBunch(dicPreparedvalues2,undefined,true);
 							}
 							else
 							{
@@ -1158,7 +1163,6 @@
 	
 	whileFunction("Starting Server....");//update
 	const dicPreparedvalues = {"MSADAKAR":{2024:{8:{1:{'1-24':{couples:[]},'1-23':{couples:[{entry:'9:45', exit:'11:03'},{entry:'11:03', exit:'11:04'},{entry:'11:04', exit:'11:05'},{entry:'11:06', exit:'11:08'}]}}}}}};
-	
 	async function insertEntryandExitIntoEmployeesForaBunch(dicPrepared,res,array)
 	{
 		var query = "";
@@ -1177,31 +1181,34 @@
 		{
 				dicPrepared["location"].forEach((loc,index) =>
 				{
-					if(index == 0)
-						query9 = "Select * from \"location du bureau\" where \"location du bureau\".ID = '"+loc+(index+1 == dicPrepared["location"].length? "' ORDER BY Id":"'");
-					else
-						query9 += " union select * from \"location du bureau\" where \"location du bureau\".ID = '"+loc+(index+1 == dicPrepared["location"].length?"' ORDER BY Id": "'" );
+					if( index == 0 || (index > 0 &&  !dicPrepared["location"].slice(0, index).find( a=> a == loc)) )
+					{
+						if( index == 0 )
+							query9 = "Select * from \"location du bureau\" where \"location du bureau\".ID = '"+loc+((index+1 == dicPrepared["location"].length)?"' ORDER BY Id":"'");
+						else
+							query9 += " union select * from \"location du bureau\" where \"location du bureau\".ID = '"+loc+((index+1 == dicPrepared["location"].length)?"' ORDER BY Id":"'");
+					}
 				});
 				
 				dicPrepared["Année"].forEach( (year,index) =>
 				{
-					if( query2.indexOf(year+" entrées et sorties") > -1)
+					if( query2.indexOf(year+" entrées et sorties") < 0)
 						query2 += (index == 0 )?"Select * from \""+year+" entrées et sorties\"":" \nunion select * from \""+year+" entrées et sorties\"";
 						
 					if( index == 0 )
 					{
-						if( query7.indexOf(year+" jours de fêtes et de non travail") > -1)
+						if( query7.indexOf(year+" jours de fêtes et de non travail") < 0)
 							query7 += "Select * from \""+year+" jours de fêtes et de non travail"+"\"";
 						
-						if( query8.indexOf(year) > -1)
+						if( query8.indexOf(year) < 0)
 							query8 = "Select * from \"manuel des tables d'entrées et de sorties\" where Année = '"+year+"'";
 					}
 					else
 					{
-						if( query7.indexOf(year+" jours de fêtes et de non travail") > -1)
+						if( query7.indexOf(year+" jours de fêtes et de non travail") < 0)
 							query7 += " union Select * from \""+year+" jours de fêtes et de non travail"+"\"";
 						
-						if( query8.indexOf(year) > -1)
+						if( query8.indexOf(year) < 0)
 							query8 += " union Select * from \"manuel des tables d'entrées et de sorties\" where Année = '"+year+"'";
 					}
 					
@@ -1232,22 +1239,24 @@
 							query4 += " \""+year+" état de l'individu"+"\" as A"+index;
 							query4 += " WHERE "+"A"+index+".Date ='"+year+"-"+mt+"-"+dt+"'";
 							query4 += " AND "+"A"+index+".Idindividu = '"+ID+"'";
-							query4 += (index+1 == dicPrepared["Année"].length?" ORDER BY Date ASC": "'" );
+							query4 += (index+1 == dicPrepared["entry"].length)?" ORDER BY Date ASC":"";
 									
 							query5 += "Select Case WHEN MIN(\""+year+" entrées et sorties"+"\".Entrées) >= '10:00:00' then 1 "; 
 							query5 += "WHEN MIN(\""+year+" entrées et sorties"+"\".Entrées) < '10:00:00' then 0 END as CaseOne,";
 							query5 += "Case WHEN  MIN(\""+year+" entrées et sorties"+"\".Entrées) > '8:30:00' then 1 ";
 							query5 += "WHEN MIN(\""+year+" entrées et sorties"+"\".Entrées) <= '8:30:00' then 0 END as CaseTwo,";
-							query5 += "MIN(\""+year+" entrées et sorties"+"\".Entrées), Date ,Idindividu FROM \""+year+" entrées et sorties"+"\"";
-							query5 += " WHERE Date ='"+year+"-"+mt+"-"+dt+"' AND Idindividu = '"+ID+"'";
-							query5 += (index+1 == dicPrepared["Année"].length?" GROUP BY Date, Idindividu ORDER BY Date ASC": "'" );
+							query5 += "MIN(\""+year+" entrées et sorties"+"\".Entrées), \""+year+" entrées et sorties"+"\".Date ,\""+year+" entrées et sorties"+"\".Idindividu FROM \""+year+" entrées et sorties"+"\"";
+							query5 += " WHERE \""+year+" entrées et sorties"+"\".Date ='"+year+"-"+mt+"-"+dt+"' AND \""+year+" entrées et sorties"+"\".Idindividu = '"+ID+"'";
+							query5 += " GROUP BY \""+year+" entrées et sorties"+"\".Date, \""+year+" entrées et sorties"+"\".Idindividu ";
+							query5 += (index+1 == dicPrepared["entry"].length)?" ORDER BY Date ASC":"";
 									
 									/*When employee hours object is used for fulfilling missions
 									and the like the date must be changing not fixed to one value.*/
 							query6 += "Select * FROM";
 							query6 += " \""+year+" entrées et sorties"+"\" as A"+index;
 							query6 += " where A"+index+".Idindividu ='"+ID+"'";
-							query6 += (index+1 == dicPrepared["Année"].length?" GROUP BY Entrées,Date,Idindividu ORDER BY Date ASC": "'" );
+							query6 += " GROUP BY A"+index+".Entrées, A"+index+".Date, A"+index+".Idindividu";
+							query6 += (index+1 == dicPrepared["entry"].length)?" ORDER BY Date ASC":"";
 									
 						}
 						else
@@ -1262,20 +1271,22 @@
 							query4 += " \""+year+" état de l'individu"+"\" as A"+index;
 							query4 += " WHERE "+"A"+index+".Date ='"+year+"-"+mt+"-"+dt+"'";
 							query4 += " AND "+"A"+index+".Idindividu = '"+ID+"'";
-							query4 += (index+1 == dicPrepared["Année"].length?" ORDER BY Date ASC": "" );
+							query4 += (index+1 == dicPrepared["entry"].length)?" ORDER BY Date ASC":"";
 									
 							query5 += " union select Case WHEN MIN(\""+year+" entrées et sorties"+"\".Entrées) >= '10:00:00' then 1 "; 
 							query5 += "WHEN MIN(\""+year+" entrées et sorties"+"\".Entrées) < '10:00:00' then 0 END as CaseOne,";
 							query5 += "Case WHEN  MIN(\""+year+" entrées et sorties"+"\".Entrées) > '8:30:00' then 1 ";
 							query5 += "WHEN MIN(\""+year+" entrées et sorties"+"\".Entrées) <= '8:30:00' then 0 END as CaseTwo,";
-							query5 += "MIN(\""+year+" entrées et sorties"+"\".Entrées), Date ,Idindividu FROM \""+year+"entrées et sorties"+"\"";
+							query5 += "MIN(\""+year+" entrées et sorties"+"\".Entrées), \""+year+" entrées et sorties"+"\".Date ,\""+year+" entrées et sorties"+"\".Idindividu FROM \""+year+" entrées et sorties\"";
 							query5 += " WHERE Date ='"+year+"-"+mt+"-"+dt+"' AND Idindividu = '"+ID+"'";
-							query5 += (index+1 == dicPrepared["Année"].length?" GROUP BY Date, Idindividu ORDER BY Date ASC": "'" );
+							query5 += " GROUP BY \""+year+" entrées et sorties\".Date, \""+year+" entrées et sorties\".Idindividu ";
+							query5 += (index+1 == dicPrepared["entry"].length)? "ORDER BY Date ASC":"";
 									
 							query6 += " union select * FROM";
 							query6 += " \""+year+" entrées et sorties"+"\" as "+"A"+index;
 							query6 += " where "+"A"+index+".Idindividu ='"+ID+"'";
-							query6 += (index+1 == dicPrepared["Année"].length?" GROUP BY Entrées,Date,Idindividu ORDER BY Date ASC": "'" );
+							query6 += " GROUP BY Entrées, "+"A"+index+".Date, "+"A"+index+".Idindividu";
+							query6 += (index+1 == dicPrepared["entry"].length)?" ORDER BY Date ASC":"";
 									
 						}
 						
@@ -1302,19 +1313,19 @@
 					
 					if( index == 0 )
 					{
-						if( query7.indexOf(year+" jours de fêtes et de non travail") > -1)
+						if( query7.indexOf(year+" jours de fêtes et de non travail") < 0)
 							query7 += "Select * from \""+year+" jours de fêtes et de non travail"+"\"";
 						
-						if( query8.indexOf(year) > -1)
+						if( query8.indexOf(year) < 0)
 							query8 = "Select * from \"manuel des tables d'entrées et de sorties\" where Année = '"+year+"'";
 			
 					}
 					else
 					{
-						if( query7.indexOf(year+" jours de fêtes et de non travail") > -1)
+						if( query7.indexOf(year+" jours de fêtes et de non travail") < 0)
 							query7 += " union Select * from \""+year+" jours de fêtes et de non travail"+"\"";
 						
-						if( query8.indexOf(year) > -1)
+						if( query8.indexOf(year) < 0)
 							query8 += " union Select * from \"manuel des tables d'entrées et de sorties\" where Année = '"+year+"'";
 					}
 				
@@ -1344,7 +1355,7 @@
 									query4 += " \""+year+" état de l'individu"+"\" as A";
 									query4 += " WHERE A.Date ='"+year+"-"+mt+"-"+dt+"'";
 									query4 += " AND Idindividu = '"+ID+"'";
-									query4 += " ORDER BY A.Date ASC";
+									query4 += ((index+1) == dicPrepared[loc].length)?" ORDER BY A.Date ASC":"";
 									
 									query5 += "Select Case WHEN MIN(\""+year+" entrées et sorties"+"\".Entrées) >= '10:00:00' then 1 "; 
 									query5 += "WHEN MIN(\""+year+" entrées et sorties"+"\".Entrées) < '10:00:00' then 0 END as CaseOne,";
@@ -1352,14 +1363,14 @@
 									query5 += "WHEN MIN(\""+year+" entrées et sorties"+"\".Entrées) <= '8:30:00' then 0 END as CaseTwo,";
 									query5 += "MIN(\""+year+" entrées et sorties"+"\".Entrées), Date ,Idindividu FROM \""+year+" entrées et sorties"+"\"";
 									query5 += " WHERE Date ='"+year+"-"+mt+"-"+dt+"' AND Idindividu = '"+ID+"'";
-									query5 += " GROUP BY Date, Idindividu ORDER BY Date ASC";
+									query5 += ((index+1) == dicPrepared[loc][year][mt][dt].length)?" GROUP BY Date, Idindividu ORDER BY Date ASC":"";
 									
 									/*When employee hours object is used for fulfilling missions
 									and the like the date must be changing not fixed to one value.*/
 									query6 += "Select * FROM";
 									query6 += " \""+year+" entrées et sorties"+"\" as A";
 									query6 += " where A.Idindividu ='"+ID+"'";
-									query6 += " GROUP BY Entrées,Date,Idindividu ORDER BY Date ASC";
+									query6 += ((index+1) == dicPrepared[loc][year][mt][dt].length)?" GROUP BY Entrées,Date,Idindividu ORDER BY Date ASC":"";
 									
 								}
 								else
@@ -1374,7 +1385,7 @@
 									query4 += " \""+year+" état de l'individu"+"\" as A";
 									query4 += " WHERE A.Date ='"+year+"-"+mt+"-"+dt+"'";
 									query4 += " AND Idindividu = '"+ID+"'";
-									query4 += " ORDER BY A.Date ASC";
+									query4 += ((index+1) == dicPrepared[loc][year][mt][dt].length)?" ORDER BY A.Date ASC":"";
 									
 									query5 += " union select Case WHEN MIN(\""+year+" entrées et sorties"+"\".Entrées) >= '10:00:00' then 1 "; 
 									query5 += "WHEN MIN(\""+year+" entrées et sorties"+"\".Entrées) < '10:00:00' then 0 END as CaseOne,";
@@ -1382,12 +1393,12 @@
 									query5 += "WHEN MIN(\""+year+" entrées et sorties"+"\".Entrées) <= '8:30:00' then 0 END as CaseTwo,";
 									query5 += "MIN(\""+year+" entrées et sorties"+"\".Entrées), Date ,Idindividu FROM \""+year+"entrées et sorties"+"\"";
 									query5 += " WHERE Date ='"+year+"-"+mt+"-"+dt+"' AND Idindividu = '"+ID+"'";
-									query5 += " GROUP BY Date, Idindividu ORDER BY Date ASC";
+									query5 += ((index+1) == dicPrepared[loc][year][mt][dt].length)?" GROUP BY Date, Idindividu ORDER BY Date ASC":"";
 									
 									query6 += " union select * FROM";
 									query6 += " \""+year+" entrées et sorties"+"\" as A";
 									query6 += " where A.Idindividu ='"+ID+"'";
-									query6 += " GROUP BY Entrées,Date,Idindividu ORDER BY Date ASC";
+									query6 += ((index+1) == dicPrepared[loc][year][mt][dt].length)?" GROUP BY Entrées,Date,Idindividu ORDER BY Date ASC":"";
 									
 								}
 							});
@@ -1409,6 +1420,12 @@
 		console.log( query );
 		console.log("**************************************************************************************");
 		console.log( query2 );
+		
+		if(array)
+		{
+			//let results2  = await faire_un_simple_query(query2);
+			console.log(results2);
+		}
 		
 		if( res == undefined )
 		{
