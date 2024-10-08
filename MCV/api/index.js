@@ -1061,7 +1061,7 @@
 							{		
 								await getDataForAdminFiveArgs();
 								console.log("-------------------------------------------------------");
-								insertEntryandExitIntoEmployeesForaBunch(dicPreparedvalues,undefined);
+								insertEntryandExitIntoEmployeesForaBunch(dicPreparedvalues,undefined,false);
 							}
 							else
 							{
@@ -1159,7 +1159,7 @@
 	whileFunction("Starting Server....");//update
 	const dicPreparedvalues = {"MSADAKAR":{2024:{8:{1:{'1-24':{couples:[]},'1-23':{couples:[{entry:'9:45', exit:'11:03'},{entry:'11:03', exit:'11:04'},{entry:'11:04', exit:'11:05'},{entry:'11:06', exit:'11:08'}]}}}}}};
 	
-	async function insertEntryandExitIntoEmployeesForaBunch(dicPrepared,res)
+	async function insertEntryandExitIntoEmployeesForaBunch(dicPrepared,res,array)
 	{
 		var query = "";
 		var query2 = "";
@@ -1172,126 +1172,244 @@
 		let query8 = "";
 		let query9 = "";
 		
-		
-		
-		Object.keys(dicPrepared).forEach((loc,locindex)=>
+		var passed = false;
+		if( array)
 		{
-			if( locindex == 0)
-				query9 = "Select * from \"location du bureau\" where \"location du bureau\".ID = '"+loc+"' ORDER BY Id";
-			else
-				query9 += " union select * from \"location du bureau\" where \"location du bureau\".ID = '"+loc+"' ORDER BY Id";
-			
-			Object.keys(dicPrepared[loc]).forEach( (year,index) => 
-			{
-				if( query2.indexOf(year+" entrées et sorties") > -1)
-				query2 += (index == 0 )?"Select * from \""+year+" entrées et sorties\"":" \nunion select * from \""+year+" entrées et sorties\"";
+				dicPrepared["location"].forEach((loc,index) =>
+				{
+					if(index == 0)
+						query9 = "Select * from \"location du bureau\" where \"location du bureau\".ID = '"+loc+(index+1 == dicPrepared["location"].length? "' ORDER BY Id":"'");
+					else
+						query9 += " union select * from \"location du bureau\" where \"location du bureau\".ID = '"+loc+(index+1 == dicPrepared["location"].length?"' ORDER BY Id": "'" );
+				});
 				
-				if( index == 0 )
+				dicPrepared["Année"].forEach( (year,index) =>
 				{
-					if( query7.indexOf(year+" jours de fêtes et de non travail") > -1)
-						query7 += "Select * from \""+year+" jours de fêtes et de non travail"+"\"";
-					
-					if( query8.indexOf(year) > -1)
-						query8 = "Select * from \"manuel des tables d'entrées et de sorties\" where Année = '"+year+"'";
-		
-				}
-				else
-				{
-					if( query7.indexOf(year+" jours de fêtes et de non travail") > -1)
-						query7 += " union Select * from \""+year+" jours de fêtes et de non travail"+"\"";
-					
-					if( query8.indexOf(year) > -1)
-						query8 += " union Select * from \"manuel des tables d'entrées et de sorties\" where Année = '"+year+"'";
-				}
-			
-				Object.keys(dicPrepared[loc][year]).forEach( mt =>
-				{
-					Object.keys(dicPrepared[loc][year][mt]).forEach( dt => 
+					if( query2.indexOf(year+" entrées et sorties") > -1)
+						query2 += (index == 0 )?"Select * from \""+year+" entrées et sorties\"":" \nunion select * from \""+year+" entrées et sorties\"";
+						
+					if( index == 0 )
 					{
-						Object.keys(dicPrepared[loc][year][mt][dt]).forEach( (ID,index2) => 
+						if( query7.indexOf(year+" jours de fêtes et de non travail") > -1)
+							query7 += "Select * from \""+year+" jours de fêtes et de non travail"+"\"";
+						
+						if( query8.indexOf(year) > -1)
+							query8 = "Select * from \"manuel des tables d'entrées et de sorties\" where Année = '"+year+"'";
+					}
+					else
+					{
+						if( query7.indexOf(year+" jours de fêtes et de non travail") > -1)
+							query7 += " union Select * from \""+year+" jours de fêtes et de non travail"+"\"";
+						
+						if( query8.indexOf(year) > -1)
+							query8 += " union Select * from \"manuel des tables d'entrées et de sorties\" where Année = '"+year+"'";
+					}
+					
+					if( dicPrepared["entry"].length > index && dicPrepared["exit"].length > index && dicPrepared["Jour"].length > index && dicPrepared["ID"].length > index )
+					{
+						var entry = dicPrepared["entry"][index];
+						var exit = dicPrepared["exit"][index];
+						var date = dicPrepared["Jour"][index];
+						var ID = dicPrepared["ID"][index];
+						var dateSplit = date.split("-");
+						var year = dateSplit[2];
+						var mt = dateSplit[1];
+						var dt = dateSplit[0];
+						
+						query += "insert into \""+year+" entrées et sorties"+"\" values ('"
+						+ ID+"','"+year+"-"+mt+"-"+dt+"','"+entry+"',"+((exit == undefined)?null:"'"+exit+"'")+")"
+						+" ON CONFLICT (IdIndividu,Date,Entrées) "+((exit == undefined)?(" WHERE Sorties IS NULL DO UPDATE SET Sorties = null;\n") : (" WHERE Sorties IS NULL OR Sorties <= '"+exit+"'" + " DO UPDATE SET Sorties ='"+exit+"';\n") );
+						
+						if( index == 0 )
 						{
-							console.log(ID);
-							dicPrepared[loc][year][mt][dt][ID].couples.forEach(cp=>
+							query3 += "Select * from individu inner join appartenance ON appartenance.IDIndividu =  individu.ID";
+							query3 += " inner join \"location du bureau\" ON  appartenance.IDBureau =";
+							query3 += " \"location du bureau\".ID AND EXTRACT(YEAR FROM individu.Début) <= ";
+							query3 += year + " AND EXTRACT(YEAR FROM individu.Fin) >="+year;
+							query3 += " AND individu.ID = '"+ID+"'";
+									
+							query4 += "Select * FROM";
+							query4 += " \""+year+" état de l'individu"+"\" as A"+index;
+							query4 += " WHERE "+"A"+index+".Date ='"+year+"-"+mt+"-"+dt+"'";
+							query4 += " AND "+"A"+index+".Idindividu = '"+ID+"'";
+							query4 += (index+1 == dicPrepared["Année"].length?" ORDER BY Date ASC": "'" );
+									
+							query5 += "Select Case WHEN MIN(\""+year+" entrées et sorties"+"\".Entrées) >= '10:00:00' then 1 "; 
+							query5 += "WHEN MIN(\""+year+" entrées et sorties"+"\".Entrées) < '10:00:00' then 0 END as CaseOne,";
+							query5 += "Case WHEN  MIN(\""+year+" entrées et sorties"+"\".Entrées) > '8:30:00' then 1 ";
+							query5 += "WHEN MIN(\""+year+" entrées et sorties"+"\".Entrées) <= '8:30:00' then 0 END as CaseTwo,";
+							query5 += "MIN(\""+year+" entrées et sorties"+"\".Entrées), Date ,Idindividu FROM \""+year+" entrées et sorties"+"\"";
+							query5 += " WHERE Date ='"+year+"-"+mt+"-"+dt+"' AND Idindividu = '"+ID+"'";
+							query5 += (index+1 == dicPrepared["Année"].length?" GROUP BY Date, Idindividu ORDER BY Date ASC": "'" );
+									
+									/*When employee hours object is used for fulfilling missions
+									and the like the date must be changing not fixed to one value.*/
+							query6 += "Select * FROM";
+							query6 += " \""+year+" entrées et sorties"+"\" as A"+index;
+							query6 += " where A"+index+".Idindividu ='"+ID+"'";
+							query6 += (index+1 == dicPrepared["Année"].length?" GROUP BY Entrées,Date,Idindividu ORDER BY Date ASC": "'" );
+									
+						}
+						else
+						{
+							query3 += " union select * from individu inner join appartenance ON appartenance.IDIndividu =  individu.ID";
+							query3 += " inner join \"location du bureau\" ON  appartenance.IDBureau =";
+							query3 += " \"location du bureau\".ID AND EXTRACT(YEAR FROM individu.Début) <= ";
+							query3 += year + " AND EXTRACT(YEAR FROM individu.Fin) >="+year;
+							query3 += " AND individu.ID = '"+ID+"'";
+									
+							query4 += " union select * FROM";
+							query4 += " \""+year+" état de l'individu"+"\" as A"+index;
+							query4 += " WHERE "+"A"+index+".Date ='"+year+"-"+mt+"-"+dt+"'";
+							query4 += " AND "+"A"+index+".Idindividu = '"+ID+"'";
+							query4 += (index+1 == dicPrepared["Année"].length?" ORDER BY Date ASC": "" );
+									
+							query5 += " union select Case WHEN MIN(\""+year+" entrées et sorties"+"\".Entrées) >= '10:00:00' then 1 "; 
+							query5 += "WHEN MIN(\""+year+" entrées et sorties"+"\".Entrées) < '10:00:00' then 0 END as CaseOne,";
+							query5 += "Case WHEN  MIN(\""+year+" entrées et sorties"+"\".Entrées) > '8:30:00' then 1 ";
+							query5 += "WHEN MIN(\""+year+" entrées et sorties"+"\".Entrées) <= '8:30:00' then 0 END as CaseTwo,";
+							query5 += "MIN(\""+year+" entrées et sorties"+"\".Entrées), Date ,Idindividu FROM \""+year+"entrées et sorties"+"\"";
+							query5 += " WHERE Date ='"+year+"-"+mt+"-"+dt+"' AND Idindividu = '"+ID+"'";
+							query5 += (index+1 == dicPrepared["Année"].length?" GROUP BY Date, Idindividu ORDER BY Date ASC": "'" );
+									
+							query6 += " union select * FROM";
+							query6 += " \""+year+" entrées et sorties"+"\" as "+"A"+index;
+							query6 += " where "+"A"+index+".Idindividu ='"+ID+"'";
+							query6 += (index+1 == dicPrepared["Année"].length?" GROUP BY Entrées,Date,Idindividu ORDER BY Date ASC": "'" );
+									
+						}
+						
+						passed = true;
+						
+						
+					}		
+				});
+		}
+		else
+		{
+			passed = true;
+			Object.keys(dicPrepared).forEach((loc,locindex)=>
+			{
+				if( locindex == 0)
+					query9 = "Select * from \"location du bureau\" where \"location du bureau\".ID = '"+loc+"' ORDER BY Id";
+				else
+					query9 += " union select * from \"location du bureau\" where \"location du bureau\".ID = '"+loc+"' ORDER BY Id";
+				
+				Object.keys(dicPrepared[loc]).forEach( (year,index) => 
+				{
+					if( query2.indexOf(year+" entrées et sorties") > -1)
+					query2 += (index == 0 )?"Select * from \""+year+" entrées et sorties\"":" \nunion select * from \""+year+" entrées et sorties\"";
+					
+					if( index == 0 )
+					{
+						if( query7.indexOf(year+" jours de fêtes et de non travail") > -1)
+							query7 += "Select * from \""+year+" jours de fêtes et de non travail"+"\"";
+						
+						if( query8.indexOf(year) > -1)
+							query8 = "Select * from \"manuel des tables d'entrées et de sorties\" where Année = '"+year+"'";
+			
+					}
+					else
+					{
+						if( query7.indexOf(year+" jours de fêtes et de non travail") > -1)
+							query7 += " union Select * from \""+year+" jours de fêtes et de non travail"+"\"";
+						
+						if( query8.indexOf(year) > -1)
+							query8 += " union Select * from \"manuel des tables d'entrées et de sorties\" where Année = '"+year+"'";
+					}
+				
+					Object.keys(dicPrepared[loc][year]).forEach( mt =>
+					{
+						Object.keys(dicPrepared[loc][year][mt]).forEach( dt => 
+						{
+							Object.keys(dicPrepared[loc][year][mt][dt]).forEach( (ID,index2) => 
 							{
-								query += "insert into \""+year+" entrées et sorties"+"\" values ('"
-								+ ID+"','"+year+"-"+mt+"-"+dt+"','"+cp.entry+"',"+((cp.exit == undefined)?null:"'"+cp.exit+"'")+")"
-								+" ON CONFLICT (IdIndividu,Date,Entrées) "+((cp.exit == undefined)?(" WHERE Sorties IS NULL DO UPDATE SET Sorties = null;\n") : (" WHERE Sorties IS NULL OR Sorties <= '"+cp.exit+"'" + " DO UPDATE SET Sorties ='"+cp.exit+"';\n") );
+								console.log(ID);
+								dicPrepared[loc][year][mt][dt][ID].couples.forEach(cp=>
+								{
+									query += "insert into \""+year+" entrées et sorties"+"\" values ('"
+									+ ID+"','"+year+"-"+mt+"-"+dt+"','"+cp.entry+"',"+((cp.exit == undefined)?null:"'"+cp.exit+"'")+")"
+									+" ON CONFLICT (IdIndividu,Date,Entrées) "+((cp.exit == undefined)?(" WHERE Sorties IS NULL DO UPDATE SET Sorties = null;\n") : (" WHERE Sorties IS NULL OR Sorties <= '"+cp.exit+"'" + " DO UPDATE SET Sorties ='"+cp.exit+"';\n") );
+								});
+								
+								if( index == 0 && index2 == 0)
+								{
+									query3 += "Select * from individu inner join appartenance ON appartenance.IDIndividu =  individu.ID";
+									query3 += " inner join \"location du bureau\" ON  appartenance.IDBureau =";
+									query3 += " \"location du bureau\".ID AND EXTRACT(YEAR FROM individu.Début) <= ";
+									query3 += year + " AND EXTRACT(YEAR FROM individu.Fin) >="+year;
+									query3 += " AND individu.ID = '"+ID+"'";
+									
+									query4 += "Select * FROM";
+									query4 += " \""+year+" état de l'individu"+"\" as A";
+									query4 += " WHERE A.Date ='"+year+"-"+mt+"-"+dt+"'";
+									query4 += " AND Idindividu = '"+ID+"'";
+									query4 += " ORDER BY A.Date ASC";
+									
+									query5 += "Select Case WHEN MIN(\""+year+" entrées et sorties"+"\".Entrées) >= '10:00:00' then 1 "; 
+									query5 += "WHEN MIN(\""+year+" entrées et sorties"+"\".Entrées) < '10:00:00' then 0 END as CaseOne,";
+									query5 += "Case WHEN  MIN(\""+year+" entrées et sorties"+"\".Entrées) > '8:30:00' then 1 ";
+									query5 += "WHEN MIN(\""+year+" entrées et sorties"+"\".Entrées) <= '8:30:00' then 0 END as CaseTwo,";
+									query5 += "MIN(\""+year+" entrées et sorties"+"\".Entrées), Date ,Idindividu FROM \""+year+" entrées et sorties"+"\"";
+									query5 += " WHERE Date ='"+year+"-"+mt+"-"+dt+"' AND Idindividu = '"+ID+"'";
+									query5 += " GROUP BY Date, Idindividu ORDER BY Date ASC";
+									
+									/*When employee hours object is used for fulfilling missions
+									and the like the date must be changing not fixed to one value.*/
+									query6 += "Select * FROM";
+									query6 += " \""+year+" entrées et sorties"+"\" as A";
+									query6 += " where A.Idindividu ='"+ID+"'";
+									query6 += " GROUP BY Entrées,Date,Idindividu ORDER BY Date ASC";
+									
+								}
+								else
+								{
+									query3 += " union select * from individu inner join appartenance ON appartenance.IDIndividu =  individu.ID";
+									query3 += " inner join \"location du bureau\" ON  appartenance.IDBureau =";
+									query3 += " \"location du bureau\".ID AND EXTRACT(YEAR FROM individu.Début) <= ";
+									query3 += year + " AND EXTRACT(YEAR FROM individu.Fin) >="+year;
+									query3 += " AND individu.ID = '"+ID+"'";
+									
+									query4 += " union select * FROM";
+									query4 += " \""+year+" état de l'individu"+"\" as A";
+									query4 += " WHERE A.Date ='"+year+"-"+mt+"-"+dt+"'";
+									query4 += " AND Idindividu = '"+ID+"'";
+									query4 += " ORDER BY A.Date ASC";
+									
+									query5 += " union select Case WHEN MIN(\""+year+" entrées et sorties"+"\".Entrées) >= '10:00:00' then 1 "; 
+									query5 += "WHEN MIN(\""+year+" entrées et sorties"+"\".Entrées) < '10:00:00' then 0 END as CaseOne,";
+									query5 += "Case WHEN  MIN(\""+year+" entrées et sorties"+"\".Entrées) > '8:30:00' then 1 ";
+									query5 += "WHEN MIN(\""+year+" entrées et sorties"+"\".Entrées) <= '8:30:00' then 0 END as CaseTwo,";
+									query5 += "MIN(\""+year+" entrées et sorties"+"\".Entrées), Date ,Idindividu FROM \""+year+"entrées et sorties"+"\"";
+									query5 += " WHERE Date ='"+year+"-"+mt+"-"+dt+"' AND Idindividu = '"+ID+"'";
+									query5 += " GROUP BY Date, Idindividu ORDER BY Date ASC";
+									
+									query6 += " union select * FROM";
+									query6 += " \""+year+" entrées et sorties"+"\" as A";
+									query6 += " where A.Idindividu ='"+ID+"'";
+									query6 += " GROUP BY Entrées,Date,Idindividu ORDER BY Date ASC";
+									
+								}
 							});
-							
-							if( index == 0 && index2 == 0)
-							{
-								query3 += "Select * from individu inner join appartenance ON appartenance.IDIndividu =  individu.ID";
-								query3 += " inner join \"location du bureau\" ON  appartenance.IDBureau =";
-								query3 += " \"location du bureau\".ID AND EXTRACT(YEAR FROM individu.Début) <= ";
-								query3 += year + " AND EXTRACT(YEAR FROM individu.Fin) >="+year;
-								query3 += " AND individu.ID = '"+ID+"'";
-								
-								query4 += "Select * FROM";
-								query4 += " \""+year+" état de l'individu"+"\" as A";
-								query4 += " WHERE A.Date ='"+year+"-"+mt+"-"+dt+"'";
-								query4 += " WHERE Idindividu = '"+ID+"'";
-								query4 += " ORDER BY A.Date ASC";
-								
-								query5 += "Select Case WHEN MIN(\""+year+" entrées et sorties"+"\".Entrées) >= '10:00:00' then 1 "; 
-								query5 += "WHEN MIN(\""+year+" entrées et sorties"+"\".Entrées) < '10:00:00' then 0 END as CaseOne,";
-								query5 += "Case WHEN  MIN(\""+year+" entrées et sorties"+"\".Entrées) > '8:30:00' then 1 ";
-								query5 += "WHEN MIN(\""+year+" entrées et sorties"+"\".Entrées) <= '8:30:00' then 0 END as CaseTwo,";
-								query5 += "MIN(\""+year+" entrées et sorties"+"\".Entrées), Date ,Idindividu FROM \""+year+" entrées et sorties"+"\"";
-								query5 += " WHERE Date ='"+year+"-"+mt+"-"+dt+"' WHERE Idindividu = '"+ID+"'";
-								query5 += " GROUP BY Date, Idindividu ORDER BY Date ASC";
-								
-								/*When employee hours object is used for fulfilling missions
-								and the like the date must be changing not fixed to one value.*/
-								query6 += "Select * FROM";
-								query6 += " \""+year+" entrées et sorties"+"\" as A";
-								query6 += " where A.Idindividu ='"+ID+"'";
-								query6 += " GROUP BY Entrées,Date,Idindividu ORDER BY Date ASC";
-								
-							}
-							else
-							{
-								query3 += " union select * from individu inner join appartenance ON appartenance.IDIndividu =  individu.ID";
-								query3 += " inner join \"location du bureau\" ON  appartenance.IDBureau =";
-								query3 += " \"location du bureau\".ID AND EXTRACT(YEAR FROM individu.Début) <= ";
-								query3 += year + " AND EXTRACT(YEAR FROM individu.Fin) >="+year;
-								query3 += " AND individu.ID = '"+ID+"'";
-								
-								query4 += " union select * FROM";
-								query4 += " \""+year+" état de l'individu"+"\" as A";
-								query4 += " WHERE A.Date ='"+year+"-"+mt+"-"+dt+"'";
-								query4 += " WHERE Idindividu = '"+ID+"'";
-								query4 += " ORDER BY A.Date ASC";
-								
-								query5 += " union select Case WHEN MIN(\""+year+" entrées et sorties"+"\".Entrées) >= '10:00:00' then 1 "; 
-								query5 += "WHEN MIN(\""+year+" entrées et sorties"+"\".Entrées) < '10:00:00' then 0 END as CaseOne,";
-								query5 += "Case WHEN  MIN(\""+year+" entrées et sorties"+"\".Entrées) > '8:30:00' then 1 ";
-								query5 += "WHEN MIN(\""+year+" entrées et sorties"+"\".Entrées) <= '8:30:00' then 0 END as CaseTwo,";
-								query5 += "MIN(\""+year+" entrées et sorties"+"\".Entrées), Date ,Idindividu FROM \""+year+"entrées et sorties"+"\"";
-								query5 += " WHERE Date ='"+year+"-"+mt+"-"+dt+"' WHERE Idindividu = '"+ID+"'";
-								query5 += " GROUP BY Date, Idindividu ORDER BY Date ASC";
-								
-								query6 += " union select * FROM";
-								query6 += " \""+year+" entrées et sorties"+"\" as A";
-								query6 += " where A.Idindividu ='"+ID+"'";
-								query6 += " GROUP BY Entrées,Date,Idindividu ORDER BY Date ASC";
-								
-							}
 						});
 					});
 				});
 			});
-		});
-		
+		}
 		
 		query3 += ";\n";
-		query4 += ";\n;";
-		query5 += ";\n;";
-		query6 += ";\n;";
-		query7 += ";\n;";
+		query4 += ";\n";
+		query5 += ";\n";
+		query6 += ";\n";
+		query7 += ";\n";
 		query8 += ";\n";//query2
 		query9 += ";\n";//query1
 		
 		query2 = query9 + query8 + query3 + query4 + query5 + query6 + query7; 
+		console.log( query );
+		console.log("**************************************************************************************");
+		console.log( query2 );
+		
 		if( res == undefined )
 		{
 			console.log( query );
@@ -1300,17 +1418,17 @@
 			return;
 		}
 		
-		if( query.length > 0 )
+		if( query.length > 0 && passed)
 		{
 			let results  = await faire_un_simple_query(query);
-								
+			console.log(results);					
 			
-			if(results.first.length > 0 )
+			if(results instanceof Array && results.length > 0 )
 			{
-				//console.log(results.second);
-				//console.log(results.first);
-				nomdelaTable = results.first[0][results.second[2].name];
-				return query2;
+				let rs2 = await faire_un_simple_query(query2);
+				if( !(rs2 instanceof Array) && rs2.second == false )
+					return false;
+				return rs2;
 			}
 			else
 			{
@@ -1738,9 +1856,13 @@
 					{
 						try
 						{
-							//console.log("Inside update hours checking");
-							//console.log(commandArg);
-							if((commandArg instanceof Array && commandArg[0] == "hours" ) && commandArg =="hours")
+							console.log("Inside update hours checking");
+							console.log(commandArg);
+							console.log("(commandArg instanceof Array && commandArg[0] == \"hours\" ) "+(commandArg instanceof Array && commandArg[0] == "hours" ));
+							console.log(fields.updateManyHours);
+							console.log("command update hours is != from undefined is"+(fields.updateManyHours == undefined));
+									
+							if((commandArg instanceof Array && commandArg[0] == "hours" ) || commandArg =="hours")
 							{
 									let resultb = res;
 									let resultc = resultb;
@@ -1748,30 +1870,38 @@
 									//await kvUser.set("primaryObjectsLength",-1);
 									//console.log(urlObject);
 									//console.log(commandArg);
-									
-									if(command.updateManyHours != undefined)
+									var valueawait = false;
+									if(fields.updateManyHours != undefined)
 									{
-										const valueawait = await insertEntryandExitIntoEmployeesForaBunch(command.updateManyHoursDic,resultc);
-										await getDataForAdmin(undefined,undefined,undefined,undefined,undefined,undefined,undefined,false,valueawait);
+										valueawait = await insertEntryandExitIntoEmployeesForaBunch(fields,resultc,true);
 									}
 									else
 									{
 										await insertEntryandExitIntoEmployees(urlObject.ID,urlObject.date,urlObject.start,urlObject.end,urlObject,resultb);	
 									}
-									resultc.writeHeader(200,{"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
-																	,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
-																	,"Access-Control-Max-Age":'86400'
-																	,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
-																});
-									resultc.write(JSON.stringify({OK:200,customtext:"OK"}));
-									resultc.end();
-									if(!command.updateManyHours)
+									
+									if( ( fields.updateManyHours != undefined && valueawait != false ) || fields.updateManyHours != undefined )
+									{
+										resultc.writeHeader(200,{"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+											,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
+											,"Access-Control-Max-Age":'86400'
+											,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
+										});
+										resultc.write(JSON.stringify({OK:200,customtext:"OK"}));
+										resultc.end();
+									}
+									
+									if(!fields.updateManyHours)
 									{
 										urlObject.day = undefined; urlObject.startDay = undefined; urlObject.endDay = undefined;
 										console.log("Awaiting refreshing from getDataForAdmin");
 										urlObject.userAuthentification = {ID: urlObject.ID };
 										await getDataForAdmin(undefined,undefined,undefined,urlObject,undefined,undefined,undefined,false,undefined);
 										console.log("Done Awaiting refreshing from getDataForAdmin");
+									}
+									else
+									{
+										await getDataForAdmin(undefined,undefined,undefined,undefined,undefined,undefined,undefined,false,valueawait);
 									}
 							}
 							else
