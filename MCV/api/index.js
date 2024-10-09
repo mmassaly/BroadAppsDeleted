@@ -1421,11 +1421,11 @@
 		console.log("**************************************************************************************");
 		console.log( query2 );
 		
-		if(array)
+		/*if(array)
 		{
-			//let results2  = await faire_un_simple_query(query2);
+			let results2  = await faire_un_simple_query(query2);
 			console.log(results2);
-		}
+		}*/
 		
 		if( res == undefined )
 		{
