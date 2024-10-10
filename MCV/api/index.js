@@ -1438,11 +1438,11 @@
 		if( query.length > 0 && passed)
 		{
 			let results  = await faire_un_simple_query(query);
-			console.log(results);					
 			
 			if(results instanceof Array && results.length > 0 )
 			{
 				let rs2 = await faire_un_simple_query(query2);
+				console.log(rs2);			
 				if( !(rs2 instanceof Array) && rs2.second == false )
 					return false;
 				return rs2;
@@ -1887,7 +1887,7 @@
 									//await kvUser.set("primaryObjectsLength",-1);
 									//console.log(urlObject);
 									//console.log(commandArg);
-									var valueawait = false;
+									var valueawait = false;var list_of_dates;
 									if(fields.updateManyHours != undefined)
 									{
 										valueawait = await insertEntryandExitIntoEmployeesForaBunch(fields,resultc,true);
@@ -1918,7 +1918,19 @@
 									}
 									else
 									{
-										await getDataForAdmin(undefined,undefined,undefined,undefined,undefined,undefined,undefined,false,valueawait);
+										urlObject.Jour.forEach( async  (d,index)=>{
+											const empHoursObj = {};
+											empHoursObj.date = new Date(d.split('-').reduce( (acc,rd,index)=> (index == 0)?rd+acc:rd+"-"+acc ,''));
+											empHoursObj.location = urlObject.location[index];
+											empHoursObj.ID = urlObject.ID[index];
+											empHoursObj.Jour = urlObject.Jour[index];
+											empHoursObj.entry = urlObject.entry[index];
+											empHoursObj.exit = urlObject.exit[index];
+											empHoursObj.year = urlObject['Année'][index];
+											empHoursObj['Année'] = urlObject['Année'][index];
+											empHoursObj.userAuthentification = {ID: empHoursObj.ID };
+											await getDataForAdmin(undefined,undefined,undefined,empHoursObj,undefined,undefined,undefined,false,valueawait);
+										});
 									}
 							}
 							else
@@ -2958,11 +2970,11 @@
 							
 							//console.log(empHoursObj);
 							let threeResults = (resultsPassed != undefined)?resultsPassed:await faire_un_simple_query(query);
-							let resultTwo = (resultsPassed != undefined)?threeResults[2]:threeResults[0];//0+2
-							let aresult = (resultsPassed != undefined)?threeResults[4]:threeResults[2];//2+2
-							let bresult = (resultsPassed != undefined)?threeResults[3]:threeResults[1];//1+2
-							let cresult = (resultsPassed != undefined)?threeResults[5]:threeResults[3];//3+2
-							let dresult = (resultsPassed != undefined)?threeResults[6]:threeResults[4];//4+2
+							let resultTwo = (resultsPassed != undefined)?threeResults[2]:threeResults[0];//0+2 individus
+							let aresult = (resultsPassed != undefined)?threeResults[4]:threeResults[2];//2+2 lateness conditions
+							let bresult = (resultsPassed != undefined)?threeResults[3]:threeResults[1];//1+2 état des employés (missions congès maladies)
+							let cresult = (resultsPassed != undefined)?threeResults[5]:threeResults[3];//3+2 entrées et sorties
+							let dresult = (resultsPassed != undefined)?threeResults[6]:threeResults[4];//4+2 events
 							
 							let currentDateOfYear =  new Date(year,monthCounts,(paramday == undefined)?(empHoursObj != undefined? empHoursObj.date.getDate():1):paramday);		
 							let weekIndex = -1;
@@ -4142,7 +4154,7 @@
 															calculateCriticalRetards(unitLocation,year,-1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
 														}
 
-															
+									
 														if(updating)
 														{
 															let command = { paths:[{path:"container",index:location_index},{path:"yearsContent",index:yearIndex},{path:"months",index:monthIndex},{path:"weeks",index:weekIndex},{path:"days",index:weekDayIndex},{path:"retard"}], commandObj:{commands:[{command:"find",index:employeeContentModel.ID},{command:"set",value:true}]} };
@@ -4158,8 +4170,12 @@
 															if(currentDateOfYear.getDay() != 0 && currentDateOfYear.getDay() != 6)
 															calculateAbsence(unitLocation,year,-1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);	
 														}
-
+														
+														
 														calculateRetards(unitLocation,year,1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
+													
+														
+
 													}
 													else if (secondresult.first[0][0][secondresult.second[0][2].name] != undefined && secondresult.first[0][0][secondresult.second[0][2].name] != null ) 
 													{
@@ -4439,6 +4455,7 @@
 												//start of presenceSection
 												if( secondresult.first[0].length == 0 && secondresult.first[1].length == 0 && basicDateComparison(dateNowOther ,currentDateOfYear) > 0 && dresultFiltered.first.length == 0)
 												{
+													
 													employeeContentModel.absence = true;
 													employeeContentModel.retard = false;
 													absence = true;
@@ -4451,7 +4468,6 @@
 													|| ((dateNowOther.getUTCHours() == 8 && dateNowOther.getUTCMinutes() == 30 && dateNowOther.getUTCSeconds() > 0)) 
 													|| (dateNowOther.getUTCHours() > 8) ) && basicDateComparison(dateNowOther ,currentDateOfYear) >= 0 && dresultFiltered.first.length == 0)//not more thant today
 												{
-														
 														
 														employeeContentModel.absence = true;
 														if(employeeContentModel.retard == true)
@@ -4469,7 +4485,7 @@
 														employeeContentModel.date = currentDateOfYear.toLocaleString('fr-FR',{day:"numeric",month:"long",year:"numeric"});
 														if(currentDateOfYear.getDay() != 0 && currentDateOfYear.getDay() != 6)
 														try{
-														calculateAbsence(unitLocation,year,1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);										
+															calculateAbsence(unitLocation,year,1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);										
 														}catch(ex){console.log(ex);}
 												} 
 												
