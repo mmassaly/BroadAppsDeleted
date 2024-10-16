@@ -596,7 +596,7 @@
 									dummyResponseSimple(result);
 									return;
 								}
-								else if(commandArg !== "hours")
+								else if(commandArg !== "hours" && commandArg !== 'addAbsenceReason')
 								{
 									//console.log("undefined commandArg");
 									dummyResponseSimple(result);
@@ -634,20 +634,69 @@
 								{
 									let othertempResult = check_super_admin(userAuthentification,undefined,undefined);
 									let resultc = resultb;
-									urlObject.date = new Date(urlObject.date);
 									//await kvUser.set("primaryObjectsLength",-1);
-									await insertEntryandExitIntoEmployees(userAuthentification.ID,urlObject.date,urlObject.start,urlObject.end,urlObject,resultb);	
-									urlObject.day = undefined; urlObject.startDay = undefined; urlObject.endDay = undefined;
-									console.log("Awaiting refreshing from getDataForAdmin");
-									await getDataForAdmin(undefined,undefined,undefined,urlObject,undefined,undefined,undefined,false,undefined);
-									console.log("Done Awaiting refreshing from getDataForAdmin");
+									if(commandArg == "hours")
+									{
+										urlObject.date = new Date(urlObject.date);
+										await insertEntryandExitIntoEmployees(userAuthentification.ID,urlObject.date,urlObject.start,urlObject.end,urlObject,resultb);	
 									
-									urlObject.day = urlObject.date;
-									resultc.writeHeader(200,{"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
-																	,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
-																	,"Access-Control-Max-Age":'86400'
-																	,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
-																});
+										urlObject.day = undefined; urlObject.startDay = undefined; urlObject.endDay = undefined;
+										console.log("Awaiting refreshing from getDataForAdmin");
+										await getDataForAdmin(undefined,undefined,undefined,urlObject,undefined,undefined,undefined,false,undefined);
+										console.log("Done Awaiting refreshing from getDataForAdmin");
+										
+										urlObject.day = urlObject.date;
+										resultc.writeHeader(200,{"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+																		,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
+																		,"Access-Control-Max-Age":'86400'
+																		,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
+																	});
+									}
+									else if(commandArg == "addAbsenceReason")
+									{
+										if(await addAbsenceReason(urlObject))
+										{
+											if( urlObject.abunch )
+											{
+												urlObject.date.forEach((tdate,index) =>{
+													var ndateurlObject = {date:new Date(tdate)};
+													ndateurlObject.ID = ndateurlObject.ID[index];
+													ndateurlObject.userAuthentification = {ID:ndateurlObject.ID[index]};
+													ndateurlObject.Reason = ndateurlObject.Reason[index];
+													getDataForAdmin(undefined,undefined,undefined,ndateurlObject,undefined,undefined,undefined,false,undefined);
+												});
+											}
+											else
+											{
+												if(urlObject.date instanceof Array)
+												{
+													const date = new Date(urlObject.date[0]);
+													urlObject.date = date;
+													urlObject.ID = urlObject.ID[0];
+													urlObject.userAuthentification = {ID:urlObject.ID[0]};
+													urlObject.Reason = urlObject.Reason[0];
+													getDataForAdmin(undefined,undefined,undefined,urlObject,undefined,undefined,undefined,false,undefined);
+												}
+												else
+												{
+													urlObject.date = new Date(urlObject.date);
+													getDataForAdmin(undefined,undefined,undefined,urlObject,undefined,undefined,undefined,false,undefined);
+												}
+											}
+											resultc.writeHeader(200,{"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+																			,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
+																			,"Access-Control-Max-Age":'86400'
+																			,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
+																		});
+										}
+										else
+										{
+											resultc.write(JSON.stringify({OK:500,customtext:"Nope Query error"}));
+											resultc.end();
+											return;
+										}
+									}
+										
 									resultc.write(JSON.stringify({OK:200,customtext:"OK"}));
 									resultc.end();
 									
@@ -2647,6 +2696,56 @@
 				});
 			}
 			
+			async function addAbsenceReason(arg)
+			{
+				console.log(arg);
+				if( !arg.bunch )
+				{  	
+					let ID = (arg.ID instanceof Array)?arg.ID[0]:arg.ID;
+					let date = (arg.date instanceof Array)?arg.date[0]:arg.date;
+					let raison  = (arg.reason instanceof Array)?arg.Reason[0]:arg.reason;
+					
+					if(typeof date == 'string' )
+					{
+						try
+						{
+							date = new Date(date);
+						}
+						catch(ex)
+						{
+							return false;
+						}
+					}
+					
+					let query = "insert into \""+date.getFullYear()+" raisons des absences\" values('"+ID+"','"+raison+"','"+date.getFullYear()+"-"+(date.getMonth()+1)+"-"+date.getDate()+"') ON CONFLICT (IdIndividu,Date) DO UPDATE SET Raison = '"+raison+"';";
+					console.log(query);
+					await faire_un_simple_query(query);
+					return true;
+				}
+				else if( arg.bunch )
+				{
+					let query = "";
+					let IDs = arg.ID;
+					let dates = arg.date.map(dt=> (typeof dt == 'string')?new Date(dt):dt  );
+					let raisons  = arg.reason;
+					try
+					{
+						IDs.forEach((ID,index)=>{
+							query += ((index > 0)?"\n":'')+"insert into \""+dates[index].getFullYear()+" raisons des absences\" values('"+IDs[index]+"','"+raisons[index]+"','"+dates[index].getFullYear()+"-"+(dates[index].getMonth()+1)+"-"+dates[index].getDate()+"') ON CONFLICT (IdIndividu,Date) DO UPDATE SET Raison = '"+raisons[index]+"';";					
+						});
+					}
+					catch(ex)
+					{
+						return false;
+					}
+					console.log(query);
+					await faire_un_simple_query(query);
+					return true;
+				}
+				
+				return false;
+			}
+			
 			function deleteElementFromDicsArrayWithTwoArgumentsSecondisDate(ID,dic,first,second)
 			{
 				let elements = [];
@@ -2890,6 +2989,7 @@
 							aquery += "create table \""+ayear+" état de l'individu\"  (IDIndividu varchar(255),Date Date,Absence BOOLEAN,Maladie BOOLEAN,Mission BOOLEAN,Congès BOOLEAN,PRIMARY KEY(Date,IDIndividu));\n";
 							aquery += " insert into \"manuel des tables d'entrées et de sorties\" values ("+ayear+","+"$$"+ayear+" état de l'individu$$" +","+"$$"+ayear+" entrées et sorties$$);\n";
 							aquery += "create table \""+ayear+" jours de fêtes et de non travail\" (Name varchar(255),Date Date);"
+							aquery += "create table \""+ayear+" raisons des absences\" (IDIndividu varchar(255),Raison Text,Date Date,Primary Key(IDIndividu,Date));"
 							aquery += "insert into \"manuel des tables d'entrées et de sorties\" values("+ayear+","+"$$"+ayear+" jours de fêtes et de non travail$$);";
 							await faire_un_simple_query(aquery);
 							result_ = await faire_un_simple_query(query);
@@ -2962,7 +3062,8 @@
 							query += (empObj == undefined)?((empHoursObj == undefined)?"":" where A.Idindividu ='"+(empHoursObj.butPresence||empHoursObj.subAdminRef?empHoursObj.ID:empHoursObj.userAuthentification.ID)+"'"):" where A.Idindividu ='"+(empHoursObj.butPresence||empHoursObj.subAdminRef?empHoursObj.ID:empHoursObj.userAuthentification.ID)+"'";
 							query += " GROUP BY Entrées,Date,Idindividu ORDER BY Date ASC;";
 							query += "Select * from \""+events+"\";";
-							
+							query += "Select * from \""+year+" raisons des absences\""+(param_year_month_day?" where Date ='"+param_year_month_day+"'":  ((empHoursObj)?" where IdIndividu ='"+(empHoursObj.butPresence||empHoursObj.subAdminRef?empHoursObj.ID:empHoursObj.userAuthentification.ID)+"'"+((empHoursObj.startDay == undefined && empHoursObj.endDay == undefined)?(" AND Date ='"+empHoursObj.date.getFullYear()+"-"+(empHoursObj.date.getMonth()+1)+"-"+empHoursObj.date.getDate()+"'"):((empHoursObj.startDay != undefined && empHoursObj.endDay == undefined)?(" AND Date >='"+empHoursObj.startDay.getFullYear()+"-"+(empHoursObj.startDay.getMonth()+1)+"-"+empHoursObj.startDay.getDate()+"'"):("' AND Date >='"+empHoursObj.startDay.getFullYear()+"-"+(empHoursObj.startDay.getMonth()+1)+"-"+empHoursObj.startDay.getDate()+"' AND Date <='"+empHoursObj.endDay.getFullYear()+"-"+(empHoursObj.endDay.getMonth()+1)+"-"+empHoursObj.endDay.getDate()+"'")) ):''))+";";
+	
 							if(empHoursObj)
 							{console.log(query);}
 							
@@ -2975,6 +3076,7 @@
 							let bresult = (resultsPassed != undefined)?threeResults[3]:threeResults[1];//1+2 état des employés (missions congès maladies)
 							let cresult = (resultsPassed != undefined)?threeResults[5]:threeResults[3];//3+2 entrées et sorties
 							let dresult = (resultsPassed != undefined)?threeResults[6]:threeResults[4];//4+2 events
+							let eresult = (resultsPassed != undefined)?threeResults[7]:threeResults[5];//5+2 raison de l'absence
 							
 							let currentDateOfYear =  new Date(year,monthCounts,(paramday == undefined)?(empHoursObj != undefined? empHoursObj.date.getDate():1):paramday);		
 							let weekIndex = -1;
@@ -3385,6 +3487,7 @@
 									//console.log(bresultFiltered);
 									let cresultFiltered = FilterDateNotFoudFunction(cresult,"date",currentDateOfYear.getDate()+"-"+(currentDateOfYear.getMonth()+1)+"-"+currentDateOfYear.getFullYear());
 									let dresultFiltered = FilterDateNotFoudFunction(dresult,"date",currentDateOfYear.getDate()+"-"+(currentDateOfYear.getMonth()+1)+"-"+currentDateOfYear.getFullYear());
+									let eresultFiltered = FilterDateNotFoudFunction(eresult,"date",currentDateOfYear.getDate()+"-"+(currentDateOfYear.getMonth()+1)+"-"+currentDateOfYear.getFullYear());
 									
 									if(empHoursObj)
 									{
@@ -3661,6 +3764,8 @@
 													vacation: false,
 													vacationstr: "VACANCE",
 													absence: false,
+													reason: false,
+													reasonStr: "",
 													absencestr: "ABSENCE",
 													retard: false,
 													retardstr: "RETARD",
@@ -3970,7 +4075,10 @@
 											let aresultFilteredb = FilterNotFoundEqualsFunction(aresultFiltered,"idindividu",IDIndividu);
 											let bresultFilteredb = FilterNotFoundEqualsFunction(bresultFiltered,"idindividu",IDIndividu);
 											let cresultFilteredb = FilterNotFoundEqualsFunction(cresultFiltered,"idindividu",IDIndividu);
+											let eresultFilteredb = FilterNotFoundEqualsFunction(eresultFiltered,"idindividu",IDIndividu);
 											let date2 = new Date();
+											console.log(eresultFilteredb);
+									
 											
 											
 											//console.log("done filtering "+ (date2 -date)%1000);
@@ -3978,10 +4086,12 @@
 											secondresult.first.push(aresultFilteredb.first);
 											secondresult.first.push(bresultFilteredb.first);
 											secondresult.first.push(cresultFilteredb.first);
+											secondresult.first.push(eresultFilteredb.first);
 											
 											secondresult.second.push(aresultFilteredb.second);
 											secondresult.second.push(bresultFilteredb.second);
 											secondresult.second.push(cresultFilteredb.second);
+											secondresult.second.push(eresultFilteredb.second);
 											
 											if(empHoursObj)
 											{
@@ -4060,6 +4170,10 @@
 														let command = { paths:[{path:"container",index:location_index},{path:"yearsContent",index:yearIndex},{path:"months",index:monthIndex},{path:"weeks",index:weekIndex},{path:"days",index:weekDayIndex},{path:"absence"}],commandObj:{commands:[{command:"find",index:employeeContentModel.ID},{command:"set",value:false}]} };
 														pushCommands(command,employeeContentModel.ID);
 													}
+													if(employeeContentModel.reason)
+													{
+														employeeContentModel.reason = false;
+													}
 													if(currentDateOfYear.getDay() != 0 && currentDateOfYear.getDay() != 6)
 													calculateAbsence(unitLocation,year,-1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
 												}
@@ -4137,6 +4251,11 @@
 																pushCommands(command,employeeContentModel.ID);
 															}
 															employeeContentModel.absence = false;
+															
+															if(employeeContentModel.reason)
+															{
+																employeeContentModel.reason = false;
+															}
 															if(currentDateOfYear.getDay() != 0 && currentDateOfYear.getDay() != 6)
 															calculateAbsence(unitLocation,year,-1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);	
 														}
@@ -4166,7 +4285,11 @@
 														
 														if(employeeContentModel.absence)
 														{
-															employeeContentModel.absence = false;
+															employeeContentModel.absence = false;															
+															if(employeeContentModel.reason)
+															{
+																employeeContentModel.reason = false;
+															}
 															if(currentDateOfYear.getDay() != 0 && currentDateOfYear.getDay() != 6)
 															calculateAbsence(unitLocation,year,-1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);	
 														}
@@ -4201,7 +4324,11 @@
 														
 														retard = false;	
 														if(employeeContentModel.absence)
-														{
+														{															
+															if(employeeContentModel.reason)
+															{
+																employeeContentModel.reason = false;
+															}
 															calculateAbsence(unitLocation,year,-1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
 															employeeContentModel.absence = false;
 														}
@@ -4460,8 +4587,13 @@
 													employeeContentModel.retard = false;
 													absence = true;
 													employeeContentModel.date = currentDateOfYear.toLocaleString('fr-FR',{day:"numeric",month:"long",year:"numeric"});
+													if(secondresult.first[3].length > 0)
+													{
+														employeeContentModel.reason = true;employeeContentModel.reasonStr = secondresult.first[3].reduce((acc,val,index)=> (index == 0)?val[secondresult.second[3][1].name]:acc+"\n"+val[secondresult.second[3][1].name],"");
+													}
 													if(currentDateOfYear.getDay() != 0 && currentDateOfYear.getDay() != 6)
 														calculateAbsence(unitLocation,year,1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
+													
 												}
 												else if(!employeeContentModel.presence && !retard && !criticallylate 
 													&& ((dateNowOther.getUTCHours() == 8 && dateNowOther.getUTCMinutes() > 30)
@@ -4485,7 +4617,11 @@
 														employeeContentModel.date = currentDateOfYear.toLocaleString('fr-FR',{day:"numeric",month:"long",year:"numeric"});
 														if(currentDateOfYear.getDay() != 0 && currentDateOfYear.getDay() != 6)
 														try{
-															calculateAbsence(unitLocation,year,1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);										
+															if(secondresult.first[3].length > 0)
+															{
+																employeeContentModel.reason = true;employeeContentModel.reasonStr = secondresult.first[3].reduce((acc,val,index)=> (index > 0)?val[secondresult.second[3][1].name]:acc+"\n"+val[secondresult.second[3][1].name],"");
+															}
+															calculateAbsence(unitLocation,year,1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);	
 														}catch(ex){console.log(ex);}
 												} 
 												
@@ -4514,7 +4650,11 @@
 														}
 														if(employeeContentModel.absence)//absence section
 														{
-															employeeContentModel.absence = false;
+															employeeContentModel.absence = false;															
+															if(employeeContentModel.reason)
+															{
+																employeeContentModel.reason = false;
+															}
 															calculateAbsence(unitLocation,year,-1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
 														}
 														if(employeeContentModel.congès)//congès section
@@ -4543,7 +4683,11 @@
 														
 														if(employeeContentModel.absence)
 														{
-															employeeContentModel.absence = false;
+															employeeContentModel.absence = false;															
+															if(employeeContentModel.reason)
+															{
+																employeeContentModel.reason = false;
+															}
 															if(currentDateOfYear.getDay() != 0 && currentDateOfYear.getDay() != 6)
 															calculateAbsence(unitLocation,year,-1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
 														}
@@ -4587,6 +4731,10 @@
 														}
 														if(employeeContentModel.absence)
 														{
+															if(employeeContentModel.reason)
+															{
+																employeeContentModel.reason = false;
+															}
 															employeeContentModel.absence = false;
 															calculateAbsence(unitLocation,year,-1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
 														}
@@ -4616,7 +4764,12 @@
 																employeeContentModel.absence = true;
 																console.log("Absence on "+currentDateOfYear);
 																employeeContentModel.date = currentDateOfYear.toLocaleString('fr-FR',{day:"numeric",month:"long",year:"numeric"});
+																if(secondresult.first[3].length > 0)
+																{
+																	employeeContentModel.reason = true;employeeContentModel.reasonStr = secondresult.first[3].reduce((acc,val,index)=> (index > 0)?val[secondresult.second[3][1].name]:acc+"\n"+val[secondresult.second[3][1].name],"");
+																}
 																calculateAbsence(unitLocation,year,1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
+																
 															}
 
 															if(employeeContentModel.mission)
