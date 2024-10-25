@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+	<meta charset="utf-8" name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body onload="init()">
+	<script>
+		var remoteVideo;
+		var remoteVideos = [];
+		var joined = [];
+		var beginJoinning = false;
+		var pairedWith = [];
+		var peerConnection;
+		var localStream;
+		var cmain;
+		var c2;
+		var ice_addding = false;
+		
+		async function check(msg)
+		{
+			try{
+				const ret = await fetchHTTPRequest(msg,"text/plain","/check");
+				console.log(ret);
+				processSessions(ret);
+			}
+			catch(e)
+			{
+				if(msg == "nostart")
+				{
+					setTimeout(check,300,"start");
+					return;
+				}
+			}
+			setTimeout(check,300,"nostart");
+		}
+		
+		
+		async function joinFunc(asessions,name)
+		{
+			
+			const sFound = asessions.find( ss => ss.sessionName == name);
+			init();
+			if( sFound)
+			{
+				sFoundDup = JSON.parse(JSON.stringify(sFound));
+				sFoundDup.sessionParticipant = Object.values(sFoundDup.sessionParticipants).length;
+				sFoundDup.offers = [];
+				sFoundDup.message = [];
+				let res = await fetchHTTPRequest(JSON.stringify(sFoundDup),"application/json","/peer");
+				const participantID = res.participant.ID;
+				const participantStartDate = new Date(res.participant.startDate);
+				if(res && !joined.find(j => j.sessionName == name ))
+				{
+					console.log("........joining session room approved........");
+					console.log(res);
+					
+					const offerObj = {sessionName:sFound.sessionName,sessionParticipant:participantID,
+												sessionDate:sFound.sessionDate,sessionPass:sFound.sessionPassword};
+					if( !localStream ) 
+					{
+						localStream = await navigator.mediaDevices.getUserMedia({video: true, audio:{sampleRate: 44100,echoCancellation: true,noiseSuppression: true,channelCount: 2}});
+						remoteVideo.srcObject = localStream;remoteVideo.hidden = false;
+						remoteVideo.onloadedmetadata = ()=>
+						{
+							remoteVideo.play();
+						};					
+					}
+					
+					setInterval(async ()=>{
+							const checkparticipantObj = {sessionName:sFound.sessionName,sessionParticipant:participantID,
+												sessionDate:sFound.sessionDate,sessionPass:sFound.sessionPassword};
+							const cofferObj = {sessionName:sFound.sessionName,sessionParticipant:participantID,
+												sessionDate:sFound.sessionDate,sessionPass:sFound.sessionPassword};
+							let resp = fetchHTTPRequest(JSON.stringify(checkparticipantObj),"application/json",'/checkParticipants');	
+							resp.then( async (val)=>{
+								if( val )
+								{
+									
+									Object.values(val.participants).forEach( p =>{
+										if( !this.joined.find( pel => pel[p.ID] )  )
+										{
+											let peerConnection = new RTCPeerConnection({
+												iceServers: [
+													{
+														urls: 'turn:192.168.0.106:3478',
+														username: 'yourUsername',
+														credential: 'yourPassword'
+													}
+												]
+											});
+											
+											const IceParams =  {sessionName:sFound.sessionName,sessionParticipant:participantID,
+												sessionDate:sFound.sessionDate,sessionPass:sFound.sessionPassword,icecandidateTo:p.ID};
+											peerConnection.onicecandidate = async (event) => {
+												if (event.candidate) 
+												{
+													//console.log(event.candidate);
+													IceParams['new-ice-candidate'] = event.candidate;
+													let res4 = await fetchHTTPRequest(JSON.stringify(IceParams),"application/json","/new-ice-candidate");
+												}
+											};
+											localStream.getTracks().forEach(track => {
+												peerConnection.addTrack(track, localStream);
+											});
+											
+											console.log(p.startDate);
+											console.log(participantStartDate);
+											console.log(p.startDate > participantStartDate);
+											
+											if( new Date( p.startDate ) >= participantStartDate )
+											{
+												
+												peerConnection.createOffer()
+												.then(async offer => { 
+													peerConnection.setLocalDescription(offer);
+													offerObj.offer = offer;
+													offerObj.offerTo = p.ID;
+													let res = await fetchHTTPRequest(JSON.stringify(offerObj),"application/json","/offer");
+												})
+												.catch(error => console.error('Error creating offer:', error));											
+											}
+											
+											peerConnection.onconnectionstatechange = (event) => {
+												console.log(event);
+												if (peerConnection.connectionState === 'connected') {
+													console.log('Peers connected!');
+												}
+											};
+											
+											let temp = {offer:undefined,answer:undefined};temp[p.ID]= peerConnection;
+											this.joined.push(temp);
+										}
+									});
+									
+									
+								}
+							});
+							let res6 = fetchHTTPRequest(JSON.stringify(cofferObj),"application/json","/checkoffer");
+							res6.then( async (val)=>{
+								if( val )
+								{
+									
+									val["offersreturns"].forEach(async (offr,index)=> {
+											//console.log(offr.ID);
+											const foundPeerInfo =  this.joined.find(j=> j[offr.ID] );
+											
+											
+											if( foundPeerInfo && (new Date(offr.participantStartDate) < participantStartDate) && (foundPeerInfo.offer == undefined || (JSON.stringify(foundPeerInfo.offer) != JSON.stringify(offr.offer))) ) 
+											{
+													console.log(foundPeerInfo.offer == undefined);
+													const remoteVideoa = createElement('video',{id:"v"+(index+2),controls:true, hidden:false, width: "200" , height: "200",mute:false,autoplay:true},
+													{src:document.getElementById("videos")});
+													
+													remoteVideoa.onloadedmetadata = ()=>
+													{
+														remoteVideoa.play();
+													};
+													
+													/*foundPeerInfo[offr.ID].ontrack = (event) => {
+														remoteVideoa.srcObject = event.streams[0];
+														console.log(event);
+													};*/
+													
+													foundPeerInfo[offr.ID].ontrack = (event) => {
+														const [remoteStream] = event.streams;
+														remoteVideoa.srcObject = remoteStream;
+													};
+													
+													
+													foundPeerInfo[offr.ID].setRemoteDescription(new RTCSessionDescription(offr.offer));
+													const answer = await foundPeerInfo[offr.ID].createAnswer();
+													await foundPeerInfo[offr.ID].setLocalDescription(answer);
+													
+													const answerObj = {sessionName:sFound.sessionName,sessionParticipant:participantID,
+													sessionDate:sFound.sessionDate,sessionPass:sFound.sessionPassword,message:answer,answerTo:offr.ID};
+													foundPeerInfo.offer = offr.offer;
+													
+													document.getElementById("videos").append(remoteVideoa);
+													console.log(remoteVideoa);
+													
+													
+													let res2 = await fetchHTTPRequest(JSON.stringify(answerObj),"application/json","/message");
+											}
+										
+										});
+								}
+							});
+							
+							const cmessagesObj = {sessionName:sFound.sessionName,sessionParticipant:participantID,
+												sessionDate:sFound.sessionDate,sessionPass:sFound.sessionPassword};
+							let res3 = fetchHTTPRequest(JSON.stringify(cmessagesObj),"application/json","/checkmessage");
+							res3.then( async (val)=>{
+								if( val )
+								{
+									//console.log(val);
+									val["messagesreturns"].forEach( async (message,index)=> {
+											const foundPeerInfo =  this.joined.find(j=> j[message.ID] );
+											
+											if( foundPeerInfo && (foundPeerInfo.answer == undefined || (JSON.stringify(foundPeerInfo.answer) != JSON.stringify(message.message))) )
+											{
+												
+												const answer = message.message;
+												const remoteVideoa = createElement('video',{id:"v"+(index+2),controls:true, hidden:false, width: "200" , height: "200",mute:false,autoplay:true},
+												{src:document.getElementById("videos")});
+													
+												remoteVideoa.onloadedmetadata = ()=>
+												{
+													remoteVideoa.play();
+												};
+													
+												/*foundPeerInfo[message.ID].ontrack = (event) => {
+													remoteVideoa.srcObject = event.streams[0];
+													console.log(event);
+												};*/
+												
+												foundPeerInfo[message.ID].ontrack = (event) => {
+													const [remoteStream] = event.streams;
+													remoteVideoa.srcObject = remoteStream;
+												};
+													
+												
+												//before remote description you addTracks
+												/*
+													Steps:
+														Create RTCPeerConnection: Initialize the peer connection2
+													.
+
+													Set ontrack Handler: Ensure the handler is set up before setting the remote description2
+													.
+
+													Set Remote Description: Set the remote description after receiving the answer2
+													.
+
+													By following these steps, you should be able to receive tracks from the receiving side. If the issue persists, it might be helpful to share more details about your setup, including any error messages or logs. What exactly are you trying to achieve with WebRTC and TURN?
+												
+												*/
+												const remoteDesc = new RTCSessionDescription(answer);
+												await foundPeerInfo[message.ID].setRemoteDescription(remoteDesc);
+												foundPeerInfo.answer = answer;
+												console.log("Answer returned");
+												
+												
+												
+												
+												document.getElementById("videos").append(remoteVideoa);
+											}
+									});
+								}
+							});
+							
+							let res5 = fetchHTTPRequest(JSON.stringify(cmessagesObj),"application/json","/checknew-ice-candidate");
+							res5.then( async (val)=>{
+								if( val )
+								{
+									while(ice_addding);
+									ice_addding = true;
+									if(val["new-ice-candidatesreturns"].length == 0)
+									{
+										ice_addding = false;
+										return;
+									}
+									await val["new-ice-candidatesreturns"].forEach(async (message,index)=> {
+											const foundPeerInfo =  this.joined.find(j=> j[message.ID] );
+											if( foundPeerInfo &&  message['new-ice-candidate'] != undefined)
+											{
+												if( !foundPeerInfo[message.ID].ices )
+													foundPeerInfo[message.ID].ices =[];
+												if( !foundPeerInfo[message.ID].ices.find( ice=> JSON.stringify(ice) == JSON.stringify(message['new-ice-candidate']) ) )
+												{	
+													await foundPeerInfo[message.ID].addIceCandidate(message['new-ice-candidate']);												
+													foundPeerInfo[message.ID].ices.push(message['new-ice-candidate']);
+													console.log(message);
+												}
+												
+											
+											}
+									});
+									ice_addding = false;
+								}
+							});
+						},800);
+					// Exchange offer, answer, and ICE candidates via signaling
+					// (e.g., using WebSockets)
+				}
+			}
+		}
+		
+		async function fetchHTTPRequest(data,type,dirrectory)
+		{
+			let res = await fetch("http://192.168.0.106:3037"+dirrectory,{mode: "cors",redirect: "follow",method: 'POST',
+			headers:{'Content-Type':type == undefined?data.type:type},body:data});
+			return res.json();
+		}
+		async function processSessions(sessions)
+		{
+			sessions.forEach(ss=>{
+				const c2 = document.getElementById('c2');
+				const l = c2.children.length;
+				var wCount = 0;
+				while(wCount < l)
+				{
+					c2.children.item(wCount++).remove();
+				}
+				
+				const h1 = document.createElement('h3');
+				h1.innerHTML = ss.sessionName;
+				const join = document.createElement('button');
+				join.innerHTML ="joindre";
+				join.name = ss.sessionName;
+				join.style = "margin-left:40px;padding:10px;border-radius: 5%;border:none;color:white;background-color:blue;";
+				join.addEventListener("click", (event) => {
+				  console.log("click");
+				  joinFunc(sessions,join.name);
+				});
+				
+				h1.append(join);
+				c2.append(h1);
+				
+				/*
+				let tmptb = document.createElement('table');
+						
+				Object.values(ss.sessionParticipants).forEach((p,index)=>{
+					
+					if( index == 0)
+					{
+						let tr = document.createElement('tr');
+					
+						Object.keys(p).forEach(k=>{
+							let th = document.createElement('th');		
+							th.innerHTML = k;
+							tr.append(th);
+						});
+						tmptb.append(tr);
+						
+						
+						tmptb.append(tr);
+					}
+						
+				});
+				
+				c2.append(tmptb);
+				*/
+			});
+			
+		}
+		
+		function createElement(type,props,appendObj)
+		{
+			const el = document.createElement(type);
+			Object.keys(props).forEach(k=>{
+				el[k] = props[k];
+				console.log(k+"-"+props[k]);
+			});
+			if( appendObj.src )
+			{
+				appendObj.src.append(el);
+				return el;
+			}
+			return el;
+		}
+		
+		function init()
+		{
+			remoteVideo = document.getElementById("v1");
+			console.log(remoteVideo);
+			console.log(document.getElementById("cmain"));
+			console.log(document.getElementById("c2"));
+			
+			cmain = document.getElementById("cmain");
+			c2 = document.getElementById("c2");
+		}
+		check("start");
+		
+		//window.onload = init();//sucks
+	</script>
+	<div id = "cmain" style="margin-right:auto;margin-left:auto; width: 50%; height: 50%;margin-top:auto;" >
+		
+		<div id="c2" style="display:inline;width: 50%">
+			
+		</div>
+		<div id="videos">
+			<video id ="v1"  width="200px" height="200px" muted = 'true' ></video>
+		</div>
+	</div>
+	
+</body>
+<footer>
+</footer>

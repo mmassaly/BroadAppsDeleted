@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+	<meta charset="utf-8" name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+	<script>
+		var sessions = [];
+		async function valider(v1,v2,v3,v4)
+		{
+			console.log({sessionName:v1,sessionPass:v2,sessionParticipants:v3,sessionDate: v4});
+			let res = await fetchHTTPRequest(JSON.stringify({sessionName:v1,sessionParticipants:v2,sessionPass:v3,sessionDate: v4}),"application/json","/createSession");
+			console.log(res);
+			sessions.push(res.session);
+			processSessions(sessions);
+		}
+		async function fetchHTTPRequest(data,type,dirrectory)
+		{
+			let res = await fetch("http://192.168.0.106:3037"+dirrectory,{mode: "cors",redirect: "follow",method: 'POST',
+			headers:{'Content-Type':type == undefined?data.type:type},body:data});
+			return res.json();
+		}
+		async function processSessions(sessions)
+		{
+			sessions.forEach(ss=>{
+				const c2 = document.getElementById('c2');
+				const l = c2.children.length;
+				var wCount = 0;
+				while(wCount < l)
+				{
+					c2.children.item(wCount++).remove();
+				}
+				const h1 = document.createElement('h3');
+				h1.innerHTML = ss.sessionName;
+				c2.append(h1);
+				
+					
+				Object.values(ss.sessionParticipants).forEach((p,index)=>{
+					let tmptb = document.createElement('<table>');
+					
+					if( index == 0)
+					{
+						let tr = document.createElement('<tr>');
+					
+						Object.keys(p).forEach(k=>{
+							let th = document.createElement('<th>');		
+							th.innerHTML = k;
+							tr.append(th);
+						});
+						tmptb.append(tr);
+					}
+					
+					let tr = document.createElement('<tr>');
+					Object.values(p).forEach(v=>{
+							let th = document.createElement('<th>');		
+							th.innerHTML = v;
+							tr.append(th);
+						});
+					tmptb.append(tr);
+					c2.append(tmptb);
+				});
+			});
+			
+		}
+	</script>
+	<div style="margin-right:auto;margin-left:auto; width: 50%; height: 50%;margin-top:auto;">
+		<div style="display:inline">
+			<label>Session</label><br>
+			<input id="1" type="text" style =" width: 90%;max-height:80px;margin-left:auto;margin-right:auto"></input><br>
+			<label>Participants</label><br>
+			<input id="2" type="number" style = " width: 90%;max-height:80px;margin-left:auto;margin-right:auto"></input><br>
+			<label>Code</label><br>
+			<input id="3" type="password" style = "width: 90%;max-height:80px;margin-left:auto;margin-right:auto"></input><br>
+			<label>Date</label><br>
+			<input id="4" type="date" style =" width: 90%;max-height:80px;margin-left:auto;margin-right:auto"></input><br><br>
+			<button style="color:white;background-color:blue; margin-left:auto;margin-right:auto;"onClick="valider(document.getElementById('1').value,document.getElementById('2').value,document.getElementById('3').value,document.getElementById('4').value)">valider</button>
+		</div>
+		<div id="c2" style="display:inline;width: 50%">
+			
+		</div>
+	</div>
+</body>
+<footer>
+</footer>

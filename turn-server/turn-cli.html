@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+	<meta charset="utf-8" name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+	<script>
+
+		const pc = new RTCPeerConnection({
+			iceServers: [
+				{
+					urls: 'turn:localhost:3478',
+					username: 'yourUsername',
+					credential: 'yourPassword'
+					/*peerIdentity: 'smh'*/
+				}
+			]
+		});
+	</script>
+</body>
+<footer>
+</footer>

@@ -5,8 +5,10 @@
 </head>
 <body>
 <script>
+	const audioContext = new (window.AudioContext || window.webkitAudioContext)({sampleRate: 44100});
+	const gainNode = audioContext.createGain();
+	gainNode.gain.value = 0.9;
 	
-	const audioContext = new (window.AudioContext || window.webkitAudioContext)();
 	let videoElement = document.createElement("video");
 	let audioElement = document.createElement("audio");
 	let canvasElement = document.createElement("canvas");
@@ -190,123 +192,19 @@
         ctx.drawImage(videoElement, 0, 0, canvasElement.width, canvasElement.height);
         const image = canvasElement.toDataURL('image/jpeg'); // Convert to JPEG
 		
-		if( audiomediaRecorder && !toggle && !audiomediaRecorderPlaying )
-		{
-			audiomediaRecorderPlaying = true;
-			audiomediaRecorder.start();
-		}
-		if( audiomediaRecorder2 && toggle && !audiomediaRecorder2Playing)
-		{
-			audiomediaRecorder2Playing = true;
-			audiomediaRecorder2.start();
-		}
-		toggle = !toggle;
-		
 		canvasElement.toBlob(async (blob)=>
 		{
 			//console.log(blob);
 			if(blob != null)
 			{
 				let result_ = await blob.arrayBuffer();
-				fetchHTTPRequest(result_,blob.type,"/image");
+				fetchHTTPRequest(result_,blob.type);
 			}
 		});
 		//fetchHTTPRequest(image,undefined)
         // Now you can use 'image' as needed (e.g., save it or display it)s	
-    },150);
+    },50);
 	
-	navigator.mediaDevices.getUserMedia({ audio: true })
-		.then(stream => {
-			//audioElement.srcObject = stream;
-			/*const recoptions = 
-			{
-				mimeType: "audio/webm;codecs=opus",
-				audioBitsPerSecond : 256 * 8 * 1024,
-				videoBitsPerSecond : 256 * 8 * 1024,
-				bitsPerSecond: 256 * 8 * 1024*5,  // if this is provided, skip above two
-				checkForInactiveTracks: true
-			};*/
-			stream.onaddtrack = (event) => {console.log(event);};
-			MediaSource_ifAudioTypeisSupported_handler((val)=>{audioTypeSupported = val;});
-			const recoptions = 
-			{
-				mimeType: audioTypeSupported,
-				bitsPerSecond: 256 * 8 * 1024*20,  // if this is provided, skip above two
-				checkForInactiveTracks: true
-			};
-			
-			audiomediaRecorder = new MediaRecorder(stream,recoptions);
-			audiomediaRecorder2 = new MediaRecorder(stream,recoptions);
-			
-			audiomediaRecorder.onstart = ()=>{
-					audiomediaRecorderPlaying = true;
-	
-					if(audiomediaRecorder2 && audiomediaRecorder2Playing)
-					{
-						audiomediaRecorder2.stop();
-					}
-			};
-			
-			audiomediaRecorder2.onstop = ()=>{
-				audiomediaRecorder2Playing = false;
-			};
-			
-			audiomediaRecorder.onstop = ()=>{
-				audiomediaRecorderPlaying = false;
-			};
-			
-			audiomediaRecorder2.onstart = ()=>{
-				audiomediaRecorder2Playing = true;
-				if(audiomediaRecorder && audiomediaRecorder2Playing)
-				{
-					audiomediaRecorder.stop();
-				}
-			};
-			audioElement.onloadeddata = ()=>
-			{
-				console.log("Prompte to play");
-			};
-			//const audioTracks = stream.getAudioTracks();
-			//audioTracks.forEach(track => track.enabled = false);
-			audioElement.onended = ()=>{
-				
-			};
-			
-			audiomediaRecorder.ondataavailable = (e) => {
-				//chunks2.push(e.data);
-				console.log(e.data);
-				//playAudio(URL.createObjectURL(e.data));
-				e.data.arrayBuffer().then( async function (data)
-				{
-					fetchHTTPRequest(data,e.data.type,"/sound");
-					if(sourceBuffer2)
-					{
-						//sourceBuffer2.appendBuffer(new Uint8Array(data));
-						console.log("Appended to sourceBuffer ");
-					}//console.log(data);
-				}); 
-			};
-			audiomediaRecorder2.ondataavailable = (e) => {
-				
-				chunks2.push(e.data);
-				console.log(e.data);
-				//playAudio(URL.createObjectURL(e.data));
-				e.data.arrayBuffer().then( async function (data)
-				{
-					fetchHTTPRequest(data,e.data.type,"/sound");
-					if(sourceBuffer2)
-					{
-						//sourceBuffer2.appendBuffer(new Uint8Array(data));
-						console.log("Appended to sourceBuffer ");
-					}//console.log(data);
-				}); 
-			};
-			audiomediaRecorder.start();// Now you have access to the microphone audio via the 'source' node
-
-		})
-		.catch(error => {
-			console.error('Error accessing microphone:', error);
-	});
 	
 	// Create a ScriptProcessorNode (deprecated, but still works)
 	// Connect the source to the recorder
@@ -470,16 +368,15 @@
 		req.send(null);
 	}
 	
-	async function fetchHTTPRequest(data,type,dirrectory)
+	async function fetchHTTPRequest(data,type)
 	{
-		let res = await fetch("http://localhost:3035"+dirrectory,{mode: "cors",redirect: "follow",method: 'POST',
+		let res = await fetch("http://localhost:3035",{mode: "cors",redirect: "follow",method: 'POST',
 		headers:{'Content-Type':type == undefined?data.type:type},body:data});
 	}
 	
 	async function fetch2HTTPRequest()
 	{
-		//"http://localhost:3016"
-		let res = await fetch("http://localhost:3016/image",{mode: "cors",redirect: "follow",method: 'GET'});
+		let res = await fetch("http://localhost:3016",{mode: "cors",redirect: "follow",method: 'GET'});
 		//console.log(res);
 		//console.log(res.arrayBuffer());
 		res.blob().then(async (value)=>
@@ -490,18 +387,6 @@
 			//console.log(MediaSource.isTypeSupported('video/webm;codecs=vp9,opus'));
 			
 			drawServer(value)
-		});
-		let res2 = await fetch("http://localhost:3016/sound",{mode: "cors",redirect: "follow",method: 'GET'});
-		//console.log(res);
-		//console.log(res.arrayBuffer());
-		res2.blob().then(async (value)=>
-		{
-			console.log("Hello");
-			console.log(value);
-			//console.log(MediaSource.isTypeSupported('video/x-matroska;codecs="avc1,opus"'));
-			//console.log(MediaSource.isTypeSupported('video/mp4; codecs="avc1.42E01E, mp4a.40.2"'));//'video/webm;codecs=vp9,opus'
-			//console.log(MediaSource.isTypeSupported('video/webm;codecs=vp9,opus'));
-			playAudio(URL.createObjectURL(value));
 		});
 	}
 	
@@ -599,6 +484,34 @@
         })
         .catch(error => console.error('Error loading audio:', error));
 	}
+	
+audioContext.audioWorklet.addModule('http://localhost:8080/processor.js').then(() => {
+	navigator.mediaDevices.getUserMedia({ audio: true })
+    .then(stream => {
+		audioContext.resume();
+        const source = audioContext.createMediaStreamSource(stream);
+		const workletNode = new AudioWorkletNode(audioContext, 'my-worklet-processor');
+		console.log("Hhhhh");
+		workletNode.port.onmessage = (event) => {
+            //console.log('Audio data:', event.data);
+				/*const buffer2 = audioContext.createBuffer(1, event.data.length, audioContext.sampleRate)
+				buffer2.copyToChannel(new Float32Array(event.data), 0);
+				const bufferSource = audioContext.createBufferSource();
+				bufferSource.buffer = buffer2;
+				bufferSource.connect(audioContext.destination);
+				bufferSource.start();*/
+        };
+
+        source.connect(workletNode);
+        workletNode.connect(audioContext.destination);
+		
+    })
+    .catch(error => {
+        console.error('Error accessing the microphone:', error);
+    });
+	});
+	
+	
 	window.onload = charging;
 </script>
 <video id="vd2" width ="300" height = "300" style="border:2px solid grey" autoplay = "true" ></video>

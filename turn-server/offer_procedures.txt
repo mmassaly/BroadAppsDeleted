@@ -1,0 +1,19 @@
+peerConnection1.createOffer()
+.then(offer => {
+    return peerConnection1.setLocalDescription(offer);
+})
+.then(() => {
+    return peerConnection2.setRemoteDescription(offer);
+})
+.then(() => {
+    return peerConnection2.createAnswer();
+})
+.then(answer => {
+    return peerConnection2.setLocalDescription(answer);
+})
+.then(() => {
+    return peerConnection1.setRemoteDescription(answer);
+})
+.catch(error => {
+    console.error('Error:', error);
+});

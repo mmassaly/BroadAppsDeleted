@@ -1,7 +1,6 @@
 	var http = require("http");
 	var url = require("url");
 	var fs = require("fs");
-	var express = require("express");
 	var sessionLib = require("./SessionHandlerClass");
 	var convertLib = require("./executewithffmpeg");
 	var openAllDirrectoriesFsLib = require("./openAllDirrectoriesFs");
@@ -10,13 +9,13 @@
 	let masterPacket = 0;
 	let session = new sessionLib.SessionHandlerClass(undefined);
 	var multimediaClients = [];
+	var multimediaClients2 = [];
+	
 	const { PassThrough} = require('node:stream');
 	const pass = new PassThrough();
 	const piped = [];
 	const{ Server } = require("socket.io");
 
-	var app = express();
-	var app2 = express();
 	
 	var server = http.createServer(function(req,res)
 	{
@@ -35,21 +34,35 @@
 		}
 		if(req.method === 'GET')
 		{
+			console.log(req.method+" "+req.url);
+			
 			if(req.url == '/cam')
 			{
 				console.log(req.url);
 				res.end();
 			}
-			else
+			else if( req.url == '/image' )
 			{
+				var reqObj = url.parse(req.url);
+				//console.log(reqObj);				
+				multimediaClients.push(res);
 				console.log(req.url);
-				res.end();
+				return;
+			}
+			else if( req.url == '/sound' )
+			{
+				var reqObj = url.parse(req.url);
+				//console.log(reqObj);
+				multimediaClients2.push(res);
+				console.log(req.url);
+				return;
 			}
 		}
 		
 		if(req.method === 'POST')
 		{
-			let reqDataStr ="";
+			console.log(req.method+" "+req.url);
+			let reqDataStr = "";
 			let chunks = [];
 			let sessionObject = session.CreateSession("Streaming");
 			let fileName = sessionObject.sessionName;
@@ -78,9 +91,41 @@
 				//console.log(req.headers["content-type"]);
 				//console.log( multimediaClients.length+" clients ");
 				//console.log( multimediaClients.filter(res => res.writableEnded == false ).length+" clients ");
-				const multimediaClientsb = multimediaClients;
+				let ares = res; 
+				if(req.url == "/image")
+				{
+					console.log("Inside /image");
+					const multimediaClientsb = multimediaClients;
+					SendData(multimediaClientsb,chunksConcatenated,req);
+					multimediaClients = multimediaClients.filter(res => res.writableEnded == false );
+					console.log("Inside /image done");
+				}
 				
-				multimediaClientsb.forEach((ares,index)=> 
+				if(req.url == "/sound")
+				{
+					console.log("Inside /sound");
+					const multimediaClientsc = multimediaClients2;
+					SendData(multimediaClientsc,chunksConcatenated,req);
+					multimediaClients2 = multimediaClients2.filter(res => res.writableEnded == false );
+					console.log("Inside /sound done");
+				}
+				
+				
+				res.writeHead(200,{"Content-Type":"text/plain","Access-Control-Allow-Origin":"*"
+				,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
+				,"Access-Control-Max-Age":'86400'
+				,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"});
+				res.write("All received!");
+				res.end();
+			});
+		}
+		
+	});
+	
+	server.listen(3035);
+	function SendData(multimediaClientsb,chunksConcatenated,req)
+	{
+		multimediaClientsb.forEach((ares,index)=> 
 					{
 						if(!ares.writableEnded)
 						{
@@ -107,22 +152,7 @@
 						}
 					}
 				);
-				
-				multimediaClients = multimediaClients.filter(res => res.writableEnded == false );
-				
-				res.writeHead(200,{"Content-Type":"text/plain","Access-Control-Allow-Origin":"*"
-				,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
-				,"Access-Control-Max-Age":'86400'
-				,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"});
-				res.write("All received!");
-				res.end();
-			});
-		}
-		
-	});
-	
-	server.listen(3035);
-	
+	}
 	class FileOperations 
 	{
 		used;
@@ -192,11 +222,25 @@
 	
 	var server2 = http.createServer(function(req,res)
 	{
-		console.log(req.method);
 		console.log("Server 2");
 		//console.log(res.socket);
 		
-		multimediaClients.push(res);
+			if( req.url == '/image' )
+			{
+				var reqObj = url.parse(req.url);
+				//console.log(reqObj);				
+				multimediaClients.push(res);
+				console.log(req.url);
+				return;
+			}
+			else if( req.url == '/sound' )
+			{
+				var reqObj = url.parse(req.url);
+				//console.log(reqObj);
+				multimediaClients2.push(res);
+				console.log(req.url);
+				return;
+			}
 		//res.socket.write("HTTP/1.1 200\r\n Content-Type: video/x-matroska;codecs=avc1,opus");
 	});
 	
