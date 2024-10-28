@@ -3065,7 +3065,7 @@
 							query += "Select * from \""+year+" raisons des absences\""+(param_year_month_day?" where Date ='"+param_year_month_day+"'":  ((empHoursObj)?" where IdIndividu ='"+(empHoursObj.butPresence||empHoursObj.subAdminRef?empHoursObj.ID:empHoursObj.userAuthentification.ID)+"'"+((empHoursObj.startDay == undefined && empHoursObj.endDay == undefined)?(" AND Date ='"+empHoursObj.date.getFullYear()+"-"+(empHoursObj.date.getMonth()+1)+"-"+empHoursObj.date.getDate()+"'"):((empHoursObj.startDay != undefined && empHoursObj.endDay == undefined)?(" AND Date >='"+empHoursObj.startDay.getFullYear()+"-"+(empHoursObj.startDay.getMonth()+1)+"-"+empHoursObj.startDay.getDate()+"'"):("' AND Date >='"+empHoursObj.startDay.getFullYear()+"-"+(empHoursObj.startDay.getMonth()+1)+"-"+empHoursObj.startDay.getDate()+"' AND Date <='"+empHoursObj.endDay.getFullYear()+"-"+(empHoursObj.endDay.getMonth()+1)+"-"+empHoursObj.endDay.getDate()+"'")) ):''))+";";
 	
 							if(empHoursObj)
-							{console.log(query);}
+							{/*console.log(query);*/}
 							
 							//console.log(query);
 							
@@ -4077,7 +4077,7 @@
 											let cresultFilteredb = FilterNotFoundEqualsFunction(cresultFiltered,"idindividu",IDIndividu);
 											let eresultFilteredb = FilterNotFoundEqualsFunction(eresultFiltered,"idindividu",IDIndividu);
 											let date2 = new Date();
-											console.log(eresultFilteredb);
+											//console.log(eresultFilteredb);
 									
 											
 											
@@ -4243,6 +4243,13 @@
 														}
 														calculateCriticalRetards(unitLocation,year,1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
 														
+														if(secondresult.first[3].length > 0)
+														{
+															employeeContentModel.reason = true;
+															employeeContentModel.reasonStr = secondresult.first[3].reduce((acc,val,index)=> (index == 0)?val[secondresult.second[3][1].name]:acc+"\n"+val[secondresult.second[3][1].name],"");
+														}
+														
+														
 														if(employeeContentModel.absence)
 														{																
 															if(updating)
@@ -4283,6 +4290,12 @@
 														employeeContentModel.date = currentDateOfYear.toLocaleString('fr-FR',{day:"numeric",month:"long",year:"numeric"});
 														retard = true;	
 														
+														if(secondresult.first[3].length > 0)
+														{
+															employeeContentModel.reason = true;
+															employeeContentModel.reasonStr = secondresult.first[3].reduce((acc,val,index)=> (index == 0)?val[secondresult.second[3][1].name]:acc+"\n"+val[secondresult.second[3][1].name],"");
+														}
+														
 														if(employeeContentModel.absence)
 														{
 															employeeContentModel.absence = false;															
@@ -4313,6 +4326,11 @@
 															//nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].retardsdates.remove(employeeContentModel);
 															calculateRetards(unitLocation,year,-1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
 															employeeContentModel.retard = false;
+																					
+															if(employeeContentModel.reason)
+															{
+																employeeContentModel.reason = false;
+															}
 														}
 
 														if(employeeContentModel.retardCritical)
@@ -4320,6 +4338,11 @@
 															//nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].retardsCriticaldates.remove(employeeContentModel);
 															calculateCriticalRetards(unitLocation,year,-1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
 															employeeContentModel.retardCritical = false;
+																					
+															if(employeeContentModel.reason)
+															{
+																employeeContentModel.reason = false;
+															}
 														}
 														
 														retard = false;	
@@ -4665,11 +4688,21 @@
 														if(employeeContentModel.retard)//retards section
 														{
 															employeeContentModel.retard = false;
+																					
+															if(employeeContentModel.reason)
+															{
+																employeeContentModel.reason = false;
+															}
 															calculateRetards(unitLocation,year,-1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
 														}
 														if(employeeContentModel.retardCritical)//retards critiques section
 														{
 															employeeContentModel.retardCritical = false;
+																					
+															if(employeeContentModel.reason)
+															{
+																employeeContentModel.reason = false;
+															}
 															calculateCriticalRetards(unitLocation,year,-1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
 														}
 													}
@@ -4705,12 +4738,22 @@
 														{
 															console.log("retards on "+currentDateOfYear+"to be removed");
 															employeeContentModel.retard = false;
+																					
+															if(employeeContentModel.reason)
+															{
+																employeeContentModel.reason = false;
+															}
 															calculateRetards(unitLocation,year,-1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
 														}
 														if(employeeContentModel.retardCritical)//retards critiques section
 														{
 															console.log("critical retards on "+currentDateOfYear+"to be removed")
 															employeeContentModel.retardCritical = false;
+																					
+															if(employeeContentModel.reason)
+															{
+																employeeContentModel.reason = false;
+															}
 															calculateCriticalRetards(unitLocation,year,-1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
 														}
 													}
@@ -4746,11 +4789,21 @@
 														if(employeeContentModel.retard)//retards section
 														{
 															employeeContentModel.retard = false;
+																					
+															if(employeeContentModel.reason)
+															{
+																employeeContentModel.reason = false;
+															}
 															calculateRetards(unitLocation,year,-1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
 														}
 														if(employeeContentModel.retardCritical)//retards critiques section
 														{
 															employeeContentModel.retardCritical = false;
+																					
+															if(employeeContentModel.reason)
+															{
+																employeeContentModel.reason = false;
+															}
 															calculateCriticalRetards(unitLocation,year,-1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
 														}
 													}
@@ -4790,11 +4843,21 @@
 															if(employeeContentModel.retard)//retards section
 															{
 																employeeContentModel.retard = false;
+																						
+																if(employeeContentModel.reason)
+																{
+																	employeeContentModel.reason = false;
+																}
 																calculateRetards(unitLocation,year,-1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
 															}
 															if(employeeContentModel.retardCritical)//retards critiques section
 															{
 																employeeContentModel.retardCritical = false;
+																						
+																if(employeeContentModel.reason)
+																{
+																	employeeContentModel.reason = false;
+																}
 																calculateCriticalRetards(unitLocation,year,-1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
 															}
 														}
