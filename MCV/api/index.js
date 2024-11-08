@@ -680,6 +680,7 @@
 												else
 												{
 													urlObject.date = new Date(urlObject.date);
+													urlObject.userAuthentification = {ID:urlObject.ID};
 													getDataForAdmin(undefined,undefined,undefined,urlObject,undefined,undefined,undefined,false,undefined);
 												}
 											}
@@ -2703,7 +2704,22 @@
 				{  	
 					let ID = (arg.ID instanceof Array)?arg.ID[0]:arg.ID;
 					let date = (arg.date instanceof Array)?arg.date[0]:arg.date;
-					let raison  = (arg.reason instanceof Array)?arg.Reason[0]:arg.reason;
+					let raison  = (arg.reason instanceof Array)?arg.reason[0]:arg.reason;
+					let raisonStr  = (arg.reasonStr instanceof Array)?arg.reasonStr[0]:arg.reasonStr;
+					let approved =  (arg.approved && arg.approved instanceof Array)?arg.approved[0]:arg.approved;
+					let approvedSet =  (arg.approvedSet && arg.approvedSet instanceof Array)?arg.approvedSet[0]:arg.approvedSet;
+					let approvedBy =  (arg.approvedBy && arg.approvedBy instanceof Array)?arg.approvedBy[0]:arg.approvedBy;
+					
+					
+					if( raisonStr )
+						raison = raisonStr;
+					
+					if( !approved )
+					{
+						approved = false;
+					}
+					if( !approvedSet )
+						approvedSet = false;
 					
 					if(typeof date == 'string' )
 					{
@@ -2717,8 +2733,9 @@
 						}
 					}
 					
-					let query = "insert into \""+date.getFullYear()+" raisons des absences\" values('"+ID+"','"+raison+"','"+date.getFullYear()+"-"+(date.getMonth()+1)+"-"+date.getDate()+"') ON CONFLICT (IdIndividu,Date) DO UPDATE SET Raison = '"+raison+"';";
-					console.log(query);
+					let query = "insert into \""+date.getFullYear()+" raisons des absences\" values('"+ID+"','"+raison+"','"+date.getFullYear()+"-"+(date.getMonth()+1)+"-"+date.getDate()+"',"+approved+","+approvedSet+","+(approvedBy?"'"+approvedBy+"'":null)+") ON CONFLICT (IdIndividu,Date) DO UPDATE SET Raison = '"+raison+"'" +", Approved = "+approved+",ApprovedSet ="+approvedSet+",ApprovedBy = "+(approvedBy?"'"+approvedBy+"'":null)+";";
+					console.trace(query);
+					
 					await faire_un_simple_query(query);
 					return true;
 				}
@@ -2988,8 +3005,8 @@
 							let aquery = "create table \""+ayear+" entrées et sorties\" (IDIndividu varchar(255),Date Date,Entrées Time NOT NULL,Sorties VARCHAR(10) DEFAULT NULL, PRIMARY KEY(Date,Entrées,IDIndividu));\n";
 							aquery += "create table \""+ayear+" état de l'individu\"  (IDIndividu varchar(255),Date Date,Absence BOOLEAN,Maladie BOOLEAN,Mission BOOLEAN,Congès BOOLEAN,PRIMARY KEY(Date,IDIndividu));\n";
 							aquery += " insert into \"manuel des tables d'entrées et de sorties\" values ("+ayear+","+"$$"+ayear+" état de l'individu$$" +","+"$$"+ayear+" entrées et sorties$$);\n";
-							aquery += "create table \""+ayear+" jours de fêtes et de non travail\" (Name varchar(255),Date Date);"
-							aquery += "create table \""+ayear+" raisons des absences\" (IDIndividu varchar(255),Raison Text,Date Date,Primary Key(IDIndividu,Date));"
+							aquery += "create table \""+ayear+" jours de fêtes et de non travail\" (Name varchar(255),Date Date);";
+							aquery += "create table \""+ayear+" raisons des absences\" (IDIndividu varchar(255),Raison Text,Date Date,Approved BOOLEAN,ApprovedSet BOOLEAN,ApprovedBy varchar(255)) Primary Key(IDIndividu,Date));"
 							aquery += "insert into \"manuel des tables d'entrées et de sorties\" values("+ayear+","+"$$"+ayear+" jours de fêtes et de non travail$$);";
 							await faire_un_simple_query(aquery);
 							result_ = await faire_un_simple_query(query);
@@ -3766,6 +3783,7 @@
 													absence: false,
 													reason: false,
 													reasonStr: "",
+													approved: false,
 													absencestr: "ABSENCE",
 													retard: false,
 													retardstr: "RETARD",
@@ -4246,7 +4264,19 @@
 														if(secondresult.first[3].length > 0)
 														{
 															employeeContentModel.reason = true;
-															employeeContentModel.reasonStr = secondresult.first[3].reduce((acc,val,index)=> (index == 0)?val[secondresult.second[3][1].name]:acc+"\n"+val[secondresult.second[3][1].name],"");
+															employeeContentModel.approved = secondresult.first[3][0][secondresult.second[3][3].name];
+															employeeContentModel.reasonStr = secondresult.first[3][0][secondresult.second[3][1].name];
+															employeeContentModel.approvedSet = secondresult.first[3][0][secondresult.second[3][4].name];
+															employeeContentModel.approvedBy = secondresult.first[3][0][secondresult.second[3][5].name];
+															
+															if(employeeContentModel.approvedBy)
+															{
+																const approversName = resultTwo.first.find( el => el[resultTwo.second[9].name] == employeeContentModel.approvedBy);	
+																if( approversName ) 
+																{
+																	employeeContentModel.approvedByName = approversName[resultTwo.second[2].name]+" "+approversName[resultTwo.second[3].name]+" "+approversName[resultTwo.second[6].name];
+																}
+															}
 														}
 														
 														
@@ -4293,7 +4323,20 @@
 														if(secondresult.first[3].length > 0)
 														{
 															employeeContentModel.reason = true;
-															employeeContentModel.reasonStr = secondresult.first[3].reduce((acc,val,index)=> (index == 0)?val[secondresult.second[3][1].name]:acc+"\n"+val[secondresult.second[3][1].name],"");
+															employeeContentModel.approved = secondresult.first[3][0][secondresult.second[3][3].name];
+															employeeContentModel.reasonStr = secondresult.first[3][0][secondresult.second[3][1].name];
+															employeeContentModel.approvedSet = secondresult.first[3][0][secondresult.second[3][4].name];
+															employeeContentModel.approvedBy = secondresult.first[3][0][secondresult.second[3][5].name];
+															
+															if(employeeContentModel.approvedBy)
+															{
+																const approversName = resultTwo.first.find( el => el[resultTwo.second[9].name] == employeeContentModel.approvedBy);	
+																if( approversName ) 
+																{
+																	employeeContentModel.approvedByName = approversName[resultTwo.second[2].name]+" "+approversName[resultTwo.second[3].name]+" "+approversName[resultTwo.second[6].name];;
+																}
+															}
+															
 														}
 														
 														if(employeeContentModel.absence)
@@ -4612,7 +4655,21 @@
 													employeeContentModel.date = currentDateOfYear.toLocaleString('fr-FR',{day:"numeric",month:"long",year:"numeric"});
 													if(secondresult.first[3].length > 0)
 													{
-														employeeContentModel.reason = true;employeeContentModel.reasonStr = secondresult.first[3].reduce((acc,val,index)=> (index == 0)?val[secondresult.second[3][1].name]:acc+"\n"+val[secondresult.second[3][1].name],"");
+														console.log(secondresult.second[3][1].name);console.log(secondresult.first[3][0]);
+														employeeContentModel.reason = true;employeeContentModel.reasonStr = secondresult.first[3][0][secondresult.second[3][1].name];
+														employeeContentModel.approved = secondresult.first[3][0][secondresult.second[3][3].name];
+														employeeContentModel.approvedSet = secondresult.first[3][0][secondresult.second[3][4].name];
+														employeeContentModel.approvedBy = secondresult.first[3][0][secondresult.second[3][5].name];
+														
+														if(employeeContentModel.approvedBy)
+														{
+																const approversName = resultTwo.first.find( el => el[resultTwo.second[9].name] == employeeContentModel.approvedBy);	
+																if( approversName ) 
+																{
+																	employeeContentModel.approvedByName = approversName[resultTwo.second[2].name]+" "+approversName[resultTwo.second[3].name]+" "+approversName[resultTwo.second[6].name];;
+																}
+														}
+															
 													}
 													if(currentDateOfYear.getDay() != 0 && currentDateOfYear.getDay() != 6)
 														calculateAbsence(unitLocation,year,1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
@@ -4642,7 +4699,20 @@
 														try{
 															if(secondresult.first[3].length > 0)
 															{
-																employeeContentModel.reason = true;employeeContentModel.reasonStr = secondresult.first[3].reduce((acc,val,index)=> (index > 0)?val[secondresult.second[3][1].name]:acc+"\n"+val[secondresult.second[3][1].name],"");
+																console.log(secondresult.second[3][1].name);console.log(secondresult.first[3][0]);
+																employeeContentModel.reason = true;employeeContentModel.reasonStr = secondresult.first[3][0][secondresult.second[3][1].name];
+																employeeContentModel.approved = secondresult.first[3][0][secondresult.second[3][3].name];
+																employeeContentModel.approvedSet = secondresult.first[3][0][secondresult.second[3][4].name];
+																employeeContentModel.approvedBy = secondresult.first[3][0][secondresult.second[3][5].name];
+																if(employeeContentModel.approvedBy)
+																{
+																	const approversName = resultTwo.first.find( el => el[resultTwo.second[9].name] == employeeContentModel.approvedBy);	
+																	if( approversName ) 
+																	{
+																		employeeContentModel.approvedByName = approversName[resultTwo.second[2].name]+" "+approversName[resultTwo.second[3].name]+" "+approversName[resultTwo.second[6].name];;
+																	}
+																}
+															
 															}
 															calculateAbsence(unitLocation,year,1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);	
 														}catch(ex){console.log(ex);}
@@ -4819,7 +4889,20 @@
 																employeeContentModel.date = currentDateOfYear.toLocaleString('fr-FR',{day:"numeric",month:"long",year:"numeric"});
 																if(secondresult.first[3].length > 0)
 																{
-																	employeeContentModel.reason = true;employeeContentModel.reasonStr = secondresult.first[3].reduce((acc,val,index)=> (index > 0)?val[secondresult.second[3][1].name]:acc+"\n"+val[secondresult.second[3][1].name],"");
+																	console.log(secondresult.second[3][1].name);console.log(secondresult.first[3][0]);
+																	employeeContentModel.reason = true;employeeContentModel.reasonStr = secondresult.first[3][0][secondresult.second[3][1].name];
+																	employeeContentModel.approved = secondresult.first[3][0][secondresult.second[3][3].name];
+																	employeeContentModel.approvedSet = secondresult.first[3][0][secondresult.second[3][4].name];
+																	employeeContentModel.approvedBy = secondresult.first[3][0][secondresult.second[3][5].name];
+																	if(employeeContentModel.approvedBy)
+																	{
+																		const approversName = resultTwo.first.find( el => el[resultTwo.second[9].name] == employeeContentModel.approvedBy);	
+																		if( approversName ) 
+																		{
+																			employeeContentModel.approvedByName = approversName[resultTwo.second[2].name]+" "+approversName[resultTwo.second[3].name]+" "+approversName[resultTwo.second[6].name];;
+																		}
+																	}
+															
 																}
 																calculateAbsence(unitLocation,year,1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
 																
