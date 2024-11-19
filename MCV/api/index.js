@@ -599,6 +599,7 @@
 								else if(commandArg !== "hours" && commandArg !== 'addAbsenceReason')
 								{
 									//console.log("undefined commandArg");
+									
 									dummyResponseSimple(result);
 									return;
 								}
@@ -1225,6 +1226,7 @@
 		let query7 = "";
 		let query8 = "";
 		let query9 = "";
+		let query10 = "";
 		
 		var passed = false;
 		if( array)
@@ -1269,9 +1271,9 @@
 						var date = dicPrepared["Jour"][index];
 						var ID = dicPrepared["ID"][index];
 						var dateSplit = date.split("-");
-						var year = dateSplit[2];
-						var mt = dateSplit[1];
-						var dt = dateSplit[0];
+						let year = dateSplit[2];
+						let mt = dateSplit[1];
+						let dt = dateSplit[0];
 						
 						query += "insert into \""+year+" entrées et sorties"+"\" values ('"
 						+ ID+"','"+year+"-"+mt+"-"+dt+"','"+entry+"',"+((exit == undefined)?null:"'"+exit+"'")+")"
@@ -1307,7 +1309,9 @@
 							query6 += " where A"+index+".Idindividu ='"+ID+"'";
 							query6 += " GROUP BY A"+index+".Entrées, A"+index+".Date, A"+index+".Idindividu";
 							query6 += (index+1 == dicPrepared["entry"].length)?" ORDER BY Date ASC":"";
-									
+							
+							query10 += "Select * FROM";
+							query10 += " \""+year+" raisons des absences"+"\" as J"+index;
 						}
 						else
 						{
@@ -1337,7 +1341,9 @@
 							query6 += " where "+"A"+index+".Idindividu ='"+ID+"'";
 							query6 += " GROUP BY Entrées, "+"A"+index+".Date, "+"A"+index+".Idindividu";
 							query6 += (index+1 == dicPrepared["entry"].length)?" ORDER BY Date ASC":"";
-									
+							
+							query10 += " union select * FROM";
+							query10 += " \""+year+" raisons des absences"+"\" as J"+index;		
 						}
 						
 						passed = true;
@@ -1422,6 +1428,9 @@
 									query6 += " where A.Idindividu ='"+ID+"'";
 									query6 += ((index+1) == dicPrepared[loc][year][mt][dt].length)?" GROUP BY Entrées,Date,Idindividu ORDER BY Date ASC":"";
 									
+									query10 += "Select * FROM";
+									query10 += " \""+year+" raisons des absences"+"\" as J"+index;
+								
 								}
 								else
 								{
@@ -1449,7 +1458,9 @@
 									query6 += " \""+year+" entrées et sorties"+"\" as A";
 									query6 += " where A.Idindividu ='"+ID+"'";
 									query6 += ((index+1) == dicPrepared[loc][year][mt][dt].length)?" GROUP BY Entrées,Date,Idindividu ORDER BY Date ASC":"";
-									
+								
+									query10 += " union select * FROM";
+									query10 += " \""+year+" raisons des absences"+"\" as J"+index;
 								}
 							});
 						});
@@ -1465,8 +1476,8 @@
 		query7 += ";\n";
 		query8 += ";\n";//query2
 		query9 += ";\n";//query1
-		
-		query2 = query9 + query8 + query3 + query4 + query5 + query6 + query7; 
+		query10 += ";\n";
+		query2 = query9 + query8 + query3 + query4 + query5 + query6 + query7+query10; 
 		console.log( query );
 		console.log("**************************************************************************************");
 		console.log( query2 );
@@ -1509,6 +1520,40 @@
 		}		
 	}
 	
+	async function colonesQueries (obj,res)
+	{
+		let aquery = "";
+		aquery += "PREPARE TBS (Text,VARCHAR(256)[],VARCHAR(256)[]) AS INSERT INTO \"colones des fichiers des heures\" values ($1,$2,$3);\n"		;
+		obj["cols"] = "{"+obj["cols"].join(',')+"}";
+		obj["types"] = "{"+obj["types"].join(',')+"}";
+		console.log(obj);
+		aquery += "EXECUTE TBS ($$"+obj["nom"]+"$$,$$"+obj["cols"].toString()+"$$,$$"+obj["types"].toString()+"$$);\n";
+		aquery += "DEALLOCATE TBS;\n";
+		aquery += "Select * from \"colones des fichiers des heures\";";
+		console.log(aquery);
+		let results  = await faire_un_simple_query(aquery);
+		console.log(results);
+		if(results.length > 0)
+		{
+			if(!this.primaryObject.hourTables)
+			{
+				this.primaryObject.hourTables = {};
+			}
+			results.forEach( rslt =>{
+				if( this.primaryObject.hourTables[rslt.noms] )
+					this.primaryObject.hourTables[rslt.noms] = {};
+				Object.assign(this.primaryObject.hourTables[rslt.noms],rslt);
+			});
+			
+			return true;
+		}
+		else
+		{
+			dummyResponseSimple(res);
+			return false;
+		}
+		
+	}
 	
 	async function insertEntryandExitIntoEmployees(ID,date,startTime,endTime,empHoursObj,res)
 	{
@@ -2001,7 +2046,21 @@
 									//console.log(commandArg[0]);
 									//console.log(commandArg);
 									//console.log(dealingWithArray);
-									if(commandArg == "events")
+									if(commandArg == "colones" || (dealingWithArray && commandArg[0] === "colones"))
+									{
+										const ret = await colonesQueries((dealingWithArray)?{nom:urlObject["nom"][0],colones:urlObject["colones"][0],types:urlObject["types"][0]}:urlObject,res);
+										if( !ret )
+											return;
+										resultc.writeHeader(200,{"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+																		,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
+																		,"Access-Control-Max-Age":'86400'
+																		,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
+																	});
+										res.write(JSON.stringify({customtext:"OK"}));
+										console.log("no problems");
+										res.end();
+									}
+									if(commandArg == "events" || (dealingWithArray && commandArg[0] === "events"))
 									{
 										res.writeHead(200, {"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
 																		,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
@@ -3003,6 +3062,7 @@
 						if(to_complete)
 						{
 							let aquery = "create table \""+ayear+" entrées et sorties\" (IDIndividu varchar(255),Date Date,Entrées Time NOT NULL,Sorties VARCHAR(10) DEFAULT NULL, PRIMARY KEY(Date,Entrées,IDIndividu));\n";
+							aquery += "create table  IF NOT EXISTS \"colones des fichiers des heures\"(Nom Text,Colones VARCHAR(256)[],Types VARCHAR(256)[],PRIMARY KEY(Nom));\n"
 							aquery += "create table \""+ayear+" état de l'individu\"  (IDIndividu varchar(255),Date Date,Absence BOOLEAN,Maladie BOOLEAN,Mission BOOLEAN,Congès BOOLEAN,PRIMARY KEY(Date,IDIndividu));\n";
 							aquery += " insert into \"manuel des tables d'entrées et de sorties\" values ("+ayear+","+"$$"+ayear+" état de l'individu$$" +","+"$$"+ayear+" entrées et sorties$$);\n";
 							aquery += "create table \""+ayear+" jours de fêtes et de non travail\" (Name varchar(255),Date Date);";
@@ -3224,7 +3284,15 @@
 									simpleRetards: 0,
 									sicknesses: 0,
 									presence: 0,
-									retardsCritical: 0
+									retardsCritical: 0,
+									absencesClassified: 0,
+									absencesUnClassified: 0,
+									absencesApproved: 0,
+									absencesUnApproved: 0,
+									retardsClassified: 0,
+									retardsUnClassified: 0,
+									retardsApproved: 0,
+									retardsUnApproved: 0
 								};
 
 								yearIndex = unitLocation.yearsContent.length;
@@ -3366,7 +3434,15 @@
 									simpleRetards: 0,
 									sicknesses: 0,
 									presence: 0,
-									retardsCritical: 0
+									retardsCritical: 0,
+									absencesClassified: 0,
+									absencesUnClassified: 0,
+									absencesApproved: 0,
+									absencesUnApproved: 0,
+									retardsClassified: 0,
+									retardsUnClassified: 0,
+									retardsApproved: 0,
+									retardsUnApproved: 0
 								};
 
 								let monthFoundAlpha = undefined;
@@ -3606,7 +3682,15 @@
 											simpleRetards: 0,
 											sicknesses: 0,
 											presence: 0,
-											retardsCritical: 0
+											retardsCritical: 0,
+											absencesClassified: 0,
+											absencesUnClassified: 0,
+											absencesApproved: 0,
+											absencesUnApproved: 0,
+											retardsClassified: 0,
+											retardsUnClassified: 0,
+											retardsApproved: 0,
+											retardsUnApproved: 0
 										};
 										
 										let weekFoundAlpha = getWeek(yearContentModel.months[monthCounts-1],weekNo);
@@ -3703,7 +3787,15 @@
 										retardsCritical: 0,
 										retardsCriticaldates:[],
 										vacations:0,
-										vacationsdates:[]
+										vacationsdates:[],
+										absencesClassified: 0,
+										absencesUnClassified: 0,
+										absencesApproved: 0,
+										absencesUnApproved: 0,
+										retardsClassified: 0,
+										retardsUnClassified: 0,
+										retardsApproved: 0,
+										retardsUnApproved: 0
 									};
 									
 									//console.log("month "+monthIndex+" week no is "+weekNo+" weekDayIndex "+ weekDayIndex+" weeks data length is "+yearContentModel.months[monthIndex].weeks.length);
@@ -3833,7 +3925,15 @@
 															retarddates:{count:0,other:[]},
 															criticalretarddates:{count:0,other:[]},
 															overallretarddates:{count:0,other:[]},
-															weeks:[]
+															weeks:[],
+															absencesClassified: 0,
+															absencesUnClassified: 0,
+															absencesApproved: 0,
+															absencesUnApproved: 0,
+															retardsClassified: 0,
+															retardsUnClassified: 0,
+															retardsApproved: 0,
+															retardsUnApproved: 0
 														},
 														{
 															month:"Février",
@@ -3845,7 +3945,16 @@
 															retarddates:{count:0,other:[]},
 															criticalretarddates:{count:0,other:[]},
 															overallretarddates:{count:0,other:[]},
-															weeks:[]
+															weeks:[],
+															absencesClassified: 0,
+															absencesUnClassified: 0,
+															absencesApproved: 0,
+															absencesUnApproved: 0,	
+															retardsClassified: 0,
+															retardsUnClassified: 0,
+															retardsApproved: 0,
+															retardsUnApproved: 0
+
 														},
 														{
 															month:"Mars",
@@ -3857,7 +3966,15 @@
 															retarddates:{count:0,other:[]},
 															criticalretarddates:{count:0,other:[]},
 															overallretarddates:{count:0,other:[]},
-															weeks:[]
+															weeks:[],
+															absencesClassified: 0,
+															absencesUnClassified: 0,
+															absencesApproved: 0,
+															absencesUnApproved: 0,	
+															retardsClassified: 0,
+															retardsUnClassified: 0,
+															retardsApproved: 0,
+															retardsUnApproved: 0
 														},
 														{
 															month:"Avril",
@@ -3869,7 +3986,15 @@
 															retarddates:{count:0,other:[]},
 															criticalretarddates:{count:0,other:[]},
 															overallretarddates:{count:0,other:[]},
-															weeks:[]
+															weeks:[],
+															absencesClassified: 0,
+															absencesUnClassified: 0,
+															absencesApproved: 0,
+															absencesUnApproved: 0,	
+															retardsClassified: 0,
+															retardsUnClassified: 0,
+															retardsApproved: 0,
+															retardsUnApproved: 0
 														},
 														{
 															month:"Mai",
@@ -3881,7 +4006,15 @@
 															retarddates:{count:0,other:[]},
 															criticalretarddates:{count:0,other:[]},
 															overallretarddates:{count:0,other:[]},
-															weeks:[]
+															weeks:[],
+															absencesClassified: 0,
+															absencesUnClassified: 0,
+															absencesApproved: 0,
+															absencesUnApproved: 0,	
+															retardsClassified: 0,
+															retardsUnClassified: 0,
+															retardsApproved: 0,
+															retardsUnApproved: 0
 														},
 														{
 															month:"Juin",
@@ -3893,7 +4026,15 @@
 															retarddates:{count:0,other:[]},
 															criticalretarddates:{count:0,other:[]},
 															overallretarddates:{count:0,other:[]},
-															weeks:[]
+															weeks:[],
+															absencesClassified: 0,
+															absencesUnClassified: 0,
+															absencesApproved: 0,
+															absencesUnApproved: 0,	
+															retardsClassified: 0,
+															retardsUnClassified: 0,
+															retardsApproved: 0,
+															retardsUnApproved: 0
 														},
 														{
 															month:"Juillet",
@@ -3905,7 +4046,15 @@
 															retarddates:{count:0,other:[]},
 															criticalretarddates:{count:0,other:[]},
 															overallretarddates:{count:0,other:[]},
-															weeks:[]
+															weeks:[],
+															absencesClassified: 0,
+															absencesUnClassified: 0,
+															absencesApproved: 0,
+															absencesUnApproved: 0,	
+															retardsClassified: 0,
+															retardsUnClassified: 0,
+															retardsApproved: 0,
+															retardsUnApproved: 0
 														},
 														{
 															month:"Août",
@@ -3917,7 +4066,15 @@
 															retarddates:{count:0,other:[]},
 															criticalretarddates:{count:0,other:[]},
 															overallretarddates:{count:0,other:[]},
-															weeks:[]
+															weeks:[],
+															absencesClassified: 0,
+															absencesUnClassified: 0,
+															absencesApproved: 0,
+															absencesUnApproved: 0,	
+															retardsClassified: 0,
+															retardsUnClassified: 0,
+															retardsApproved: 0,
+															retardsUnApproved: 0
 														},
 														{
 															month:"Septembre",
@@ -3929,7 +4086,15 @@
 															retarddates:{count:0,other:[]},
 															criticalretarddates:{count:0,other:[]},
 															overallretarddates:{count:0,other:[]},
-															weeks:[]
+															weeks:[],
+															absencesClassified: 0,
+															absencesUnClassified: 0,
+															absencesApproved: 0,
+															absencesUnApproved: 0,	
+															retardsClassified: 0,
+															retardsUnClassified: 0,
+															retardsApproved: 0,
+															retardsUnApproved: 0
 														},
 														{
 															month:"Octobre",
@@ -3941,7 +4106,15 @@
 															retarddates:{count:0,other:[]},
 															criticalretarddates:{count:0,other:[]},
 															overallretarddates:{count:0,other:[]},
-															weeks:[]
+															weeks:[],
+															absencesClassified: 0,
+															absencesUnClassified: 0,
+															absencesApproved: 0,
+															absencesUnApproved: 0,	
+															retardsClassified: 0,
+															retardsUnClassified: 0,
+															retardsApproved: 0,
+															retardsUnApproved: 0
 														},
 														{
 															month:"Novembre",
@@ -3953,7 +4126,15 @@
 															retarddates:{count:0,other:[]},
 															criticalretarddates:{count:0,other:[]},
 															overallretarddates:{count:0,other:[]},
-															weeks:[]
+															weeks:[],
+															absencesClassified: 0,
+															absencesUnClassified: 0,
+															absencesApproved: 0,
+															absencesUnApproved: 0,	
+															retardsClassified: 0,
+															retardsUnClassified: 0,
+															retardsApproved: 0,
+															retardsUnApproved: 0
 														},
 														{
 															month:"Décembre",
@@ -3965,7 +4146,15 @@
 															retarddates:{count:0,other:[]},
 															criticalretarddates:{count:0,other:[]},
 															overallretarddates:{count:0,other:[]},
-															weeks:[]
+															weeks:[],
+															absencesClassified: 0,
+															absencesUnClassified: 0,
+															absencesApproved: 0,
+															absencesUnApproved: 0,	
+															retardsClassified: 0,
+															retardsUnClassified: 0,
+															retardsApproved: 0,
+															retardsUnApproved: 0
 														}]
 												};
 
@@ -4182,6 +4371,16 @@
 												}
 												if(employeeContentModel.absence)//absence section
 												{
+													var currentlyApproved = employeeContentModel.approved;
+													var currentlyApprovedSet = employeeContentModel.approvedSet;
+																
+															employeeContentModel.approved  = false;
+															employeeContentModel.approvedSet = false;
+															
+															/*console.trace({"absencesClassified":(employeeContentModel.reason && currentlyApprovedSet)?-1:0,"absencesUnClassified":(employeeContentModel.reason && currentlyApprovedSet)?1:0,"absencesApproved":(employeeContentModel.reason && currentlyApproved)?-1:0,"absencesUnApproved":(employeeContentModel.reason && currentlyApproved)?1:0});*/
+															
+															calculateApprovalRates("absences",unitLocation,year,{},employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
+																
 													employeeContentModel.absence = false;
 													if(updating)
 													{
@@ -4207,6 +4406,14 @@
 												}
 												if(employeeContentModel.retard)//retards section
 												{
+													var currentlyApproved = employeeContentModel.approved;
+															var currentlyApprovedSet = employeeContentModel.approvedSet;
+																
+															employeeContentModel.approved = false;
+															employeeContentModel.approvedSet = false;
+																
+															calculateApprovalRates("retards",unitLocation,year,{},employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
+															
 													employeeContentModel.retard = false;
 													if(updating)
 													{
@@ -4217,6 +4424,14 @@
 												}
 												if(employeeContentModel.retardCritical)//retards critiques section
 												{
+													var currentlyApproved = employeeContentModel.approved;
+															var currentlyApprovedSet = employeeContentModel.approvedSet;
+																
+															employeeContentModel.approved = false;
+															employeeContentModel.approvedSet = false;
+																
+															calculateApprovalRates("retards",unitLocation,year,{},employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
+															
 													employeeContentModel.retardCritical = false;
 													if(updating)
 													{
@@ -4242,9 +4457,17 @@
 														
 														if(employeeContentModel.retard)
 														{
+															var currentlyApproved = employeeContentModel.approved;
+															var currentlyApprovedSet = employeeContentModel.approvedSet;
+																
+															employeeContentModel.approved = false;
+															employeeContentModel.approvedSet = false;
+																
+															calculateApprovalRates("retards",unitLocation,year,{},employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
 															calculateRetards(unitLocation,year,-1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
 															employeeContentModel.retard = false;
-															if(updating)
+															
+															if( updating )
 															{
 																let command = { paths:[{path:"container",index:location_index},{path:"yearsContent",index:yearIndex},{path:"months",index:monthIndex},{path:"weeks",index:weekIndex},{path:"days",index:weekDayIndex},{path:"retard"}], commandObj:{commands:[{command:"find",index:employeeContentModel.ID},{command:"set",value:false}]} };
 																pushCommands(command,employeeContentModel.ID);
@@ -4263,12 +4486,17 @@
 														
 														if(secondresult.first[3].length > 0)
 														{
+															var previouslyApproved = employeeContentModel.approved;
+															var previouslyApprovedSet = employeeContentModel.approvedSet;
+															
 															employeeContentModel.reason = true;
 															employeeContentModel.approved = secondresult.first[3][0][secondresult.second[3][3].name];
 															employeeContentModel.reasonStr = secondresult.first[3][0][secondresult.second[3][1].name];
 															employeeContentModel.approvedSet = secondresult.first[3][0][secondresult.second[3][4].name];
 															employeeContentModel.approvedBy = secondresult.first[3][0][secondresult.second[3][5].name];
 															
+															calculateApprovalRates("retards",unitLocation,year,{},employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
+														
 															if(employeeContentModel.approvedBy)
 															{
 																const approversName = resultTwo.first.find( el => el[resultTwo.second[9].name] == employeeContentModel.approvedBy);	
@@ -4276,12 +4504,31 @@
 																{
 																	employeeContentModel.approvedByName = approversName[resultTwo.second[2].name]+" "+approversName[resultTwo.second[3].name]+" "+approversName[resultTwo.second[6].name];
 																}
-															}
+															}	
+														}
+														else
+														{
+															var currentlyApproved = employeeContentModel.approved;
+															var currentlyApprovedSet = employeeContentModel.approvedSet;
+															
+															employeeContentModel.approved = false;
+															employeeContentModel.approvedSet = false;
+															
+															calculateApprovalRates("retards",unitLocation,year,{},employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);		
 														}
 														
-														
 														if(employeeContentModel.absence)
-														{																
+														{	
+															var currentlyApproved = employeeContentModel.approved;
+															var currentlyApprovedSet = employeeContentModel.approvedSet;
+																
+															employeeContentModel.approved = false;
+															employeeContentModel.approvedSet = false;
+															
+															/*console.trace({"absencesClassified":(employeeContentModel.reason && currentlyApprovedSet)?-1:0,"absencesUnClassified":(employeeContentModel.reason && currentlyApprovedSet)?1:0,"absencesApproved":(employeeContentModel.reason && currentlyApproved)?-1:0,"absencesUnApproved":(employeeContentModel.reason && currentlyApproved)?1:0});*/
+															
+															calculateApprovalRates("absences",unitLocation,year,{},employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
+																
 															if(updating)
 															{
 																let command = { paths:[{path:"container",index:location_index},{path:"yearsContent",index:yearIndex},{path:"months",index:monthIndex},{path:"weeks",index:weekIndex},{path:"days",index:weekDayIndex},{path:"absence"}], commandObj:{commands:[{command:"find",index:employeeContentModel.ID},{command:"set",value:false}]} };
@@ -4301,6 +4548,14 @@
 													{
 														if(employeeContentModel.retardCritical)
 														{			
+															var currentlyApproved = employeeContentModel.approved;
+															var currentlyApprovedSet = employeeContentModel.approvedSet;
+																
+															employeeContentModel.approved = false;
+															employeeContentModel.approvedSet = false;
+																
+															calculateApprovalRates("retards",unitLocation,year,{},employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
+															
 															if(updating)
 															{
 																let command = { paths:[{path:"container",index:location_index},{path:"yearsContent",index:yearIndex},{path:"months",index:monthIndex},{path:"weeks",index:weekIndex},{path:"days",index:weekDayIndex},{path:"retardCritical"}], commandObj:{commands:[{command:"find",index:employeeContentModel.ID},{command:"set",value:false}]} };
@@ -4321,13 +4576,18 @@
 														retard = true;	
 														
 														if(secondresult.first[3].length > 0)
-														{
+														{															
+															var previouslyApproved = employeeContentModel.approved;
+															var previouslyApprovedSet = employeeContentModel.approvedSet;
+															
 															employeeContentModel.reason = true;
 															employeeContentModel.approved = secondresult.first[3][0][secondresult.second[3][3].name];
 															employeeContentModel.reasonStr = secondresult.first[3][0][secondresult.second[3][1].name];
 															employeeContentModel.approvedSet = secondresult.first[3][0][secondresult.second[3][4].name];
 															employeeContentModel.approvedBy = secondresult.first[3][0][secondresult.second[3][5].name];
 															
+															calculateApprovalRates("retards",unitLocation,year,{},employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
+														
 															if(employeeContentModel.approvedBy)
 															{
 																const approversName = resultTwo.first.find( el => el[resultTwo.second[9].name] == employeeContentModel.approvedBy);	
@@ -4338,9 +4598,30 @@
 															}
 															
 														}
+														else
+														{															
+															var currentlyApproved = employeeContentModel.approved;
+															var currentlyApprovedSet = employeeContentModel.approvedSet;
+															
+															employeeContentModel.approved = false;
+															employeeContentModel.approvedSet = false;
+															
+															calculateApprovalRates("retards",unitLocation,year,{},employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);		
+														}
 														
 														if(employeeContentModel.absence)
 														{
+															var currentlyApproved = employeeContentModel.approved;
+															var currentlyApprovedSet = employeeContentModel.approvedSet;
+																
+															employeeContentModel.approved = false;
+															employeeContentModel.approvedSet = false;
+																
+															/*console.trace({"absencesClassified":(employeeContentModel.reason && currentlyApprovedSet)?-1:0,"absencesUnClassified":(employeeContentModel.reason && currentlyApprovedSet)?1:0,"absencesApproved":(employeeContentModel.reason && currentlyApproved)?-1:0,"absencesUnApproved":(employeeContentModel.reason && currentlyApproved)?1:0});*/
+															
+															calculateApprovalRates("absences",unitLocation,year,{},employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
+																
+															
 															employeeContentModel.absence = false;															
 															if(employeeContentModel.reason)
 															{
@@ -4367,6 +4648,16 @@
 														if(employeeContentModel.retard)
 														{
 															//nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].retardsdates.remove(employeeContentModel);
+															
+															var currentlyApproved = employeeContentModel.approved;
+															var currentlyApprovedSet = employeeContentModel.approvedSet;
+																
+															employeeContentModel.approved = false;
+															employeeContentModel.approvedSet = false;
+																
+															calculateApprovalRates("retards",unitLocation,year,{},employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
+															
+															
 															calculateRetards(unitLocation,year,-1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
 															employeeContentModel.retard = false;
 																					
@@ -4378,6 +4669,14 @@
 
 														if(employeeContentModel.retardCritical)
 														{
+															var currentlyApproved = employeeContentModel.approved;
+															var currentlyApprovedSet = employeeContentModel.approvedSet;
+																
+															employeeContentModel.approved = false;
+															employeeContentModel.approvedSet = false;
+																
+															calculateApprovalRates("retards",unitLocation,year,{},employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
+															
 															//nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].retardsCriticaldates.remove(employeeContentModel);
 															calculateCriticalRetards(unitLocation,year,-1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
 															employeeContentModel.retardCritical = false;
@@ -4390,7 +4689,17 @@
 														
 														retard = false;	
 														if(employeeContentModel.absence)
-														{															
+														{		
+															var currentlyApproved = employeeContentModel.approved;
+															var currentlyApprovedSet = employeeContentModel.approvedSet;
+																
+															employeeContentModel.approved = false;
+															employeeContentModel.approvedSet = false;
+																
+															/*console.trace({"absencesClassified":(employeeContentModel.reason && currentlyApprovedSet)?-1:0,"absencesUnClassified":(employeeContentModel.reason && currentlyApprovedSet)?1:0,"absencesApproved":(employeeContentModel.reason && currentlyApproved)?-1:0,"absencesUnApproved":(employeeContentModel.reason && currentlyApproved)?1:0});*/	
+																
+															calculateApprovalRates("absences",unitLocation,year,{},employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
+																
 															if(employeeContentModel.reason)
 															{
 																employeeContentModel.reason = false;
@@ -4655,11 +4964,21 @@
 													employeeContentModel.date = currentDateOfYear.toLocaleString('fr-FR',{day:"numeric",month:"long",year:"numeric"});
 													if(secondresult.first[3].length > 0)
 													{
+														var previouslyApproved = employeeContentModel.approved;
+														var previouslyApprovedSet = employeeContentModel.approvedSet;
+														console.trace(" previouslyApproved "+previouslyApproved+" previouslyApprovedSet "+previouslyApprovedSet);
 														console.log(secondresult.second[3][1].name);console.log(secondresult.first[3][0]);
 														employeeContentModel.reason = true;employeeContentModel.reasonStr = secondresult.first[3][0][secondresult.second[3][1].name];
 														employeeContentModel.approved = secondresult.first[3][0][secondresult.second[3][3].name];
 														employeeContentModel.approvedSet = secondresult.first[3][0][secondresult.second[3][4].name];
 														employeeContentModel.approvedBy = secondresult.first[3][0][secondresult.second[3][5].name];
+														
+														console.trace({"absencesClassified":(employeeContentModel.approvedSet && !previouslyApprovedSet)?1:(!employeeContentModel.approvedSet &&previouslyApprovedSet)?-1:0 ,"absencesUnClassified":(!employeeContentModel.approvedSet && previouslyApprovedSet)?1:(employeeContentModel.approvedSet && !previouslyApprovedSet)?-1:0,"absencesApproved":(employeeContentModel.approved && !previouslyApproved)?1:(!employeeContentModel.approved && previouslyApproved)?-1:0,"absencesUnApproved":(!employeeContentModel.approved && previouslyApproved)?1:(employeeContentModel.approved && !previouslyApproved)?-1:0});
+														
+														console.trace({reason:employeeContentModel.reason,approved:employeeContentModel.approved,approvedSet:employeeContentModel.approvedSet,approvedBy:employeeContentModel.approvedBy});
+														
+														calculateApprovalRates("absences",unitLocation,year,{},employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
+														
 														
 														if(employeeContentModel.approvedBy)
 														{
@@ -4671,6 +4990,20 @@
 														}
 															
 													}
+													else
+													{
+														var currentlyApproved = employeeContentModel.approved;
+														var currentlyApprovedSet = employeeContentModel.approvedSet;
+														
+														employeeContentModel.approved = false;
+														employeeContentModel.approvedSet = false;
+														
+														/*console.trace({"absencesClassified":(employeeContentModel.reason && currentlyApprovedSet)?-1:0,"absencesUnClassified":(employeeContentModel.reason && currentlyApprovedSet)?1:0,"absencesApproved":(employeeContentModel.reason && currentlyApproved)?-1:0,"absencesUnApproved":(employeeContentModel.reason && currentlyApproved)?1:0});*/
+														
+														calculateApprovalRates("absences",unitLocation,year,{},employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
+														
+													}
+													
 													if(currentDateOfYear.getDay() != 0 && currentDateOfYear.getDay() != 6)
 														calculateAbsence(unitLocation,year,1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
 													
@@ -4684,12 +5017,28 @@
 														employeeContentModel.absence = true;
 														if(employeeContentModel.retard == true)
 														{
+															var currentlyApproved = employeeContentModel.approved;
+															var currentlyApprovedSet = employeeContentModel.approvedSet;
+																
+															employeeContentModel.approved = false;
+															employeeContentModel.approvedSet = false;
+																
+															calculateApprovalRates("retards",unitLocation,year,{},employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
+															
 															calculateRetards(unitLocation,year,-1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
 															employeeContentModel.retard = false;
 														}
 
 														if(employeeContentModel.retardCritical == true)
 														{
+															var currentlyApproved = employeeContentModel.approved;
+															var currentlyApprovedSet = employeeContentModel.approvedSet;
+																
+															employeeContentModel.approved = false;
+															employeeContentModel.approvedSet = false;
+																
+															calculateApprovalRates("retards",unitLocation,year,{},employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
+															
 															calculateCriticalRetards(unitLocation,year,-1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
 															employeeContentModel.retardCritical = false;
 														}
@@ -4701,9 +5050,20 @@
 															{
 																console.log(secondresult.second[3][1].name);console.log(secondresult.first[3][0]);
 																employeeContentModel.reason = true;employeeContentModel.reasonStr = secondresult.first[3][0][secondresult.second[3][1].name];
+																
+																var previouslyApproved = employeeContentModel.approved;
+																var previouslyApprovedSet = employeeContentModel.approvedSet;
+														
+																
 																employeeContentModel.approved = secondresult.first[3][0][secondresult.second[3][3].name];
 																employeeContentModel.approvedSet = secondresult.first[3][0][secondresult.second[3][4].name];
 																employeeContentModel.approvedBy = secondresult.first[3][0][secondresult.second[3][5].name];
+																
+																console.trace({"absencesClassified":(employeeContentModel.reason && employeeContentModel.approvedSet && !previouslyApprovedSet)?1:(employeeContentModel.reason && !employeeContentModel.approvedSet && previouslyApprovedSet)?-1:0 ,"absencesUnClassified":(employeeContentModel.reason && !employeeContentModel.approvedSet && previouslyApprovedSet)?1:(employeeContentModel.reason && employeeContentModel.approvedSet && !previouslyApprovedSet)?-1:0,"absencesApproved":(employeeContentModel.reason && employeeContentModel.approved && !previouslyApproved)?1:(employeeContentModel.reason && !employeeContentModel.approved && previouslyApproved)?-1:0,"absencesUnApproved":(employeeContentModel.reason && !employeeContentModel.approved && previouslyApproved)?1:(employeeContentModel.reason && employeeContentModel.approved && !previouslyApproved)?-1:0});
+														
+																calculateApprovalRates("absences",unitLocation,year,{},employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
+														
+																
 																if(employeeContentModel.approvedBy)
 																{
 																	const approversName = resultTwo.first.find( el => el[resultTwo.second[9].name] == employeeContentModel.approvedBy);	
@@ -4713,6 +5073,20 @@
 																	}
 																}
 															
+															}
+															else
+															{
+																
+																var currentlyApproved = employeeContentModel.approved;
+																var currentlyApprovedSet = employeeContentModel.approvedSet;
+																
+																employeeContentModel.approved = false;
+																employeeContentModel.approvedSet = false;
+																
+																/*console.trace({"absencesClassified":(employeeContentModel.reason && currentlyApprovedSet)?-1:0,"absencesUnClassified":(employeeContentModel.reason && currentlyApprovedSet)?1:0,"absencesApproved":(employeeContentModel.reason && currentlyApproved)?-1:0,"absencesUnApproved":(employeeContentModel.reason && currentlyApproved)?1:0});*/
+																
+																calculateApprovalRates("absences",unitLocation,year,{},employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
+																
 															}
 															calculateAbsence(unitLocation,year,1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);	
 														}catch(ex){console.log(ex);}
@@ -4743,6 +5117,16 @@
 														}
 														if(employeeContentModel.absence)//absence section
 														{
+															var currentlyApproved = employeeContentModel.approved;
+															var currentlyApprovedSet = employeeContentModel.approvedSet;
+																
+															employeeContentModel.approved = false;
+															employeeContentModel.approvedSet = false;
+																
+															/*console.trace({"absencesClassified":(employeeContentModel.approvedSet && previouslyApprovedSet)?0:(employeeContentModel.approvedSet && !previouslyApprovedSet)?1:(!employeeContentModel.approvedSet &&previouslyApprovedSet)?-1:0 ,"absencesUnClassified":(!employeeContentModel.approvedSet && previouslyApprovedSet)?1:(employeeContentModel.approvedSet && !previouslyApprovedSet)?-1:0,"absencesApproved":(employeeContentModel.approved && !previouslyApproved)?1:(!employeeContentModel.approved && previouslyApproved)?-1:0,"absencesUnApproved":(!employeeContentModel.approved && previouslyApproved)?1:(employeeContentModel.approved && !previouslyApproved)?-1:0});*/	
+																
+															calculateApprovalRates("absences",unitLocation,year,{},employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
+																
 															employeeContentModel.absence = false;															
 															if(employeeContentModel.reason)
 															{
@@ -4757,6 +5141,14 @@
 														}
 														if(employeeContentModel.retard)//retards section
 														{
+															var currentlyApproved = employeeContentModel.approved;
+															var currentlyApprovedSet = employeeContentModel.approvedSet;
+																
+															employeeContentModel.approved = false;
+															employeeContentModel.approvedSet = false;
+																
+															calculateApprovalRates("retards",unitLocation,year,{},employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
+															
 															employeeContentModel.retard = false;
 																					
 															if(employeeContentModel.reason)
@@ -4767,6 +5159,14 @@
 														}
 														if(employeeContentModel.retardCritical)//retards critiques section
 														{
+															var currentlyApproved = employeeContentModel.approved;
+															var currentlyApprovedSet = employeeContentModel.approvedSet;
+																
+															employeeContentModel.approved = false;
+															employeeContentModel.approvedSet = false;
+																
+															calculateApprovalRates("retards",unitLocation,year,{},employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
+															
 															employeeContentModel.retardCritical = false;
 																					
 															if(employeeContentModel.reason)
@@ -4786,6 +5186,16 @@
 														
 														if(employeeContentModel.absence)
 														{
+															var currentlyApproved = employeeContentModel.approved;
+															var currentlyApprovedSet = employeeContentModel.approvedSet;
+																
+															employeeContentModel.approved = false;
+															employeeContentModel.approvedSet = false;
+															
+															/*console.trace({"absencesClassified":(employeeContentModel.approvedSet && previouslyApprovedSet)?0:(employeeContentModel.approvedSet && !previouslyApprovedSet)?1:(!employeeContentModel.approvedSet &&previouslyApprovedSet)?-1:0 ,"absencesUnClassified":(!employeeContentModel.approvedSet && previouslyApprovedSet)?1:(employeeContentModel.approvedSet && !previouslyApprovedSet)?-1:0,"absencesApproved":(employeeContentModel.approved && !previouslyApproved)?1:(!employeeContentModel.approved && previouslyApproved)?-1:0,"absencesUnApproved":(!employeeContentModel.approved && previouslyApproved)?1:(employeeContentModel.approved && !previouslyApproved)?-1:0});*/
+															
+															calculateApprovalRates("absences",unitLocation,year,{},employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
+																
 															employeeContentModel.absence = false;															
 															if(employeeContentModel.reason)
 															{
@@ -4806,6 +5216,14 @@
 														}
 														if(employeeContentModel.retard)//retards section
 														{
+															var currentlyApproved = employeeContentModel.approved;
+															var currentlyApprovedSet = employeeContentModel.approvedSet;
+																
+															employeeContentModel.approved = false;
+															employeeContentModel.approvedSet = false;
+																
+															calculateApprovalRates("retards",unitLocation,year,{},employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
+															
 															console.log("retards on "+currentDateOfYear+"to be removed");
 															employeeContentModel.retard = false;
 																					
@@ -4817,6 +5235,7 @@
 														}
 														if(employeeContentModel.retardCritical)//retards critiques section
 														{
+															
 															console.log("critical retards on "+currentDateOfYear+"to be removed")
 															employeeContentModel.retardCritical = false;
 																					
@@ -4844,6 +5263,16 @@
 														}
 														if(employeeContentModel.absence)
 														{
+															var currentlyApproved = employeeContentModel.approved;
+															var currentlyApprovedSet = employeeContentModel.approvedSet;
+																
+															employeeContentModel.approved = false;
+															employeeContentModel.approvedSet = false;
+															
+															/*console.trace({"absencesClassified":(employeeContentModel.reason && currentlyApprovedSet)?-1:0,"absencesUnClassified":(employeeContentModel.reason && currentlyApprovedSet)?1:0,"absencesApproved":(employeeContentModel.reason && currentlyApproved)?-1:0,"absencesUnApproved":(employeeContentModel.reason && currentlyApproved)?1:0});*/
+															
+															calculateApprovalRates("absences",unitLocation,year,{},employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
+																
 															if(employeeContentModel.reason)
 															{
 																employeeContentModel.reason = false;
@@ -4858,6 +5287,14 @@
 														}
 														if(employeeContentModel.retard)//retards section
 														{
+															var currentlyApproved = employeeContentModel.approved;
+															var currentlyApprovedSet = employeeContentModel.approvedSet;
+																
+															employeeContentModel.approved = false;
+															employeeContentModel.approvedSet = false;
+																
+															calculateApprovalRates("retards",unitLocation,year,{},employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
+															
 															employeeContentModel.retard = false;
 																					
 															if(employeeContentModel.reason)
@@ -4868,6 +5305,14 @@
 														}
 														if(employeeContentModel.retardCritical)//retards critiques section
 														{
+															var currentlyApproved = employeeContentModel.approved;
+															var currentlyApprovedSet = employeeContentModel.approvedSet;
+																
+															employeeContentModel.approved = false;
+															employeeContentModel.approvedSet = false;
+																
+															calculateApprovalRates("retards",unitLocation,year,{},employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
+															
 															employeeContentModel.retardCritical = false;
 																					
 															if(employeeContentModel.reason)
@@ -4889,11 +5334,20 @@
 																employeeContentModel.date = currentDateOfYear.toLocaleString('fr-FR',{day:"numeric",month:"long",year:"numeric"});
 																if(secondresult.first[3].length > 0)
 																{
+																	var previouslyApproved = employeeContentModel.approved;
+																	var previouslyApprovedSet = employeeContentModel.approvedSet;
+														
 																	console.log(secondresult.second[3][1].name);console.log(secondresult.first[3][0]);
 																	employeeContentModel.reason = true;employeeContentModel.reasonStr = secondresult.first[3][0][secondresult.second[3][1].name];
+																	
 																	employeeContentModel.approved = secondresult.first[3][0][secondresult.second[3][3].name];
 																	employeeContentModel.approvedSet = secondresult.first[3][0][secondresult.second[3][4].name];
 																	employeeContentModel.approvedBy = secondresult.first[3][0][secondresult.second[3][5].name];
+																	
+																	console.trace({"absencesClassified":(employeeContentModel.reason && employeeContentModel.approvedSet && !previouslyApprovedSet)?1:(employeeContentModel.reason && !employeeContentModel.approvedSet && previouslyApprovedSet)?-1:0 ,"absencesUnClassified":(employeeContentModel.reason && !employeeContentModel.approvedSet && previouslyApprovedSet)?1:(employeeContentModel.reason && employeeContentModel.approvedSet && !previouslyApprovedSet)?-1:0,"absencesApproved":(employeeContentModel.reason && employeeContentModel.approved && !previouslyApproved)?1:(employeeContentModel.reason && !employeeContentModel.approved && previouslyApproved)?-1:0,"absencesUnApproved":(employeeContentModel.reason && !employeeContentModel.approved && previouslyApproved)?1:(employeeContentModel.reason && employeeContentModel.approved && !previouslyApproved)?-1:0});
+																	
+																	calculateApprovalRates("absences",unitLocation,year,{},employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
+														
 																	if(employeeContentModel.approvedBy)
 																	{
 																		const approversName = resultTwo.first.find( el => el[resultTwo.second[9].name] == employeeContentModel.approvedBy);	
@@ -4903,6 +5357,20 @@
 																		}
 																	}
 															
+																}																
+																else
+																{
+																	
+																	var currentlyApproved = employeeContentModel.approved;
+																	var currentlyApprovedSet = employeeContentModel.approvedSet;
+																	
+																	employeeContentModel.approved = false;
+																	employeeContentModel.approvedSet = false;
+																	
+																	/*console.trace({"absencesClassified":(employeeContentModel.reason && currentlyApprovedSet)?-1:0,"absencesUnClassified":(employeeContentModel.reason && currentlyApprovedSet)?1:0,"absencesApproved":(employeeContentModel.reason && currentlyApproved)?-1:0,"absencesUnApproved":(employeeContentModel.reason && currentlyApproved)?1:0});*/
+																	
+																	calculateApprovalRates("absences",unitLocation,year,{},employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
+																	
 																}
 																calculateAbsence(unitLocation,year,1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
 																
@@ -4925,6 +5393,14 @@
 															}
 															if(employeeContentModel.retard)//retards section
 															{
+																var currentlyApproved = employeeContentModel.approved;
+																var currentlyApprovedSet = employeeContentModel.approvedSet;
+																	
+																employeeContentModel.approved = false;
+																employeeContentModel.approvedSet = false;
+																	
+																calculateApprovalRates("retards",unitLocation,year,{},employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
+																
 																employeeContentModel.retard = false;
 																						
 																if(employeeContentModel.reason)
@@ -4935,6 +5411,14 @@
 															}
 															if(employeeContentModel.retardCritical)//retards critiques section
 															{
+																var currentlyApproved = employeeContentModel.approved;
+																var currentlyApprovedSet = employeeContentModel.approvedSet;
+																	
+																employeeContentModel.approved = false;
+																employeeContentModel.approvedSet = false;
+																	
+																calculateApprovalRates("retards",unitLocation,year,{},employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
+																
 																employeeContentModel.retardCritical = false;
 																						
 																if(employeeContentModel.reason)
@@ -6576,7 +7060,61 @@
 		}						
 
 	}
-
+	
+	function calculateApprovalRates(str,unitLocation,year,offset,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex)
+	{
+			let nodupTempAlpha = getYear(unitLocation,year);
+			let nodupTemp = nodupTempAlpha.first;
+			const obj = {};obj["no"+str+'demands'] = 0;obj[str+'Classified'] = 0;obj[str+'UnClassified'] = 0;obj[str+'Approved'] = 0;obj[str+'UnApproved'] = 0;
+			
+			let dayvalues = nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex][str+"dates"].reduce((acc,el)=> Object.assign(acc,acc[str+'Classified']+= (el.approvedSet &&  el.reason)?1:0,acc["no"+str+'demands']+=  el.reason?0:1,acc[str+'UnClassified']+= (!el.approvedSet &&  el.reason)?1:0,acc[str+'Approved']+= (el.approved && el.reason)?1:0,acc[str+'UnApproved'] += (!el.approved && el.reason)?1:0),JSON.parse(JSON.stringify(obj)));
+			//console.log(dayvalues);
+			
+			let weeksvalues = nodupTemp.months[monthIndex].weeks[weekIndex].days.flatMap(d=> d[str+"dates"]).reduce((acc,el)=> Object.assign(acc,acc[str+'Classified']+= (el.approvedSet &&  el.reason)?1:0,acc["no"+str+'demands']+=  el.reason?0:1,acc[str+'UnClassified']+= (!el.approvedSet &&  el.reason)?1:0,acc[str+'Approved']+= (el.approved && el.reason)?1:0,acc[str+'UnApproved'] += (!el.approved && el.reason)?1:0),JSON.parse(JSON.stringify(obj)));
+			//console.log(weeksvalues);
+			
+			let monthsvalues = nodupTemp.months[monthIndex].weeks.flatMap(w=> w.days.flatMap(d=> d[str+"dates"])).reduce((acc,el)=> Object.assign(acc,acc[str+'Classified']+= (el.approvedSet &&  el.reason)?1:0,acc["no"+str+'demands']+=  el.reason?0:1,acc[str+'UnClassified']+= (!el.approvedSet &&  el.reason)?1:0,acc[str+'Approved']+= (el.approved && el.reason)?1:0,acc[str+'UnApproved'] += (!el.approved && el.reason)?1:0),JSON.parse(JSON.stringify(obj)));
+			//console.log(monthsvalues);
+			
+			let yearsvalues = nodupTemp.months.flatMap(m => m.weeks.flatMap(w=> w.days.flatMap(d=> d[str+"dates"]))).reduce((acc,el)=> Object.assign(acc,acc[str+'Classified']+= (el.approvedSet &&  el.reason)?1:0,acc["no"+str+'demands']+=  el.reason?0:1,acc[str+'UnClassified']+= (!el.approvedSet &&  el.reason)?1:0,acc[str+'Approved']+= (el.approved && el.reason)?1:0,acc[str+'UnApproved'] += (!el.approved && el.reason)?1:0),JSON.parse(JSON.stringify(obj)));
+			//console.log(yearsvalues);
+			
+			employeeContentModel[str+'Classified'] =  (employeeContentModel.approvedSet &&  employeeContentModel.reason)?1:0;
+			employeeContentModel[str+'UnClassified'] = (!employeeContentModel.approvedSet &&  employeeContentModel.reason)?1:0;
+			employeeContentModel[str+'Approved'] = (employeeContentModel.approved && employeeContentModel.reason)?1:0;
+			employeeContentModel[str+'UnApproved'] = (!employeeContentModel.approved && employeeContentModel.reason)?1:0;
+			employeeContentModel[str+'approval'+'Demands'] = employeeContentModel[str+'Approved'] + employeeContentModel[str+'UnApproved'];
+			//employeeContentModel["no"+str+'demands'] +=  ;
+			
+			nodupTemp[str+'Classified'] =  yearsvalues[str+'Classified'];
+			nodupTemp[str+'UnClassified'] = yearsvalues[str+'UnClassified'];	
+			nodupTemp[str+'Approved'] = yearsvalues[str+'Approved'];
+			nodupTemp[str+'UnApproved'] = yearsvalues[str+'UnApproved'];	
+			nodupTemp[str+'approval'+'Demands'] = nodupTemp[str+'UnApproved'] + nodupTemp[str+'Approved'];
+			nodupTemp["no"+str+'Demands'] =  yearsvalues["no"+str+'demands'];
+			
+			nodupTemp.months[monthIndex][str+'Classified'] = monthsvalues[str+'Classified'];
+			nodupTemp.months[monthIndex][str+'UnClassified'] = monthsvalues[str+'UnClassified'];	
+			nodupTemp.months[monthIndex][str+'Approved'] = monthsvalues[str+'Approved'];	
+			nodupTemp.months[monthIndex][str+'UnApproved'] = monthsvalues[str+'UnApproved'];	
+			nodupTemp.months[monthIndex][str+'approval'+'Demands'] = nodupTemp.months[monthIndex][str+'UnApproved'] + nodupTemp.months[monthIndex][str+'Approved'];	
+			nodupTemp.months[monthIndex]["no"+str+'Demands'] =  monthsvalues["no"+str+'demands'];
+			
+			nodupTemp.months[monthIndex].weeks[weekIndex][str+'Classified'] = weeksvalues[str+'Classified'];
+			nodupTemp.months[monthIndex].weeks[weekIndex][str+'UnClassified'] = weeksvalues[str+'UnClassified'];
+			nodupTemp.months[monthIndex].weeks[weekIndex][str+'Approved'] = weeksvalues[str+'Approved'];	
+			nodupTemp.months[monthIndex].weeks[weekIndex][str+'UnApproved'] = weeksvalues[str+'UnApproved'];
+			nodupTemp.months[monthIndex].weeks[weekIndex][str+'approval'+'Demands'] = nodupTemp.months[monthIndex].weeks[weekIndex][str+'UnApproved'] + nodupTemp.months[monthIndex].weeks[weekIndex][str+'Approved'];
+			nodupTemp.months[monthIndex].weeks[weekIndex]["no"+str+'Demands'] =  weeksvalues["no"+str+'demands'];
+			
+			nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex][str+'Classified'] = dayvalues[str+'Classified'];;
+			nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex][str+'UnClassified'] = dayvalues[str+'UnClassified'];
+			nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex][str+'Approved'] = dayvalues[str+'Approved'];
+			nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex][str+'UnApproved'] = dayvalues[str+'UnApproved'];
+			nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex]["no"+str+'Demands'] =  dayvalues["no"+str+'demands'];
+			nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex][str+'approval'+'Demands'] = nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex][str+'UnApproved'] + nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex][str+'Approved'];
+			
+	}
 	function calculateMission(unitLocation,year,offset,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex)
 	{
 		let nodupTempAlpha = getYear(unitLocation,year);
