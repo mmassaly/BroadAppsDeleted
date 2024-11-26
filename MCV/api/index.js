@@ -3892,7 +3892,11 @@
 													date: ""
 												};
 											}
-
+											
+											if(yearContentModel.months[monthIndex].weeks[weekIndex].days[weekDayIndex].identities[IDIndividu] == undefined)
+											{
+												yearContentModel.months[monthIndex].weeks[weekIndex].days[weekDayIndex].identities[IDIndividu] = employeeContentModel;
+											}
 												employeeDescribed = 
 												{
 													img: {exists: undefined,src: undefined},  
@@ -6532,6 +6536,10 @@
 					nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].presencedates.other.push(employeeContentModel.date);
 					nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].weeks[weekIndex].presencedates.other.push(employeeContentModel.date);
 					
+					if(nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].identities[employeeContentModel.ID] == undefined)
+					{
+						nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].identities[employeeContentModel.ID] = employeeContentModel;
+					}
 				}/*
 				else
 				{ 
