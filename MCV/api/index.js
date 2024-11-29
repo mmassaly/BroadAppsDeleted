@@ -4382,8 +4382,6 @@
 															employeeContentModel.approvedSet = false;
 															
 															/*console.trace({"absencesClassified":(employeeContentModel.reason && currentlyApprovedSet)?-1:0,"absencesUnClassified":(employeeContentModel.reason && currentlyApprovedSet)?1:0,"absencesApproved":(employeeContentModel.reason && currentlyApproved)?-1:0,"absencesUnApproved":(employeeContentModel.reason && currentlyApproved)?1:0});*/
-															
-															calculateApprovalRates("absences",unitLocation,year,{},employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
 																
 													employeeContentModel.absence = false;
 													if(updating)
@@ -4397,6 +4395,8 @@
 													}
 													if(currentDateOfYear.getDay() != 0 && currentDateOfYear.getDay() != 6)
 													calculateAbsence(unitLocation,year,-1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
+													
+													calculateApprovalRates("absences",unitLocation,year,{},employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
 												}
 												if(employeeContentModel.congès)//congès section
 												{
@@ -4415,8 +4415,6 @@
 																
 															employeeContentModel.approved = false;
 															employeeContentModel.approvedSet = false;
-																
-															calculateApprovalRates("retards",unitLocation,year,{},employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
 															
 													employeeContentModel.retard = false;
 													if(updating)
@@ -4425,6 +4423,9 @@
 														pushCommands(command,employeeContentModel.ID);
 													}
 													calculateRetards(unitLocation,year,-1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
+														
+													calculateApprovalRates("retards",unitLocation,year,{},employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
+															
 												}
 												if(employeeContentModel.retardCritical)//retards critiques section
 												{
@@ -4433,8 +4434,6 @@
 																
 															employeeContentModel.approved = false;
 															employeeContentModel.approvedSet = false;
-																
-															calculateApprovalRates("retards",unitLocation,year,{},employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
 															
 													employeeContentModel.retardCritical = false;
 													if(updating)
@@ -4443,6 +4442,7 @@
 														pushCommands(command,employeeContentModel.ID);
 													}
 													calculateCriticalRetards(unitLocation,year,-1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
+													calculateApprovalRates("retards",unitLocation,year,{},employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
 												}
 											}
 											
@@ -4467,8 +4467,9 @@
 															employeeContentModel.approved = false;
 															employeeContentModel.approvedSet = false;
 																
-															calculateApprovalRates("retards",unitLocation,year,{},employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
 															calculateRetards(unitLocation,year,-1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
+															calculateApprovalRates("retards",unitLocation,year,{},employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
+															
 															employeeContentModel.retard = false;
 															
 															if( updating )
@@ -4499,8 +4500,7 @@
 															employeeContentModel.approvedSet = secondresult.first[3][0][secondresult.second[3][4].name];
 															employeeContentModel.approvedBy = secondresult.first[3][0][secondresult.second[3][5].name];
 															
-															calculateApprovalRates("retards",unitLocation,year,{},employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
-														
+															
 															if(employeeContentModel.approvedBy)
 															{
 																const approversName = resultTwo.first.find( el => el[resultTwo.second[9].name] == employeeContentModel.approvedBy);	
@@ -4518,7 +4518,6 @@
 															employeeContentModel.approved = false;
 															employeeContentModel.approvedSet = false;
 															
-															calculateApprovalRates("retards",unitLocation,year,{},employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);		
 														}
 														
 														if(employeeContentModel.absence)
@@ -4547,6 +4546,15 @@
 															if(currentDateOfYear.getDay() != 0 && currentDateOfYear.getDay() != 6)
 															calculateAbsence(unitLocation,year,-1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);	
 														}
+														
+														if(!(secondresult.first[3].length > 0))
+														{
+															calculateApprovalRates("retards",unitLocation,year,{},employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);		
+														}
+														else
+														{
+															calculateApprovalRates("retards",unitLocation,year,{},employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
+														}
 													}
 													else if (secondresult.first[0][0][secondresult.second[0][1].name] == 1 && dresultFiltered.first.length == 0) 
 													{
@@ -4558,7 +4566,6 @@
 															employeeContentModel.approved = false;
 															employeeContentModel.approvedSet = false;
 																
-															calculateApprovalRates("retards",unitLocation,year,{},employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
 															
 															if(updating)
 															{
@@ -4567,6 +4574,9 @@
 															}
 															employeeContentModel.retardCritical = false;
 															calculateCriticalRetards(unitLocation,year,-1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
+															
+															calculateApprovalRates("retards",unitLocation,year,{},employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
+															
 														}
 
 									
@@ -4590,8 +4600,7 @@
 															employeeContentModel.approvedSet = secondresult.first[3][0][secondresult.second[3][4].name];
 															employeeContentModel.approvedBy = secondresult.first[3][0][secondresult.second[3][5].name];
 															
-															calculateApprovalRates("retards",unitLocation,year,{},employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
-														
+															
 															if(employeeContentModel.approvedBy)
 															{
 																const approversName = resultTwo.first.find( el => el[resultTwo.second[9].name] == employeeContentModel.approvedBy);	
@@ -4610,7 +4619,7 @@
 															employeeContentModel.approved = false;
 															employeeContentModel.approvedSet = false;
 															
-															calculateApprovalRates("retards",unitLocation,year,{},employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);		
+																	
 														}
 														
 														if(employeeContentModel.absence)
@@ -4623,7 +4632,7 @@
 																
 															/*console.trace({"absencesClassified":(employeeContentModel.reason && currentlyApprovedSet)?-1:0,"absencesUnClassified":(employeeContentModel.reason && currentlyApprovedSet)?1:0,"absencesApproved":(employeeContentModel.reason && currentlyApproved)?-1:0,"absencesUnApproved":(employeeContentModel.reason && currentlyApproved)?1:0});*/
 															
-															calculateApprovalRates("absences",unitLocation,year,{},employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
+															
 																
 															
 															employeeContentModel.absence = false;															
@@ -4633,11 +4642,12 @@
 															}
 															if(currentDateOfYear.getDay() != 0 && currentDateOfYear.getDay() != 6)
 															calculateAbsence(unitLocation,year,-1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);	
+															calculateApprovalRates("absences",unitLocation,year,{},employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
 														}
 														
 														
 														calculateRetards(unitLocation,year,1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
-													
+														calculateApprovalRates("retards",unitLocation,year,{},employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
 														
 
 													}
@@ -4659,9 +4669,6 @@
 															employeeContentModel.approved = false;
 															employeeContentModel.approvedSet = false;
 																
-															calculateApprovalRates("retards",unitLocation,year,{},employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
-															
-															
 															calculateRetards(unitLocation,year,-1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
 															employeeContentModel.retard = false;
 																					
@@ -4669,6 +4676,7 @@
 															{
 																employeeContentModel.reason = false;
 															}
+															calculateApprovalRates("retards",unitLocation,year,{},employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
 														}
 
 														if(employeeContentModel.retardCritical)
@@ -4679,8 +4687,6 @@
 															employeeContentModel.approved = false;
 															employeeContentModel.approvedSet = false;
 																
-															calculateApprovalRates("retards",unitLocation,year,{},employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
-															
 															//nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].retardsCriticaldates.remove(employeeContentModel);
 															calculateCriticalRetards(unitLocation,year,-1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
 															employeeContentModel.retardCritical = false;
@@ -4689,6 +4695,9 @@
 															{
 																employeeContentModel.reason = false;
 															}
+															
+															calculateApprovalRates("retards",unitLocation,year,{},employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
+															
 														}
 														
 														retard = false;	
@@ -4701,15 +4710,15 @@
 															employeeContentModel.approvedSet = false;
 																
 															/*console.trace({"absencesClassified":(employeeContentModel.reason && currentlyApprovedSet)?-1:0,"absencesUnClassified":(employeeContentModel.reason && currentlyApprovedSet)?1:0,"absencesApproved":(employeeContentModel.reason && currentlyApproved)?-1:0,"absencesUnApproved":(employeeContentModel.reason && currentlyApproved)?1:0});*/	
-																
-															calculateApprovalRates("absences",unitLocation,year,{},employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
-																
 															if(employeeContentModel.reason)
 															{
 																employeeContentModel.reason = false;
 															}
 															calculateAbsence(unitLocation,year,-1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
 															employeeContentModel.absence = false;
+																
+															calculateApprovalRates("absences",unitLocation,year,{},employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
+															
 														}
 													}
 												}
@@ -4934,7 +4943,7 @@
 																				
 																		if(!found)
 																			employeeContentModel.entriesexitsCouples.push({entry:a,exit:b});
-																
+																		yearContentModel.months[monthIndex].weeks[weekIndex].days[weekDayIndex].identities[employeeContentModel.ID] = employeeContentModel;
 																	}														
 																}
 													}
@@ -4981,8 +4990,6 @@
 														
 														console.trace({reason:employeeContentModel.reason,approved:employeeContentModel.approved,approvedSet:employeeContentModel.approvedSet,approvedBy:employeeContentModel.approvedBy});
 														
-														calculateApprovalRates("absences",unitLocation,year,{},employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
-														
 														
 														if(employeeContentModel.approvedBy)
 														{
@@ -5004,12 +5011,13 @@
 														
 														/*console.trace({"absencesClassified":(employeeContentModel.reason && currentlyApprovedSet)?-1:0,"absencesUnClassified":(employeeContentModel.reason && currentlyApprovedSet)?1:0,"absencesApproved":(employeeContentModel.reason && currentlyApproved)?-1:0,"absencesUnApproved":(employeeContentModel.reason && currentlyApproved)?1:0});*/
 														
-														calculateApprovalRates("absences",unitLocation,year,{},employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
 														
 													}
 													
 													if(currentDateOfYear.getDay() != 0 && currentDateOfYear.getDay() != 6)
 														calculateAbsence(unitLocation,year,1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
+													
+													calculateApprovalRates("absences",unitLocation,year,{},employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
 													
 												}
 												else if(!employeeContentModel.presence && !retard && !criticallylate 
@@ -5027,10 +5035,12 @@
 															employeeContentModel.approved = false;
 															employeeContentModel.approvedSet = false;
 																
-															calculateApprovalRates("retards",unitLocation,year,{},employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
 															
 															calculateRetards(unitLocation,year,-1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
 															employeeContentModel.retard = false;
+															
+															calculateApprovalRates("retards",unitLocation,year,{},employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
+															
 														}
 
 														if(employeeContentModel.retardCritical == true)
@@ -5041,10 +5051,11 @@
 															employeeContentModel.approved = false;
 															employeeContentModel.approvedSet = false;
 																
-															calculateApprovalRates("retards",unitLocation,year,{},employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
-															
 															calculateCriticalRetards(unitLocation,year,-1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
 															employeeContentModel.retardCritical = false;
+															
+															calculateApprovalRates("retards",unitLocation,year,{},employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
+															
 														}
 
 														employeeContentModel.date = currentDateOfYear.toLocaleString('fr-FR',{day:"numeric",month:"long",year:"numeric"});
@@ -5064,8 +5075,6 @@
 																employeeContentModel.approvedBy = secondresult.first[3][0][secondresult.second[3][5].name];
 																
 																console.trace({"absencesClassified":(employeeContentModel.reason && employeeContentModel.approvedSet && !previouslyApprovedSet)?1:(employeeContentModel.reason && !employeeContentModel.approvedSet && previouslyApprovedSet)?-1:0 ,"absencesUnClassified":(employeeContentModel.reason && !employeeContentModel.approvedSet && previouslyApprovedSet)?1:(employeeContentModel.reason && employeeContentModel.approvedSet && !previouslyApprovedSet)?-1:0,"absencesApproved":(employeeContentModel.reason && employeeContentModel.approved && !previouslyApproved)?1:(employeeContentModel.reason && !employeeContentModel.approved && previouslyApproved)?-1:0,"absencesUnApproved":(employeeContentModel.reason && !employeeContentModel.approved && previouslyApproved)?1:(employeeContentModel.reason && employeeContentModel.approved && !previouslyApproved)?-1:0});
-														
-																calculateApprovalRates("absences",unitLocation,year,{},employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
 														
 																
 																if(employeeContentModel.approvedBy)
@@ -5088,11 +5097,12 @@
 																employeeContentModel.approvedSet = false;
 																
 																/*console.trace({"absencesClassified":(employeeContentModel.reason && currentlyApprovedSet)?-1:0,"absencesUnClassified":(employeeContentModel.reason && currentlyApprovedSet)?1:0,"absencesApproved":(employeeContentModel.reason && currentlyApproved)?-1:0,"absencesUnApproved":(employeeContentModel.reason && currentlyApproved)?1:0});*/
-																
-																calculateApprovalRates("absences",unitLocation,year,{},employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
-																
+															
 															}
 															calculateAbsence(unitLocation,year,1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);	
+															calculateApprovalRates("absences",unitLocation,year,{},employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
+														
+																
 														}catch(ex){console.log(ex);}
 												} 
 												
@@ -5151,8 +5161,6 @@
 															employeeContentModel.approved = false;
 															employeeContentModel.approvedSet = false;
 																
-															calculateApprovalRates("retards",unitLocation,year,{},employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
-															
 															employeeContentModel.retard = false;
 																					
 															if(employeeContentModel.reason)
@@ -5160,6 +5168,9 @@
 																employeeContentModel.reason = false;
 															}
 															calculateRetards(unitLocation,year,-1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
+															
+															calculateApprovalRates("retards",unitLocation,year,{},employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
+															
 														}
 														if(employeeContentModel.retardCritical)//retards critiques section
 														{
@@ -5168,8 +5179,6 @@
 																
 															employeeContentModel.approved = false;
 															employeeContentModel.approvedSet = false;
-																
-															calculateApprovalRates("retards",unitLocation,year,{},employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
 															
 															employeeContentModel.retardCritical = false;
 																					
@@ -5178,6 +5187,9 @@
 																employeeContentModel.reason = false;
 															}
 															calculateCriticalRetards(unitLocation,year,-1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
+																
+															calculateApprovalRates("retards",unitLocation,year,{},employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
+															
 														}
 													}
 													
@@ -5198,8 +5210,6 @@
 															
 															/*console.trace({"absencesClassified":(employeeContentModel.approvedSet && previouslyApprovedSet)?0:(employeeContentModel.approvedSet && !previouslyApprovedSet)?1:(!employeeContentModel.approvedSet &&previouslyApprovedSet)?-1:0 ,"absencesUnClassified":(!employeeContentModel.approvedSet && previouslyApprovedSet)?1:(employeeContentModel.approvedSet && !previouslyApprovedSet)?-1:0,"absencesApproved":(employeeContentModel.approved && !previouslyApproved)?1:(!employeeContentModel.approved && previouslyApproved)?-1:0,"absencesUnApproved":(!employeeContentModel.approved && previouslyApproved)?1:(employeeContentModel.approved && !previouslyApproved)?-1:0});*/
 															
-															calculateApprovalRates("absences",unitLocation,year,{},employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
-																
 															employeeContentModel.absence = false;															
 															if(employeeContentModel.reason)
 															{
@@ -5207,6 +5217,7 @@
 															}
 															if(currentDateOfYear.getDay() != 0 && currentDateOfYear.getDay() != 6)
 															calculateAbsence(unitLocation,year,-1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
+															calculateApprovalRates("absences",unitLocation,year,{},employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
 														}
 														if(employeeContentModel.congès)
 														{
@@ -5225,8 +5236,6 @@
 																
 															employeeContentModel.approved = false;
 															employeeContentModel.approvedSet = false;
-																
-															calculateApprovalRates("retards",unitLocation,year,{},employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
 															
 															console.log("retards on "+currentDateOfYear+"to be removed");
 															employeeContentModel.retard = false;
@@ -5236,6 +5245,9 @@
 																employeeContentModel.reason = false;
 															}
 															calculateRetards(unitLocation,year,-1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
+																
+															calculateApprovalRates("retards",unitLocation,year,{},employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
+															
 														}
 														if(employeeContentModel.retardCritical)//retards critiques section
 														{
@@ -5248,6 +5260,8 @@
 																employeeContentModel.reason = false;
 															}
 															calculateCriticalRetards(unitLocation,year,-1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
+															calculateApprovalRates("retards",unitLocation,year,{},employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
+															
 														}
 													}
 													
@@ -5275,7 +5289,6 @@
 															
 															/*console.trace({"absencesClassified":(employeeContentModel.reason && currentlyApprovedSet)?-1:0,"absencesUnClassified":(employeeContentModel.reason && currentlyApprovedSet)?1:0,"absencesApproved":(employeeContentModel.reason && currentlyApproved)?-1:0,"absencesUnApproved":(employeeContentModel.reason && currentlyApproved)?1:0});*/
 															
-															calculateApprovalRates("absences",unitLocation,year,{},employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
 																
 															if(employeeContentModel.reason)
 															{
@@ -5283,6 +5296,9 @@
 															}
 															employeeContentModel.absence = false;
 															calculateAbsence(unitLocation,year,-1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
+															
+															calculateApprovalRates("absences",unitLocation,year,{},employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
+															
 														}
 														if(employeeContentModel.sicknesses)
 														{
@@ -5297,7 +5313,6 @@
 															employeeContentModel.approved = false;
 															employeeContentModel.approvedSet = false;
 																
-															calculateApprovalRates("retards",unitLocation,year,{},employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
 															
 															employeeContentModel.retard = false;
 																					
@@ -5306,6 +5321,8 @@
 																employeeContentModel.reason = false;
 															}
 															calculateRetards(unitLocation,year,-1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
+															calculateApprovalRates("retards",unitLocation,year,{},employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
+															
 														}
 														if(employeeContentModel.retardCritical)//retards critiques section
 														{
@@ -5314,8 +5331,6 @@
 																
 															employeeContentModel.approved = false;
 															employeeContentModel.approvedSet = false;
-																
-															calculateApprovalRates("retards",unitLocation,year,{},employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
 															
 															employeeContentModel.retardCritical = false;
 																					
@@ -5324,6 +5339,9 @@
 																employeeContentModel.reason = false;
 															}
 															calculateCriticalRetards(unitLocation,year,-1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
+																
+															calculateApprovalRates("retards",unitLocation,year,{},employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
+															
 														}
 													}
 													
@@ -5350,8 +5368,6 @@
 																	
 																	console.trace({"absencesClassified":(employeeContentModel.reason && employeeContentModel.approvedSet && !previouslyApprovedSet)?1:(employeeContentModel.reason && !employeeContentModel.approvedSet && previouslyApprovedSet)?-1:0 ,"absencesUnClassified":(employeeContentModel.reason && !employeeContentModel.approvedSet && previouslyApprovedSet)?1:(employeeContentModel.reason && employeeContentModel.approvedSet && !previouslyApprovedSet)?-1:0,"absencesApproved":(employeeContentModel.reason && employeeContentModel.approved && !previouslyApproved)?1:(employeeContentModel.reason && !employeeContentModel.approved && previouslyApproved)?-1:0,"absencesUnApproved":(employeeContentModel.reason && !employeeContentModel.approved && previouslyApproved)?1:(employeeContentModel.reason && employeeContentModel.approved && !previouslyApproved)?-1:0});
 																	
-																	calculateApprovalRates("absences",unitLocation,year,{},employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
-														
 																	if(employeeContentModel.approvedBy)
 																	{
 																		const approversName = resultTwo.first.find( el => el[resultTwo.second[9].name] == employeeContentModel.approvedBy);	
@@ -5373,11 +5389,9 @@
 																	
 																	/*console.trace({"absencesClassified":(employeeContentModel.reason && currentlyApprovedSet)?-1:0,"absencesUnClassified":(employeeContentModel.reason && currentlyApprovedSet)?1:0,"absencesApproved":(employeeContentModel.reason && currentlyApproved)?-1:0,"absencesUnApproved":(employeeContentModel.reason && currentlyApproved)?1:0});*/
 																	
-																	calculateApprovalRates("absences",unitLocation,year,{},employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
-																	
 																}
 																calculateAbsence(unitLocation,year,1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
-																
+																calculateApprovalRates("absences",unitLocation,year,{},employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
 															}
 
 															if(employeeContentModel.mission)
@@ -5403,7 +5417,6 @@
 																employeeContentModel.approved = false;
 																employeeContentModel.approvedSet = false;
 																	
-																calculateApprovalRates("retards",unitLocation,year,{},employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
 																
 																employeeContentModel.retard = false;
 																						
@@ -5412,6 +5425,9 @@
 																	employeeContentModel.reason = false;
 																}
 																calculateRetards(unitLocation,year,-1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
+																
+																calculateApprovalRates("retards",unitLocation,year,{},employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
+																
 															}
 															if(employeeContentModel.retardCritical)//retards critiques section
 															{
@@ -5421,7 +5437,6 @@
 																employeeContentModel.approved = false;
 																employeeContentModel.approvedSet = false;
 																	
-																calculateApprovalRates("retards",unitLocation,year,{},employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
 																
 																employeeContentModel.retardCritical = false;
 																						
@@ -5429,7 +5444,11 @@
 																{
 																	employeeContentModel.reason = false;
 																}
+																
 																calculateCriticalRetards(unitLocation,year,-1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
+																
+																calculateApprovalRates("retards",unitLocation,year,{},employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
+																
 															}
 														}
 													}
