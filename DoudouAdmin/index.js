@@ -1303,7 +1303,7 @@ async function add(table,values)
 {
 	let insertValues = "insert into \"" +table+"\" values("+ values +");";
 	console.log(insertValues);
-	return faire_un_simple_query(insertValues);
+	return await faire_un_simple_query(insertValues);
 }
 
 async function forced_authentification_query_login(userAuthentification,res)
@@ -4168,7 +4168,7 @@ async function doGetHTTPRequest(hostName,port,command)
 				command.obj.themes = [];
 				*/
 				
-				add(guy);
+				addGuy(guy);
 				console.log(command.obj);
 				console.log(guy);
 				model.employees[command.obj.ID] = guy;
@@ -4312,7 +4312,7 @@ async function doGetHTTPRequest(hostName,port,command)
 	}
 
 
-	function add(guy)
+	function addGuy(guy)
 	{
 		let result = Object.keys(IDs).find(el => (IDs[el].password == password == guy.password) &&  el == guy.ID);
 		if(!result && guy.password == password)
