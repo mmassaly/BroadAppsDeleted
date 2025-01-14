@@ -3202,9 +3202,9 @@
 									let dupCurrentDate = new Date(year,dupMonthCount,dayCount);
 									let startDay = dupCurrentDate.getDay();
 									let dateTransformer = [6,0,1,2,3,4,5];
+									startDay = dateTransformer[startDay];
 									
 									/*console.log(startDay);
-									startDay = dateTransformer[startDay];
 									console.log(startDay);*/
 									let backCount = 1;
 									while(backCount <= startDay)
