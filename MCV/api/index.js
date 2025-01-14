@@ -3206,8 +3206,8 @@
 									
 									/*console.log(startDay);
 									console.log(startDay);*/
-									let backCount = 1;
-									while(backCount <= startDay)
+									let backCount = 0;
+									while(backCount < startDay)
 									{
 										let day = 
 										{
