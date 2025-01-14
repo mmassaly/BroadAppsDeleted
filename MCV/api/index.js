@@ -2239,7 +2239,7 @@
 	async function faire_un_simple_query(queryString)
 	{
 		let sql = undefined;	
-		//console.log(queryString);
+		console.log(queryString);
 		while(sql == undefined)
 		{
 			try
@@ -3066,7 +3066,7 @@
 							aquery += "create table \""+ayear+" état de l'individu\"  (IDIndividu varchar(255),Date Date,Absence BOOLEAN,Maladie BOOLEAN,Mission BOOLEAN,Congès BOOLEAN,PRIMARY KEY(Date,IDIndividu));\n";
 							aquery += " insert into \"manuel des tables d'entrées et de sorties\" values ("+ayear+","+"$$"+ayear+" état de l'individu$$" +","+"$$"+ayear+" entrées et sorties$$);\n";
 							aquery += "create table \""+ayear+" jours de fêtes et de non travail\" (Name varchar(255),Date Date);";
-							aquery += "create table \""+ayear+" raisons des absences\" (IDIndividu varchar(255),Raison Text,Date Date,Approved BOOLEAN,ApprovedSet BOOLEAN,ApprovedBy varchar(255)) Primary Key(IDIndividu,Date));"
+							aquery += "create table \""+ayear+" raisons des absences\" (IDIndividu varchar(255),Raison Text,Date Date,Approved BOOLEAN,ApprovedSet BOOLEAN,ApprovedBy varchar(255),Primary Key(IDIndividu,Date));"
 							aquery += "insert into \"manuel des tables d'entrées et de sorties\" values("+ayear+","+"$$"+ayear+" jours de fêtes et de non travail$$);";
 							await faire_un_simple_query(aquery);
 							result_ = await faire_un_simple_query(query);
