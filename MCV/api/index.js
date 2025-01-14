@@ -3064,10 +3064,11 @@
 							let aquery = "create table \""+ayear+" entrées et sorties\" (IDIndividu varchar(255),Date Date,Entrées Time NOT NULL,Sorties VARCHAR(10) DEFAULT NULL, PRIMARY KEY(Date,Entrées,IDIndividu));\n";
 							aquery += "create table  IF NOT EXISTS \"colones des fichiers des heures\"(Nom Text,Colones VARCHAR(256)[],Types VARCHAR(256)[],PRIMARY KEY(Nom));\n"
 							aquery += "create table \""+ayear+" état de l'individu\"  (IDIndividu varchar(255),Date Date,Absence BOOLEAN,Maladie BOOLEAN,Mission BOOLEAN,Congès BOOLEAN,PRIMARY KEY(Date,IDIndividu));\n";
-							aquery += " insert into \"manuel des tables d'entrées et de sorties\" values ("+ayear+","+"$$"+ayear+" état de l'individu$$" +","+"$$"+ayear+" entrées et sorties$$);\n";
+							aquery += " insert into \"manuel des tables d'entrées et de sorties\" values ("+ayear+","+"$$"+ayear+" état de l'individu$$" +","+"$$"+ayear+" entrées et sorties$$"+","+"$$"+ayear+" jours de fêtes et de non travail$$);\n";
 							aquery += "create table \""+ayear+" jours de fêtes et de non travail\" (Name varchar(255),Date Date);";
-							aquery += "create table \""+ayear+" raisons des absences\" (IDIndividu varchar(255),Raison Text,Date Date,Approved BOOLEAN,ApprovedSet BOOLEAN,ApprovedBy varchar(255),Primary Key(IDIndividu,Date));"
 							aquery += "insert into \"manuel des tables d'entrées et de sorties\" values("+ayear+","+"$$"+ayear+" jours de fêtes et de non travail$$);";
+							aquery += "create table \""+ayear+" raisons des absences\" (IDIndividu varchar(255),Raison Text,Date Date,Approved BOOLEAN,ApprovedSet BOOLEAN,ApprovedBy varchar(255),Primary Key(IDIndividu,Date));"
+							aquery += "insert into \"manuel des tables d'entrées et de sorties\" values("+ayear+","+"$$"+ayear+" raisons des absences$$);";
 							await faire_un_simple_query(aquery);
 							result_ = await faire_un_simple_query(query);
 						}
@@ -3188,6 +3189,7 @@
 									let dayCount = 1;
 									let monthEndDate = new Date(year,dupMonthCount+1,0);	
 									let date = monthEndDate.getDate();
+									console.log("**********************");
 									console.log(monthEndDate);
 
 									let amonth = 
@@ -3199,9 +3201,13 @@
 
 									let dupCurrentDate = new Date(year,dupMonthCount,dayCount);
 									let startDay = dupCurrentDate.getDay();
-									startDay =(startDay == 0)? 6: startDay;
+									let dateTransformer = [6,0,1,2,3,4,5];
+									
+									/*console.log(startDay);
+									startDay = dateTransformer[startDay];
+									console.log(startDay);*/
 									let backCount = 1;
-									while(backCount < startDay)
+									while(backCount <= startDay)
 									{
 										let day = 
 										{
@@ -3214,11 +3220,11 @@
 										amonth.elements.push(day);
 										++backCount;
 									}
-	 
+									//console.log(dupCurrentDate);
 									while(dayCount <= date)
 									{
 										dupCurrentDate = new Date(year,dupMonthCount,dayCount);
-										let filteredValue = FilterDateNotFoudFunction(dresult,"date",dayCount+"-"+(dupMonthCount+1)+"-"+year);
+										let filteredValue = FilterDateNotFoundFunction(dresult,"date",dayCount+"-"+(dupMonthCount+1)+"-"+year);
 										
 										let str = "";
 										
@@ -3231,7 +3237,10 @@
 											empty: false
 										}
 										amonth.elements.push(day);
-										
+										if(day.day == 1 && day.month == 12 && day.year == 2024)
+										{
+											console.log(day);
+										}
 										
 										filteredValue.first.forEach((element)=>
 										{
@@ -3573,14 +3582,14 @@
 										console.log("<=?"+( Math.floor((start_day + offset)/ 7) + 1));
 									} */
 									
-									let aresultFiltered = FilterDateNotFoudFunction(aresult,"date",currentDateOfYear.getDate()+"-"+(currentDateOfYear.getMonth()+1)+"-"+currentDateOfYear.getFullYear());
-									let bresultFiltered = FilterDateNotFoudFunction(bresult,"date",currentDateOfYear.getDate()+"-"+(currentDateOfYear.getMonth()+1)+"-"+currentDateOfYear.getFullYear());
+									let aresultFiltered = FilterDateNotFoundFunction(aresult,"date",currentDateOfYear.getDate()+"-"+(currentDateOfYear.getMonth()+1)+"-"+currentDateOfYear.getFullYear());
+									let bresultFiltered = FilterDateNotFoundFunction(bresult,"date",currentDateOfYear.getDate()+"-"+(currentDateOfYear.getMonth()+1)+"-"+currentDateOfYear.getFullYear());
 									
 									//console.log("bresultFiltered  by date "+currentDateOfYear.getDate()+"-"+(currentDateOfYear.getMonth()+1)+"-"+currentDateOfYear.getYear());
 									//console.log(bresultFiltered);
-									let cresultFiltered = FilterDateNotFoudFunction(cresult,"date",currentDateOfYear.getDate()+"-"+(currentDateOfYear.getMonth()+1)+"-"+currentDateOfYear.getFullYear());
-									let dresultFiltered = FilterDateNotFoudFunction(dresult,"date",currentDateOfYear.getDate()+"-"+(currentDateOfYear.getMonth()+1)+"-"+currentDateOfYear.getFullYear());
-									let eresultFiltered = FilterDateNotFoudFunction(eresult,"date",currentDateOfYear.getDate()+"-"+(currentDateOfYear.getMonth()+1)+"-"+currentDateOfYear.getFullYear());
+									let cresultFiltered = FilterDateNotFoundFunction(cresult,"date",currentDateOfYear.getDate()+"-"+(currentDateOfYear.getMonth()+1)+"-"+currentDateOfYear.getFullYear());
+									let dresultFiltered = FilterDateNotFoundFunction(dresult,"date",currentDateOfYear.getDate()+"-"+(currentDateOfYear.getMonth()+1)+"-"+currentDateOfYear.getFullYear());
+									let eresultFiltered = FilterDateNotFoundFunction(eresult,"date",currentDateOfYear.getDate()+"-"+(currentDateOfYear.getMonth()+1)+"-"+currentDateOfYear.getFullYear());
 									
 									if(empHoursObj)
 									{
@@ -7343,7 +7352,7 @@
 		return arrayElements;
 	}
 	
-	function FilterDateNotFoudFunction(objArray,column,value)
+	function FilterDateNotFoundFunction(objArray,column,value)
 	{
 		let arrayElements = {first:[], second:[]};
 		let count = 0;
