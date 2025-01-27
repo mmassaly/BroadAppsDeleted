@@ -14,7 +14,7 @@
 	let connection = undefined;
 	let precedentDate = new Date(Date.now());
 	let todaysDate = new Date(Date.now());
-	let primaryObject = undefined;
+	var primaryObject = undefined;
 	let baseInit = false;
 	let schema = "";
 	let current = todaysDate;
@@ -157,7 +157,7 @@
 		//'fr-FR'(total-totalSeconds)
 		setTimeout(caller,total-totalSeconds);
 		
-		if(current.getUTCHours()>= 8 && current.getUTCMinutes() >= 30 && current.getUTCSeconds() >= 00 || (current.getUTCHours()> 8) )
+		if(current.getUTCHours()>= 8 && current.getUTCMinutes() >= 30 && current.getUTCSeconds() >= 0 || (current.getUTCHours()> 8) )
 		{
 			getEightThirty();
 		}
@@ -205,6 +205,7 @@
 
 	function pushCommands(command)
 	{
+		return;
 		if(primaryObject == undefined)
 			return;
 		for(let index = 0; index < connectedguys.length; ++index)
@@ -596,7 +597,7 @@
 									dummyResponseSimple(result);
 									return;
 								}
-								else if(commandArg !== "hours" && commandArg !== 'addAbsenceReason')
+								else if(commandArg !== "hours" && commandArg !== 'addAbsenceReason' && commandArg != "removeAbsenceReason")
 								{
 									//console.log("undefined commandArg");
 									
@@ -653,9 +654,9 @@
 																		,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
 																	});
 									}
-									else if(commandArg == "addAbsenceReason")
+									else if(commandArg == "addAbsenceReason" || commandArg == "removeAbsenceReason")
 									{
-										if(await addAbsenceReason(urlObject))
+										if(await addAbsenceReason(urlObject,commandArg == "addAbsenceReason"))
 										{
 											if( urlObject.abunch )
 											{
@@ -1643,6 +1644,10 @@
 		{
 			
 			let command = fields.command;
+			let admin = false;
+			let subadmin = false;
+			let user = false;
+						
 			console.log(fields);
 			console.log(command);
 			//console.log(files);
@@ -1741,9 +1746,36 @@
 					{
 						let image_url = undefined;
 						let blob = true;
+						let tempuserAuthentification = {ID:(urlObject.authID instanceof Array )?urlObject.authID[0]:urlObject.authID,Prenom:(urlObject.authPrenom instanceof Array )?urlObject.authPrenom[0]:urlObject.authPrenom,Nom:(urlObject.authNom instanceof Array )?urlObject.authNom[0]:urlObject.authNom,genre:(urlObject.authGenre instanceof Array )?urlObject.authGenre[0]:urlObject.authGenre,naissance:(urlObject.authnaissance instanceof Array )?urlObject.authnaissance[0]:urlObject.authnaissance,pass:(urlObject.authpass instanceof Array )?urlObject.authpass[0]:urlObject.authpass};
+						tempResult = await forced_authentification_query(tempuserAuthentification,undefined);
+						
+						//let special = false;
+
+						let othertempResult = await check_super_admin(tempuserAuthentification,undefined,undefined);
+						if(othertempResult.first)
+						{
+							admin = true;	
+						}
+						else if(othertempResult.second)
+						{
+							subadmin = true;
+						}
+						else if(othertempResult.third)
+						{
+							user = true;
+						}
+						/*else if(othertempResult.fourth)
+						{
+							special = true;		
+						}*/
+						console.log("*********************************empedits******************************************");
+						console.log(othertempResult);
+						console.log("*********************************empedits******************************************");
+						//console.log(filesDup);
+						
 						if(filesDup != undefined && filesDup.imgfile != undefined || ( filesDup.originalFilename != undefined))
 						{
-								//console.log(fs.readFileSync(filesDup.filepath));
+								console.log("Inside...");
 								try
 								{			
 									//not decodeURI for the originalFilename risk taken even if percentages are introduced however urls must be processed
@@ -1769,31 +1801,41 @@
 						if(dealingWithArray)
 						{
 							//in place of image url fields.imagename[0]
+							//https://ahaynnm8butrk7li.public.blob.vercel-storage.com/assets/images/profile-pictures/individu_sans_sa_photo-yFgroxhghUCGptzY4Q9eYX1sbu8KSg.PNG	
 							tablename = "individu";
 							querySQL = "insert into "+tablename+" values ($$"+image_url+"$$,$$"+fields.ID[0]+"$$,$$"+fields.first[0]+"$$,$$";
-							querySQL += fields.second[0] +"$$,'"+fields.gender[0]+"','"+fields.birthdate[0]+"',$$"+fields.function[0]+"$$,'";
-							querySQL += fields.start[0]+"','"+fields.end[0]+"');";
+							querySQL += fields.second[0] +"$$,$$"+fields.gender[0]+"$$,$$"+fields.birthdate[0]+"$$,$$"+fields.function[0]+"$$,$$";
+							querySQL += fields.start[0]+"$$,$$"+fields.end[0]+"$$"+`) on Conflict(ID) do update set img = $$${image_url}$$,`;
+							querySQL += ` prenom =$$${fields.first[0]}$$, nom = $$${fields.second[0]}$$, genre = $$${fields.gender[0]}$$,`;
+							querySQL += ` \"Date de naissance\" = $$${fields.birthdate[0]}$$, profession = $$${fields.function[0]}$$, `;
+							querySQL += ` "début" = $$${fields.start[0]}$$, fin = $$${fields.end[0]}$$; `;
 							tablename = "appartenance";
-							doubleQuerySQL = "insert into "+ tablename+" values ('"+fields.ID[0]+"',"+fields.officeID[0]+");";
+							doubleQuerySQL = "insert into "+ tablename+" values ($$"+fields.ID[0]+"$$,$$"+fields.officeID[0]+"$$";
+							doubleQuerySQL += (subadmin || admin )?`) on Conflict(IdIndividu) do update set idbureau = $$${fields.officeID[0]}$$;`:")on Conflict(IdIndividu) do nothing;";
 							tablename = "login";
-							thirdQuerySQL += "insert into "+tablename+" values ('"+fields.ID[0]+"',$$"+fields.password[0]+"$$,"+((fields.type[0] == 1)?true:false)+","+((fields.type[0] == 2)?true:false)+","+((fields.type[0] == 4)?true:false)+","+((fields.type[0] == 3)?true:false)+");";
+							thirdQuerySQL += "insert into "+tablename+" values ($$"+fields.ID[0]+"$$,$$"+fields.password[0]+"$$,"+((fields.type[0] == 1)?true:false)+","+((fields.type[0] == 2)?true:false)+","+((fields.type[0] == 4)?true:false)+","+((fields.type[0] == 3)?true:false);
+							thirdQuerySQL += (user)?`)  on Conflict(IdIndividu) do update set password = $$${fields.password[0]}$$;`:") on Conflict(IdIndividu) do nothing;";
+							//ON CONFLICT (id) DO NOTHING;
 						}
 						else
 						{
 							tablename = "individu";
-							querySQL = "insert into "+tablename+" values ($$"+image_url+"$$,'"+fields.ID+"',$$"+fields.first+"$$,'";
-							querySQL += fields.second +"','"+fields.gender+"','"+fields.birthdate+"',$$";
-							querySQL += fields["function"]+"$$,'"+fields.start+"','"+fields.end+"');";
+							querySQL = "insert into "+tablename+" values ($$"+image_url+"$$,$$"+fields.ID+"$$,$$"+fields.first+"$$,$$";
+							querySQL += fields.second +"$$,$$"+fields.gender+"$$,$$"+fields.birthdate+"$$,$$";
+							querySQL += fields["function"]+"$$,$$"+fields.start+"$$,$$"+fields.end+`$$) on Conflict(ID) do update set img = $$${image_url}$$,`;
+							querySQL += ` prenom = $$${fields.first}$$, nom = $$${fields.second}$$, genre = $$${fields.gender}$$,`;
+							querySQL += ` \"Date de naissance\" = $$${fields.birthdate}$$, profession = $$${fields.function}$$, `;
+							querySQL += ` "début" = $$${fields.start}$$, fin = $$${fields.end}$$; `;
 							tablename = "appartenance";
-							doubleQuerySQL = "\ninsert into "+ tablename+" values ('"+fields.ID+"',"+fields.officeID+");";
+							doubleQuerySQL = "\ninsert into "+ tablename+" values ($$"+fields.ID+"$$,$$"+fields.officeID+(subadmin || admin )?`$$) on Conflict(IdIndividu) do update set idbureau = $$${fields.officeID}$$;`:"$$) on Conflict(IdIndividu) do nothing ;";
 							tablename = "login";
-							thirdQuerySQL += "insert into "+tablename+" values ('"+fields.ID+"',$$"+fields.password+"$$,"+((fields.type == 1)?true:false)+","+((fields.type == 2)?true:false)+","+((fields.type == 4)?true:false)+","+((fields.type == 3)?true:false)+");";
+							thirdQuerySQL += "insert into "+tablename+" values ($$"+fields.ID+"$$,$$"+fields.password+"$$,"+((fields.type == 1)?true:false)+","+((fields.type == 2)?true:false)+","+((fields.type == 4)?true:false)+","+((fields.type == 3)?true:false)+(user)?`)  on Conflict(ID) do update set password = $$${fields.password[0]}$$;`:") on Conflict(ID) do nothing;";
 						} 
 						
 						console.log(querySQL);	
 						console.log(doubleQuerySQL);
 						console.log(thirdQuerySQL);
-					
+						
 					}
 					else if(commandArg === "reasonsforabsences" || (dealingWithArray && commandArg[0] === "reasonsforabsences"))
 					{
@@ -1948,6 +1990,7 @@
 						tempResult = await forced_authentification_query(tempuserAuthentification,undefined);
 					userPresenceObject.userAuthentification = tempuserAuthentification;
 					userPresenceObject.butPresence = true;
+					
 					//console.log(tempuserAuthentification);
 					//console.log(tempResult);
 					//console.log(querySQL);
@@ -2152,6 +2195,10 @@
 													
 												if (dresult.second != false || dresult.second instanceof Array)
 												{
+													if(user)
+													{
+														findUserByIdUpdatePassword((fields.ID instanceof Array)?fields.ID[0]:fields.ID,(fields.password instanceof Array)?fields.password[0]:fields.password);
+													}
 													userAdditionObject = urlObject;
 													//let fs = require('fs');
 													//await fs.rename(filesDup.filepath, path + filesDup.originalFilename,function(err_){});
@@ -2430,7 +2477,26 @@
 			return false;
 		}
 	}
-			
+			function findUserById(ID)
+			{
+				for(let loginGuysCount = 0; loginGuysCount < connectedguys.length;++loginGuysCount)
+				{
+					if(connectedguys[loginGuysCount].ID == ID  )
+					{
+						return connectedguys[loginGuysCount];
+					}
+				}
+			}
+			function findUserByIdUpdatePassword(ID,password)
+			{
+				for(let loginGuysCount = 0; loginGuysCount < connectedguys.length;++loginGuysCount)
+				{
+					if(connectedguys[loginGuysCount].ID == ID  )
+					{
+						connectedguys[loginGuysCount].pwd = password;
+					}
+				}
+			}
 			function findTypeofAdminShort(ID,password)
 			{
 				for(let loginGuysCount = 0; loginGuysCount < connectedguys.length;++loginGuysCount)
@@ -2509,7 +2575,7 @@
 					,commands:[]
 				};
 				
-				let findResult = !findUser(IDparam,firstparam,secondparam,genderparam,birthdateparam,beginparam,endparam,
+				let findResult = findUser(IDparam,firstparam,secondparam,genderparam,birthdateparam,beginparam,endparam,
 					pwdparam,IDLoc,NameLoc,adminparam,superadminparam,userparam,keyadminparam);
 				
 				if(!findResult.found)
@@ -2539,9 +2605,9 @@
 				if(!(notAnError.second == false))
 				{
 					let authenticated = false;
-					console.log(query);
-					console.log(userAuthentification);
-					console.log(notAnError.first);
+					//console.log(query);
+					//console.log(userAuthentification);
+					//console.log(notAnError.first);
 					
 					if(notAnError.first.length == 0)
 					{
@@ -2756,7 +2822,7 @@
 				});
 			}
 			
-			async function addAbsenceReason(arg)
+			async function addAbsenceReason(arg,add)
 			{
 				console.log(arg);
 				if( !arg.bunch )
@@ -2792,7 +2858,17 @@
 						}
 					}
 					
-					let query = "insert into \""+date.getFullYear()+" raisons des absences\" values('"+ID+"','"+raison+"','"+date.getFullYear()+"-"+(date.getMonth()+1)+"-"+date.getDate()+"',"+approved+","+approvedSet+","+(approvedBy?"'"+approvedBy+"'":null)+") ON CONFLICT (IdIndividu,Date) DO UPDATE SET Raison = '"+raison+"'" +", Approved = "+approved+",ApprovedSet ="+approvedSet+",ApprovedBy = "+(approvedBy?"'"+approvedBy+"'":null)+";";
+					let query = "";
+					if(add)
+					{
+						query = "insert into \""+date.getFullYear()+" raisons des absences\" values('"+ID+"','"+raison+"','"+date.getFullYear()+"-"+(date.getMonth()+1)+"-"+date.getDate()+"',"+approved+","+approvedSet+","+(approvedBy?"'"+approvedBy+"'":null)+") ON CONFLICT (IdIndividu,Date) DO UPDATE SET Raison = '"+raison+"'" +", Approved = "+approved+",ApprovedSet ="+approvedSet+",ApprovedBy = "+(approvedBy?"'"+approvedBy+"'":null)+";";
+					}
+					else
+					{
+						query = "Delete from \""+date.getFullYear()+" raisons des absences\" where IDIndividu = '"+ID+"' AND raison = '"+raison;
+						query += "' AND Date = '"+date.getFullYear()+"-"+(date.getMonth()+1)+"-"+date.getDate()+"' AND ";
+						query +="Approved = '"+approved+"' AND "+"ApprovedSet = '"+approvedSet+"' AND ApprovedBy "+(approvedBy?"= '"+approvedBy+"'":"IS NULL")+";";
+					}
 					console.trace(query);
 					
 					await faire_un_simple_query(query);
@@ -2804,10 +2880,24 @@
 					let IDs = arg.ID;
 					let dates = arg.date.map(dt=> (typeof dt == 'string')?new Date(dt):dt  );
 					let raisons  = arg.reason;
+					let raisonsStr  = (arg.reasonStr instanceof Array)?arg.reasonStr[0]:arg.reasonStr;
+					let approved =  (arg.approved && arg.approved instanceof Array)?arg.approved[0]:arg.approved;
+					let approvedSet =  (arg.approvedSet && arg.approvedSet instanceof Array)?arg.approvedSet[0]:arg.approvedSet;
+					let approvedBy =  (arg.approvedBy && arg.approvedBy instanceof Array)?arg.approvedBy[0]:arg.approvedBy;
+					
 					try
 					{
 						IDs.forEach((ID,index)=>{
-							query += ((index > 0)?"\n":'')+"insert into \""+dates[index].getFullYear()+" raisons des absences\" values('"+IDs[index]+"','"+raisons[index]+"','"+dates[index].getFullYear()+"-"+(dates[index].getMonth()+1)+"-"+dates[index].getDate()+"') ON CONFLICT (IdIndividu,Date) DO UPDATE SET Raison = '"+raisons[index]+"';";					
+							if(add)
+							{
+								query += ((index > 0)?"\n":'')+"insert into \""+dates[index].getFullYear()+" raisons des absences\" values('"+IDs[index]+"','"+raisons[index]+"','"+dates[index].getFullYear()+"-"+(dates[index].getMonth()+1)+"-"+dates[index].getDate()+"') ON CONFLICT (IdIndividu,Date) DO UPDATE SET Raison = '"+raisons[index]+"';";					
+							}
+							else
+							{
+								query += "Delete from \""+dates[index].getFullYear()+" raisons des absences\" where IDIndividu = '"+IDs[index]+"' AND raison = '"+raisonsStr[index]
+								+"' AND Date = '"+dates[index].getFullYear()+"-"+(dates[index].getMonth()+1)+"-"+dates[index].getDate()+"' AND "
+								+"Approved = '"+approved[index]+"' AND "+"ApprovedSet = '"+approvedSet[index]+"' AND ApprovedBy "+(approvedBy[index]?"= '"+approvedBy[index]+"'":"IS NULL")+";";
+							}
 						});
 					}
 					catch(ex)
@@ -3113,12 +3203,11 @@
 							let param_year_month_day = (paramday != undefined && parammonth != undefined && paramyear != undefined)?paramyear+"-"+parammonth+"-"+paramday : undefined;
 							console.log(param_year_month_day);
 							let query = "Select * from individu inner join appartenance";
-							
 							query += " ON appartenance.IDIndividu =  individu.ID";
 							query += " inner join \"location du bureau\" ON  appartenance.IDBureau =";
 							query += " \"location du bureau\".ID AND EXTRACT(YEAR FROM individu.Début) <= ";
 							query += year + " AND EXTRACT(YEAR FROM individu.Fin) >="+year;
-							query +=(empObj != undefined)?" AND individu.ID = '"+empObj.ID+"';":((empHoursObj != undefined)?" AND individu.ID = '"+(empHoursObj.butPresence||empHoursObj.subAdminRef?empHoursObj.ID:empHoursObj.userAuthentification.ID)+"';":";");
+							query += (empObj != undefined)?" AND individu.ID = '"+empObj.ID+"';":((empHoursObj != undefined)?" AND individu.ID = '"+(empHoursObj.butPresence||empHoursObj.subAdminRef?empHoursObj.ID:empHoursObj.userAuthentification.ID)+"';":";");
 							
 							query += "Select * FROM";
 							query += " \""+state+"\" as A";
@@ -3130,14 +3219,14 @@
 							query += "Case WHEN  MIN(\""+table+"\".Entrées) > '8:30:00' then 1 ";
 							query += "WHEN MIN(\""+table+"\".Entrées) <= '8:30:00' then 0 END as CaseTwo,";
 							query += "MIN(\""+table+"\".Entrées), Date ,Idindividu FROM \""+table+"\"";
-							query += (param_year_month_day != undefined)?" WHERE Date ='"+param_year_month_day+"'":(empHoursObj== undefined)? ((empObj != undefined)?" WHERE Idindividu = '"+(empHoursObj.butPresence||empHoursObj.subAdminRef?empHoursObj.ID:empHoursObj.userAuthentification.ID)+"'":""):" WHERE Idindividu = '"+(empHoursObj.butPresence||empHoursObj.subAdminRef?empHoursObj.ID:empHoursObj.userAuthentification.ID)+((empHoursObj.startDay == undefined && empHoursObj.endDay == undefined)?("' AND Date ='"+empHoursObj.date.getFullYear()+"-"+(empHoursObj.date.getMonth()+1)+"-"+empHoursObj.date.getDate()+"'"):(empHoursObj.startDay != undefined && empHoursObj.endDay == undefined)?(" AND Date >='"+empHoursObj.startDay.getFullYear()+"-"+(empHoursObj.startDay.getMonth()+1)+"-"+empHoursObj.startDay.getDate()+"'"):("' AND Date >='"+empHoursObj.startDay.getFullYear()+"-"+(empHoursObj.startDay.getMonth()+1)+"-"+empHoursObj.startDay.getDate()+"' AND Date <='"+empHoursObj.endDay.getFullYear()+"-"+(empHoursObj.endDay.getMonth()+1)+"-"+empHoursObj.endDay.getDate()+"'"));
+							query += (param_year_month_day != undefined)?" WHERE Date ='"+param_year_month_day+"'":(empHoursObj== undefined)? ((empObj != undefined)?" WHERE Idindividu = '"+empObj.ID+"'":""):" WHERE Idindividu = '"+(empHoursObj.butPresence||empHoursObj.subAdminRef?empHoursObj.ID:empHoursObj.userAuthentification.ID)+((empHoursObj.startDay == undefined && empHoursObj.endDay == undefined)?("' AND Date ='"+empHoursObj.date.getFullYear()+"-"+(empHoursObj.date.getMonth()+1)+"-"+empHoursObj.date.getDate()+"'"):(empHoursObj.startDay != undefined && empHoursObj.endDay == undefined)?(" AND Date >='"+empHoursObj.startDay.getFullYear()+"-"+(empHoursObj.startDay.getMonth()+1)+"-"+empHoursObj.startDay.getDate()+"'"):("' AND Date >='"+empHoursObj.startDay.getFullYear()+"-"+(empHoursObj.startDay.getMonth()+1)+"-"+empHoursObj.startDay.getDate()+"' AND Date <='"+empHoursObj.endDay.getFullYear()+"-"+(empHoursObj.endDay.getMonth()+1)+"-"+empHoursObj.endDay.getDate()+"'"));
 							query += " GROUP BY Date, Idindividu ORDER BY Date ASC;";
 							
 							/*When employee hours object is used for fulfilling missions
 							and the like the date must be changing not fixed to one value.*/
 							query += "Select * FROM";
 							query += " \""+table+"\" as A";
-							query += (empObj == undefined)?((empHoursObj == undefined)?"":" where A.Idindividu ='"+(empHoursObj.butPresence||empHoursObj.subAdminRef?empHoursObj.ID:empHoursObj.userAuthentification.ID)+"'"):" where A.Idindividu ='"+(empHoursObj.butPresence||empHoursObj.subAdminRef?empHoursObj.ID:empHoursObj.userAuthentification.ID)+"'";
+							query += (empObj == undefined)?((empHoursObj == undefined)?"":" where A.Idindividu ='"+(empHoursObj.butPresence||empHoursObj.subAdminRef?empHoursObj.ID:empHoursObj.userAuthentification.ID)+"'"):" where A.Idindividu ='"+((empHoursObj!=undefined)?(empHoursObj.butPresence||empHoursObj.subAdminRef?empHoursObj.ID:empHoursObj.userAuthentification.ID):empObj.ID)+"'";
 							query += " GROUP BY Entrées,Date,Idindividu ORDER BY Date ASC;";
 							query += "Select * from \""+events+"\";";
 							query += "Select * from \""+year+" raisons des absences\""+(param_year_month_day?" where Date ='"+param_year_month_day+"'":  ((empHoursObj)?" where IdIndividu ='"+(empHoursObj.butPresence||empHoursObj.subAdminRef?empHoursObj.ID:empHoursObj.userAuthentification.ID)+"'"+((empHoursObj.startDay == undefined && empHoursObj.endDay == undefined)?(" AND Date ='"+empHoursObj.date.getFullYear()+"-"+(empHoursObj.date.getMonth()+1)+"-"+empHoursObj.date.getDate()+"'"):((empHoursObj.startDay != undefined && empHoursObj.endDay == undefined)?(" AND Date >='"+empHoursObj.startDay.getFullYear()+"-"+(empHoursObj.startDay.getMonth()+1)+"-"+empHoursObj.startDay.getDate()+"'"):("' AND Date >='"+empHoursObj.startDay.getFullYear()+"-"+(empHoursObj.startDay.getMonth()+1)+"-"+empHoursObj.startDay.getDate()+"' AND Date <='"+empHoursObj.endDay.getFullYear()+"-"+(empHoursObj.endDay.getMonth()+1)+"-"+empHoursObj.endDay.getDate()+"'")) ):''))+";";
@@ -3189,8 +3278,8 @@
 									let dayCount = 1;
 									let monthEndDate = new Date(year,dupMonthCount+1,0);	
 									let date = monthEndDate.getDate();
-									console.log("**********************");
-									console.log(monthEndDate);
+									//console.log("**********************");
+									//console.log(monthEndDate);
 
 									let amonth = 
 									{
@@ -3285,6 +3374,8 @@
 									employeesCount: 0,
 									months: [],
 									employeeHours: {},
+									employeeReqHours: {},
+									employeeReqHoursStatus:{},
 									monthsDetailed: data['yearsDic'][year],
 									missions: 0,
 									vacations:0,
@@ -3436,6 +3527,8 @@
 									name: startDateOfMonth.toLocaleString('fr-FR',{month:"long"}),
 									weeks: [],
 									employeeHours: {},
+									employeeReqHours: {},
+									employeeReqHoursStatus:{},
 									missions: 0,
 									vacations:0,
 									absences: 0,
@@ -3683,6 +3776,8 @@
 										{
 											weekNo: weekNo,
 											employeeHours: {},
+											employeeReqHours: {},
+											employeeReqHoursStatus:{},
 											days: [],
 											missions: 0,
 											vacations:0,
@@ -3705,11 +3800,6 @@
 										let weekFoundAlpha = getWeek(yearContentModel.months[monthCounts-1],weekNo);
 										let weekFound = weekFoundAlpha.first;
 
-										if(empObj != undefined)
-										{
-											//console.log(weekNo);
-											//console.log(weekFound);		
-										}
 										
 										if(currentDateOfYear == todaysDate)
 										{
@@ -3782,6 +3872,8 @@
 										empDicofVacances:{}, 
 										absences: 0,
 										employeeHours: {},
+										employeeReqHours: {},
+										employeeReqHoursStatus:{},
 										absencesdates: [],
 										missions: 0,
 										missionsdates: [],
@@ -3849,6 +3941,10 @@
 											let end = resultTwo.first[m][resultTwo.second[8].name];
 											let profession = resultTwo.first[m][resultTwo.second[6].name];
 											let IDBureau = resultTwo.first[m][resultTwo.second[10].name];
+											//console.log(resultTwo.first[m]);
+											let naissance = resultTwo.first[m]['Date de naissance'];
+											let nomdubureau = resultTwo.first[m]['Nom du Bureau'];
+											naissance = naissance.toLocaleString('fr-FR',{day:"numeric",month:"numeric",year:"numeric"}).split("/").reverse().join("-");
 											//console.log("Inside m which is "+m);
 											/*if( empHoursObj )
 											{
@@ -3863,9 +3959,23 @@
 											
 											let employeeContentModel = getEmployeeContentModel(yearContentModel.months[monthIndex].weeks[weekIndex].days[weekDayIndex],IDIndividu);
 											let employeeDescribed = undefined;
-
+											
 											let imgsrc = resultTwo.first[m].img;
 											let empModeldefined = false;
+											if(empObj)
+												console.log(empObj);
+											if(employeeContentModel && empObj && !empHoursObj)
+											{
+												employeeContentModel.ID = IDIndividu;
+												employeeContentModel.officeID = IDBureau;
+												employeeContentModel.officeName = nomdubureau;
+												employeeContentModel.src =imgsrc? imgsrc:undefined;
+												employeeContentModel.img.exists = imgsrc?true:false;
+												employeeContentModel.strings = [resultTwo.first[m][resultTwo.second[9].name],resultTwo.first[m][resultTwo.second[2].name],resultTwo.first[m][resultTwo.second[3].name],resultTwo.first[m][resultTwo.second[4].name],resultTwo.first[m][resultTwo.second[13].name]];
+												employeeContentModel.birthdate = naissance;
+											}
+											
+											
 											if(employeeContentModel == undefined)
 											{	
 												empModeldefined = true;
@@ -3873,6 +3983,8 @@
 												{
 													strings:[],
 													ID: IDIndividu,
+													officeID:IDBureau,
+													officeName:nomdubureau,
 													img: {exists: undefined,src: undefined}, 
 													imgClass: "smallandRoundImg",
 													wrapperParragraph: "flexible",
@@ -3898,7 +4010,8 @@
 													exits:[],
 													retardCritical: false,
 													retardCriticalStr: "RETARD CRITIQUE", 
-													date: ""
+													date: "",
+													birthdate:naissance
 												};
 											}
 											
@@ -3913,12 +4026,17 @@
 													wrapperParragraph: "flexible",
 													wrapperLi: "clickableBasic",
 													ID: IDIndividu,
+													officeID:IDBureau,
+													officeName:nomdubureau,
 													strings: [],
 													profession: profession,
 													startdate: debut.toLocaleString('fr-FR',{day:"numeric",month:"long",year:"numeric"}),
+													startdate2: debut.toLocaleString('fr-FR',{day:"numeric",month:"numeric",year:"numeric"}).split("/").reverse().join("-"),
 													enddate: end.toLocaleString('fr-FR',{day:"numeric",month:"long",year:"numeric"}),
-													vacationsDaysAllowed: 20,
-													vacationsDaysLeft: 20,
+													enddate2: end.toLocaleString('fr-FR',{day:"numeric",month:"numeric",year:"numeric"}).split("/").reverse().join("-"),
+													birthdate: naissance,
+													vacationsDaysAllowed: 22,
+													vacationsDaysLeft: 22,
 													missiondates:{count:0,other:[]},
 													sicknessdates:{count:0,other:[]},
 													vacationdates:{count:0,other:[]},
@@ -4238,6 +4356,15 @@
 													yearContentModel.employeesCount++;
 												}
 												
+												if(employeeContentModel && empObj && !empHoursObj)
+												{
+													var foundEmp = yearContentModel.employees.find(emp=> emp.ID == empObj.ID);	
+													if(foundEmp)
+													{
+														Object.assign(foundEmp,employeeDescribed);
+													}
+												}
+												
 												let prevyearContentModelalpha = getYear(unitLocation,year-1);
 												let prevyearContentModel = prevyearContentModelalpha.first;
 												let prevyearContentModelindex = prevyearContentModelalpha.second;
@@ -4320,6 +4447,9 @@
 												console.log("*************************");
 											}
 											
+											
+											
+											
 											if(yearContentModel.months[monthIndex].weeks[weekIndex].days[dayIndex].employeeHours[employeeContentModel.ID] == undefined)
 											{
 												if(updating)
@@ -4359,19 +4489,58 @@
 											// console.log("*****************************");
 											//console.log(aresult);
 											//console.log("*********************************");
-											
+												/*if(currentDateOfYear.getMonth() == 0 && currentDateOfYear.getDate() == 1 && currentDateOfYear.getFullYear() == 2025)
+												{
+													console.log("*****************************JANVIER");
+													console.log(currentDateOfYear);
+													console.log(dresultFiltered);
+													console.log("yearContentModel.months[monthIndex].weeks[weekIndex].days[dayIndex].employeeReqHours[employeeContentModel.ID] == undefined "+((yearContentModel.months[monthIndex].weeks[weekIndex].days[dayIndex].employeeReqHours[employeeContentModel.ID] == undefined)));
+													console.log("!yearContentModel.months[monthIndex].weeks[weekIndex].days[dayIndex].employeeReqHours[employeeContentModel.ID]"+(!yearContentModel.months[monthIndex].weeks[weekIndex].days[dayIndex].employeeReqHours[employeeContentModel.ID])); 
+													console.log(yearContentModel.months[monthIndex].weeks[weekIndex].days[dayIndex].employeeReqHours[employeeContentModel.ID]+"must be undefined");
+													console.log(currentDateOfYear.getDay());
+													console.log( currentDateOfYear.getDay() != 0);
+													console.log( currentDateOfYear.getDay() != 6);
+													console.log("*****************************JANVIER");
+													setTimeout(() => { console.log("This message appears after 20 seconds"); }, 20000);
+													
+												}*/
 											//beginning of events or holiday
 											if( dresultFiltered.first.length > 0 )
 											{
 												//console.log("Inside d result");
 												//console.log(dresultFiltered);
+												if(currentDateOfYear.getDate() == 1 && currentDateOfYear.getFullYear() == 2025)
+												{
+													//console.log("Holiday On "+currentDateOfYear);
+													/*console.log(currentDateOfYear.getDay() != 0 && currentDateOfYear.getDay() != 6 &&(!yearContentModel.months[monthIndex].weeks[weekIndex].days[dayIndex].employeeReqHours[employeeContentModel.ID] || yearContentModel.months[monthIndex].weeks[weekIndex].days[dayIndex].employeeReqHours[employeeContentModel.ID] == "08:00:00"));*/
+												}
 												let str = "";
 												dresultFiltered.first.forEach((element)=>
 												{
 													str += element["name"]+"\n";
 													findElementIntoArray(data.yearsDic[year][monthIndex].elements,"day","eventsname",element["date"].getDate(),str);
 												});
-																								
+												if( currentDateOfYear.getDay() != 0 && currentDateOfYear.getDay() != 6 &&( yearContentModel.months[monthIndex].weeks[weekIndex].days[dayIndex].employeeReqHours[employeeContentModel.ID] && yearContentModel.months[monthIndex].weeks[weekIndex].days[dayIndex].employeeReqHours[employeeContentModel.ID] == "08:00:00"  ))
+												{
+													yearContentModel.months[monthIndex].weeks[weekIndex].days[dayIndex].employeeReqHours[employeeContentModel.ID] = "00:00:00";
+													yearContentModel.months[monthIndex].weeks[weekIndex].employeeReqHours[employeeContentModel.ID] = SubstractTwoHours(yearContentModel.months[monthIndex].weeks[weekIndex].employeeReqHours[employeeContentModel.ID],"08:00:00");
+													yearContentModel.months[monthIndex].employeeReqHours[employeeContentModel.ID] = SubstractTwoHours(yearContentModel.months[monthIndex].employeeReqHours[employeeContentModel.ID],"08:00:00");
+													yearContentModel.employeeReqHours[employeeContentModel.ID] = SubstractTwoHours(yearContentModel.employeeReqHours[employeeContentModel.ID],"08:00:00");
+															
+													yearContentModel.months[monthIndex].weeks[weekIndex].days[dayIndex].employeeReqHoursStatus[employeeContentModel.ID] = CompareTwoHours(yearContentModel.months[monthIndex].weeks[weekIndex].days[dayIndex].employeeHours[employeeContentModel.ID],yearContentModel.months[monthIndex].weeks[weekIndex].days[dayIndex].employeeReqHours[employeeContentModel.ID]) >= 0? true:false;
+													yearContentModel.months[monthIndex].weeks[weekIndex].employeeReqHoursStatus[employeeContentModel.ID] = CompareTwoHours(yearContentModel.months[monthIndex].weeks[weekIndex].employeeHours[employeeContentModel.ID],yearContentModel.months[monthIndex].weeks[weekIndex].employeeReqHours[employeeContentModel.ID]) >= 0? true:false;														
+													yearContentModel.months[monthIndex].employeeReqHoursStatus[employeeContentModel.ID] = CompareTwoHours(yearContentModel.months[monthIndex].employeeHours[employeeContentModel.ID],yearContentModel.months[monthIndex].employeeReqHours[employeeContentModel.ID]) >= 0? true:false;
+													yearContentModel.employeeReqHoursStatus[employeeContentModel.ID] = CompareTwoHours(yearContentModel.employeeHours[employeeContentModel.ID],yearContentModel.employeeReqHours[employeeContentModel.ID]) >= 0? true:false;
+													
+												}
+												else if( currentDateOfYear.getDay() != 0 && currentDateOfYear.getDay() != 6 && (!yearContentModel.months[monthIndex].weeks[weekIndex].days[dayIndex].employeeReqHours[employeeContentModel.ID]))
+												{
+													yearContentModel.months[monthIndex].weeks[weekIndex].days[dayIndex].employeeReqHours[employeeContentModel.ID] = "00:00:00";
+													yearContentModel.months[monthIndex].weeks[weekIndex].days[dayIndex].employeeReqHoursStatus[employeeContentModel.ID] = CompareTwoHours(yearContentModel.months[monthIndex].weeks[weekIndex].days[dayIndex].employeeHours[employeeContentModel.ID],yearContentModel.months[monthIndex].weeks[weekIndex].days[dayIndex].employeeReqHours[employeeContentModel.ID]) >= 0? true:false;
+													yearContentModel.months[monthIndex].weeks[weekIndex].employeeReqHoursStatus[employeeContentModel.ID] = CompareTwoHours(yearContentModel.months[monthIndex].weeks[weekIndex].employeeHours[employeeContentModel.ID],yearContentModel.months[monthIndex].weeks[weekIndex].employeeReqHours[employeeContentModel.ID]) >= 0? true:false;														
+													yearContentModel.months[monthIndex].employeeReqHoursStatus[employeeContentModel.ID] = CompareTwoHours(yearContentModel.months[monthIndex].employeeHours[employeeContentModel.ID],yearContentModel.months[monthIndex].employeeReqHours[employeeContentModel.ID]) >= 0? true:false;
+													yearContentModel.employeeReqHoursStatus[employeeContentModel.ID] = CompareTwoHours(yearContentModel.employeeHours[employeeContentModel.ID],yearContentModel.employeeReqHours[employeeContentModel.ID]) >= 0? true:false;
+												}
 												if(employeeContentModel.mission)//mission section
 												{
 													employeeContentModel.mission = false;
@@ -4390,8 +4559,9 @@
 															employeeContentModel.approved  = false;
 															employeeContentModel.approvedSet = false;
 															
-															/*console.trace({"absencesClassified":(employeeContentModel.reason && currentlyApprovedSet)?-1:0,"absencesUnClassified":(employeeContentModel.reason && currentlyApprovedSet)?1:0,"absencesApproved":(employeeContentModel.reason && currentlyApproved)?-1:0,"absencesUnApproved":(employeeContentModel.reason && currentlyApproved)?1:0});*/
-																
+													/*console.trace({"absencesClassified":(employeeContentModel.reason && currentlyApprovedSet)?-1:0,"absencesUnClassified":(employeeContentModel.reason && currentlyApprovedSet)?1:0,"absencesApproved":(employeeContentModel.reason && currentlyApproved)?-1:0,"absencesUnApproved":(employeeContentModel.reason && currentlyApproved)?1:0});*/
+													
+															
 													employeeContentModel.absence = false;
 													if(updating)
 													{
@@ -4434,7 +4604,8 @@
 													calculateRetards(unitLocation,year,-1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
 														
 													calculateApprovalRates("retards",unitLocation,year,{},employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
-															
+													
+																										
 												}
 												if(employeeContentModel.retardCritical)//retards critiques section
 												{
@@ -4452,6 +4623,22 @@
 													}
 													calculateCriticalRetards(unitLocation,year,-1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
 													calculateApprovalRates("retards",unitLocation,year,{},employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
+													
+												}
+											}
+											else
+											{
+												if( currentDateOfYear.getDay() != 0 && currentDateOfYear.getDay() != 6 &&(!yearContentModel.months[monthIndex].weeks[weekIndex].days[dayIndex].employeeReqHours[employeeContentModel.ID] || yearContentModel.months[monthIndex].weeks[weekIndex].days[dayIndex].employeeReqHours[employeeContentModel.ID] == "00:00:00"))
+												{
+													yearContentModel.months[monthIndex].weeks[weekIndex].days[dayIndex].employeeReqHours[employeeContentModel.ID] = "08:00:00";
+													yearContentModel.months[monthIndex].weeks[weekIndex].employeeReqHours[employeeContentModel.ID] = AddTwoHours(yearContentModel.months[monthIndex].weeks[weekIndex].employeeReqHours[employeeContentModel.ID],"08:00:00");
+													yearContentModel.months[monthIndex].employeeReqHours[employeeContentModel.ID] = AddTwoHours(yearContentModel.months[monthIndex].employeeReqHours[employeeContentModel.ID],"08:00:00");
+													yearContentModel.employeeReqHours[employeeContentModel.ID] = AddTwoHours(yearContentModel.employeeReqHours[employeeContentModel.ID],"08:00:00");
+																
+													yearContentModel.months[monthIndex].weeks[weekIndex].days[dayIndex].employeeReqHoursStatus[employeeContentModel.ID] = CompareTwoHours(yearContentModel.months[monthIndex].weeks[weekIndex].days[dayIndex].employeeHours[employeeContentModel.ID],yearContentModel.months[monthIndex].weeks[weekIndex].days[dayIndex].employeeReqHours[employeeContentModel.ID]) >= 0? true:false;
+													yearContentModel.months[monthIndex].weeks[weekIndex].employeeReqHoursStatus[employeeContentModel.ID] = CompareTwoHours(yearContentModel.months[monthIndex].weeks[weekIndex].employeeHours[employeeContentModel.ID],yearContentModel.months[monthIndex].weeks[weekIndex].employeeReqHours[employeeContentModel.ID]) >= 0? true:false;														
+													yearContentModel.months[monthIndex].employeeReqHoursStatus[employeeContentModel.ID] = CompareTwoHours(yearContentModel.months[monthIndex].employeeHours[employeeContentModel.ID],yearContentModel.months[monthIndex].employeeReqHours[employeeContentModel.ID]) >= 0? true:false;
+													yearContentModel.employeeReqHoursStatus[employeeContentModel.ID] = CompareTwoHours(yearContentModel.employeeHours[employeeContentModel.ID],yearContentModel.employeeReqHours[employeeContentModel.ID]) >= 0? true:false;	
 												}
 											}
 											
@@ -4463,11 +4650,23 @@
 												/*if( empHoursObj )
 													console.log("Inside attendance");
 												*/
-												if(secondresult.first[0].length > 0)
+												if(secondresult.first[0].length > 0)//attendance regarding arrival hours
 												{
 													if( secondresult.first[0][0][secondresult.second[0][0].name] == 1 && dresultFiltered.first.length == 0) 
 													{
-														
+														if( currentDateOfYear.getDay() != 0 && currentDateOfYear.getDay() != 6 &&(!yearContentModel.months[monthIndex].weeks[weekIndex].days[dayIndex].employeeReqHours[employeeContentModel.ID] || yearContentModel.months[monthIndex].weeks[weekIndex].days[dayIndex].employeeReqHours[employeeContentModel.ID] == "00:00:00"  ))
+														{
+															yearContentModel.months[monthIndex].weeks[weekIndex].days[dayIndex].employeeReqHours[employeeContentModel.ID] = "08:00:00";
+															yearContentModel.months[monthIndex].weeks[weekIndex].employeeReqHours[employeeContentModel.ID] = AddTwoHours(yearContentModel.months[monthIndex].weeks[weekIndex].employeeReqHours[employeeContentModel.ID],"08:00:00");
+															yearContentModel.months[monthIndex].employeeReqHours[employeeContentModel.ID] = AddTwoHours(yearContentModel.months[monthIndex].employeeReqHours[employeeContentModel.ID],"08:00:00");
+															yearContentModel.employeeReqHours[employeeContentModel.ID] = AddTwoHours(yearContentModel.employeeReqHours[employeeContentModel.ID],"08:00:00");
+															
+															yearContentModel.months[monthIndex].weeks[weekIndex].days[dayIndex].employeeReqHoursStatus[employeeContentModel.ID] = CompareTwoHours(yearContentModel.months[monthIndex].weeks[weekIndex].days[dayIndex].employeeHours[employeeContentModel.ID],yearContentModel.months[monthIndex].weeks[weekIndex].days[dayIndex].employeeReqHours[employeeContentModel.ID]) >= 0? true:false;
+															yearContentModel.months[monthIndex].weeks[weekIndex].employeeReqHoursStatus[employeeContentModel.ID] = CompareTwoHours(yearContentModel.months[monthIndex].weeks[weekIndex].employeeHours[employeeContentModel.ID],yearContentModel.months[monthIndex].weeks[weekIndex].employeeReqHours[employeeContentModel.ID]) >= 0? true:false;														
+															yearContentModel.months[monthIndex].employeeReqHoursStatus[employeeContentModel.ID] = CompareTwoHours(yearContentModel.months[monthIndex].employeeHours[employeeContentModel.ID],yearContentModel.months[monthIndex].employeeReqHours[employeeContentModel.ID]) >= 0? true:false;
+															yearContentModel.employeeReqHoursStatus[employeeContentModel.ID] = CompareTwoHours(yearContentModel.employeeHours[employeeContentModel.ID],yearContentModel.employeeReqHours[employeeContentModel.ID]) >= 0? true:false;
+															
+														}
 														if(employeeContentModel.retard)
 														{
 															var currentlyApproved = employeeContentModel.approved;
@@ -4524,9 +4723,11 @@
 															var currentlyApproved = employeeContentModel.approved;
 															var currentlyApprovedSet = employeeContentModel.approvedSet;
 															
+															employeeContentModel.reason = false;
 															employeeContentModel.approved = false;
 															employeeContentModel.approvedSet = false;
-															
+															employeeContentModel.reasonStr = undefined;
+															employeeContentModel.approvedBy = undefined;
 														}
 														
 														if(employeeContentModel.absence)
@@ -4563,10 +4764,30 @@
 														else
 														{
 															calculateApprovalRates("retards",unitLocation,year,{},employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
+															
+															employeeContentModel.reason = false;
+															employeeContentModel.approved = false;
+															employeeContentModel.approvedSet = false;
+															employeeContentModel.reasonStr = undefined;
+															employeeContentModel.approvedBy = undefined;
+															
 														}
 													}
 													else if (secondresult.first[0][0][secondresult.second[0][1].name] == 1 && dresultFiltered.first.length == 0) 
 													{
+														if(currentDateOfYear.getDay() != 0 && currentDateOfYear.getDay() != 6 &&( !yearContentModel.months[monthIndex].weeks[weekIndex].days[dayIndex].employeeReqHours[employeeContentModel.ID] || yearContentModel.months[monthIndex].weeks[weekIndex].days[dayIndex].employeeReqHours[employeeContentModel.ID] == "00:00:00"  ))
+														{
+															yearContentModel.months[monthIndex].weeks[weekIndex].days[dayIndex].employeeReqHours[employeeContentModel.ID] = "08:00:00";
+															yearContentModel.months[monthIndex].weeks[weekIndex].employeeReqHours[employeeContentModel.ID] = AddTwoHours(yearContentModel.months[monthIndex].weeks[weekIndex].employeeReqHours[employeeContentModel.ID],"08:00:00");
+															yearContentModel.months[monthIndex].employeeReqHours[employeeContentModel.ID] = AddTwoHours(yearContentModel.months[monthIndex].employeeReqHours[employeeContentModel.ID],"08:00:00");
+															yearContentModel.employeeReqHours[employeeContentModel.ID] = AddTwoHours(yearContentModel.employeeReqHours[employeeContentModel.ID],"08:00:00");
+															
+															yearContentModel.months[monthIndex].weeks[weekIndex].days[dayIndex].employeeReqHoursStatus[employeeContentModel.ID] = CompareTwoHours(yearContentModel.months[monthIndex].weeks[weekIndex].days[dayIndex].employeeHours[employeeContentModel.ID],yearContentModel.months[monthIndex].weeks[weekIndex].days[dayIndex].employeeReqHours[employeeContentModel.ID]) >= 0? true:false;
+															yearContentModel.months[monthIndex].weeks[weekIndex].employeeReqHoursStatus[employeeContentModel.ID] = CompareTwoHours(yearContentModel.months[monthIndex].weeks[weekIndex].employeeHours[employeeContentModel.ID],yearContentModel.months[monthIndex].weeks[weekIndex].employeeReqHours[employeeContentModel.ID]) >= 0? true:false;														
+															yearContentModel.months[monthIndex].employeeReqHoursStatus[employeeContentModel.ID] = CompareTwoHours(yearContentModel.months[monthIndex].employeeHours[employeeContentModel.ID],yearContentModel.months[monthIndex].employeeReqHours[employeeContentModel.ID]) >= 0? true:false;
+															yearContentModel.employeeReqHoursStatus[employeeContentModel.ID] = CompareTwoHours(yearContentModel.employeeHours[employeeContentModel.ID],yearContentModel.employeeReqHours[employeeContentModel.ID]) >= 0? true:false;
+															
+														}
 														if(employeeContentModel.retardCritical)
 														{			
 															var currentlyApproved = employeeContentModel.approved;
@@ -4574,7 +4795,6 @@
 																
 															employeeContentModel.approved = false;
 															employeeContentModel.approvedSet = false;
-																
 															
 															if(updating)
 															{
@@ -4587,7 +4807,7 @@
 															calculateApprovalRates("retards",unitLocation,year,{},employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
 															
 														}
-
+														
 									
 														if(updating)
 														{
@@ -4625,10 +4845,12 @@
 															var currentlyApproved = employeeContentModel.approved;
 															var currentlyApprovedSet = employeeContentModel.approvedSet;
 															
+															employeeContentModel.reason = false;
 															employeeContentModel.approved = false;
 															employeeContentModel.approvedSet = false;
+															employeeContentModel.reasonStr = undefined;
+															employeeContentModel.approvedBy = undefined;
 															
-																	
 														}
 														
 														if(employeeContentModel.absence)
@@ -4666,8 +4888,23 @@
 														employeeContentModel.date = currentDateOfYear.toLocaleString('fr-FR',{day:"numeric",month:"long",year:"numeric"});
 														//console.log(employeeContentModel.date);
 														//console.log("monthIndex "+monthIndex+" weekIndex "+weekIndex+" weekDayIndex "+weekDayIndex);
+														
+														if(currentDateOfYear.getDay() != 0 && currentDateOfYear.getDay() != 6 &&( !yearContentModel.months[monthIndex].weeks[weekIndex].days[dayIndex].employeeReqHours[employeeContentModel.ID] || yearContentModel.months[monthIndex].weeks[weekIndex].days[dayIndex].employeeReqHours[employeeContentModel.ID] == "00:00:00"  ))
+														{
+															yearContentModel.months[monthIndex].weeks[weekIndex].days[dayIndex].employeeReqHours[employeeContentModel.ID] = "08:00:00";
+															yearContentModel.months[monthIndex].weeks[weekIndex].employeeReqHours[employeeContentModel.ID] = AddTwoHours(yearContentModel.months[monthIndex].weeks[weekIndex].employeeReqHours[employeeContentModel.ID],"08:00:00");
+															yearContentModel.months[monthIndex].employeeReqHours[employeeContentModel.ID] = AddTwoHours(yearContentModel.months[monthIndex].employeeReqHours[employeeContentModel.ID],"08:00:00");
+															yearContentModel.employeeReqHours[employeeContentModel.ID] = AddTwoHours(yearContentModel.employeeReqHours[employeeContentModel.ID],"08:00:00");
+															
+															yearContentModel.months[monthIndex].weeks[weekIndex].days[dayIndex].employeeReqHoursStatus[employeeContentModel.ID] = CompareTwoHours(yearContentModel.months[monthIndex].weeks[weekIndex].days[dayIndex].employeeHours[employeeContentModel.ID],yearContentModel.months[monthIndex].weeks[weekIndex].days[dayIndex].employeeReqHours[employeeContentModel.ID]) >= 0? true:false;
+															yearContentModel.months[monthIndex].weeks[weekIndex].employeeReqHoursStatus[employeeContentModel.ID] = CompareTwoHours(yearContentModel.months[monthIndex].weeks[weekIndex].employeeHours[employeeContentModel.ID],yearContentModel.months[monthIndex].weeks[weekIndex].employeeReqHours[employeeContentModel.ID]) >= 0? true:false;														
+															yearContentModel.months[monthIndex].employeeReqHoursStatus[employeeContentModel.ID] = CompareTwoHours(yearContentModel.months[monthIndex].employeeHours[employeeContentModel.ID],yearContentModel.months[monthIndex].employeeReqHours[employeeContentModel.ID]) >= 0? true:false;
+															yearContentModel.employeeReqHoursStatus[employeeContentModel.ID] = CompareTwoHours(yearContentModel.employeeHours[employeeContentModel.ID],yearContentModel.employeeReqHours[employeeContentModel.ID]) >= 0? true:false;
+															
+														}
+														
 														calculatePresence(unitLocation,year,1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
-
+														
 														if(employeeContentModel.retard)
 														{
 															//nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].retardsdates.remove(employeeContentModel);
@@ -4723,6 +4960,7 @@
 															{
 																employeeContentModel.reason = false;
 															}
+															
 															calculateAbsence(unitLocation,year,-1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
 															employeeContentModel.absence = false;
 																
@@ -4737,7 +4975,7 @@
 													console.log("secondresult.first[2] does not have required length......"+secondresult.first[2].length);
 												*/
 												
-												if(secondresult.first[2].length > 0)//beginning of hours section
+												if(secondresult.first[2].length > 0)//beginning of hours section (calculations)
 												{
 													let index_of_entries_into = 0;
 													let elements_not_found = [];
@@ -4827,8 +5065,8 @@
 																	let startIndex = employeeContentModel.entries.indexOf(a);
 																	
 																	let objTemp = {entry:a,exit:b};
+																	let defValue = {entry:'13:30:00',exit:'14:30:00'};
 																	let objElements = [];
-																	objElements.push(objTemp);
 
 																	let value_to_deal_with = compareHoursOneSuperior(a,b)< 0;
 																	if(startIndex != -1)
@@ -4870,11 +5108,8 @@
 
 																		employeeContentModel.entriesexitsCouples.forEach((element)=>
 																		{
-																			count = objElements.length;
-																			tempIndex = 0;
 																			
-																			while(tempIndex < count)
-																			{
+																			
 																				if( compareHoursOneSuperior(objTemp.entry,element.entry) >= 0 && compareHoursOneSuperior(objTemp.entry, element.exit) <= 0)
 																				{
 																					if(compareHoursOneSuperior(objTemp.exit,element.entry) > 0 && compareHoursOneSuperior(objTemp.exit, element.exit) > 0)
@@ -4904,21 +5139,14 @@
 																						objElements.push({entry:element.exit,exit:objTemp.exit});
 																					}	
 																				}
-																				++tempIndex;						
-																			}
-
-																			tempIndex = 0;
-																			while(tempIndex < count)
-																			{
-																				objElements.splice(0,1);
-																				++tempIndex;
-																			}						
-
+																				
 																		});
 																		
 																		tempIndex = 0;
 																		count = objElements.length;
 																		employeeContentModel.dailyHoursTotal = "00:00:00";
+																		
+																		
 																		
 																		while(tempIndex < count)
 																		{
@@ -4979,7 +5207,19 @@
 												//start of presenceSection
 												if( secondresult.first[0].length == 0 && secondresult.first[1].length == 0 && basicDateComparison(dateNowOther ,currentDateOfYear) > 0 && dresultFiltered.first.length == 0)
 												{
-													
+													if(currentDateOfYear.getDay() != 0 && currentDateOfYear.getDay() != 6 && (!yearContentModel.months[monthIndex].weeks[weekIndex].days[dayIndex].employeeReqHours[employeeContentModel.ID] || yearContentModel.months[monthIndex].weeks[weekIndex].days[dayIndex].employeeReqHours[employeeContentModel.ID] == "00:00:00"  ))
+													{
+														yearContentModel.months[monthIndex].weeks[weekIndex].days[dayIndex].employeeReqHours[employeeContentModel.ID] = "08:00:00";
+														yearContentModel.months[monthIndex].weeks[weekIndex].employeeReqHours[employeeContentModel.ID] = AddTwoHours(yearContentModel.months[monthIndex].weeks[weekIndex].employeeReqHours[employeeContentModel.ID],"08:00:00");
+														yearContentModel.months[monthIndex].employeeReqHours[employeeContentModel.ID] = AddTwoHours(yearContentModel.months[monthIndex].employeeReqHours[employeeContentModel.ID],"08:00:00");
+														yearContentModel.employeeReqHours[employeeContentModel.ID] = AddTwoHours(yearContentModel.employeeReqHours[employeeContentModel.ID],"08:00:00");
+															
+														yearContentModel.months[monthIndex].weeks[weekIndex].days[dayIndex].employeeReqHoursStatus[employeeContentModel.ID] = CompareTwoHours(yearContentModel.months[monthIndex].weeks[weekIndex].days[dayIndex].employeeHours[employeeContentModel.ID],yearContentModel.months[monthIndex].weeks[weekIndex].days[dayIndex].employeeReqHours[employeeContentModel.ID]) >= 0? true:false;
+														yearContentModel.months[monthIndex].weeks[weekIndex].employeeReqHoursStatus[employeeContentModel.ID] = CompareTwoHours(yearContentModel.months[monthIndex].weeks[weekIndex].employeeHours[employeeContentModel.ID],yearContentModel.months[monthIndex].weeks[weekIndex].employeeReqHours[employeeContentModel.ID]) >= 0? true:false;														
+														yearContentModel.months[monthIndex].employeeReqHoursStatus[employeeContentModel.ID] = CompareTwoHours(yearContentModel.months[monthIndex].employeeHours[employeeContentModel.ID],yearContentModel.months[monthIndex].employeeReqHours[employeeContentModel.ID]) >= 0? true:false;
+														yearContentModel.employeeReqHoursStatus[employeeContentModel.ID] = CompareTwoHours(yearContentModel.employeeHours[employeeContentModel.ID],yearContentModel.employeeReqHours[employeeContentModel.ID]) >= 0? true:false;
+															
+													}
 													employeeContentModel.absence = true;
 													employeeContentModel.retard = false;
 													absence = true;
@@ -5015,12 +5255,13 @@
 														var currentlyApproved = employeeContentModel.approved;
 														var currentlyApprovedSet = employeeContentModel.approvedSet;
 														
+														employeeContentModel.reason = false;
 														employeeContentModel.approved = false;
 														employeeContentModel.approvedSet = false;
-														
+														employeeContentModel.reasonStr = undefined;
+														employeeContentModel.approvedBy = undefined;
+																
 														/*console.trace({"absencesClassified":(employeeContentModel.reason && currentlyApprovedSet)?-1:0,"absencesUnClassified":(employeeContentModel.reason && currentlyApprovedSet)?1:0,"absencesApproved":(employeeContentModel.reason && currentlyApproved)?-1:0,"absencesUnApproved":(employeeContentModel.reason && currentlyApproved)?1:0});*/
-														
-														
 													}
 													
 													if(currentDateOfYear.getDay() != 0 && currentDateOfYear.getDay() != 6)
@@ -5034,7 +5275,19 @@
 													|| ((dateNowOther.getUTCHours() == 8 && dateNowOther.getUTCMinutes() == 30 && dateNowOther.getUTCSeconds() > 0)) 
 													|| (dateNowOther.getUTCHours() > 8) ) && basicDateComparison(dateNowOther ,currentDateOfYear) >= 0 && dresultFiltered.first.length == 0)//not more thant today
 												{
-														
+														if(currentDateOfYear.getDay() != 0 && currentDateOfYear.getDay() != 6 && (!yearContentModel.months[monthIndex].weeks[weekIndex].days[dayIndex].employeeReqHours[employeeContentModel.ID] || yearContentModel.months[monthIndex].weeks[weekIndex].days[dayIndex].employeeReqHours[employeeContentModel.ID] == "00:00:00"  ))
+														{
+															yearContentModel.months[monthIndex].weeks[weekIndex].days[dayIndex].employeeReqHours[employeeContentModel.ID] = "08:00:00";
+															yearContentModel.months[monthIndex].weeks[weekIndex].employeeReqHours[employeeContentModel.ID] = AddTwoHours(yearContentModel.months[monthIndex].weeks[weekIndex].employeeReqHours[employeeContentModel.ID],"08:00:00");
+															yearContentModel.months[monthIndex].employeeReqHours[employeeContentModel.ID] = AddTwoHours(yearContentModel.months[monthIndex].employeeReqHours[employeeContentModel.ID],"08:00:00");
+															yearContentModel.employeeReqHours[employeeContentModel.ID] = AddTwoHours(yearContentModel.employeeReqHours[employeeContentModel.ID],"08:00:00");
+															
+															yearContentModel.months[monthIndex].weeks[weekIndex].days[dayIndex].employeeReqHoursStatus[employeeContentModel.ID] = CompareTwoHours(yearContentModel.months[monthIndex].weeks[weekIndex].days[dayIndex].employeeHours[employeeContentModel.ID],yearContentModel.months[monthIndex].weeks[weekIndex].days[dayIndex].employeeReqHours[employeeContentModel.ID]) >= 0? true:false;
+															yearContentModel.months[monthIndex].weeks[weekIndex].employeeReqHoursStatus[employeeContentModel.ID] = CompareTwoHours(yearContentModel.months[monthIndex].weeks[weekIndex].employeeHours[employeeContentModel.ID],yearContentModel.months[monthIndex].weeks[weekIndex].employeeReqHours[employeeContentModel.ID]) >= 0? true:false;														
+															yearContentModel.months[monthIndex].employeeReqHoursStatus[employeeContentModel.ID] = CompareTwoHours(yearContentModel.months[monthIndex].employeeHours[employeeContentModel.ID],yearContentModel.months[monthIndex].employeeReqHours[employeeContentModel.ID]) >= 0? true:false;
+															yearContentModel.employeeReqHoursStatus[employeeContentModel.ID] = CompareTwoHours(yearContentModel.employeeHours[employeeContentModel.ID],yearContentModel.employeeReqHours[employeeContentModel.ID]) >= 0? true:false;
+															
+														}
 														employeeContentModel.absence = true;
 														if(employeeContentModel.retard == true)
 														{
@@ -5073,6 +5326,10 @@
 															if(secondresult.first[3].length > 0)
 															{
 																console.log(secondresult.second[3][1].name);console.log(secondresult.first[3][0]);
+																//console.log(secondresult.second[3]);
+																//console.log("**************************");
+																//console.log(secondresult.first[3]);
+																//console.log(secondresult.second[3][5].name);
 																employeeContentModel.reason = true;employeeContentModel.reasonStr = secondresult.first[3][0][secondresult.second[3][1].name];
 																
 																var previouslyApproved = employeeContentModel.approved;
@@ -5082,9 +5339,11 @@
 																employeeContentModel.approved = secondresult.first[3][0][secondresult.second[3][3].name];
 																employeeContentModel.approvedSet = secondresult.first[3][0][secondresult.second[3][4].name];
 																employeeContentModel.approvedBy = secondresult.first[3][0][secondresult.second[3][5].name];
+
+																//console.log(secondresult.first[3][0][secondresult.second[3][5].name]);
 																
 																console.trace({"absencesClassified":(employeeContentModel.reason && employeeContentModel.approvedSet && !previouslyApprovedSet)?1:(employeeContentModel.reason && !employeeContentModel.approvedSet && previouslyApprovedSet)?-1:0 ,"absencesUnClassified":(employeeContentModel.reason && !employeeContentModel.approvedSet && previouslyApprovedSet)?1:(employeeContentModel.reason && employeeContentModel.approvedSet && !previouslyApprovedSet)?-1:0,"absencesApproved":(employeeContentModel.reason && employeeContentModel.approved && !previouslyApproved)?1:(employeeContentModel.reason && !employeeContentModel.approved && previouslyApproved)?-1:0,"absencesUnApproved":(employeeContentModel.reason && !employeeContentModel.approved && previouslyApproved)?1:(employeeContentModel.reason && employeeContentModel.approved && !previouslyApproved)?-1:0});
-														
+																//console.trace(resultTwo);
 																
 																if(employeeContentModel.approvedBy)
 																{
@@ -5101,9 +5360,12 @@
 																
 																var currentlyApproved = employeeContentModel.approved;
 																var currentlyApprovedSet = employeeContentModel.approvedSet;
-																
+															
+																employeeContentModel.reason = false;
 																employeeContentModel.approved = false;
 																employeeContentModel.approvedSet = false;
+																employeeContentModel.reasonStr = undefined;
+																employeeContentModel.approvedBy = undefined;
 																
 																/*console.trace({"absencesClassified":(employeeContentModel.reason && currentlyApprovedSet)?-1:0,"absencesUnClassified":(employeeContentModel.reason && currentlyApprovedSet)?1:0,"absencesApproved":(employeeContentModel.reason && currentlyApproved)?-1:0,"absencesUnApproved":(employeeContentModel.reason && currentlyApproved)?1:0});*/
 															
@@ -5132,6 +5394,19 @@
 															console.log("Maladie on "+currentDateOfYear);
 															employeeContentModel.date = currentDateOfYear.toLocaleString('fr-FR',{day:"numeric",month:"long",year:"numeric"});
 															calculateSicknesses(unitLocation,year,1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
+															if( (!yearContentModel.months[monthIndex].weeks[weekIndex].days[dayIndex].employeeReqHours[employeeContentModel.ID] || yearContentModel.months[monthIndex].weeks[weekIndex].days[dayIndex].employeeReqHours[employeeContentModel.ID] == "08:00:00"  ))
+															{
+																yearContentModel.months[monthIndex].weeks[weekIndex].days[dayIndex].employeeReqHours[employeeContentModel.ID] = "08:00:00";
+																yearContentModel.months[monthIndex].weeks[weekIndex].employeeReqHours[employeeContentModel.ID] = SubstractTwoHours(yearContentModel.months[monthIndex].weeks[weekIndex].employeeReqHours[employeeContentModel.ID],"08:00:00");
+																yearContentModel.months[monthIndex].employeeReqHours[employeeContentModel.ID] = SubstractTwoHours(yearContentModel.months[monthIndex].employeeReqHours[employeeContentModel.ID],"08:00:00");
+																yearContentModel.employeeReqHours[employeeContentModel.ID] = SubstractTwoHours(yearContentModel.employeeReqHours[employeeContentModel.ID],"08:00:00");
+																
+																yearContentModel.months[monthIndex].weeks[weekIndex].days[dayIndex].employeeReqHoursStatus[employeeContentModel.ID] = CompareTwoHours(yearContentModel.months[monthIndex].weeks[weekIndex].days[dayIndex].employeeHours[employeeContentModel.ID],yearContentModel.months[monthIndex].weeks[weekIndex].days[dayIndex].employeeReqHours[employeeContentModel.ID]) >= 0? true:false;
+																yearContentModel.months[monthIndex].weeks[weekIndex].employeeReqHoursStatus[employeeContentModel.ID] = CompareTwoHours(yearContentModel.months[monthIndex].weeks[weekIndex].employeeHours[employeeContentModel.ID],yearContentModel.months[monthIndex].weeks[weekIndex].employeeReqHours[employeeContentModel.ID]) >= 0? true:false;														
+																yearContentModel.months[monthIndex].employeeReqHoursStatus[employeeContentModel.ID] = CompareTwoHours(yearContentModel.months[monthIndex].employeeHours[employeeContentModel.ID],yearContentModel.months[monthIndex].employeeReqHours[employeeContentModel.ID]) >= 0? true:false;
+																yearContentModel.employeeReqHoursStatus[employeeContentModel.ID] = CompareTwoHours(yearContentModel.employeeHours[employeeContentModel.ID],yearContentModel.employeeReqHours[employeeContentModel.ID]) >= 0? true:false;
+																
+															}
 														}
 														if(employeeContentModel.mission)//mission section
 														{
@@ -5209,6 +5484,19 @@
 														employeeContentModel.date = currentDateOfYear.toLocaleString('fr-FR',{day:"numeric",month:"long",year:"numeric"});
 														calculateMission(unitLocation,year,1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
 														
+														if( (yearContentModel.months[monthIndex].weeks[weekIndex].days[dayIndex].employeeReqHours[employeeContentModel.ID] && yearContentModel.months[monthIndex].weeks[weekIndex].days[dayIndex].employeeReqHours[employeeContentModel.ID] == "08:00:00"  ))
+														{
+															yearContentModel.months[monthIndex].weeks[weekIndex].days[dayIndex].employeeReqHours[employeeContentModel.ID] = "00:00:00";
+															yearContentModel.months[monthIndex].weeks[weekIndex].employeeReqHours[employeeContentModel.ID] = SubstractTwoHours(yearContentModel.months[monthIndex].weeks[weekIndex].employeeReqHours[employeeContentModel.ID],"08:00:00");
+															yearContentModel.months[monthIndex].employeeReqHours[employeeContentModel.ID] = SubstractTwoHours(yearContentModel.months[monthIndex].employeeReqHours[employeeContentModel.ID],"08:00:00");
+															yearContentModel.employeeReqHours[employeeContentModel.ID] = SubstractTwoHours(yearContentModel.employeeReqHours[employeeContentModel.ID],"08:00:00");
+															
+															yearContentModel.months[monthIndex].weeks[weekIndex].days[dayIndex].employeeReqHoursStatus[employeeContentModel.ID] = CompareTwoHours(yearContentModel.months[monthIndex].weeks[weekIndex].days[dayIndex].employeeHours[employeeContentModel.ID],yearContentModel.months[monthIndex].weeks[weekIndex].days[dayIndex].employeeReqHours[employeeContentModel.ID]) >= 0? true:false;
+															yearContentModel.months[monthIndex].weeks[weekIndex].employeeReqHoursStatus[employeeContentModel.ID] = CompareTwoHours(yearContentModel.months[monthIndex].weeks[weekIndex].employeeHours[employeeContentModel.ID],yearContentModel.months[monthIndex].weeks[weekIndex].employeeReqHours[employeeContentModel.ID]) >= 0? true:false;														
+															yearContentModel.months[monthIndex].employeeReqHoursStatus[employeeContentModel.ID] = CompareTwoHours(yearContentModel.months[monthIndex].employeeHours[employeeContentModel.ID],yearContentModel.months[monthIndex].employeeReqHours[employeeContentModel.ID]) >= 0? true:false;
+															yearContentModel.employeeReqHoursStatus[employeeContentModel.ID] = CompareTwoHours(yearContentModel.employeeHours[employeeContentModel.ID],yearContentModel.employeeReqHours[employeeContentModel.ID]) >= 0? true:false;
+															
+														}
 														if(employeeContentModel.absence)
 														{
 															var currentlyApproved = employeeContentModel.approved;
@@ -5282,6 +5570,19 @@
 															console.log("Congès on "+currentDateOfYear);
 															employeeContentModel.date = currentDateOfYear.toLocaleString('fr-FR',{day:"numeric",month:"long",year:"numeric"});
 															calculateCongès(unitLocation,year,1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
+															if(yearContentModel.months[monthIndex].weeks[weekIndex].days[dayIndex].employeeReqHours[employeeContentModel.ID] && yearContentModel.months[monthIndex].weeks[weekIndex].days[dayIndex].employeeReqHours[employeeContentModel.ID] == "00:00:00"  )
+															{
+																yearContentModel.months[monthIndex].weeks[weekIndex].days[dayIndex].employeeReqHours[employeeContentModel.ID] = "08:00:00";
+																yearContentModel.months[monthIndex].weeks[weekIndex].employeeReqHours[employeeContentModel.ID] = SubstractTwoHours(yearContentModel.months[monthIndex].weeks[weekIndex].employeeReqHours[employeeContentModel.ID],"08:00:00");
+																yearContentModel.months[monthIndex].employeeReqHours[employeeContentModel.ID] = SubstractTwoHours(yearContentModel.months[monthIndex].employeeReqHours[employeeContentModel.ID],"08:00:00");
+																yearContentModel.employeeReqHours[employeeContentModel.ID] = SubstractTwoHours(yearContentModel.employeeReqHours[employeeContentModel.ID],"08:00:00");
+																
+																yearContentModel.months[monthIndex].weeks[weekIndex].days[dayIndex].employeeReqHoursStatus[employeeContentModel.ID] = CompareTwoHours(yearContentModel.months[monthIndex].weeks[weekIndex].days[dayIndex].employeeHours[employeeContentModel.ID],yearContentModel.months[monthIndex].weeks[weekIndex].days[dayIndex].employeeReqHours[employeeContentModel.ID]) >= 0? true:false;
+																yearContentModel.months[monthIndex].weeks[weekIndex].employeeReqHoursStatus[employeeContentModel.ID] = CompareTwoHours(yearContentModel.months[monthIndex].weeks[weekIndex].employeeHours[employeeContentModel.ID],yearContentModel.months[monthIndex].weeks[weekIndex].employeeReqHours[employeeContentModel.ID]) >= 0? true:false;														
+																yearContentModel.months[monthIndex].employeeReqHoursStatus[employeeContentModel.ID] = CompareTwoHours(yearContentModel.months[monthIndex].employeeHours[employeeContentModel.ID],yearContentModel.months[monthIndex].employeeReqHours[employeeContentModel.ID]) >= 0? true:false;
+																yearContentModel.employeeReqHoursStatus[employeeContentModel.ID] = CompareTwoHours(yearContentModel.employeeHours[employeeContentModel.ID],yearContentModel.employeeReqHours[employeeContentModel.ID]) >= 0? true:false;
+																
+															}
 														}
 														if(employeeContentModel.mission)
 														{
@@ -5363,6 +5664,19 @@
 																employeeContentModel.absence = true;
 																console.log("Absence on "+currentDateOfYear);
 																employeeContentModel.date = currentDateOfYear.toLocaleString('fr-FR',{day:"numeric",month:"long",year:"numeric"});
+																if(!yearContentModel.months[monthIndex].weeks[weekIndex].days[dayIndex].employeeReqHours[employeeContentModel.ID] || yearContentModel.months[monthIndex].weeks[weekIndex].days[dayIndex].employeeReqHours[employeeContentModel.ID] == "00:00:00"  )
+																{
+																	yearContentModel.months[monthIndex].weeks[weekIndex].days[dayIndex].employeeReqHours[employeeContentModel.ID] = "08:00:00";
+																	yearContentModel.months[monthIndex].weeks[weekIndex].employeeReqHours[employeeContentModel.ID] = AddTwoHours(yearContentModel.months[monthIndex].weeks[weekIndex].employeeReqHours[employeeContentModel.ID],"08:00:00");
+																	yearContentModel.months[monthIndex].employeeReqHours[employeeContentModel.ID] = AddTwoHours(yearContentModel.months[monthIndex].employeeReqHours[employeeContentModel.ID],"08:00:00");
+																	yearContentModel.employeeReqHours[employeeContentModel.ID] = AddTwoHours(yearContentModel.employeeReqHours[employeeContentModel.ID],"08:00:00");
+																	
+																	yearContentModel.months[monthIndex].weeks[weekIndex].days[dayIndex].employeeReqHoursStatus[employeeContentModel.ID] = CompareTwoHours(yearContentModel.months[monthIndex].weeks[weekIndex].days[dayIndex].employeeHours[employeeContentModel.ID],yearContentModel.months[monthIndex].weeks[weekIndex].days[dayIndex].employeeReqHours[employeeContentModel.ID]) >= 0? true:false;
+																	yearContentModel.months[monthIndex].weeks[weekIndex].employeeReqHoursStatus[employeeContentModel.ID] = CompareTwoHours(yearContentModel.months[monthIndex].weeks[weekIndex].employeeHours[employeeContentModel.ID],yearContentModel.months[monthIndex].weeks[weekIndex].employeeReqHours[employeeContentModel.ID]) >= 0? true:false;														
+																	yearContentModel.months[monthIndex].employeeReqHoursStatus[employeeContentModel.ID] = CompareTwoHours(yearContentModel.months[monthIndex].employeeHours[employeeContentModel.ID],yearContentModel.months[monthIndex].employeeReqHours[employeeContentModel.ID]) >= 0? true:false;
+																	yearContentModel.employeeReqHoursStatus[employeeContentModel.ID] = CompareTwoHours(yearContentModel.employeeHours[employeeContentModel.ID],yearContentModel.employeeReqHours[employeeContentModel.ID]) >= 0? true:false;
+																	
+																}
 																if(secondresult.first[3].length > 0)
 																{
 																	var previouslyApproved = employeeContentModel.approved;
@@ -5393,9 +5707,12 @@
 																	var currentlyApproved = employeeContentModel.approved;
 																	var currentlyApprovedSet = employeeContentModel.approvedSet;
 																	
+																	employeeContentModel.reason = false;
 																	employeeContentModel.approved = false;
 																	employeeContentModel.approvedSet = false;
-																	
+																	employeeContentModel.reasonStr = undefined;
+																	employeeContentModel.approvedBy = undefined;
+																
 																	/*console.trace({"absencesClassified":(employeeContentModel.reason && currentlyApprovedSet)?-1:0,"absencesUnClassified":(employeeContentModel.reason && currentlyApprovedSet)?1:0,"absencesApproved":(employeeContentModel.reason && currentlyApproved)?-1:0,"absencesUnApproved":(employeeContentModel.reason && currentlyApproved)?1:0});*/
 																	
 																}
@@ -5425,8 +5742,6 @@
 																	
 																employeeContentModel.approved = false;
 																employeeContentModel.approvedSet = false;
-																	
-																
 																employeeContentModel.retard = false;
 																						
 																if(employeeContentModel.reason)
@@ -5655,6 +5970,9 @@
 							if(element != ID)
 							{
 								keysToRemove.push(element);
+								["retards","absences"].forEach(str=>{
+									
+								});
 							}
 						});
 						
@@ -5662,6 +5980,7 @@
 						{
 							weekContent.employeeHours[element] = undefined;
 						});
+						
 						
 						
 						let othertempDeleteStack = findElementsNotEquivalentToValueIntoDic(ID,dayContent,"empDicofMissions");
@@ -5684,7 +6003,6 @@
 						deleteKeysElementsIntoDic(othertempDeleteStack,dayContent.empDicofCritical);
 						
 						
-						
 						for(let itemLength = 0; itemLength < dayContent.absencesdates.length; ++itemLength) 
 						{
 							let empdaily = dayContent.absencesdates[itemLength];
@@ -5694,6 +6012,43 @@
 								weekContent.absences--;
 								monthContent.absences--;
 								yearContentElement.absences--;
+								
+								if(dayContent.approvedSet && employeeContentModel.reason )
+								{
+									dayContent["absencesClassified"] -= 1;
+									weekContent["absencesClassified"] -= 1;
+									monthContent["absencesClassified"] -= 1;
+									yearContentElement["absencesClassified"] -= 1;
+								}
+								if(!dayContent.approvedSet &&  dayContent.reason)
+								{
+									dayContent["absencesUnClassified"] -= 1;
+									weekContent["absencesUnClassified"] -= 1;
+									monthContent["absencesUnClassified"] -= 1;
+									yearContentElement["absencesUnClassified"] -= 1;
+								}
+								if(dayContent.approved &&  dayContent.reason)
+								{
+									dayContent["absencesApproved"] -= 1;
+									weekContent["absencesApproved"] -= 1;
+									monthContent["absencesApproved"] -= 1;
+									yearContentElement["absencesApproved"] -= 1;
+								}
+								if(!dayContent.approved &&  dayContent.reason)
+								{
+									dayContent["absencesUnApproved"] -= 1;
+									weekContent["absencesUnApproved"] -= 1;
+									monthContent["absencesUnApproved"] -= 1;
+									yearContentElement["absencesUnApproved"] -= 1;
+								}
+								if(!dayContent.approved && !dayContent.reason)
+								{
+									dayContent["noabsencesDemands"] -= 1;
+									weekContent["noabsencesDemands"] -= 1;
+									monthContent["noabsencesDemands"] -= 1;
+									yearContentElement["noabsencesDemands"] -= 1;
+								}
+								dayContent["absencesapprovalDemands"] = dayContent["absencesApproved"] + dayContent["absencesUnApproved"];
 								tempDeleteStack.push(empdaily);
 							}	
 						}
@@ -5781,6 +6136,44 @@
 								weekContent.retards--;
 								monthContent.retards--;
 								yearContentElement.retards--;
+								
+								if(dayContent.approvedSet && employeeContentModel.reason )
+								{
+									dayContent["retardsClassified"] -= 1;
+									weekContent["retardsClassified"] -= 1;
+									monthContent["retardsClassified"] -= 1;
+									yearContentElement["retardsClassified"] -= 1;
+								}
+								if(!dayContent.approvedSet &&  dayContent.reason)
+								{
+									dayContent["retardsUnClassified"] -= 1;
+									weekContent["retardsUnClassified"] -= 1;
+									monthContent["retardsUnClassified"] -= 1;
+									yearContentElement["retardsUnClassified"] -= 1;
+								}
+								if(dayContent.approved &&  dayContent.reason)
+								{
+									dayContent["retardsApproved"] -= 1;
+									weekContent["retardsApproved"] -= 1;
+									monthContent["retardsApproved"] -= 1;
+									yearContentElement["retardsApproved"] -= 1;
+								}
+								if(!dayContent.approved &&  dayContent.reason)
+								{
+									dayContent["retardsUnApproved"] -= 1;
+									weekContent["retardsUnApproved"] -= 1;
+									monthContent["retardsUnApproved"] -= 1;
+									yearContentElement["retardsUnApproved"] -= 1;
+								}
+								if(!dayContent.approved && !dayContent.reason)
+								{
+									dayContent["noretardsDemands"] -= 1;
+									weekContent["noretardsDemands"] -= 1;
+									monthContent["noretardsDemands"] -= 1;
+									yearContentElement["noretardsDemands"] -= 1;
+								}
+								dayContent["retardsapprovalDemands"] = dayContent["retardsApproved"] + dayContent["retardsUnApproved"];
+								
 								tempDeleteStack.push(empdaily);
 							}
 						}
@@ -6374,7 +6767,7 @@
 		let spaceAvailable = false; 		
 		if( nodupTemp.empDic[IDEmployee].movedTo != undefined )
 		{
-			let nodeUpNestedAlpha = getYear(nodupTemp.empDic[IDEmployee].movedTo.year);
+			let nodeUpNestedAlpha = getYear(unitLocation,nodupTemp.empDic[IDEmployee].movedTo.year);
 			let nodeUpNested = nodeUpNestedAlpha.first;
 			
 			if( nodeUpNestedAlpha.second != -1 ) 
@@ -6406,7 +6799,9 @@
 		
 		if(passed == false && nodupTemp.empDic[employeeContentModel.ID].movedTo != undefined )
 		{
-			let nodeUpNestedAlpha = getYear(nodupTemp.empDic[employeeContentModel.ID].movedTo.year);
+			//console.log(nodupTemp.empDic[employeeContentModel.ID]);
+			let nodeUpNestedAlpha = getYear(unitLocation,nodupTemp.empDic[employeeContentModel.ID].movedTo.year);
+			
 			let nodeUpNested = nodeUpNestedAlpha.first;
 			if( nodeUpNestedAlpha.second != -1 ) 
 			{
@@ -7246,10 +7641,22 @@
 		}																		
 	} 
 	
+	function CompareTwoHours(hour1,hour2)
+	{
+		let hoursArray = ((!hour1)?"00:00:00":hour1).split(":");
+		let hoursArray2 = ((!hour2)?"00:00:00":hour2).split(":");
+		
+		let time1 = Number(hoursArray[0])*60*60+Number(hoursArray[1])*60+Number(hoursArray[2]);
+		let time2 = Number(hoursArray2[0])*60*60+Number(hoursArray2[1])*60+Number(hoursArray2[2]);
+		
+		let time3 = time1-time2;
+		return time3;
+	}
+	
 	function SubstractTwoHours(hour1,hour2)
 	{		
-		let hoursArray = hour1.split(":");
-		let hoursArray2 = hour2.split(":");
+		let hoursArray = ((!hour1)?"00:00:00":hour1).split(":");
+		let hoursArray2 = ((!hour2)?"00:00:00":hour2).split(":");
 		
 		let time1 = Number(hoursArray[0])*60*60+Number(hoursArray[1])*60+Number(hoursArray[2]);
 		let time2 = Number(hoursArray2[0])*60*60+Number(hoursArray2[1])*60+Number(hoursArray2[2]);
@@ -7267,8 +7674,8 @@
 
 	function AddTwoHours(hour1,hour2)
 	{
-		let hoursArray = hour1.split(":");
-		let hoursArray2 = hour2.split(":");
+		let hoursArray = ((!hour1)?"00:00:00":hour1).split(":");
+		let hoursArray2 = ((!hour2)?"00:00:00":hour2).split(":");
 		
 		let time1 = Number(hoursArray[0])*60*60+Number(hoursArray[1])*60+Number(hoursArray[2]);
 		let time2 = Number(hoursArray2[0])*60*60+Number(hoursArray2[1])*60+Number(hoursArray2[2]);
@@ -7541,17 +7948,17 @@
 	function findElementIntoArray(array,valuesName,valuesNameTwo,othersValue1,othersValue2)
 	{
 		let length = array.length;
-		console.log(valuesName);
-		console.log(length);
-		console.log(valuesNameTwo);
+		//console.log(valuesName);
+		//console.log(length);
+		//console.log(valuesNameTwo);
 		
 		for (let index = 0; index < length; ++index)
 		{
 			if( array[index][valuesName] == othersValue1)
 			{
-				console.log("Found "+valuesName+" == "+othersValue1);
+				//console.log("Found "+valuesName+" == "+othersValue1);
 				array[index][valuesNameTwo] = othersValue2;
-				console.log(othersValue2);
+				//console.log(othersValue2);
 				break;
 			}
 		}
