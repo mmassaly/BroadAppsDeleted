@@ -1500,7 +1500,13 @@
 		if( query.length > 0 && passed)
 		{
 			let results  = await faire_un_simple_query(query);
-			
+			console.log(results);
+			let rs2 = await faire_un_simple_query(query2);
+			console.log(rs2);			
+			if( !(rs2 instanceof Array) && rs2.second == false )
+				return false;
+			return rs2;
+			/*	
 			if(results instanceof Array && results.length > 0 )
 			{
 				let rs2 = await faire_un_simple_query(query2);
@@ -1513,7 +1519,7 @@
 			{
 				dummyResponseSimple(res);
 				return false;
-			}
+			}*/
 		}
 		else
 		{
@@ -2019,56 +2025,72 @@
 									
 							if((commandArg instanceof Array && commandArg[0] == "hours" ) || commandArg =="hours")
 							{
-									let resultb = res;
-									let resultc = resultb;
-									urlObject.date = new Date(urlObject.date);
-									//await kvUser.set("primaryObjectsLength",-1);
-									//console.log(urlObject);
-									//console.log(commandArg);
-									var valueawait = false;var list_of_dates;
-									if(fields.updateManyHours != undefined)
+									try
 									{
-										valueawait = await insertEntryandExitIntoEmployeesForaBunch(fields,resultc,true);
+										let resultb = res;
+										let resultc = resultb;
+										urlObject.date = new Date(urlObject.date);
+										//await kvUser.set("primaryObjectsLength",-1);
+										//console.log(urlObject);
+										//console.log(commandArg);
+										var valueawait = false;var list_of_dates;
+										if(fields.updateManyHours != undefined)
+										{
+											valueawait = await insertEntryandExitIntoEmployeesForaBunch(fields,resultc,true);
+										}
+										else
+										{
+											await insertEntryandExitIntoEmployees(urlObject.ID,urlObject.date,urlObject.start,urlObject.end,urlObject,resultb);	
+										}
+										
+										if( (( fields.updateManyHours != undefined && valueawait != false ) || fields.updateManyHours != undefined ) && !resultc.finished)
+										{
+											resultc.writeHeader(200,{"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+												,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
+												,"Access-Control-Max-Age":'86400'
+												,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
+											});
+											resultc.write(JSON.stringify({OK:200,customtext:"OK"}));
+											resultc.end();
+										}
+										
+										if(!fields.updateManyHours)
+										{
+											urlObject.day = undefined; urlObject.startDay = undefined; urlObject.endDay = undefined;
+											console.log("Awaiting refreshing from getDataForAdmin");
+											urlObject.userAuthentification = {ID: urlObject.ID };
+											await getDataForAdmin(undefined,undefined,undefined,urlObject,undefined,undefined,undefined,false,undefined);
+											console.log("Done Awaiting refreshing from getDataForAdmin");
+										}
+										else
+										{
+											urlObject.Jour.forEach( async  (d,index)=>{
+												const empHoursObj = {};
+												empHoursObj.date = new Date(d.split('-').reduce( (acc,rd,index)=> (index == 0)?rd+acc:rd+"-"+acc ,''));
+												empHoursObj.location = urlObject.location[index];
+												empHoursObj.ID = urlObject.ID[index];
+												empHoursObj.Jour = urlObject.Jour[index];
+												empHoursObj.entry = urlObject.entry[index];
+												empHoursObj.exit = urlObject.exit[index];
+												empHoursObj.year = urlObject['Année'][index];
+												empHoursObj['Année'] = urlObject['Année'][index];
+												empHoursObj.userAuthentification = {ID: empHoursObj.ID };
+												await getDataForAdmin(undefined,undefined,undefined,empHoursObj,undefined,undefined,undefined,false,valueawait);
+											});
+										}
 									}
-									else
+									catch(ex)
 									{
-										await insertEntryandExitIntoEmployees(urlObject.ID,urlObject.date,urlObject.start,urlObject.end,urlObject,resultb);	
-									}
-									
-									if( ( fields.updateManyHours != undefined && valueawait != false ) || fields.updateManyHours != undefined )
-									{
-										resultc.writeHeader(200,{"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
+										if(res.finished)
+											return;
+										res.writeHeader(200,{"Content-Type": "application/json","Access-Control-Allow-Origin":"*"
 											,"Access-Control-Allow-Methods":"POST, GET, PUT, DELETE, OPTIONS","Access-Control-Allow-Credentials":false
 											,"Access-Control-Max-Age":'86400'
 											,"Access-Control-Allow-Headers":"X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
 										});
-										resultc.write(JSON.stringify({OK:200,customtext:"OK"}));
-										resultc.end();
-									}
-									
-									if(!fields.updateManyHours)
-									{
-										urlObject.day = undefined; urlObject.startDay = undefined; urlObject.endDay = undefined;
-										console.log("Awaiting refreshing from getDataForAdmin");
-										urlObject.userAuthentification = {ID: urlObject.ID };
-										await getDataForAdmin(undefined,undefined,undefined,urlObject,undefined,undefined,undefined,false,undefined);
-										console.log("Done Awaiting refreshing from getDataForAdmin");
-									}
-									else
-									{
-										urlObject.Jour.forEach( async  (d,index)=>{
-											const empHoursObj = {};
-											empHoursObj.date = new Date(d.split('-').reduce( (acc,rd,index)=> (index == 0)?rd+acc:rd+"-"+acc ,''));
-											empHoursObj.location = urlObject.location[index];
-											empHoursObj.ID = urlObject.ID[index];
-											empHoursObj.Jour = urlObject.Jour[index];
-											empHoursObj.entry = urlObject.entry[index];
-											empHoursObj.exit = urlObject.exit[index];
-											empHoursObj.year = urlObject['Année'][index];
-											empHoursObj['Année'] = urlObject['Année'][index];
-											empHoursObj.userAuthentification = {ID: empHoursObj.ID };
-											await getDataForAdmin(undefined,undefined,undefined,empHoursObj,undefined,undefined,undefined,false,valueawait);
-										});
+										res.write(JSON.stringify({message: ex,error:true}));
+											res.end();
+										return;
 									}
 							}
 							else
@@ -5066,9 +5088,14 @@
 																	
 																	let objTemp = {entry:a,exit:b};
 																	let defValue = {entry:'13:30:00',exit:'14:30:00'};
-																	let objElements = [];
-
+																	let objElements = [defValue];
+																	
 																	let value_to_deal_with = compareHoursOneSuperior(a,b)< 0;
+																	if(currentDateOfYear.getFullYear() == 2025 && currentDateOfYear.getMonth() == 0 && currentDateOfYear.getDate() == 27)
+																	{
+																		console.log("value_to_deal_with"+value_to_deal_with);
+																		console.log(currentDateOfYear);
+																	}
 																	if(startIndex != -1)
 																	{
 																		//console.log("Empty Second");
@@ -5105,57 +5132,99 @@
 																	{
 																		let count;
 																		let tempIndex;
-
-																		employeeContentModel.entriesexitsCouples.forEach((element)=>
-																		{
-																			
-																			
-																				if( compareHoursOneSuperior(objTemp.entry,element.entry) >= 0 && compareHoursOneSuperior(objTemp.entry, element.exit) <= 0)
-																				{
-																					if(compareHoursOneSuperior(objTemp.exit,element.entry) > 0 && compareHoursOneSuperior(objTemp.exit, element.exit) > 0)
+																		
+																		let smhCount = 0;
+																		var loopArr = [objTemp,employeeContentModel.entriesexitsCouples].flatMap(fm=> fm);
+																		var loopStack = [];
+																		loopArr.forEach( els => {
+																			loopStack = [els];
+																			objElements.forEach(objTemp => {
+																				let loopStack2 = [];
+																				loopStack.forEach(el=>{
+																					if( compareHoursOneSuperior(objTemp.entry,el.entry) > 0 )
 																					{
-																						objTemp.entry = element.exit ;			
-																						objElements.push({entry:objTemp.entry,exit:objTemp.exit});
+																						if(compareHoursOneSuperior(objTemp.entry,el.exit) >= 0)
+																						{
+																							loopStack2.push({entry:el.entry,exit:el.exit});
+																						}
+																						else if(compareHoursOneSuperior(objTemp.exit,el.exit) >= 0)
+																						{			
+																							loopStack2.push({entry:el.entry,exit:objTemp.entry});
+																						}
+																						else  
+																						{
+																							loopStack2.push({entry:el.entry,exit:objTemp.entry});
+																							loopStack2.push({entry:objTemp.exit,exit:el.exit});
+																						}
 																					}
-																				}
-																				else
-																				{
-																					if(compareHoursOneSuperior(objTemp.exit,element.entry) >= 0 && compareHoursOneSuperior(objTemp.exit, element.exit) <= 0)
+																					else if(compareHoursOneSuperior(objTemp.entry,el.entry) < 0 )
 																					{
-																						objTemp.exit = element.entry ;	
-																						objElements.push({entry:objTemp.entry,exit:objTemp.exit});		
+																						if(compareHoursOneSuperior(objTemp.exit,el.entry) <= 0)
+																						{			
+																							loopStack2.push({entry:el.entry,exit:el.exit});
+																						}
+																						else if(compareHoursOneSuperior(objTemp.exit,el.exit) <= 0)
+																						{
+																							loopStack2.push({entry:objTemp.exit,exit:el.exit});
+																						}
+																						
 																					}
-																					else if (compareHoursOneSuperior(objTemp.exit,element.entry) < 0)
+																					else
 																					{
-																						objElements.push({entry:objTemp.entry,exit:objTemp.exit});	
+																						if(compareHoursOneSuperior(objTemp.exit,el.exit) < 0)
+																						{			
+																							loopStack2.push({entry:objTemp.exit,exit:el.exit});
+																						}
 																					}
-																					else if (compareHoursOneSuperior(objTemp.entry, element.exit) > 0) 
-																					{
-																						objElements.push({entry:objTemp.entry,exit:objTemp.exit});
-																					}
-																					else if (compareHoursOneSuperior(objTemp.entry, element.exit) < 0)
-																					{
-																						objElements.push({entry:objTemp.entry,exit:element.entry});	
-																						objElements.push({entry:element.exit,exit:objTemp.exit});
-																					}	
-																				}
-																				
+																				});
+																				loopStack = loopStack2;
+																			});
+																			if(loopStack.length > 0)
+																			{
+																				objElements.push(loopStack);
+																				objElements = objElements.flatMap(fm=> fm);
+																			}
 																		});
+																		//intervalFixStart(loopArr, objElements);
+																		let indexTemp = -1;
+																		objElements = objElements.filter(value=> !(value.entry == defValue.entry && value.exit == defValue.exit));
 																		
 																		tempIndex = 0;
 																		count = objElements.length;
 																		employeeContentModel.dailyHoursTotal = "00:00:00";
 																		
+																		if(currentDateOfYear.getFullYear() == 2025 
+																		&& currentDateOfYear.getMonth() == 0
+																		&& currentDateOfYear.getDate() == 28)
+																		{
+																			if(empHoursObj)
+																				console.log(empHoursObj);
+																			console.log("value_to_deal_with"+value_to_deal_with);
+																			console.log(currentDateOfYear);
+																			console.trace(objElements);
+																		}
 																		
+																		if(tempIndex < count)
+																		{
+																			let first = yearContentModel.months[monthIndex].weeks[weekIndex].days[dayIndex].employeeHours[employeeContentModel.ID];
+																			let second = SubstractTwoHours(yearContentModel.months[monthIndex].weeks[weekIndex].employeeHours[employeeContentModel.ID],first);
+																			let third = SubstractTwoHours(yearContentModel.months[monthIndex].employeeHours[employeeContentModel.ID],first);
+																			let fourth = SubstractTwoHours(yearContentModel.employeeHours[employeeContentModel.ID],first);
+																			first = "00:00:00";	
+																			yearContentModel.months[monthIndex].weeks[weekIndex].employeeHours[employeeContentModel.ID] = second;
+																			yearContentModel.months[monthIndex].employeeHours[employeeContentModel.ID] = third;
+																			yearContentModel.employeeHours[employeeContentModel.ID] = fourth;
+																			yearContentModel.months[monthIndex].weeks[weekIndex].days[dayIndex].employeeHours[employeeContentModel.ID] = first; 
+																		}
 																		
 																		while(tempIndex < count)
 																		{
-																			
 																			let first = yearContentModel.months[monthIndex].weeks[weekIndex].days[dayIndex].employeeHours[employeeContentModel.ID];
 																			let second = yearContentModel.months[monthIndex].weeks[weekIndex].employeeHours[employeeContentModel.ID];
 																			let third = yearContentModel.months[monthIndex].employeeHours[employeeContentModel.ID];
 																			let fourth = yearContentModel.employeeHours[employeeContentModel.ID];
-
+																			
+																			
 																			let loopVar = objElements[tempIndex];
 																			yearContentModel.months[monthIndex].weeks[weekIndex].days[dayIndex].employeeHours[employeeContentModel.ID] = AddTwoHours(first,SubstractTwoHours(loopVar.entry,loopVar.exit));
 																			yearContentModel.months[monthIndex].weeks[weekIndex].employeeHours[employeeContentModel.ID] = AddTwoHours(second,SubstractTwoHours(loopVar.entry,loopVar.exit));
@@ -7709,7 +7778,72 @@
 
 		return 0;
 	}
-	
+	function intervalFixStart( inputs ,arrayBucket){
+		let arrayBucketDup = arrayBucket;
+		inputs.forEach((input)=>
+		{
+			arrayBucketDup = handleHatefullMethod(input,arrayBucketDup);
+		});
+		arrayBucket.splice(0,arrayBucket.length);
+		arrayBucketDup.forEach(arrBu=> arrayBucket.push(arrBu));
+		return arrayBucket;
+	}
+	function handleHatefullMethod(value,arr)
+	{
+		
+		let count = arr.length;
+		let tempIndex = 0;
+		let loopStack = [value];
+		let loopStackCount = 1;if(arr.length == 0)
+		{
+			return earr.concat(value);
+		}
+		while(tempIndex < arr.length )
+		{ 
+			let count = 0;
+			let objTemp = arr[tempIndex];
+			/*console.log("***************************-----------------");console.log(arr);console.log(objTemp.entry);console.log("***************************-------------");*/
+			while(count < loopStackCount )
+			{
+				let el = loopStack.pop();
+				
+				if( compareHoursOneSuperior(objTemp.entry,el.entry) >= 0 )
+				{
+					if(compareHoursOneSuperior(objTemp.entry,el.exit) >= 0)
+					{
+						loopStack.push({entry:el.entry,exit:el.exit});
+					}
+					else if(compareHoursOneSuperior(objTemp.exit,el.exit) >= 0)
+					{			
+						loopStack.push({entry:el.entry,exit:objTemp.entry});
+					}
+					else  
+					{
+						loopStack.push({entry:el.entry,exit:objTemp.entry});
+						loopStack.push({entry:objTemp.exit,exit:el.exit});
+					}
+				}
+				else
+				{
+					if(compareHoursOneSuperior(objTemp.exit,el.entry) <= 0)
+					{			
+						loopStack.push({entry:el.entry,exit:el.exit});
+					}
+					else if(compareHoursOneSuperior(objTemp.exit,el.exit) <= 0)
+					{
+						loopStack.push({entry:objTemp.exit,exit:el.exit});
+					}
+				}
+				++count;
+			}
+			count = 0;
+			//console.log(loopStack);
+			loopStackCount = loopStack.length;
+			++tempIndex;
+		}
+		
+		return arr.concat(loopStack);
+	}
 	function filterOutElementsThatAreNottheGivenDay(day,objArray,dateColumn,comparatorFunction) 
 	{
 		return comparatorFunctionBinarySearch(objArray,day,dateColumn,0,objArray.first.length-1,comparatorFunction)
