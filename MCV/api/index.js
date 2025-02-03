@@ -472,6 +472,24 @@
 						}
 					});
 				}
+				else if(req.url.endsWith("plan_de_localisation"))
+				{
+					//console.log("Before MCV file");
+					fs.readFile("localisation.html",function(err,data)
+					{
+						if(data != undefined)
+						{
+							res.writeHeader(200,{"Content-Type":"text/html"});
+							res.write(data);
+							res.end();
+						}
+						else if(err != undefined)
+						{
+							res.writeHeader(200,{"Content-Type":"text/html"});
+							res.end();
+						}
+					});
+				}
 				else if(req.url.endsWith("Download/pointage-apk"))
 				{
 					console.log("inside Download");
