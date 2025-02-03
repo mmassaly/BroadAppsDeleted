@@ -1318,7 +1318,7 @@
 						{
 							query3 += " union select * from individu inner join appartenance ON appartenance.IDIndividu =  individu.ID";
 							query3 += " inner join \"location du bureau\" ON  appartenance.IDBureau =";
-							query3 += " \"location du bureau\".ID AND EXTRACT(YEAR FROM individu.Début) <= ";
+							query3 += " \"location du bureau\".ID WHERE EXTRACT(YEAR FROM individu.Début) <= ";
 							query3 += year + " AND EXTRACT(YEAR FROM individu.Fin) >="+year;
 							query3 += " AND individu.ID = '"+ID+"'";
 									
@@ -1404,7 +1404,7 @@
 								{
 									query3 += "Select * from individu inner join appartenance ON appartenance.IDIndividu =  individu.ID";
 									query3 += " inner join \"location du bureau\" ON  appartenance.IDBureau =";
-									query3 += " \"location du bureau\".ID AND EXTRACT(YEAR FROM individu.Début) <= ";
+									query3 += " \"location du bureau\".ID WHERE EXTRACT(YEAR FROM individu.Début) <= ";
 									query3 += year + " AND EXTRACT(YEAR FROM individu.Fin) >="+year;
 									query3 += " AND individu.ID = '"+ID+"'";
 									
@@ -2075,7 +2075,14 @@
 												empHoursObj.year = urlObject['Année'][index];
 												empHoursObj['Année'] = urlObject['Année'][index];
 												empHoursObj.userAuthentification = {ID: empHoursObj.ID };
-												await getDataForAdmin(undefined,undefined,undefined,empHoursObj,undefined,undefined,undefined,false,valueawait);
+												if(valueawait[2] && valueawait[2].first)
+												{
+													let valueawait_copy =  Object.assign({},valueawait);
+													valueawait_copy[2]= FilterNotFoundEqualsFunction(valueawait_copy[2],"idindividu",empHoursObj.ID);
+													await getDataForAdmin(undefined,undefined,undefined,empHoursObj,undefined,undefined,undefined,false,valueawait_copy);
+												}
+												else
+													await getDataForAdmin(undefined,undefined,undefined,empHoursObj,undefined,undefined,undefined,false,valueawait);
 											});
 										}
 									}
@@ -3227,7 +3234,7 @@
 							let query = "Select * from individu inner join appartenance";
 							query += " ON appartenance.IDIndividu =  individu.ID";
 							query += " inner join \"location du bureau\" ON  appartenance.IDBureau =";
-							query += " \"location du bureau\".ID AND EXTRACT(YEAR FROM individu.Début) <= ";
+							query += " \"location du bureau\".ID WHERE EXTRACT(YEAR FROM individu.Début) <= ";
 							query += year + " AND EXTRACT(YEAR FROM individu.Fin) >="+year;
 							query += (empObj != undefined)?" AND individu.ID = '"+empObj.ID+"';":((empHoursObj != undefined)?" AND individu.ID = '"+(empHoursObj.butPresence||empHoursObj.subAdminRef?empHoursObj.ID:empHoursObj.userAuthentification.ID)+"';":";");
 							
