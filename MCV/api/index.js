@@ -3283,7 +3283,7 @@
 							query += "Select * from \""+year+" raisons des absences\""+(param_year_month_day?" where Date ='"+param_year_month_day+"'":  ((empHoursObj)?" where IdIndividu ='"+(empHoursObj.butPresence||empHoursObj.subAdminRef?empHoursObj.ID:empHoursObj.userAuthentification.ID)+"'"+((empHoursObj.startDay == undefined && empHoursObj.endDay == undefined)?(" AND Date ='"+empHoursObj.date.getFullYear()+"-"+(empHoursObj.date.getMonth()+1)+"-"+empHoursObj.date.getDate()+"'"):((empHoursObj.startDay != undefined && empHoursObj.endDay == undefined)?(" AND Date >='"+empHoursObj.startDay.getFullYear()+"-"+(empHoursObj.startDay.getMonth()+1)+"-"+empHoursObj.startDay.getDate()+"'"):("' AND Date >='"+empHoursObj.startDay.getFullYear()+"-"+(empHoursObj.startDay.getMonth()+1)+"-"+empHoursObj.startDay.getDate()+"' AND Date <='"+empHoursObj.endDay.getFullYear()+"-"+(empHoursObj.endDay.getMonth()+1)+"-"+empHoursObj.endDay.getDate()+"'")) ):''))+";";
 	
 							if(empHoursObj)
-							{/*console.log(query);*/}
+							{console.trace(query);}
 							
 							//console.log(query);
 							
@@ -4759,7 +4759,6 @@
 															employeeContentModel.approvedSet = secondresult.first[3][0][secondresult.second[3][4].name];
 															employeeContentModel.approvedBy = secondresult.first[3][0][secondresult.second[3][5].name];
 															
-															
 															if(employeeContentModel.approvedBy)
 															{
 																const approversName = resultTwo.first.find( el => el[resultTwo.second[9].name] == employeeContentModel.approvedBy);	
@@ -4767,6 +4766,11 @@
 																{
 																	employeeContentModel.approvedByName = approversName[resultTwo.second[2].name]+" "+approversName[resultTwo.second[3].name]+" "+approversName[resultTwo.second[6].name];
 																}
+															}
+															if(empHoursObj)
+															{
+																console.trace(employeeContentModel);
+																console.trace(secondresult.first[3]);
 															}	
 														}
 														else
