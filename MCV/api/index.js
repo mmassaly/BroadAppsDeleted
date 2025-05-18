@@ -35,7 +35,7 @@
 							url: kvURL,
 							token: kvToken,
 						});
-						
+	//render is faulty					
 	var filesdirectories = 
 	[
 		{command:'update employee',path:'../Project Timing/my-app/src/assets/images/'}
