@@ -2912,12 +2912,12 @@
 					let query = "";
 					if(add)
 					{
-						query = "insert into \""+date.getFullYear()+" raisons des absences\" values('"+ID+"','"+raison+"','"+date.getFullYear()+"-"+(date.getMonth()+1)+"-"+date.getDate()+"',"+approved+","+approvedSet+","+(approvedBy?"'"+approvedBy+"'":null)+") ON CONFLICT (IdIndividu,Date) DO UPDATE SET Raison = '"+raison+"'" +", Approved = "+approved+",ApprovedSet ="+approvedSet+",ApprovedBy = "+(approvedBy?"'"+approvedBy+"'":null)+";";
+						query = "insert into \""+date.getFullYear()+" raisons des absences\" values('"+ID+"',$$"+raison+"$$,'"+date.getFullYear()+"-"+(date.getMonth()+1)+"-"+date.getDate()+"',"+approved+","+approvedSet+","+(approvedBy?"'"+approvedBy+"'":null)+") ON CONFLICT (IdIndividu,Date) DO UPDATE SET Raison = $$"+raison+"$$" +", Approved = "+approved+",ApprovedSet ="+approvedSet+",ApprovedBy = "+(approvedBy?"'"+approvedBy+"'":null)+";";
 					}
 					else
 					{
-						query = "Delete from \""+date.getFullYear()+" raisons des absences\" where IDIndividu = '"+ID+"' AND raison = '"+raison;
-						query += "' AND Date = '"+date.getFullYear()+"-"+(date.getMonth()+1)+"-"+date.getDate()+"' AND ";
+						query = "Delete from \""+date.getFullYear()+" raisons des absences\" where IDIndividu = '"+ID+"' AND raison = $$"+raison;
+						query += "$$ AND Date = '"+date.getFullYear()+"-"+(date.getMonth()+1)+"-"+date.getDate()+"' AND ";
 						query +="Approved = '"+approved+"' AND "+"ApprovedSet = '"+approvedSet+"' AND ApprovedBy "+(approvedBy?"= '"+approvedBy+"'":"IS NULL")+";";
 					}
 					console.trace(query);
@@ -2941,12 +2941,12 @@
 						IDs.forEach((ID,index)=>{
 							if(add)
 							{
-								query += ((index > 0)?"\n":'')+"insert into \""+dates[index].getFullYear()+" raisons des absences\" values('"+IDs[index]+"','"+raisons[index]+"','"+dates[index].getFullYear()+"-"+(dates[index].getMonth()+1)+"-"+dates[index].getDate()+"') ON CONFLICT (IdIndividu,Date) DO UPDATE SET Raison = '"+raisons[index]+"';";					
+								query += ((index > 0)?"\n":'')+"insert into \""+dates[index].getFullYear()+" raisons des absences\" values('"+IDs[index]+"',$$"+raisons[index]+"$$,'"+dates[index].getFullYear()+"-"+(dates[index].getMonth()+1)+"-"+dates[index].getDate()+"') ON CONFLICT (IdIndividu,Date) DO UPDATE SET Raison = $$"+raisons[index]+"$$;";					
 							}
 							else
 							{
-								query += "Delete from \""+dates[index].getFullYear()+" raisons des absences\" where IDIndividu = '"+IDs[index]+"' AND raison = '"+raisonsStr[index]
-								+"' AND Date = '"+dates[index].getFullYear()+"-"+(dates[index].getMonth()+1)+"-"+dates[index].getDate()+"' AND "
+								query += "Delete from \""+dates[index].getFullYear()+" raisons des absences\" where IDIndividu = '"+IDs[index]+"' AND raison = $$"+raisonsStr[index]
+								+"$$ AND Date = '"+dates[index].getFullYear()+"-"+(dates[index].getMonth()+1)+"-"+dates[index].getDate()+"' AND "
 								+"Approved = '"+approved[index]+"' AND "+"ApprovedSet = '"+approvedSet[index]+"' AND ApprovedBy "+(approvedBy[index]?"= '"+approvedBy[index]+"'":"IS NULL")+";";
 							}
 						});
