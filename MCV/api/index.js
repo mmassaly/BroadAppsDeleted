@@ -9,6 +9,9 @@
 	var {ImageFilesContainer} = require('./queryTests.js');
 	var kvPackage = require('@vercel/kv');
 	var { Server } = require('socket.io');
+	var {gbPrimaryObject} = require('./globalObject.js');
+	console.trace(primaryObject);
+	
 	let globalForcedFoldingPrime = undefined;
 	let imageDictionary = new ImageFilesContainer();
 	let connection = undefined;
@@ -5915,7 +5918,8 @@
 					
 					if(baseInit)
 					{
-						primaryObject = data;
+						primaryObject = gbPrimaryObject;
+						Object.assign(primaryObject,data);
 					}
 					
 					console.log("added to kv");
