@@ -674,6 +674,7 @@
 									}
 									else if(commandArg == "addAbsenceReason" || commandArg == "removeAbsenceReason")
 									{
+										console.trace(urlObject);
 										if(await addAbsenceReason(urlObject,commandArg == "addAbsenceReason"))
 										{
 											if( urlObject.abunch )
