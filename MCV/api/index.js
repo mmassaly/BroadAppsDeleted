@@ -1955,8 +1955,8 @@
 											
 									if(day != undefined)
 									{
-										values = (reason == "mission")?",false,false,true,false)":(reason == "congès")?",false,false,false,true)":(reason == "maladie")?",true,false,false,false)":false;
-										let updateArray = (reason == "mission")?[false,false,true,false]:(reason == "congès")?[false,false,false,true]:(reason == "maladie")?[true,false,false,false]:[false,false,false,false];
+										values = (reason == "mission")?",false,false,true,false)":(reason == "congès")?",false,false,false,true)":(reason == "maladie")?",false,true,false,false)":false;
+										let updateArray = (reason == "mission")?[false,false,true,false]:(reason == "congès")?[false,false,false,true]:(reason == "maladie")?[false,true,false,false]:[true,false,false,false];
 										//old current.getDay() != 6 && current.getDay() != 0 || reason == "mission"
 										if(values != false && current.getDay() != 6 && current.getDay() != 0 )
 										{
@@ -1968,7 +1968,7 @@
 									{
 										let current = startDay;
 										values = (reason == "mission")?",false,false,true,false)":(reason == "congès")?",false,false,false,true)":(reason == "maladie")?",true,false,false,false)":false;
-										let updateArray = (reason == "mission")?[false,false,true,false]:(reason == "congès")?[false,false,false,true]:(reason == "maladie")?[true,false,false,false]:[false,false,false,false];
+										let updateArray = (reason == "mission")?[false,false,true,false]:(reason == "congès")?[false,false,false,true]:(reason == "maladie")?[false,true,false,false]:[true,false,false,false];
 										console.log(current);			
 										while(values != false && ((current == endDay && startDay == endDay) || ( current < endDay )) )
 										{
@@ -5478,7 +5478,15 @@
 																
 														}catch(ex){console.log(ex);}
 												} 
-												
+												if(empObj || empHoursObj){
+													/*console.log(secondresult);console.log(secondresult.first[1][0]);
+													console.log("************************");
+													console.log(secondresult.second[1][3].name);
+													console.log("************************");
+													console.log(dresultFiltered.first.length);
+													console.log("************************");
+													console.log(dresultFiltered.first);*/
+												}
 												if(secondresult.first[1].length > 0)
 												{
 													//console.log("Getting to know secondresult ");
@@ -7166,7 +7174,7 @@
 				nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].empDicofSicknesses[employeeContentModel.ID] = employeeContentModel;
 				nodupTemp.empDic[employeeContentModel.ID].sicknessdates.other.push(employeeContentModel.date);
 				nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].sicknessdates.other.push(employeeContentModel.date);
-				nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].weeks[weekIndex].sicknessesdates.other.push(employeeContentModel.date);
+				nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].weeks[weekIndex].sicknessdates.other.push(employeeContentModel.date);
 				
 				if(nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].identities[employeeContentModel.ID] == undefined)
 				{
@@ -7185,7 +7193,7 @@
 		{
 			if(found)
 			{
-				let tempValue = nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].sicknessdates;
+				let tempValue = nodupTemp.months[monthIndex].weeks[weekIndex].days[weekDayIndex].sicknessesdates;
 				if(tempValue.indexOf(employeeContentModel) > -1)
 					tempValue.splice(tempValue.indexOf(employeeContentModel),1);
 				
