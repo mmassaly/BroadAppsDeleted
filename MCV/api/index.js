@@ -4703,9 +4703,9 @@
 												*/
 												if(secondresult.first[0].length > 0)//attendance regarding arrival hours
 												{
-													if( secondresult.first[0][0][secondresult.second[0][0].name] == 1 && dresultFiltered.first.length == 0) 
+													if( currentDateOfYear.getDay() != 0 && currentDateOfYear.getDay() != 6 && secondresult.first[0][0][secondresult.second[0][0].name] == 1 && dresultFiltered.first.length == 0) 
 													{
-														if( currentDateOfYear.getDay() != 0 && currentDateOfYear.getDay() != 6 &&(!yearContentModel.months[monthIndex].weeks[weekIndex].days[dayIndex].employeeReqHours[employeeContentModel.ID] || yearContentModel.months[monthIndex].weeks[weekIndex].days[dayIndex].employeeReqHours[employeeContentModel.ID] == "00:00:00"  ))
+														if( /*currentDateOfYear.getDay() != 0 && currentDateOfYear.getDay() != 6 &&*/(!yearContentModel.months[monthIndex].weeks[weekIndex].days[dayIndex].employeeReqHours[employeeContentModel.ID] || yearContentModel.months[monthIndex].weeks[weekIndex].days[dayIndex].employeeReqHours[employeeContentModel.ID] == "00:00:00"  ))
 														{
 															yearContentModel.months[monthIndex].weeks[weekIndex].days[dayIndex].employeeReqHours[employeeContentModel.ID] = "08:00:00";
 															yearContentModel.months[monthIndex].weeks[weekIndex].employeeReqHours[employeeContentModel.ID] = AddTwoHours(yearContentModel.months[monthIndex].weeks[weekIndex].employeeReqHours[employeeContentModel.ID],"08:00:00");
@@ -4828,9 +4828,9 @@
 															
 														}
 													}
-													else if (secondresult.first[0][0][secondresult.second[0][1].name] == 1 && dresultFiltered.first.length == 0) 
+													else if (currentDateOfYear.getDay() != 0 && currentDateOfYear.getDay() != 6 && secondresult.first[0][0][secondresult.second[0][1].name] == 1 && dresultFiltered.first.length == 0) 
 													{
-														if(currentDateOfYear.getDay() != 0 && currentDateOfYear.getDay() != 6 &&( !yearContentModel.months[monthIndex].weeks[weekIndex].days[dayIndex].employeeReqHours[employeeContentModel.ID] || yearContentModel.months[monthIndex].weeks[weekIndex].days[dayIndex].employeeReqHours[employeeContentModel.ID] == "00:00:00"  ))
+														if(/*currentDateOfYear.getDay() != 0 && currentDateOfYear.getDay() != 6 &&*/( !yearContentModel.months[monthIndex].weeks[weekIndex].days[dayIndex].employeeReqHours[employeeContentModel.ID] || yearContentModel.months[monthIndex].weeks[weekIndex].days[dayIndex].employeeReqHours[employeeContentModel.ID] == "00:00:00"  ))
 														{
 															yearContentModel.months[monthIndex].weeks[weekIndex].days[dayIndex].employeeReqHours[employeeContentModel.ID] = "08:00:00";
 															yearContentModel.months[monthIndex].weeks[weekIndex].employeeReqHours[employeeContentModel.ID] = AddTwoHours(yearContentModel.months[monthIndex].weeks[weekIndex].employeeReqHours[employeeContentModel.ID],"08:00:00");
@@ -4935,9 +4935,8 @@
 														calculateRetards(unitLocation,year,1,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
 														calculateApprovalRates("retards",unitLocation,year,{},employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
 														
-
 													}
-													else if (secondresult.first[0][0][secondresult.second[0][2].name] != undefined && secondresult.first[0][0][secondresult.second[0][2].name] != null ) 
+													else if ( (currentDateOfYear.getDay() == 0 || currentDateOfYear.getDay() == 6) || (secondresult.first[0][0][secondresult.second[0][2].name] != undefined && secondresult.first[0][0][secondresult.second[0][2].name] != null) ) 
 													{
 														employeeContentModel.presence = true;
 														employeeContentModel.date = currentDateOfYear.toLocaleString('fr-FR',{day:"numeric",month:"long",year:"numeric"});
