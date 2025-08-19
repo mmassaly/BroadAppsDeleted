@@ -147,7 +147,7 @@
 	}
 
 	setInterval(async () =>{ 
-		let awaitres = await doGetHTTPRequest("www.socket-serverv1.ms-associes-digital.com",undefined,"command=vide");
+		let awaitres = await doGetHTTPRequest( "www.socket-serverv1.ms-associes-digital.com",undefined,"command=vide");
 		//console.log(!awaitres?"Bad refreshing result":"Good refreshing result");
 		},10000);
 	
