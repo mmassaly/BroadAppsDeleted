@@ -147,7 +147,7 @@
 	}
 
 	setInterval(async () =>{ 
-		let awaitres = await doGetHTTPRequest("socket-serverv1.ms-associes-digital.com",undefined,"command=vide");
+		let awaitres = await doGetHTTPRequest("www.socket-serverv1.ms-associes-digital.com",undefined,"command=vide");
 		//console.log(!awaitres?"Bad refreshing result":"Good refreshing result");
 		},10000);
 	
@@ -5970,7 +5970,7 @@
 						{
 							var func = async ()=>{
 								let resUpdating;
-								resUpdating = await doGetHTTPRequest("socket-serverv1.ms-associes-digital.com",undefined,"command=updateALL");
+								resUpdating = await doGetHTTPRequest("www.socket-serverv1.ms-associes-digital.com",undefined,"command=updateALL");
 								if(!resUpdating)
 								{
 									console.log("Error reaching notifier server ....");
@@ -5994,7 +5994,7 @@
 						{
 							var func = async ()=>{
 								let resUpdating;
-								resUpdating = await doGetHTTPRequest("socket-serverv1.ms-associes-digital.com",undefined,"command=updateALL");
+								resUpdating = await doGetHTTPRequest("www.socket-serverv1.ms-associes-digital.com",undefined,"command=updateALL");
 								
 								if(!resUpdating)
 								{
