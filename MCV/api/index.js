@@ -5301,7 +5301,8 @@
 													
 													
 												}//end of hoursSection
-												
+												console.trace(employeeContentModel);
+											    console.trace(secondresult.first[3]);
 												/*console.log(currentDateOfYear);
 												if(!employeeContentModel.presence && !employeeContentModel.absence && !employeeContentModel.mission
 													&& !employeeContentModel.congès && !employeeContentModel.sicknesses)
