@@ -4816,22 +4816,9 @@
 															employeeContentModel.reasonStr = undefined;
 															employeeContentModel.approvedBy = undefined;
 														}
-														if(!(secondresult.first[3].length > 0))
-														{
-															calculateApprovalRates("retards",unitLocation,year,{}
-																,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);		
-														}
-														else
-														{
-															calculateApprovalRates("retards",unitLocation,year,{}
-																,employeeContentModel,location_index,yearIndex,monthIndex,weekIndex,weekDayIndex);
-															
-															employeeContentModel.reason = false;
-															employeeContentModel.approved = false;
-															employeeContentModel.approvedSet = false;
-															employeeContentModel.reasonStr = undefined;
-															employeeContentModel.approvedBy = undefined;
-														}
+														calculateApprovalRates("retards",unitLocation,year,{}
+																,employeeContentModel,location_index
+																,yearIndex,monthIndex,weekIndex,weekDayIndex);
 													}
 													else if (
 														currentDateOfYear.getDay() != 0 
@@ -5301,8 +5288,6 @@
 													
 													
 												}//end of hoursSection
-												console.trace(employeeContentModel);
-											    console.trace(secondresult.first[3]);
 												/*console.log(currentDateOfYear);
 												if(!employeeContentModel.presence && !employeeContentModel.absence && !employeeContentModel.mission
 													&& !employeeContentModel.congès && !employeeContentModel.sicknesses)
