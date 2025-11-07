@@ -401,7 +401,9 @@
 			
 			if(req.url.endsWith(".jpeg") ||req.url.endsWith(".png") || req.url.endsWith(".jpg") || req.url.endsWith(".ico"))
 			{
-				var imageUrlReprocessed = req.url.substring(1,req.url.length).replaceAll("%20"," ");
+				console.log(req.url);
+				console.log(pathObj.basename(req.url));
+				var imageUrlReprocessed = pathObj.basename(req.url).replaceAll("%20"," "); // req.url.substring(1,req.url.length).replaceAll("%20"," ");
 				imageUrlReprocessed = decodeURI(imageUrlReprocessed);
 				console.log("You bot are making an image request processed to be "+imageUrlReprocessed);
 				console.log(pathObj.join(__dirname,imageUrlReprocessed));
