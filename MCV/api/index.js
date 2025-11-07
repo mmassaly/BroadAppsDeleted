@@ -1,3 +1,4 @@
+	var pathObj = require('path');
 	var http = require("http");
 	var https = require("https");
 	var url = require("url");
@@ -410,7 +411,7 @@
 					//console.log("exists = "+exists);
 					if(exists)
 					{
-						fs.readFile(imageUrlReprocessed,function(err,data)
+						fs.readFile(pathObj.join(__dirname,imageUrlReprocessed),function(err,data)
 						{
 							if(err)
 							{
@@ -459,10 +460,7 @@
 				//console.log("Down here");
 				if(req.url.endsWith("MCV"))
 				{
-					var pathObj = require('path');
-					console.log("1",pathObj.join(__dirname,"SelfDescription.htm"));
-					console.log("2",__dirname);
-						
+					
 					//console.log("Before MCV file");
 					fs.readFile(pathObj.join(__dirname,"SelfDescription.htm"),function(err,data)
 					{
@@ -502,7 +500,7 @@
 				{
 					console.log("inside Download");
 					let resb = res;
-					fs.readFile("File/app-pointage-msa.apk",(error,data)=>
+					fs.readFile(pathObj.join(__dirname,"File/app-pointage-msa.apk"),(error,data)=>
 					{
 						if(error)
 						{
@@ -527,7 +525,7 @@
 					{
 						if(exists)
 						{
-							fs.readFile(imageUrlReprocessed,function(err,data)
+							fs.readFile(pathObj.join(__dirname,imageUrlReprocessed),function(err,data)
 							{
 								if(err)
 								{
