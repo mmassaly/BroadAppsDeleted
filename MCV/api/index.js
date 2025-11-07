@@ -460,10 +460,10 @@
 				if(req.url.endsWith("MCV"))
 				{
 					//console.log("Before MCV file");
-					fs.readFile("SelfDescription.htm",function(err,data)
+					fs.readFile(path.join(__dirname,"SelfDescription.htm"),function(err,data)
 					{
 						var path = require('path');
-						console.log(path.join('./',"SelfDescription.htm"));
+						console.log(path.join(__dirname,"SelfDescription.htm"));
 						console.log(__dirname);
 						if(data != undefined)
 						{
@@ -482,7 +482,7 @@
 				else if(req.url.endsWith("plan_de_localisation"))
 				{
 					//console.log("Before MCV file");
-					fs.readFile("localisation.html",function(err,data)
+					fs.readFile(path.join(__dirname,"localisation.html"),function(err,data)
 					{
 						if(data != undefined)
 						{
