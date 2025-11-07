@@ -415,7 +415,7 @@
 						{
 							if(err)
 							{
-								//console.log(err);
+								console.log(err);
 								responseb.end();
 							}
 							else if(data)
