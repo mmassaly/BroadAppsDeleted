@@ -472,6 +472,7 @@
 						{
 							res.writeHeader(200,{"Content-Type":"text/html"});
 							res.end();
+							console.trace(err);
 						}
 					});
 				}
