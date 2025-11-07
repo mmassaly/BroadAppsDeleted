@@ -459,12 +459,13 @@
 				//console.log("Down here");
 				if(req.url.endsWith("MCV"))
 				{
+					var pathObj = require('path');
+					console.log("1",pathObj.join(__dirname,"SelfDescription.htm"));
+					console.log("2",__dirname);
+						
 					//console.log("Before MCV file");
-					fs.readFile(path.join(__dirname,"SelfDescription.htm"),function(err,data)
+					fs.readFile(pathObj.join(__dirname,"SelfDescription.htm"),function(err,data)
 					{
-						var path = require('path');
-						console.log("1",path.join(__dirname,"SelfDescription.htm"));
-						console.log("2",__dirname);
 						if(data != undefined)
 						{
 							res.writeHeader(200,{"Content-Type":"text/html"});
