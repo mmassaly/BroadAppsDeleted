@@ -462,6 +462,9 @@
 					//console.log("Before MCV file");
 					fs.readFile("SelfDescription.htm",function(err,data)
 					{
+						var path = require('path');
+						console.log(path.join('./',"SelfDescription.htm"));
+						console.log(__dirname);
 						if(data != undefined)
 						{
 							res.writeHeader(200,{"Content-Type":"text/html"});
