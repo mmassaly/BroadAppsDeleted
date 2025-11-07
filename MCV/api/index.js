@@ -385,7 +385,7 @@
 		else if(req.method === 'GET')
 		{
 			//console.log("Inside request method "+req.method);
-			//console.log(req.url);
+			console.log(req.url);
 			//console.log(req.method);
 			//console.log(url.parse(req.url));
 			callIndex++;
