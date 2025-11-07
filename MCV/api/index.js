@@ -463,8 +463,8 @@
 					fs.readFile(path.join(__dirname,"SelfDescription.htm"),function(err,data)
 					{
 						var path = require('path');
-						console.log(path.join(__dirname,"SelfDescription.htm"));
-						console.log(__dirname);
+						console.log("1",path.join(__dirname,"SelfDescription.htm"));
+						console.log("2",__dirname);
 						if(data != undefined)
 						{
 							res.writeHeader(200,{"Content-Type":"text/html"});
