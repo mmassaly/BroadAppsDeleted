@@ -404,9 +404,9 @@
 				var imageUrlReprocessed = req.url.substring(1,req.url.length).replaceAll("%20"," ");
 				imageUrlReprocessed = decodeURI(imageUrlReprocessed);
 				console.log("You bot are making an image request processed to be "+imageUrlReprocessed);
-				
+				console.log(pathObj.join(__dirname,imageUrlReprocessed));
 				let responseb = res;
-				fs.exists(imageUrlReprocessed,async function(exists)
+				fs.exists(pathObj.join(__dirname,imageUrlReprocessed),async function(exists)
 				{
 					//console.log("exists = "+exists);
 					if(exists)
