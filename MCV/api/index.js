@@ -413,7 +413,7 @@
 					//console.log("exists = "+exists);
 					if(exists)
 					{
-						const imagePath = path.join(__dirname, imageUrlReprocessed);
+						const imagePath = pathObj.join(__dirname, imageUrlReprocessed);
 
 						const stream = fs.createReadStream(imagePath);
 
