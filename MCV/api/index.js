@@ -411,20 +411,21 @@
 					//console.log("exists = "+exists);
 					if(exists)
 					{
-						fs.readFile(pathObj.join(__dirname,imageUrlReprocessed),function(err,data)
-						{
-							if(err)
-							{
-								console.log(err);
-								responseb.end();
-							}
-							else if(data)
-							{
-								responseb.writeHeader(200,{"Content-Type":"image/"+imageType});
-								responseb.write(data);
-								responseb.end();
-							}
+						const imagePath = path.join(__dirname, imageUrlReprocessed);
+
+						const stream = fs.createReadStream(imagePath);
+
+						stream.on('open', () => {
+						responseb.writeHead(200, { "Content-Type": `image/${imageType}` });
+						stream.pipe(responseb);
+						console.log("Image sent via stream");
 						});
+
+						stream.on('error', (err) => {
+						console.error('Error streaming image:', err);
+						responseb.end();
+						});
+
 					}
 					else
 					{
