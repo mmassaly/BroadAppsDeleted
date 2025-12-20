@@ -7450,10 +7450,10 @@
 				if(temp_index > -1)
 					tempValue.splice(temp_index,1);
 						
-				tempValue = nodupTemp.empDic[employeeContentModel.ID].overallretarddates.weeks[weekIndex].other;
+				/*tempValue = nodupTemp.empDic[employeeContentModel.ID].overallretarddates.weeks[weekIndex].other;
 				temp_index = tempValue.indexOf(employeeContentModel.date);
 				if(temp_index > -1)
-					tempValue.splice(temp_index,1);
+					tempValue.splice(temp_index,1);*/
 
 				tempValue = nodupTemp.empDic[employeeContentModel.ID].months[monthIndex].overallretarddates.other; 
 				temp_index = tempValue.indexOf(employeeContentModel.date);
