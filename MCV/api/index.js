@@ -1146,7 +1146,7 @@
 								console.log("-------------------------------------------------------");
 								//insertEntryandExitIntoEmployeesForaBunch(dicPreparedvalues,undefined,false);
 								console.log("-------------------------------------------------------");
-								insertEntryandExitIntoEmployeesForaBunch(dicPreparedvalues2,undefined,true);
+								//insertEntryandExitIntoEmployeesForaBunch(dicPreparedvalues2,undefined,true);
 							}
 							else
 							{
