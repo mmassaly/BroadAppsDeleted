@@ -7941,7 +7941,6 @@
 	{
 		let arrayElements = {first:[], second:[]};
 		let count = 0;
-		consol
 		objArray.first.forEach((element)=>
 		{
 			let dateReceived  = value.split("-");
