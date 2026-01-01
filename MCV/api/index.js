@@ -3211,11 +3211,9 @@
 							let aquery = "create table \""+ayear+" entrées et sorties\" (IDIndividu varchar(255),Date Date,Entrées Time NOT NULL,Sorties VARCHAR(10) DEFAULT NULL, PRIMARY KEY(Date,Entrées,IDIndividu));\n";
 							aquery += "create table  IF NOT EXISTS \"colones des fichiers des heures\"(Nom Text,Colones VARCHAR(256)[],Types VARCHAR(256)[],PRIMARY KEY(Nom));\n"
 							aquery += "create table \""+ayear+" état de l'individu\"  (IDIndividu varchar(255),Date Date,Absence BOOLEAN,Maladie BOOLEAN,Mission BOOLEAN,Congès BOOLEAN,PRIMARY KEY(Date,IDIndividu));\n";
-							aquery += " insert into \"manuel des tables d'entrées et de sorties\" values ("+ayear+","+"$$"+ayear+" état de l'individu$$" +","+"$$"+ayear+" entrées et sorties$$"+","+"$$"+ayear+" jours de fêtes et de non travail$$);\n";
 							aquery += "create table \""+ayear+" jours de fêtes et de non travail\" (Name varchar(255),Date Date);";
-							aquery += "insert into \"manuel des tables d'entrées et de sorties\" values("+ayear+","+"$$"+ayear+" jours de fêtes et de non travail$$);";
 							aquery += "create table \""+ayear+" raisons des absences\" (IDIndividu varchar(255),Raison Text,Date Date,Approved BOOLEAN,ApprovedSet BOOLEAN,ApprovedBy varchar(255),Primary Key(IDIndividu,Date));"
-							aquery += "insert into \"manuel des tables d'entrées et de sorties\" values("+ayear+","+"$$"+ayear+" raisons des absences$$);";
+							aquery += " insert into \"manuel des tables d'entrées et de sorties\" values ("+ayear+","+"$$"+ayear+" état de l'individu$$" +","+"$$"+ayear+" entrées et sorties$$"+","+"$$"+ayear+" jours de fêtes et de non travail$$);\n";
 							await faire_un_simple_query(aquery);
 							result_ = await faire_un_simple_query(query);
 						}
@@ -5901,7 +5899,7 @@
 											{	
 												baseInit = false;
 												base_init_exiting = true;console.log(3393);
-												//console.log("Quitting");
+												console.log("Quitting");
 												if (!(response === undefined))
 												dummyResponseSimple(response);
 												return false;
@@ -7943,7 +7941,7 @@
 	{
 		let arrayElements = {first:[], second:[]};
 		let count = 0;
-		
+		consol
 		objArray.first.forEach((element)=>
 		{
 			let dateReceived  = value.split("-");
